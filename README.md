@@ -39,11 +39,18 @@ A constitutional rule follows:
 >
 > Differentiated agency must have an admissible return path — or an explicitly declared autonomous termination — and returned evidence/difference remains attributable before synthesis.
 
+## Maximal reference harness
+
+Actuation deliberately develops its portable agent/body seams against a demanding real harness rather than only toy runtimes. The current maximal reference is the pinned public **DeepSeek Harness (DSH)** source exercised by the QL Runtime proving body.
+
+This is a reference and conformance pressure test, **not** a suite-wide dependency: DSH informs the breadth of the portable abstractions without becoming their ontology, and alternative harnesses or future forks/derivatives can target the same seams. See [`docs/HARNESS-REFERENCE.md`](docs/HARNESS-REFERENCE.md) for the repository-level rule and [`experiments/ql-runtime/comparison/series1/DEEPSEEK-HARNESS-MAXIMAL-REFERENCE.md`](experiments/ql-runtime/comparison/series1/DEEPSEEK-HARNESS-MAXIMAL-REFERENCE.md) for the pinned experimental composition.
+
 ## Repository map
 
 - [`docs/ACTUATION-CONSTITUTION.md`](docs/ACTUATION-CONSTITUTION.md) — constitutional purpose, metagency, determination modes, invariants, and product boundary.
 - [`docs/ACTUATION-RELATION.md`](docs/ACTUATION-RELATION.md) — the one↔many↔return relation and recursive composition grammar.
 - [`docs/SYSTEM-PLACEMENT.md`](docs/SYSTEM-PLACEMENT.md) — placement across O:I, Central, Factory, AIKit, Workcell, and QL-MEF.
+- [`docs/HARNESS-REFERENCE.md`](docs/HARNESS-REFERENCE.md) — maximal-reference harness policy and portability boundary.
 - [`schemas/actuation.v0.schema.json`](schemas/actuation.v0.schema.json) — language-neutral experimental `AgenticComposition` contract using opaque suite refs.
 - [`docs/QL-RUNTIME-MIGRATION.md`](docs/QL-RUNTIME-MIGRATION.md) — provenance and acceptance rules for graduating the QL Agent Runtime experiments from Factory.
 - [`experiments/ql-runtime/`](experiments/ql-runtime/) — complete pinned QL Agent Runtime proving body migrated from Factory issue #94 / draft PR #130.
