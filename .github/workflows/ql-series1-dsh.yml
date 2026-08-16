@@ -1,0 +1,66 @@
+name: QL Series 1 DSH
+
+on:
+  push:
+    branches: [foundation/first-class-actuation]
+    paths:
+      - 'experiments/ql-runtime/comparison/series1/**'
+      - 'experiments/ql-runtime/deep-ql/test/series1-dsh.test.js'
+      - '.github/workflows/ql-series1-dsh.yml'
+  pull_request:
+    paths:
+      - 'experiments/ql-runtime/comparison/series1/**'
+      - 'experiments/ql-runtime/deep-ql/test/series1-dsh.test.js'
+      - '.github/workflows/ql-series1-dsh.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  structural:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout pinned public DeepSeek Harness source
+        uses: actions/checkout@v4
+        with:
+          repository: deepseek-ai/deepseek-harness
+          ref: 47f943859bef60e4160492346772ded9b24f765a
+          path: .series1/deepseek-harness
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+
+      - name: Build pinned DSH host packages from public source
+        working-directory: .series1/deepseek-harness
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.7.0 --activate
+          pnpm install --frozen-lockfile
+          pnpm run build:lib:host
+
+      - name: Project pinned DSH workspace packages into Series 1 resolution
+        shell: bash
+        run: |
+          set -euo pipefail
+          SERIES1_DIR="$GITHUB_WORKSPACE/experiments/ql-runtime/comparison/series1"
+          rm -rf "$SERIES1_DIR/node_modules"
+          ln -s "$GITHUB_WORKSPACE/.series1/deepseek-harness/node_modules" "$SERIES1_DIR/node_modules"
+
+      - name: Pure DSH Series 1 invariants
+        working-directory: experiments/ql-runtime/deep-ql
+        run: node --test test/series1-dsh.test.js
+
+      - name: Real rc5 Cordis / Session / Agent / persistence composition
+        run: node experiments/ql-runtime/comparison/series1/dsh-structural.mjs > dsh-structural.json
+
+      - name: Publish structural evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: ql-series1-dsh-structural-${{ github.run_id }}
+          path: dsh-structural.json
+          if-no-files-found: error
