@@ -1,0 +1,80 @@
+name: Import QL runtime corpus
+
+on:
+  push:
+    branches:
+      - foundation/first-class-actuation
+    paths:
+      - '.github/workflows/import-ql-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Actuation branch
+        uses: actions/checkout@v4
+        with:
+          ref: foundation/first-class-actuation
+          fetch-depth: 0
+
+      - name: Checkout pinned Factory experiment source
+        uses: actions/checkout@v4
+        with:
+          repository: EpiLogos/agent-system-design
+          ref: a654c62f68b82236061986d9215b23257fe53b17
+          path: .migration/factory
+
+      - name: Import complete QL runtime experiment tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf experiments/ql-runtime
+          mkdir -p experiments/ql-runtime
+          cp -a .migration/factory/ql-agent-experiments/. experiments/ql-runtime/
+
+          # Carry the experiment workflows with executable paths adapted to Actuation.
+          for workflow in ql-deep-runtime.yml ql-series1-dsh.yml ql-series1-live.yml; do
+            cp ".migration/factory/.github/workflows/$workflow" ".github/workflows/$workflow"
+          done
+
+          # Rewrite repository-local path literals while leaving conceptual wording intact.
+          grep -rlZ 'ql-agent-experiments' experiments/ql-runtime .github/workflows/ql-*.yml \
+            | xargs -0 -r sed -i 's#ql-agent-experiments#experiments/ql-runtime#g'
+
+          cat > experiments/ql-runtime/MIGRATION-PROVENANCE.md <<'EOF'
+          # Migration provenance
+
+          This QL Agent Runtime experiment corpus was migrated from `EpiLogos/agent-system-design`.
+
+          - source issue: `EpiLogos/agent-system-design#94`
+          - source integration PR: `EpiLogos/agent-system-design#130`
+          - source branch: `ql/deep-runtime`
+          - pinned source commit: `a654c62f68b82236061986d9215b23257fe53b17`
+          - former path: `ql-agent-experiments/`
+          - Actuation path: `experiments/ql-runtime/`
+
+          The pinned source state has structural/conformance evidence but **zero claimed live Series 1 capability runs**. Migration does not upgrade that evidence status.
+
+          Historical review and commit provenance remain in the source issue/PR. New canonical experiment development proceeds in Actuation after migration acceptance.
+          EOF
+
+          rm -rf .migration
+
+      - name: Commit imported corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add experiments/ql-runtime .github/workflows/ql-deep-runtime.yml .github/workflows/ql-series1-dsh.yml .github/workflows/ql-series1-live.yml
+          if git diff --cached --quiet; then
+            echo 'Pinned corpus already imported.'
+            exit 0
+          fi
+          git commit -m 'Migrate QL agent runtime experiments from Factory'
+          git push origin HEAD:foundation/first-class-actuation
