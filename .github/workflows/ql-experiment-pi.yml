@@ -1,0 +1,31 @@
+name: QL Experiment Pi
+
+on:
+  push:
+    branches: [foundation/first-class-actuation]
+    paths:
+      - 'experiments/ql-runtime/foundation/**'
+      - 'experiments/ql-runtime/experiments/pi/**'
+      - '.github/workflows/ql-experiment-pi.yml'
+  pull_request:
+    paths:
+      - 'experiments/ql-runtime/foundation/**'
+      - 'experiments/ql-runtime/experiments/pi/**'
+      - '.github/workflows/ql-experiment-pi.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  pi-baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Foundation tests
+        working-directory: experiments/ql-runtime/foundation
+        run: npm test
+      - name: Pi matched runtime smoke
+        run: node experiments/ql-runtime/experiments/pi/run-smoke.mjs
