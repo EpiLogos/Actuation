@@ -1,0 +1,50 @@
+{
+  "schema": "ql-foundation-freeze/0.2",
+  "status": "frozen",
+  "branch": "ql/runtime-foundation",
+  "base_main_revision": "ac07e19e51fefce1d8bfec7429d2f9a4116a5c18",
+  "verified_candidate_revision": "11c7be5767735c25f49139906b59398bcdf3bf42",
+  "published_surface_revision": "11c7be5767735c25f49139906b59398bcdf3bf42",
+  "specification": {
+    "spec_blob": "f9d056c54caf094eb672f005ce3c8cbde4de0a5b",
+    "protocol_blob": "b60c2488fd2d1b21f3a0fc9ded4d3153672394dc",
+    "closure_clarification_blob": "a8ecd8e14f04e7500abdaaa0b8f5250fb69d49b7",
+    "closure_amendment_blob": "723ec0d242e163bbf2c67b334af99f60da69229c"
+  },
+  "fixtures": {
+    "definition": "fixtures/foundation-cases.json",
+    "definition_blob": "7db8717764c678789498685363c1a57893c014a1",
+    "case_count": 22,
+    "cases_passed": 22,
+    "qlf_018": "pass",
+    "qln_007": "pass",
+    "network_required": false,
+    "model_api_required": false
+  },
+  "trace": {
+    "manifest_schema": "optics/run-manifest.schema.json",
+    "manifest_schema_blob": "b924de3d974f5217ddf8cd63bc577d8c206f41d1"
+  },
+  "candidate_verification": {
+    "workflow": "QL Runtime Foundation",
+    "workflow_run_id": 31752390535,
+    "tested_candidate_revision": "11c7be5767735c25f49139906b59398bcdf3bf42",
+    "pr_merge_test_revision": "58ceab976773d58978b360191891722e08301c22",
+    "node": "22.23.2",
+    "tests_passed": 33,
+    "tests_failed": 0,
+    "ci_verified": true
+  },
+  "freeze_manifest_note": "This manifest pins the immediately preceding CI-verified code/docs candidate. The commit containing this manifest is separately CI-verified and recorded in issue #100, avoiding an impossible self-referential commit hash.",
+  "subsequent_required_work": [
+    "conjugation",
+    "recursive_depth",
+    "full_experiment_readiness"
+  ],
+  "limitations": [
+    "Conjugation and recursive depth remain explicit unsupported operator seams until post-Freeze work.",
+    "The Pi, Pydantic AI, Native and Deep-QL tracks are not implemented by this Foundation branch.",
+    "Verification integrity is deliberately Foundation-scoped and applies when verification is cited on the closure warrant; it is not a universal verification ontology or a requirement that every task use CI."
+  ],
+  "freeze_permitted": true
+}

@@ -1,0 +1,36 @@
+{
+  "schema": "ql-deep-workbench/0.3",
+  "status": "structural-ready-live-experiment-pending",
+  "foundation": {
+    "main_merge_revision": "7690069846eb6fc89f6aa78dcf7aab886ac7c737",
+    "frozen_runtime_candidate": "11c7be5767735c25f49139906b59398bcdf3bf42",
+    "foundation_manifest": "../foundation/foundation-freeze.json",
+    "spec": "../ql-agent-spec-08-13-2026.md",
+    "protocol": "../ql-agent-development-protocol-08-13-2026.md",
+    "pairing_square_clarification": "../QL-PAIRING-SQUARES-CLARIFICATION-08-14-2026.md"
+  },
+  "operator_profile": "ql-agent/0.1-deep-required+pairing-square-clarification",
+  "integration_boundary": {
+    "strategy": "subclass the frozen Direct Core runtime for the reserved openConjugate/openChild seams and expose DeepQLOperatorSession as the observable operator lifecycle/reintegration surface",
+    "host_contract_changes": false,
+    "foundation_source_changes": false,
+    "baseline_host_implementation_changes": false
+  },
+  "operator_session": "operator-session.js",
+  "pairing_grammar": "formal/pairing-grammar.js",
+  "conformance": "conformance/runner.js",
+  "typing_benchmark": "typing-corpus/corpus.js",
+  "typing_review_policy": "../TYPING-CORPUS-REVIEW-CLARIFICATION-08-14-2026.md",
+  "renderer": "render/index.js",
+  "comparator": "comparison/comparator.js",
+  "structural_readiness": "convergence/run-readiness.mjs",
+  "structural_review": "convergence/run-product-review.mjs",
+  "series1_live_experiment": "../comparison/series1/run.mjs",
+  "series1_preflight": "../comparison/series1/preflight.mjs",
+  "research_registry": "extensions/registry.json",
+  "readiness": {
+    "structural_conformance": true,
+    "live_capability_effect_evidence": false,
+    "fixture_runs_eligible_for_performance_claims": false
+  }
+}

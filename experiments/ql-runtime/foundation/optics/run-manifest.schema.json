@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epi-logos.dev/schemas/ql-foundation/run-manifest.schema.json",
+  "title": "QL Foundation Run Manifest",
+  "type": "object",
+  "required": ["task_id","host","runtime","spec_revision","capability_surface","success_conditions"],
+  "properties": {
+    "task_id": {"type":"string"},
+    "fixture_id": {"type":["string","null"]},
+    "host": {
+      "type":"object",
+      "required":["id","revision"],
+      "properties":{"id":{"type":"string"},"revision":{"type":"string"}}
+    },
+    "runtime": {
+      "type":"object",
+      "required":["id","revision"],
+      "properties":{"id":{"enum":["classic","ql-core"]},"revision":{"type":"string"}}
+    },
+    "spec_revision": {"type":"string"},
+    "model": {},
+    "capability_surface": {"type":"array"},
+    "environment": {},
+    "start_state": {},
+    "success_conditions": {"type":"array"}
+  }
+}

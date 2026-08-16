@@ -1,0 +1,28 @@
+{
+  "schema": "ql-foundation-fixtures/0.1",
+  "spec": "ql-agent/0.1",
+  "cases": [
+    {"id":"QLF-001","expect":{"relation":"R11","destination":"P1","residue":["material"],"closed":false}},
+    {"id":"QLF-002","expect":{"relation":"R13","destination":"P3","residue":["material","form"],"closed":false}},
+    {"id":"QLF-003","expect":{"relation":"R23","destination":"P3","residue":["effect","form"],"closed":false}},
+    {"id":"QLF-004","expect":{"relation":"R31","destination":"P1","closed":false}},
+    {"id":"QLF-005","expect":{"relation":"R43","destination":"P3","residue":["evaluation"],"closed":false}},
+    {"id":"QLF-006","expect":{"relation":"R51","destination":"P1","closed":false}},
+    {"id":"QLF-007","expect":{"relation":"R52","destination":"P2","closed":false}},
+    {"id":"QLF-008","expect":{"relation":"R53","destination":"P3","closed":false}},
+    {"id":"QLF-009","expect":{"relation":"R54","destination":"P4","closed":false}},
+    {"id":"QLF-010","expect":{"relation":"R50","destination":"P0","closed":false}},
+    {"id":"QLF-011","expect":{"positive_closure":true,"reentry":true}},
+    {"id":"QLF-012","expect":{"same_carrier":"read","destinations":["P1","P3","P4"],"carrier_fixed_typing":false}},
+    {"id":"QLF-013","expect":{"trajectory":["P0","P3","P4","P5"],"tool_calls":0,"positive_closure":true}},
+    {"id":"QLF-014","expect":{"successful_tool_calls_min":3,"positive_closure":false}},
+    {"id":"QLF-017","expect":{"reentry":true,"retained":["artifact:A","evidence:E","question:Q"]}},
+    {"id":"QLF-018","expect":{"positive_closure":true,"reentry":true,"verification_warranted":true}},
+    {"id":"QLN-001","expect":{"no_tools_auto_close":false}},
+    {"id":"QLN-002","expect":{"carrier_fixed_typing":false}},
+    {"id":"QLN-003","expect":{"p5_implies_stop":false}},
+    {"id":"QLN-004","expect":{"restart_without_delta_is_reentry":false}},
+    {"id":"QLN-006","expect":{"mandatory_six_step_traversal":false}},
+    {"id":"QLN-007","expect":{"stale_or_mismatched_verification_closes":false}}
+  ]
+}
