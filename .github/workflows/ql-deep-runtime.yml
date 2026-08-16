@@ -1,0 +1,52 @@
+name: QL Deep Runtime
+on:
+  push:
+    branches: [foundation/first-class-actuation]
+    paths:
+      - 'experiments/ql-runtime/deep-ql/**'
+      - 'experiments/ql-runtime/comparison/series1/**'
+      - 'experiments/ql-runtime/QL-PAIRING-SQUARES-CLARIFICATION-08-14-2026.md'
+      - 'experiments/ql-runtime/TYPING-CORPUS-REVIEW-CLARIFICATION-08-14-2026.md'
+      - '.github/workflows/ql-deep-runtime.yml'
+      - '.github/workflows/ql-series1-live.yml'
+  pull_request:
+    paths:
+      - 'experiments/ql-runtime/deep-ql/**'
+      - 'experiments/ql-runtime/comparison/series1/**'
+      - 'experiments/ql-runtime/QL-PAIRING-SQUARES-CLARIFICATION-08-14-2026.md'
+      - 'experiments/ql-runtime/TYPING-CORPUS-REVIEW-CLARIFICATION-08-14-2026.md'
+      - '.github/workflows/ql-deep-runtime.yml'
+      - '.github/workflows/ql-series1-live.yml'
+permissions:
+  contents: read
+jobs:
+  deep-ql:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: experiments/ql-runtime/deep-ql
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm test
+      - run: npm run conformance
+      - name: Verify Series 1 harness structure without claiming live evidence
+        run: npm run series1:preflight
+      - name: Run structural Deep convergence
+        if: github.event_name == 'pull_request'
+        env:
+          DEEP_REVISION: ${{ github.event.pull_request.head.sha }}
+        run: npm run readiness
+      - name: Record deterministic structural review bundle
+        if: github.event_name == 'pull_request'
+        env:
+          DEEP_REVISION: ${{ github.event.pull_request.head.sha }}
+        run: npm run review | tee review-bundle.json
+      - name: Publish structural review bundle
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ql-structural-review-${{ github.event.pull_request.head.sha }}
+          path: experiments/ql-runtime/deep-ql/review-bundle.json
+          if-no-files-found: error
