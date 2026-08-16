@@ -15,6 +15,7 @@ import {
   localServiceExternalToHarness,
   remoteServiceSameHarness
 } from '../fixtures.js';
+import { sourceLockedCases } from '../source-cases.js';
 
 const copy = (value) => structuredClone(value);
 
@@ -152,4 +153,30 @@ test('published JSON schema carries both receipt and experiment contracts', asyn
   assert.equal(schema.oneOf.length, 2);
   assert.equal(schema.$defs.ModelConditionReceipt.properties.schema.const, MODEL_CONDITION_SCHEMA);
   assert.equal(schema.$defs.ModelConditionExperiment.properties.schema.const, MODEL_EXPERIMENT_SCHEMA);
+});
+
+test('source-locked Ollama, llama.cpp and vLLM cases fit one receipt contract without provider ontology leakage', () => {
+  const receipts = Object.values(sourceLockedCases).map(({ condition }) =>
+    createModelConditionReceipt(copy(condition))
+  );
+
+  assert.equal(receipts.length, 4);
+  assert.ok(receipts.every((receipt) => receipt.schema === MODEL_CONDITION_SCHEMA));
+  assert.equal(sourceLockedCases.ollamaLocalService.condition.materialisation.mode, 'service');
+  assert.equal(sourceLockedCases.llamaCppDirect.condition.materialisation.mode, 'process');
+  assert.equal(sourceLockedCases.llamaCppServer.condition.materialisation.mode, 'service');
+  assert.equal(sourceLockedCases.vllmDistributedService.condition.materialisation.mode, 'distributed-service');
+});
+
+test('llama.cpp direct and server cases prove engine identity is independent of surface/materialisation form', () => {
+  const direct = copy(sourceLockedCases.llamaCppDirect.condition);
+  const server = copy(sourceLockedCases.llamaCppServer.condition);
+  const comparison = compareModelConditions(direct, server);
+
+  assert.deepEqual(comparison.identity_drift, []);
+  assert.equal(comparison.same_model, true);
+  assert.ok(!comparison.changed_axes.includes('engine'));
+  assert.ok(comparison.changed_axes.includes('materialisation'));
+  assert.ok(comparison.changed_axes.includes('surface'));
+  assert.ok(comparison.changed_axes.includes('harness'));
 });
