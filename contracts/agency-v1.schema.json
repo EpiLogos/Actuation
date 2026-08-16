@@ -35,6 +35,42 @@
         }
       }
     },
+    "rootScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "scope_ref", "enclosing_world_ref"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "scope_ref": { "$ref": "#/$defs/ref" },
+        "enclosing_world_ref": { "$ref": "#/$defs/ref" }
+      }
+    },
+    "metagencyGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "grant_ref", "agency_ref", "world_binding_ref", "authority_ref", "operations"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "grant_ref": { "$ref": "#/$defs/ref" },
+        "agency_ref": { "$ref": "#/$defs/ref" },
+        "world_binding_ref": { "$ref": "#/$defs/ref" },
+        "authority_ref": { "$ref": "#/$defs/ref" },
+        "bounds_refs": { "$ref": "#/$defs/refs" },
+        "operations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "determine-agency",
+              "configure-agency",
+              "actualise-agency",
+              "reintegrate-return"
+            ]
+          }
+        }
+      }
+    },
     "determination": {
       "type": "object",
       "additionalProperties": false,
@@ -102,6 +138,8 @@
   },
   "oneOf": [
     { "$ref": "#/$defs/worldBinding" },
+    { "$ref": "#/$defs/rootScope" },
+    { "$ref": "#/$defs/metagencyGrant" },
     { "$ref": "#/$defs/determination" },
     { "$ref": "#/$defs/return" }
   ]
