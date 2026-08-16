@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epilogos.github.io/actuation/contracts/model-bearing-v1.schema.json",
+  "title": "Actuation model-bearing agency contract v1",
+  "description": "Provider-neutral receipt seam. Engine, materialisation and surface remain nested refs/facts rather than promoted root identities.",
+  "$defs": {
+    "ref": { "type": "string", "minLength": 1 },
+    "facts": {
+      "type": "object",
+      "additionalProperties": { "type": ["string", "number", "boolean", "null"] }
+    },
+    "modelRelation": {
+      "type": "object",
+      "required": ["schema", "model_ref", "inference_surface"],
+      "properties": {
+        "schema": { "const": "actuation.model-bearing/v1" },
+        "model_ref": { "$ref": "#/$defs/ref" },
+        "variant_ref": { "$ref": "#/$defs/ref" },
+        "engine": {
+          "type": "object",
+          "properties": {
+            "implementation_ref": { "$ref": "#/$defs/ref" },
+            "provider_ref": { "$ref": "#/$defs/ref" },
+            "facts": { "$ref": "#/$defs/facts" }
+          },
+          "additionalProperties": true
+        },
+        "material": {
+          "type": "object",
+          "properties": {
+            "binding_ref": { "$ref": "#/$defs/ref" },
+            "placement": { "enum": ["local", "remote", "distributed", "opaque"] },
+            "facts": { "$ref": "#/$defs/facts" }
+          },
+          "additionalProperties": true
+        },
+        "inference_surface": {
+          "type": "object",
+          "required": ["contract_ref"],
+          "properties": {
+            "contract_ref": { "$ref": "#/$defs/ref" },
+            "binding_ref": { "$ref": "#/$defs/ref" },
+            "facts": { "$ref": "#/$defs/facts" }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "accessProfile": {
+      "type": "object",
+      "required": ["schema", "inference", "control", "interior"],
+      "properties": {
+        "schema": { "const": "actuation.model-bearing/v1" },
+        "inference": { "$ref": "#/$defs/accessSet" },
+        "control": { "$ref": "#/$defs/accessSet" },
+        "interior": {
+          "allOf": [
+            { "$ref": "#/$defs/accessSet" },
+            {
+              "type": "object",
+              "required": ["depth"],
+              "properties": {
+                "depth": {
+                  "enum": ["opaque", "behavioral", "outputs", "state-read", "state-write", "causal-intervention", "learning"]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "accessSet": {
+      "type": "object",
+      "required": ["allowed"],
+      "properties": {
+        "allowed": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "denied": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      },
+      "additionalProperties": true
+    }
+  },
+  "type": "object",
+  "required": ["schema", "actuation_ref", "agency_ref", "world_binding_ref", "model_relation", "access_profile"],
+  "properties": {
+    "schema": { "const": "actuation.model-bearing/v1" },
+    "actuation_ref": { "$ref": "#/$defs/ref" },
+    "agency_ref": { "$ref": "#/$defs/ref" },
+    "world_binding_ref": { "$ref": "#/$defs/ref" },
+    "harness_ref": { "$ref": "#/$defs/ref" },
+    "harness_composition_ref": { "$ref": "#/$defs/ref" },
+    "agent_session_ref": { "$ref": "#/$defs/ref" },
+    "model_relation": { "$ref": "#/$defs/modelRelation" },
+    "access_profile": { "$ref": "#/$defs/accessProfile" },
+    "bounds_refs": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
+    "evidence_refs": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
+    "return_ref": { "$ref": "#/$defs/ref" },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "experiment": {
+      "type": "object",
+      "properties": {
+        "held_constant_refs": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
+        "variables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "value_ref": { "$ref": "#/$defs/ref" },
+              "facts": { "$ref": "#/$defs/facts" }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
