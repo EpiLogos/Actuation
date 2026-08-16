@@ -50,11 +50,59 @@ jobs:
 
       - name: Project pinned DSH workspace packages into Series 1 resolution
         shell: bash
+        env:
+          DSH_DIR: ${{ github.workspace }}/.series1/deepseek-harness
+          SERIES1_DIR: ${{ github.workspace }}/experiments/ql-runtime/comparison/series1
         run: |
           set -euo pipefail
-          SERIES1_DIR="$GITHUB_WORKSPACE/experiments/ql-runtime/comparison/series1"
           rm -rf "$SERIES1_DIR/node_modules"
-          ln -s "$GITHUB_WORKSPACE/.series1/deepseek-harness/node_modules" "$SERIES1_DIR/node_modules"
+          mkdir -p "$SERIES1_DIR/node_modules"
+
+          # DSH is a pnpm workspace. Its own packages resolve one another from
+          # inside that workspace, but an external sibling module cannot import
+          # workspace package names merely by seeing DSH's root node_modules.
+          # Project every named workspace package explicitly into the Series 1
+          # resolver while keeping each link pointed at the exact cloned source.
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const dshRoot = process.env.DSH_DIR;
+          const targetRoot = path.join(process.env.SERIES1_DIR, 'node_modules');
+          const roots = [path.join(dshRoot, 'packages')];
+          let projected = 0;
+
+          function visit(dir) {
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              if (entry.name === 'node_modules' || entry.name === '.git') continue;
+              const full = path.join(dir, entry.name);
+              if (entry.isDirectory()) {
+                visit(full);
+                continue;
+              }
+              if (!entry.isFile() || entry.name !== 'package.json') continue;
+
+              const manifest = JSON.parse(fs.readFileSync(full, 'utf8'));
+              if (!manifest.name) continue;
+              const pkgDir = path.dirname(full);
+              const parts = manifest.name.startsWith('@')
+                ? manifest.name.split('/')
+                : [manifest.name];
+              const destination = path.join(targetRoot, ...parts);
+              fs.mkdirSync(path.dirname(destination), { recursive: true });
+              fs.rmSync(destination, { recursive: true, force: true });
+              fs.symlinkSync(pkgDir, destination, 'dir');
+              projected += 1;
+            }
+          }
+
+          for (const root of roots) visit(root);
+          if (projected === 0) throw new Error('No DSH workspace packages projected');
+          console.log(`Projected ${projected} pinned DSH workspace packages`);
+          NODE
+
+          test -f "$SERIES1_DIR/node_modules/@deepseek-ai/cordis/package.json"
+          test -f "$SERIES1_DIR/node_modules/@deepseek-ai/dsh-agent/package.json"
 
       - name: Pure DSH Series 1 invariants
         working-directory: experiments/ql-runtime/deep-ql
