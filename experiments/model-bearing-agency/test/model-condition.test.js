@@ -168,6 +168,15 @@ test('source-locked Ollama, llama.cpp and vLLM cases fit one receipt contract wi
   assert.equal(sourceLockedCases.vllmDistributedService.condition.materialisation.mode, 'distributed-service');
 });
 
+test('source conformance templates remain distinct from observed runtime evidence', () => {
+  for (const sourceCase of Object.values(sourceLockedCases)) {
+    assert.equal(sourceCase.source_lock.evidence_class, 'upstream-source');
+    assert.equal(sourceCase.condition.provider_metadata.evidence_class, 'source-conformance-template');
+    assert.deepEqual(sourceCase.condition.materialisation.material_binding_refs, []);
+    assert.equal(sourceCase.condition.surface.binding_ref, null);
+  }
+});
+
 test('llama.cpp direct and server cases prove engine identity is independent of surface/materialisation form', () => {
   const direct = copy(sourceLockedCases.llamaCppDirect.condition);
   const server = copy(sourceLockedCases.llamaCppServer.condition);
