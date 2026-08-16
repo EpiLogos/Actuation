@@ -1,0 +1,12 @@
+{
+  "name": "@epilogos/actuation-model-bearing-agency",
+  "version": "0.1.0-experimental",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}
