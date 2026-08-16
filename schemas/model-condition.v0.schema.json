@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epilogos.dev/schemas/model-condition.v0.schema.json",
+  "title": "Actuation model condition v0",
+  "description": "Experimental language-neutral contracts for model-bearing Actuation conditions and matched condition experiments. Provider, material, session and endpoint facts remain provenance and do not replace Agent, Agency, Model or Harness identity.",
+  "oneOf": [
+    { "$ref": "#/$defs/ModelConditionReceipt" },
+    { "$ref": "#/$defs/ModelConditionExperiment" }
+  ],
+  "$defs": {
+    "OpaqueRef": {
+      "type": "string",
+      "minLength": 1
+    },
+    "OptionalRef": {
+      "anyOf": [
+        { "$ref": "#/$defs/OpaqueRef" },
+        { "type": "null" }
+      ]
+    },
+    "UniqueStrings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "ModelConditionReceipt": {
+      "type": "object",
+      "required": [
+        "schema",
+        "receipt_ref",
+        "actuation_ref",
+        "world_ref",
+        "agent_ref",
+        "agency_ref",
+        "model",
+        "engine",
+        "materialisation",
+        "surface",
+        "harness",
+        "access"
+      ],
+      "properties": {
+        "schema": { "const": "actuation.model-condition/v0" },
+        "receipt_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "actuation_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "world_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "agent_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "agency_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "model": {
+          "type": "object",
+          "required": ["model_ref", "variant_ref", "artifact_refs"],
+          "properties": {
+            "model_ref": { "$ref": "#/$defs/OpaqueRef" },
+            "variant_ref": { "$ref": "#/$defs/OptionalRef" },
+            "artifact_refs": { "$ref": "#/$defs/UniqueStrings" }
+          },
+          "additionalProperties": false
+        },
+        "engine": {
+          "type": "object",
+          "required": ["engine_ref", "source_provenance_refs"],
+          "properties": {
+            "engine_ref": { "$ref": "#/$defs/OpaqueRef" },
+            "source_provenance_refs": { "$ref": "#/$defs/UniqueStrings" }
+          },
+          "additionalProperties": false
+        },
+        "materialisation": {
+          "type": "object",
+          "required": ["mode", "world_relation", "material_binding_refs"],
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": ["embedded", "process", "service", "distributed-service", "opaque-service"]
+            },
+            "world_relation": {
+              "type": "string",
+              "enum": ["inside-world", "outside-world", "spans-worlds", "opaque"]
+            },
+            "material_binding_refs": { "$ref": "#/$defs/UniqueStrings" }
+          },
+          "additionalProperties": false
+        },
+        "surface": {
+          "type": "object",
+          "required": ["kind", "contract_ref", "binding_ref"],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["in-process", "cli", "stdio", "http", "provider-api", "opaque"]
+            },
+            "contract_ref": { "$ref": "#/$defs/OptionalRef" },
+            "binding_ref": { "$ref": "#/$defs/OptionalRef" }
+          },
+          "additionalProperties": false
+        },
+        "harness": {
+          "type": "object",
+          "required": ["harness_ref", "harness_composition_ref", "agent_session_ref", "model_relation"],
+          "properties": {
+            "harness_ref": { "$ref": "#/$defs/OptionalRef" },
+            "harness_composition_ref": { "$ref": "#/$defs/OptionalRef" },
+            "agent_session_ref": { "$ref": "#/$defs/OptionalRef" },
+            "model_relation": {
+              "type": "string",
+              "enum": ["embedded", "external-surface", "none"]
+            }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "model_relation": { "const": "none" } } },
+              "then": {
+                "properties": {
+                  "harness_ref": { "type": "null" },
+                  "harness_composition_ref": { "type": "null" },
+                  "agent_session_ref": { "type": "null" }
+                }
+              },
+              "else": {
+                "properties": {
+                  "harness_ref": { "$ref": "#/$defs/OpaqueRef" }
+                }
+              }
+            }
+          ],
+          "additionalProperties": false
+        },
+        "access": {
+          "type": "object",
+          "required": ["inference", "control", "interior"],
+          "properties": {
+            "inference": {
+              "allOf": [
+                { "$ref": "#/$defs/UniqueStrings" },
+                { "minItems": 1 }
+              ]
+            },
+            "control": { "$ref": "#/$defs/UniqueStrings" },
+            "interior": {
+              "type": "string",
+              "enum": ["behavioural", "output-state", "internal-read", "internal-write", "causal", "learning"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "policy_boundary_refs": { "$ref": "#/$defs/UniqueStrings" },
+        "evidence_refs": { "$ref": "#/$defs/UniqueStrings" },
+        "provenance_refs": { "$ref": "#/$defs/UniqueStrings" },
+        "provider_metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "ConditionAxis": {
+      "type": "string",
+      "enum": [
+        "model",
+        "engine",
+        "materialisation",
+        "surface",
+        "harness",
+        "session",
+        "inference-access",
+        "control-access",
+        "interior-access",
+        "policy"
+      ]
+    },
+    "ConditionAxes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/ConditionAxis" }
+    },
+    "ModelConditionExperiment": {
+      "type": "object",
+      "required": [
+        "schema",
+        "experiment_ref",
+        "baseline_receipt_ref",
+        "candidate_receipt_ref",
+        "held_constant_axes",
+        "intended_varied_axes",
+        "observed_changed_axes",
+        "evidence_refs",
+        "return_refs",
+        "provenance_refs"
+      ],
+      "properties": {
+        "schema": { "const": "actuation.model-condition-experiment/v0" },
+        "experiment_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "baseline_receipt_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "candidate_receipt_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "held_constant_axes": { "$ref": "#/$defs/ConditionAxes" },
+        "intended_varied_axes": {
+          "allOf": [
+            { "$ref": "#/$defs/ConditionAxes" },
+            { "minItems": 1 }
+          ]
+        },
+        "observed_changed_axes": { "$ref": "#/$defs/ConditionAxes" },
+        "evidence_refs": { "$ref": "#/$defs/UniqueStrings" },
+        "return_refs": { "$ref": "#/$defs/UniqueStrings" },
+        "provenance_refs": { "$ref": "#/$defs/UniqueStrings" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
