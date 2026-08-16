@@ -1,0 +1,34 @@
+name: model-bearing-agency
+
+on:
+  pull_request:
+    paths:
+      - 'experiments/model-bearing-agency/**'
+      - 'schemas/model-condition.v0.schema.json'
+      - '.github/workflows/model-bearing-agency.yml'
+  push:
+    branches:
+      - main
+      - foundation/first-class-actuation
+      - research/epistemic-cultivation
+    paths:
+      - 'experiments/model-bearing-agency/**'
+      - 'schemas/model-condition.v0.schema.json'
+      - '.github/workflows/model-bearing-agency.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: experiments/model-bearing-agency/package.json
+      - name: Verify model-bearing agency contracts
+        working-directory: experiments/model-bearing-agency
+        run: npm test
