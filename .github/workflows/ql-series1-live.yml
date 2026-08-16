@@ -1,0 +1,171 @@
+name: QL Series 1 Live
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Experiment ref to execute
+        required: true
+        default: foundation/first-class-actuation
+        type: string
+      host:
+        description: Host profile to execute
+        required: true
+        default: all
+        type: choice
+        options: [all, pi, pydantic-ai, native, dsh]
+      task:
+        description: Benchmark task id or 'all'
+        required: true
+        default: all
+        type: string
+      repetitions:
+        description: Repetitions per Classic/Direct/Deep condition (1 for exploratory human review)
+        required: true
+        default: '1'
+        type: string
+      max_steps:
+        description: Identical recurrence budget for every matched condition
+        required: true
+        default: '16'
+        type: string
+      model:
+        description: Candidate DeepSeek model id, identical across all conditions and hosts
+        required: true
+        default: deepseek-v4-flash
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  live-series1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      QL_SERIES1_PROVIDER: deepseek
+      QL_SERIES1_MODEL: ${{ inputs.model }}
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+    steps:
+      - name: Checkout experiment ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned Pi model stack
+        working-directory: experiments/ql-runtime/comparison/series1
+        run: npm install --no-save --no-package-lock @earendil-works/pi-ai@0.84.1
+
+      - name: Checkout pinned Pydantic AI
+        uses: actions/checkout@v4
+        with:
+          repository: pydantic/pydantic-ai
+          ref: 00db3a4b391eb9a46f3d6e704070bcf725121f75
+          path: .series1/pydantic-ai
+
+      - name: Install pinned Pydantic AI model stack
+        run: |
+          python -m pip install -e '.series1/pydantic-ai/pydantic_graph'
+          python -m pip install -e '.series1/pydantic-ai/pydantic_ai_slim[openai]'
+
+      - name: Checkout pinned public DeepSeek Harness source
+        if: ${{ inputs.host == 'dsh' || inputs.host == 'all' }}
+        uses: actions/checkout@v4
+        with:
+          repository: deepseek-ai/deepseek-harness
+          ref: 47f943859bef60e4160492346772ded9b24f765a
+          path: .series1/deepseek-harness
+
+      - name: Build pinned DSH host packages from public source
+        if: ${{ inputs.host == 'dsh' || inputs.host == 'all' }}
+        working-directory: .series1/deepseek-harness
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.7.0 --activate
+          pnpm install --frozen-lockfile
+          pnpm run build:lib:host
+
+      - name: Project pinned DSH packages into Series 1 resolution
+        if: ${{ inputs.host == 'dsh' || inputs.host == 'all' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE="$GITHUB_WORKSPACE/.series1/deepseek-harness/node_modules/@deepseek-ai"
+          TARGET="$GITHUB_WORKSPACE/experiments/ql-runtime/comparison/series1/node_modules/@deepseek-ai"
+          mkdir -p "$TARGET"
+          for PKG in cordis dsh-llm dsh-llm-deepseek dsh-session dsh-session-persistence dsh-session-persistence-jsonl dsh-agent; do
+            rm -rf "$TARGET/$PKG"
+            ln -s "$SOURCE/$PKG" "$TARGET/$PKG"
+          done
+
+      - name: Preflight and execute matched benchmark
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p series1-evidence
+
+          if [[ '${{ inputs.host }}' == 'all' ]]; then
+            HOSTS=(pi pydantic-ai native dsh)
+            PREFLIGHT_HOST=()
+          else
+            HOSTS=('${{ inputs.host }}')
+            PREFLIGHT_HOST=(--host '${{ inputs.host }}')
+          fi
+
+          if [[ '${{ inputs.task }}' == 'all' ]]; then
+            TASKS=(
+              S1-CODE-001
+              S1-RESEARCH-001
+              S1-EPISTEMIC-001
+              S1-SKILL-001
+              S1-AGENCY-001
+              S1-RESTRAINT-001
+            )
+          else
+            TASKS=('${{ inputs.task }}')
+          fi
+
+          node experiments/ql-runtime/comparison/series1/preflight.mjs --live --task '${{ inputs.task }}' "${PREFLIGHT_HOST[@]}" \
+            > series1-evidence/preflight.json
+
+          for HOST in "${HOSTS[@]}"; do
+            for TASK in "${TASKS[@]}"; do
+              PREFIX="series1-evidence/${HOST}-${TASK}"
+              OUT="${PREFIX}-run.json"
+              node experiments/ql-runtime/comparison/series1/run.mjs \
+                --host "$HOST" \
+                --task "$TASK" \
+                --repetitions '${{ inputs.repetitions }}' \
+                --max-steps '${{ inputs.max_steps }}' \
+                > "$OUT"
+
+              node experiments/ql-runtime/comparison/series1/render-review.mjs "$OUT" --mode assessment \
+                > "${PREFIX}-assessment.json"
+              node -e "const fs=require('node:fs'); const a=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); if(!a.valid){ console.error('Series 1 evidence is invalid/incomplete: '+a.reasons.join('; ')); process.exit(1); }" \
+                "${PREFIX}-assessment.json"
+
+              node experiments/ql-runtime/comparison/series1/render-review.mjs "$OUT" --mode masked \
+                > "${PREFIX}-pass-a-masked.md"
+              node experiments/ql-runtime/comparison/series1/render-review.mjs "$OUT" --mode unmasked \
+                > "${PREFIX}-pass-b-unmasked.md"
+              node experiments/ql-runtime/comparison/series1/render-review.mjs "$OUT" --mode mapping \
+                > "${PREFIX}-mask-map.json"
+            done
+          done
+
+      - name: Publish Series 1 human-review evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: ql-series1-human-review-${{ github.run_id }}
+          path: series1-evidence/*
+          if-no-files-found: error
