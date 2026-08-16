@@ -36,15 +36,37 @@ local/remote placement ≠ Model identity
 
 `ModelConditionExperiment` compares two receipts as a matched condition. It rejects drift in the situated `Actuation`, `World`, `Agent` or `Agency`, can require selected axes to remain constant, and can require intended experimental variables to have actually changed.
 
-## Fixtures
+## Provider-neutral fixtures
 
-`fixtures.js` contains three provider-neutral conformance fixtures:
+`fixtures.js` contains three conformance fixtures:
 
 1. **collapsed direct process** — a model CLI/process can be valid situated Actuation with no standing service, explicit Harness or AgentSession;
 2. **world-local service external to harness** — the Harness reaches a model through an external surface while the materialisation remains inside the enclosing world;
 3. **remote service with the same model/harness relation** — model and Harness identity survive rematerialisation while engine, material binding, session and access conditions can change.
 
-These fixtures are the semantic floor for later source-pinned Ollama, llama.cpp, vLLM/SGLang and Colibri cases. Provider-specific claims belong in those conformance cases, not in this contract.
+## Source-locked research cases
+
+`source-cases.js` pressure-tests the same contract against current primary-source shapes without turning those systems into Actuation ontology.
+
+| Case | Source revision | Pressure test |
+|---|---|---|
+| Ollama local service | `ollama/ollama@d67ad83426633195089509347ffd4fe795120198` | managed model service + REST surface + existing harness integrations |
+| llama.cpp direct | `ggml-org/llama.cpp@4df29be4f4c3673f428170fda944a5b19f743bb8` | direct CLI/process with no standing model-service requirement |
+| llama.cpp server | same revision | same engine/model relation exposed as OpenAI-compatible service |
+| vLLM distributed service | `vllm-project/vllm@6b0b850a8b1764a66d7ffbb023c0b0e0bbdb900b` | API serving plus distributed inference/materialisation pressure |
+
+These are **source-conformance templates**, not claims that those providers were physically run in this repository session. Their deployment placement is an explicit Actuation test assumption. Live endpoint, process, accelerator and Workcell evidence must come from actual observation and remain separately attributable.
+
+This distinction is intentional:
+
+```text
+upstream source fact
+≠ Actuation interpretation
+≠ conformance template
+≠ observed runtime evidence
+```
+
+SGLang remains a useful second rich-serving comparison. Colibri remains the later experimental case for unusual VRAM/RAM/storage materialisation. Neither is required to define the common receipt.
 
 ## Verification
 
