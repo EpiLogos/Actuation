@@ -37,9 +37,14 @@ jobs:
 
       - name: Build pinned DSH host packages from public source
         working-directory: .series1/deepseek-harness
+        env:
+          # The pinned DSH source declares pnpm@11.7.0, but that tarball is not
+          # available from the public npm registry. Its lockfile is v9, so use
+          # a pinned public pnpm 10 bootstrap without moving the DSH source SHA.
+          COREPACK_ENABLE_PROJECT_SPEC: '0'
         run: |
-          corepack enable
-          corepack prepare pnpm@11.7.0 --activate
+          npm install --global pnpm@10.15.1
+          pnpm --version
           pnpm install --frozen-lockfile
           pnpm run build:lib:host
 
