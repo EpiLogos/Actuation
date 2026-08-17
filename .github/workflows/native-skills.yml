@@ -1,0 +1,29 @@
+name: Native Skills
+
+on:
+  pull_request:
+    paths:
+      - "skills/**"
+      - "scripts/verify-native-skills.sh"
+      - "contracts/agency.mjs"
+      - "contracts/agency.test.mjs"
+      - ".github/workflows/native-skills.yml"
+  push:
+    branches: [main]
+    paths:
+      - "skills/**"
+      - "scripts/verify-native-skills.sh"
+      - "contracts/agency.mjs"
+      - "contracts/agency.test.mjs"
+      - ".github/workflows/native-skills.yml"
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: bash scripts/verify-native-skills.sh
+      - run: node --test contracts/agency.test.mjs
