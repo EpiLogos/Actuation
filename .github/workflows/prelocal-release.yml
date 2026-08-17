@@ -1,0 +1,68 @@
+name: Pre-local release
+
+on:
+  pull_request:
+    paths:
+      - '.oi/product.json'
+      - 'contracts/**'
+      - 'schemas/**'
+      - '.github/workflows/prelocal-release.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.oi/product.json'
+      - 'contracts/**'
+      - 'schemas/**'
+      - '.github/workflows/prelocal-release.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test contracts/agency.test.mjs contracts/model-bearing.test.mjs
+
+  release:
+    if: github.event_name == 'push'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package contract component
+        shell: bash
+        run: |
+          set -euo pipefail
+          name='actuation-0.1.0-component'
+          mkdir -p "dist/$name"
+          cp -R contracts schemas docs .oi "$name.tmp" 2>/dev/null || true
+          rm -rf "$name.tmp"
+          cp -R contracts schemas docs .oi "dist/$name/"
+          cp README.md "dist/$name/README.md"
+          tar -C dist -czf "dist/$name.tar.gz" "$name"
+          shasum -a 256 "dist/$name.tar.gz" > "dist/$name.tar.gz.sha256"
+      - uses: actions/attest@v4
+        with:
+          subject-path: dist/actuation-0.1.0-component.tar.gz
+      - name: Publish immutable pre-local release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag='actuation-v0.1.0-prelocal.1'
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "release $tag already exists; refusing to mutate an accepted release" >&2
+            exit 1
+          fi
+          gh release create "$tag" dist/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --title 'Actuation 0.1.0 pre-local.1' --notes 'First O:I suite pre-local contract component. Physical provider acceptance is not claimed.'
