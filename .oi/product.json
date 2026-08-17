@@ -1,0 +1,27 @@
+{
+  "schema": "oi.product-lifecycle/v1",
+  "id": "actuation",
+  "public_name": "Actuation",
+  "version": "0.1.0",
+  "repository": "https://github.com/EpiLogos/Actuation",
+  "source_checkout": "Actuation",
+  "artifact": {
+    "kind": "contract-component",
+    "entry": null,
+    "platforms": ["platform-neutral-contract-component"]
+  },
+  "build": {"command": null},
+  "verify": {
+    "source_command": ["node", "--test", "contracts/*.test.mjs"],
+    "installed_command": null
+  },
+  "install": {"mode": "oi-managed-component"},
+  "update": {"mode": "suite-manifest"},
+  "remove": {"mode": "oi-managed-only"},
+  "release": {
+    "host": "github-releases",
+    "tag_prefix": "actuation-v",
+    "checksum": "sha256",
+    "provenance": "github-artifact-attestation"
+  }
+}
