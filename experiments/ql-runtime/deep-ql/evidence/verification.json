@@ -1,0 +1,59 @@
+{
+  "schema": "ql-deep-verification/0.3",
+  "status": "structural-ready-live-experiment-pending",
+  "foundation_merge_revision": "7690069846eb6fc89f6aa78dcf7aab886ac7c737",
+  "foundation_runtime_candidate": "11c7be5767735c25f49139906b59398bcdf3bf42",
+  "base_spec_revision": "f9d056c54caf094eb672f005ce3c8cbde4de0a5b",
+  "deep_formal_clarification": "QL-PAIRING-SQUARES-CLARIFICATION-08-14-2026",
+  "last_full_structural_verification": {
+    "revision": "e6abf8e1de70db6cd8bd33cb5447d6e44fccde44",
+    "ci_run": 31813607400,
+    "tests_passed": 20,
+    "tests_failed": 0,
+    "qlc_required": 61,
+    "qlc_passed": 61,
+    "qlc_failed": 0
+  },
+  "structural_evidence": {
+    "evidence_class": "deterministic-structural-conformance",
+    "fixture_provider": true,
+    "eligible_for_capability_effect_claims": false,
+    "operators": {
+      "whole_conjugation": "pass",
+      "current_position_conjugation": "pass",
+      "fresh_context": "pass",
+      "recursive_depth": "pass",
+      "summary_only_reintegration": "pass"
+    },
+    "pairing_square_grammar": {
+      "status": "specified-formal-structure",
+      "families": ["A", "B", "C"],
+      "square_entries": 9,
+      "unique_oriented_structures": 8,
+      "unique_unordered_tetrad_sets": 7,
+      "d_modulation_cardinalities": {"D1": 2, "D2": 3, "D3": 4}
+    },
+    "typing_benchmark": {
+      "schema": "ql-typing-benchmark/0.2",
+      "count": 100,
+      "human_annotation_required": false
+    }
+  },
+  "series1": {
+    "question": "Does Classic vs Direct QL vs Deep QL degrade, have no material effect on, or improve ordinary LLM task/chat capability under matched conditions?",
+    "harness_implemented": true,
+    "default_branch_dispatcher_revision": "1928107d926083d997d3b1b87ad5f3236bd863a9",
+    "conditions": ["classic", "ql-direct", "ql-deep"],
+    "hosts": ["pi", "pydantic-ai", "native"],
+    "task_count": 8,
+    "fixture_fallback": false,
+    "live_capability_effect_evidence_ready": false,
+    "live_runs_recorded": 0,
+    "blocking_inputs": [
+      "configured QL_SERIES1_API_KEY secret",
+      "explicit candidate model id at workflow dispatch",
+      "independent judge model id for semantic/chat tasks"
+    ]
+  },
+  "note": "Green deterministic fixtures prove the implementation structure and semantics, not that QL improves an LLM. Capability-effect claims begin only with live Series 1 records accepted by the fail-closed evidence contract."
+}

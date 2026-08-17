@@ -1,0 +1,31 @@
+name: QL Experiment Native
+
+on:
+  push:
+    branches: [foundation/first-class-actuation]
+    paths:
+      - 'experiments/ql-runtime/foundation/**'
+      - 'experiments/ql-runtime/experiments/native/**'
+      - '.github/workflows/ql-experiment-native.yml'
+  pull_request:
+    paths:
+      - 'experiments/ql-runtime/foundation/**'
+      - 'experiments/ql-runtime/experiments/native/**'
+      - '.github/workflows/ql-experiment-native.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  native-baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Foundation
+        run: npm test
+        working-directory: experiments/ql-runtime/foundation
+      - name: Verify Native baseline
+        run: node experiments/ql-runtime/experiments/native/run-smoke.mjs

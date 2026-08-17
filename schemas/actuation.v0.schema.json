@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epilogos.dev/schemas/actuation.v0.schema.json",
+  "title": "Actuation v0",
+  "description": "Language-neutral experimental contract for one-to-many first-class agentic composition. Opaque refs are expected to bind to the suite interop Ref/revision/provenance contract rather than redefining identity here.",
+  "type": "object",
+  "required": [
+    "actuation_ref",
+    "world_ref",
+    "intent_ref",
+    "governing_locus_ref",
+    "loci",
+    "relations",
+    "bounds",
+    "return_policy"
+  ],
+  "properties": {
+    "actuation_ref": { "$ref": "#/$defs/OpaqueRef" },
+    "world_ref": { "$ref": "#/$defs/OpaqueRef" },
+    "intent_ref": { "$ref": "#/$defs/OpaqueRef" },
+    "governing_locus_ref": { "$ref": "#/$defs/OpaqueRef" },
+    "parent_actuation_ref": {
+      "anyOf": [
+        { "$ref": "#/$defs/OpaqueRef" },
+        { "type": "null" }
+      ],
+      "default": null
+    },
+    "loci": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/AgenticLocus" }
+    },
+    "relations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/AgenticRelation" }
+    },
+    "bounds": { "$ref": "#/$defs/CompositionBounds" },
+    "return_policy": { "$ref": "#/$defs/ReturnPolicy" },
+    "provenance_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/OpaqueRef" },
+      "default": []
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "OpaqueRef": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque canonical suite reference. Identity/revision/provenance syntax is owned by the shared interop contract, not this schema."
+    },
+    "AgenticLocus": {
+      "type": "object",
+      "required": [
+        "locus_ref",
+        "agent_ref",
+        "agency_ref",
+        "world_ref",
+        "entry_mode",
+        "authority_refs",
+        "capability_requirement_refs",
+        "return_obligation"
+      ],
+      "properties": {
+        "locus_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "agent_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "agency_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "world_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "entry_mode": {
+          "type": "string",
+          "enum": [
+            "self-differentiation",
+            "delegation",
+            "derivation",
+            "federation"
+          ]
+        },
+        "lineage_from_locus_ref": {
+          "anyOf": [
+            { "$ref": "#/$defs/OpaqueRef" },
+            { "type": "null" }
+          ],
+          "default": null,
+          "description": "Required by policy for explicit derivation; null for independently grounded federation."
+        },
+        "authority_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OpaqueRef" }
+        },
+        "capability_requirement_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OpaqueRef" }
+        },
+        "return_obligation": {
+          "type": "string",
+          "enum": ["required", "staged", "autonomous-termination"]
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {}
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgenticRelation": {
+      "type": "object",
+      "required": ["relation_ref", "from_locus_ref", "to_locus_ref", "relation_type"],
+      "properties": {
+        "relation_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "from_locus_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "to_locus_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "relation_type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Open relation family such as precedes, blocks, requires, provides, reviews, contrasts, coordinates, communicates, shares_world, isolates, or returns_to."
+        },
+        "condition_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OpaqueRef" },
+          "default": []
+        }
+      },
+      "additionalProperties": false
+    },
+    "CompositionBounds": {
+      "type": "object",
+      "required": ["authority_boundary_refs"],
+      "properties": {
+        "authority_boundary_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OpaqueRef" }
+        },
+        "resource_boundary_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OpaqueRef" },
+          "default": []
+        },
+        "time_boundary_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OpaqueRef" },
+          "default": []
+        },
+        "world_boundary_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OpaqueRef" },
+          "default": []
+        }
+      },
+      "additionalProperties": false
+    },
+    "ReturnPolicy": {
+      "type": "object",
+      "required": ["governing_locus_ref", "preserve_attribution", "accepted_return_kinds"],
+      "properties": {
+        "governing_locus_ref": { "$ref": "#/$defs/OpaqueRef" },
+        "preserve_attribution": {
+          "const": true,
+          "description": "Returned difference remains attributable before synthesis."
+        },
+        "accepted_return_kinds": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": [
+              "artifact",
+              "claim",
+              "evidence",
+              "decision",
+              "contribution",
+              "world-delta",
+              "failure",
+              "refusal",
+              "dissent",
+              "open-question",
+              "continuation-demand"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

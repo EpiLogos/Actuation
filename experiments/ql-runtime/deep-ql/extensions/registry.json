@@ -1,0 +1,15 @@
+{
+  "schema":"ql-extension-registry/0.2",
+  "unknown_extensions_ignorable":true,
+  "promotion_requires":["semantic necessity","computational definition","experimental or architectural value","new minor specification version"],
+  "specified_formal_modules":[
+    {"namespace":"ql.pairing","status":"specified-formal-structure","core_required":false,"implementation":"../formal/pairing-grammar.js"}
+  ],
+  "extensions":[
+    {"namespace":"ql.state64","status":"research","core_required":false},
+    {"namespace":"ql.mef","status":"research","core_required":false},
+    {"namespace":"ql.context","status":"research","core_required":false},
+    {"namespace":"ql.epogdoon","status":"research","core_required":false},
+    {"namespace":"ql.topology","status":"research","core_required":false}
+  ]
+}

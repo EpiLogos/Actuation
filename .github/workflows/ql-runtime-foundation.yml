@@ -1,0 +1,28 @@
+name: QL Runtime Foundation
+
+on:
+  push:
+    branches: [foundation/first-class-actuation]
+    paths:
+      - 'experiments/ql-runtime/foundation/**'
+      - '.github/workflows/ql-runtime-foundation.yml'
+  pull_request:
+    paths:
+      - 'experiments/ql-runtime/foundation/**'
+      - '.github/workflows/ql-runtime-foundation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: experiments/ql-runtime/foundation
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm test

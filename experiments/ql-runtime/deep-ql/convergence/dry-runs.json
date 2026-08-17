@@ -1,0 +1,54 @@
+{
+  "schema": "ql-deep-manual-dry-runs/0.1",
+  "purpose": "Common product-level review set for #109. These scenarios are review targets, not a manual annotation gate.",
+  "cases": [
+    {
+      "id": "QLDR-001",
+      "kind": "tool-free conceptual task",
+      "prompt": "Resolve a conceptual design question without using tools and determine whether the answer is adequate.",
+      "review": ["non-six-step traversal", "P4 whole-relative evaluation", "P5 determination distinct from process stop", "positive closure"]
+    },
+    {
+      "id": "QLDR-002",
+      "kind": "single-file repair",
+      "prompt": "Inspect and repair one defective source file, then verify the current artifact before closure.",
+      "review": ["P1 evidence", "P2 transformation", "P3 form revision when needed", "current verification"]
+    },
+    {
+      "id": "QLDR-003",
+      "kind": "multi-file coding task",
+      "prompt": "Implement a change spanning several files while preserving the whole contract and resolving cross-file form effects.",
+      "review": ["non-linear Rij movement", "residue continuity", "whole-relative P4", "closure evidence"]
+    },
+    {
+      "id": "QLDR-004",
+      "kind": "failing tool task",
+      "prompt": "Attempt an operation that fails and use the returned difference to decide whether material, effect or form must be revisited.",
+      "review": ["operation failure != circuit failure", "difference before interpretation", "semantic reopening destination"]
+    },
+    {
+      "id": "QLDR-005",
+      "kind": "ambiguous requirement",
+      "prompt": "Work from an underspecified requirement whose ambiguity may require reframing the initiating ground.",
+      "review": ["primary/secondary typing", "P4→P0 or P5→P0 when justified", "ambiguity remains inspectable"]
+    },
+    {
+      "id": "QLDR-006",
+      "kind": "evidence-heavy task",
+      "prompt": "Evaluate a completion claim that depends on multiple current evidence sources and reject stale verification.",
+      "review": ["P0/P4/P5 closure evidence", "verification subject/state match", "stale evidence cannot close"]
+    },
+    {
+      "id": "QLDR-007",
+      "kind": "nested task",
+      "prompt": "At P4, open a local whole to resolve one bounded compatibility question and reintegrate only its typed retained result.",
+      "review": ["independent child CircuitId/P0", "depth provenance", "summary-only reintegration", "parent continues coherently"]
+    },
+    {
+      "id": "QLDR-008",
+      "kind": "direct + conjugate task",
+      "prompt": "Form a candidate determination, reconstruct a fresh conjugate context, detect a known formal defect and reopen direct work at P3.",
+      "review": ["fresh-context packet", "whole/current-position scope", "direct/conjugate distinction", "R53 reopening", "closed circuits cannot be retroactively reopened"]
+    }
+  ]
+}

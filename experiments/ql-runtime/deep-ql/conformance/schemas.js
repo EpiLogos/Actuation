@@ -1,0 +1,17 @@
+const draft='https://json-schema.org/draft/2020-12/schema';
+const position={enum:['P0','P1','P2','P3','P4','P5']};
+const relation={type:'string',pattern:'^R[0-5][0-5]$'};
+const refArray={type:'array',items:{type:'string'}};
+export const schemas = Object.freeze({
+  event:{$schema:draft,$id:'https://epi-logos.dev/schemas/ql-agent/0.1/event.schema.json',type:'object',required:['spec','schema_version','event_id','event_type','run_id','circuit_id','sequence','face','ql','payload','witness'],properties:{spec:{const:'ql-agent/0.1'},schema_version:{type:'string'},event_id:{type:'string',minLength:1},event_type:{type:'string'},run_id:{type:'string'},circuit_id:{type:'string'},parent_circuit_id:{type:['string','null']},sequence:{type:'integer',minimum:0},face:{enum:['direct','conjugate']},ql:{type:'object',properties:{from:position,to:position,relation,projection:{const:'0/1'},return:{const:'1/0'},lens:{type:'array',items:{type:'string'}}}},payload:{type:'object'},witness:{type:'object'}}},
+  act:{$schema:draft,$id:'https://epi-logos.dev/schemas/ql-agent/0.1/act.schema.json',type:'object',required:['id','run_id','circuit_id','face','source_position','intent','carrier'],properties:{source_position:position,face:{enum:['direct','conjugate']},claimed_relation:relation}},
+  return:{$schema:draft,$id:'https://epi-logos.dev/schemas/ql-agent/0.1/return.schema.json',type:'object',required:['id','act_id','phase','difference','operation_success'],properties:{phase:{const:'1/0'}}},
+  transition:{$schema:draft,$id:'https://epi-logos.dev/schemas/ql-agent/0.1/transition.schema.json',type:'object',required:['id','from','to','relation'],properties:{from:position,to:position,relation}},
+  residue:{$schema:draft,$id:'https://epi-logos.dev/schemas/ql-agent/0.1/residue.schema.json',type:'object',required:['id','kind','position','provenance'],properties:{kind:{enum:['frame','material','effect','form','evaluation','determination']},position}},
+  determination:{$schema:draft,$id:'https://epi-logos.dev/schemas/ql-agent/0.1/determination.schema.json',type:'object',required:['id','circuit_id','synthesis','intent_ref','evidence_refs','evaluation_refs','unresolved_refs','requested_outcome'],properties:{evidence_refs:refArray,evaluation_refs:refArray,unresolved_refs:refArray,requested_outcome:{enum:['close','reopen','conjugate','depth']}}},
+  closure:{$schema:draft,$id:'https://epi-logos.dev/schemas/ql-agent/0.1/closure.schema.json',type:'object',required:['id','circuit_id','determination_ref','frame_ref','success_state','closed_at_position','reentry_delta_ref'],properties:{closed_at_position:{const:'P5'},reentry_delta_ref:{type:['string','null']}}},
+  reentry:{$schema:draft,$id:'https://epi-logos.dev/schemas/ql-agent/0.1/reentry.schema.json',type:'object',required:['id','source_circuit','achieved_artifact_refs','established_material_refs','changed_assumptions','unresolved_refs','provenance']},
+  conjugate:{$schema:draft,$id:'https://epi-logos.dev/schemas/ql-agent/0.1/conjugate.schema.json',type:'object',required:['direct_circuit_ref','intent_packet','outcome_packet','success_conditions','requested_scope']},
+  child_summary:{$schema:draft,$id:'https://epi-logos.dev/schemas/ql-agent/0.1/child-summary.schema.json',type:'object',required:['child_circuit','parent_circuit','child_intent','relevant_residue_refs','success_state','returned_delta']}
+});
+export function assertSchemaSet(){ for(const [name,s] of Object.entries(schemas)){ if(s.$schema!==draft||!s.$id) throw new Error(`invalid schema ${name}`);} return true; }

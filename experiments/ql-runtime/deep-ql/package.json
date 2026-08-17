@@ -1,0 +1,18 @@
+{
+  "name": "@epilogos/ql-deep-runtime-workbench",
+  "version": "0.1.0-deep-candidate",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "conformance": "node conformance/runner.js",
+    "corpus": "node typing-corpus/export.mjs",
+    "corpus:ndjson": "node typing-corpus/export.mjs --ndjson",
+    "readiness": "node convergence/run-readiness.mjs",
+    "review": "node convergence/run-product-review.mjs",
+    "series1:preflight": "node ../comparison/series1/preflight.mjs",
+    "series1:run": "node ../comparison/series1/run.mjs",
+    "series1:render": "node ../comparison/series1/render-review.mjs"
+  }
+}
