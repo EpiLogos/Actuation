@@ -1,0 +1,28 @@
+name: Agency contract
+
+on:
+  pull_request:
+    paths:
+      - "contracts/agency.mjs"
+      - "contracts/agency.test.mjs"
+      - "contracts/agency-v1.schema.json"
+      - ".github/workflows/agency-contract.yml"
+  push:
+    branches:
+      - "converge/first-suite-root-agency"
+      - "main"
+    paths:
+      - "contracts/agency.mjs"
+      - "contracts/agency.test.mjs"
+      - "contracts/agency-v1.schema.json"
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test contracts/agency.test.mjs
+      - run: node -e 'JSON.parse(require("fs").readFileSync("contracts/agency-v1.schema.json", "utf8"))'
