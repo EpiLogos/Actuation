@@ -12,7 +12,7 @@
   },
   "build": {"command": null},
   "verify": {
-    "source_command": ["node", "--test", "contracts/agency.test.mjs", "contracts/model-bearing.test.mjs"],
+    "source_command": ["node", "--test", "contracts/agency.test.mjs", "contracts/model-bearing.test.mjs", "contracts/realised-actuation.test.mjs"],
     "installed_command": null
   },
   "install": {"mode": "oi-managed-component"},

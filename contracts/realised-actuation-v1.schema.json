@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epilogos.github.io/actuation/contracts/realised-actuation-v1.schema.json",
+  "title": "Realised Actuation contract v1",
+  "description": "Portable read model for the acting loop/body actually instantiated. AIKit provisioning and Workcell materialisation remain externally owned.",
+  "type": "object",
+  "required": ["schema", "realised_ref", "actuation_ref", "agent_ref", "agency_ref", "world_binding_ref", "loop", "observation"],
+  "properties": {
+    "schema": {"const": "actuation.realised/v1"},
+    "realised_ref": {"type": "string", "minLength": 1},
+    "actuation_ref": {"type": "string", "minLength": 1},
+    "agent_ref": {"type": "string", "minLength": 1},
+    "agency_ref": {"type": "string", "minLength": 1},
+    "world_binding_ref": {"type": "string", "minLength": 1},
+    "loop": {
+      "type": "object",
+      "required": ["recurrence", "acting"],
+      "properties": {
+        "recurrence": {"enum": ["single-shot", "turn-based", "event-driven", "continuous"]},
+        "acting": {"const": true},
+        "entrypoint_ref": {"type": "string", "minLength": 1},
+        "observed_faculties": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": true
+    },
+    "body": {
+      "type": "object",
+      "description": "Opaque externally owned body/session/material refs. Their presence does not redefine Agent identity.",
+      "properties": {
+        "harness_ref": {"type": "string", "minLength": 1},
+        "session_ref": {"type": "string", "minLength": 1},
+        "process_ref": {"type": "string", "minLength": 1},
+        "model_condition_ref": {"type": "string", "minLength": 1},
+        "material_binding_ref": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    },
+    "participating_loci": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "stream_ref": {"type": "string", "minLength": 1},
+    "return_ref": {"type": "string", "minLength": 1},
+    "lifecycle": {
+      "type": "object",
+      "properties": {
+        "interrupt": {"type": "boolean"},
+        "cancel": {"type": "boolean"},
+        "terminate": {"type": "boolean"}
+      },
+      "additionalProperties": true
+    },
+    "observation": {
+      "type": "object",
+      "required": ["state"],
+      "properties": {
+        "state": {"enum": ["observed", "partial", "unavailable"]},
+        "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "unsupported_faculties": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "degraded_faculties": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
