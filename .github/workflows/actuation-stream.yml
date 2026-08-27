@@ -1,0 +1,30 @@
+name: ActuationStream contract
+
+on:
+  pull_request:
+    paths:
+      - "contracts/actuation-stream.mjs"
+      - "contracts/actuation-stream.test.mjs"
+      - "contracts/actuation-stream-v1.schema.json"
+      - "docs/ACTUATION-STREAM.md"
+      - ".github/workflows/actuation-stream.yml"
+  push:
+    branches:
+      - "main"
+    paths:
+      - "contracts/actuation-stream.mjs"
+      - "contracts/actuation-stream.test.mjs"
+      - "contracts/actuation-stream-v1.schema.json"
+      - "docs/ACTUATION-STREAM.md"
+      - ".github/workflows/actuation-stream.yml"
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test contracts/actuation-stream.test.mjs
+      - run: node -e 'JSON.parse(require("fs").readFileSync("contracts/actuation-stream-v1.schema.json", "utf8"))'
