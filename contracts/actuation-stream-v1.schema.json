@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epilogos.dev/contracts/actuation-stream-v1.schema.json",
+  "title": "ActuationStream v1",
+  "description": "Portable ordered attributable material through which one situated Actuation unfolds. Provider-native traces remain addressable by reference and hidden chain-of-thought is never required.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "stream_ref", "actuation_ref", "agency_ref", "agent_session_ref", "lifecycle", "cursor", "events"],
+  "properties": {
+    "schema": { "const": "actuation.stream/v1" },
+    "stream_ref": { "$ref": "#/$defs/ref" },
+    "actuation_ref": { "$ref": "#/$defs/ref" },
+    "agency_ref": { "$ref": "#/$defs/ref" },
+    "agent_session_ref": { "$ref": "#/$defs/ref" },
+    "world_binding_ref": { "$ref": "#/$defs/ref" },
+    "participating_loci": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "uniqueItems": true },
+    "surface_refs": { "type": "array", "items": { "$ref": "#/$defs/ref" }, "uniqueItems": true },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": { "enum": ["open", "closed", "interrupted", "cancelled"] },
+        "started_at": { "type": "string", "format": "date-time" },
+        "ended_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "cursor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["last_sequence", "next_sequence"],
+      "properties": {
+        "last_sequence": { "type": "integer", "minimum": 0 },
+        "next_sequence": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "events": { "type": "array", "items": { "$ref": "#/$defs/event" } },
+    "provenance": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+  },
+  "$defs": {
+    "ref": { "type": "string", "minLength": 1 },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "locus_ref": { "$ref": "#/$defs/ref" },
+        "agency_ref": { "$ref": "#/$defs/ref" },
+        "agent_ref": { "$ref": "#/$defs/ref" },
+        "participant_ref": { "$ref": "#/$defs/ref" },
+        "role": { "type": "string", "minLength": 1 }
+      },
+      "anyOf": [
+        { "required": ["locus_ref"] },
+        { "required": ["agency_ref"] },
+        { "required": ["agent_ref"] },
+        { "required": ["participant_ref"] }
+      ]
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_ref", "sequence", "kind"],
+      "properties": {
+        "event_ref": { "$ref": "#/$defs/ref" },
+        "sequence": { "type": "integer", "minimum": 1 },
+        "kind": {
+          "enum": [
+            "human-message", "model-message", "model-delta", "model-result",
+            "capability-request", "capability-result", "tool-request", "tool-result",
+            "harness-event", "world-observation", "delegation", "locus-event",
+            "permission", "refusal", "interruption", "cancellation", "execution-event",
+            "artifact", "evidence", "return", "custom"
+          ]
+        },
+        "custom_kind": { "type": "string", "minLength": 1 },
+        "observed_at": { "type": "string", "format": "date-time" },
+        "actor": { "$ref": "#/$defs/actor" },
+        "surface_ref": { "$ref": "#/$defs/ref" },
+        "execution_ref": { "$ref": "#/$defs/ref" },
+        "return_ref": { "$ref": "#/$defs/ref" },
+        "native_trace_ref": { "$ref": "#/$defs/ref" },
+        "resource_refs": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
+        "evidence_refs": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
+        "disclosure": { "enum": ["portable", "surface", "reference-only"] },
+        "content": { "type": "string" },
+        "metadata": { "type": "object" }
+      }
+    }
+  }
+}
