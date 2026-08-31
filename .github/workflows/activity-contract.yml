@@ -1,0 +1,32 @@
+name: Activity contract
+
+on:
+  pull_request:
+    paths:
+      - "contracts/activity.mjs"
+      - "contracts/activity.test.mjs"
+      - "contracts/activity-v1.schema.json"
+      - "contracts/actuation-stream.mjs"
+      - "docs/ACTIVITY.md"
+      - ".github/workflows/activity-contract.yml"
+  push:
+    branches:
+      - "main"
+    paths:
+      - "contracts/activity.mjs"
+      - "contracts/activity.test.mjs"
+      - "contracts/activity-v1.schema.json"
+      - "contracts/actuation-stream.mjs"
+      - "docs/ACTIVITY.md"
+      - ".github/workflows/activity-contract.yml"
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test contracts/activity.test.mjs contracts/actuation-stream.test.mjs
+      - run: node -e 'JSON.parse(require("fs").readFileSync("contracts/activity-v1.schema.json", "utf8"))'
