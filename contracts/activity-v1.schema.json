@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epilogos.github.io/actuation/contracts/activity-v1.schema.json",
+  "title": "Actuation semantic Activity v1",
+  "type": "object",
+  "required": [
+    "schema",
+    "activity_ref",
+    "actor",
+    "subject_ref",
+    "native_owner",
+    "verb",
+    "object",
+    "summary",
+    "phase",
+    "outcome",
+    "salience",
+    "needs_attention",
+    "trace",
+    "started_at",
+    "updated_at"
+  ],
+  "properties": {
+    "schema": { "const": "actuation.activity/v1" },
+    "activity_ref": { "$ref": "#/$defs/ref" },
+    "actor": {
+      "type": "object",
+      "properties": {
+        "agent_ref": { "$ref": "#/$defs/ref" },
+        "agency_ref": { "$ref": "#/$defs/ref" },
+        "participant_ref": { "$ref": "#/$defs/ref" },
+        "locus_ref": { "$ref": "#/$defs/ref" }
+      },
+      "minProperties": 1,
+      "additionalProperties": false
+    },
+    "agent_session_ref": { "$ref": "#/$defs/ref" },
+    "subject_ref": { "$ref": "#/$defs/ref" },
+    "native_owner": { "$ref": "#/$defs/ref" },
+    "action_ref": { "$ref": "#/$defs/ref" },
+    "invocation_ref": { "$ref": "#/$defs/ref" },
+    "actuation_ref": { "$ref": "#/$defs/ref" },
+    "result_ref": { "$ref": "#/$defs/ref" },
+    "return_ref": { "$ref": "#/$defs/ref" },
+    "evidence_refs": { "$ref": "#/$defs/refs" },
+    "verb": { "$ref": "#/$defs/text" },
+    "object": { "$ref": "#/$defs/text" },
+    "summary": { "$ref": "#/$defs/text" },
+    "phase": {
+      "enum": ["queued", "running", "waiting", "completed", "failed", "interrupted", "cancelled"]
+    },
+    "outcome": {
+      "enum": ["pending", "succeeded", "failed", "degraded", "refused", "cancelled"]
+    },
+    "salience": { "enum": ["ambient", "normal", "important", "critical"] },
+    "needs_attention": { "type": "boolean" },
+    "trace": {
+      "type": "object",
+      "required": ["stream_ref"],
+      "properties": {
+        "stream_ref": { "$ref": "#/$defs/ref" },
+        "event_refs": { "$ref": "#/$defs/refs" },
+        "native_trace_refs": { "$ref": "#/$defs/refs" },
+        "from_sequence": { "type": "integer", "minimum": 1 },
+        "through_sequence": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "started_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": "string", "format": "date-time" },
+    "metadata": { "type": "object" }
+  },
+  "$defs": {
+    "ref": { "type": "string", "minLength": 1 },
+    "refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ref" }
+    },
+    "text": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}
