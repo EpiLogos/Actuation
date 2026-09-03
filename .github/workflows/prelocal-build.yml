@@ -1,0 +1,62 @@
+name: Pre-local build
+
+on:
+  pull_request:
+    paths:
+      - '.oi/product.json'
+      - 'contracts/**'
+      - 'schemas/**'
+      - '.github/workflows/prelocal-build.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.oi/product.json'
+      - 'contracts/**'
+      - 'schemas/**'
+      - '.github/workflows/prelocal-build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test contracts/agency.test.mjs contracts/model-bearing.test.mjs contracts/realised-actuation.test.mjs
+
+  artifact:
+    if: github.event_name == 'push'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package exact-main Actuation component
+        shell: bash
+        run: |
+          set -euo pipefail
+          short_sha="${GITHUB_SHA::12}"
+          name="actuation-0.1.0-${short_sha}-component"
+          mkdir -p "dist/$name"
+          cp -R contracts schemas docs .oi "dist/$name/"
+          cp README.md "dist/$name/README.md"
+          printf '%s\n' "$GITHUB_SHA" > "dist/$name/source-commit.txt"
+          tar -C dist -czf "dist/$name.tar.gz" "$name"
+          shasum -a 256 "dist/$name.tar.gz" > "dist/$name.tar.gz.sha256"
+      - uses: actions/attest@v4
+        with:
+          subject-path: dist/*.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: actuation-component-${{ github.sha }}
+          path: |
+            dist/*.tar.gz
+            dist/*.sha256
