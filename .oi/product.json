@@ -6,14 +6,14 @@
   "repository": "https://github.com/EpiLogos/Actuation",
   "source_checkout": "Actuation",
   "artifact": {
-    "kind": "contract-component",
-    "entry": null,
-    "platforms": ["platform-neutral-contract-component"]
+    "kind": "cli",
+    "entry": "bin/actuation",
+    "platforms": ["node22"]
   },
   "build": {"command": null},
   "verify": {
-    "source_command": ["node", "--test", "contracts/agency.test.mjs", "contracts/model-bearing.test.mjs", "contracts/realised-actuation.test.mjs"],
-    "installed_command": null
+    "source_command": ["bin/actuation", "verify", "--json"],
+    "installed_command": ["actuation", "verify", "--json"]
   },
   "install": {"mode": "oi-managed-component"},
   "update": {"mode": "suite-manifest"},

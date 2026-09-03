@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+
+import("../cli/actuation.mjs")
+  .then(({ main }) => {
+    process.exitCode = main();
+  })
+  .catch((error) => {
+    process.stderr.write(`actuation: ${error.message}\n`);
+    process.exitCode = 2;
+  });
