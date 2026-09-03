@@ -1,0 +1,32 @@
+name: Native CLI
+
+on:
+  pull_request:
+    paths:
+      - "bin/actuation"
+      - "cli/**"
+      - "contracts/**"
+      - ".oi/product.json"
+      - ".github/workflows/native-cli.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "bin/actuation"
+      - "cli/**"
+      - "contracts/**"
+      - ".oi/product.json"
+      - ".github/workflows/native-cli.yml"
+
+jobs:
+  native-cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test contracts/agency.test.mjs contracts/model-bearing.test.mjs contracts/realised-actuation.test.mjs contracts/actuation-stream.test.mjs contracts/activity.test.mjs cli/actuation.test.mjs
+      - run: ./bin/actuation --version
+      - run: ./bin/actuation capabilities --json
+      - run: ./bin/actuation verify --json
