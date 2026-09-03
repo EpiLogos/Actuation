@@ -15,7 +15,7 @@
     "source_command": ["bin/actuation", "verify", "--json"],
     "installed_command": ["actuation", "verify", "--json"]
   },
-  "install": {"mode": "oi-managed-component"},
+  "install": {"mode": "oi-managed-native-cli"},
   "update": {"mode": "suite-manifest"},
   "remove": {"mode": "oi-managed-only"},
   "release": {
