@@ -1,4 +1,4 @@
-name: Pre-local release
+name: Pre-local build
 
 on:
   pull_request:
@@ -6,14 +6,14 @@ on:
       - '.oi/product.json'
       - 'contracts/**'
       - 'schemas/**'
-      - '.github/workflows/prelocal-release.yml'
+      - '.github/workflows/prelocal-build.yml'
   push:
     branches: [main]
     paths:
       - '.oi/product.json'
       - 'contracts/**'
       - 'schemas/**'
-      - '.github/workflows/prelocal-release.yml'
+      - '.github/workflows/prelocal-build.yml'
 
 permissions:
   contents: read
@@ -28,41 +28,35 @@ jobs:
           node-version: '22'
       - run: node --test contracts/agency.test.mjs contracts/model-bearing.test.mjs contracts/realised-actuation.test.mjs
 
-  release:
+  artifact:
     if: github.event_name == 'push'
     needs: verify
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       id-token: write
       attestations: write
       artifact-metadata: write
     steps:
       - uses: actions/checkout@v4
-      - name: Package contract component
+      - name: Package exact-main Actuation component
         shell: bash
         run: |
           set -euo pipefail
-          name='actuation-0.1.0-component'
+          short_sha="${GITHUB_SHA::12}"
+          name="actuation-0.1.0-${short_sha}-component"
           mkdir -p "dist/$name"
-          cp -R contracts schemas docs .oi "$name.tmp" 2>/dev/null || true
-          rm -rf "$name.tmp"
           cp -R contracts schemas docs .oi "dist/$name/"
           cp README.md "dist/$name/README.md"
+          printf '%s\n' "$GITHUB_SHA" > "dist/$name/source-commit.txt"
           tar -C dist -czf "dist/$name.tar.gz" "$name"
           shasum -a 256 "dist/$name.tar.gz" > "dist/$name.tar.gz.sha256"
       - uses: actions/attest@v4
         with:
-          subject-path: dist/actuation-0.1.0-component.tar.gz
-      - name: Publish immutable pre-local release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          tag='actuation-v0.1.0-prelocal.2'
-          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "release $tag already exists; refusing to mutate an accepted release" >&2
-            exit 1
-          fi
-          gh release create "$tag" dist/*.tar.gz dist/*.sha256 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --title 'Actuation 0.1.0 pre-local.2' --notes 'Accepted O:I suite pre-local.2 contract component. Physical provider acceptance is not claimed.'
+          subject-path: dist/*.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: actuation-component-${{ github.sha }}
+          path: |
+            dist/*.tar.gz
+            dist/*.sha256
