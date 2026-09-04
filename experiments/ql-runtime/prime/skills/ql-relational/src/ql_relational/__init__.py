@@ -215,7 +215,7 @@ fn main() {
     let d2r = cross_interval_deltas(basis, CrossOperator::Require);
     let d2c = cross_interval_deltas(basis, CrossOperator::Complete);
     println!(
-        "{{\\\"basis\\\":\\\"{}\\\",\\\"direct_helix\\\":{:?},\\\"conjugate_helix\\\":{:?},\\\"lens_anchor_pitches\\\":{:?},\\\"A_direct_deltas\\\":{:?},\\\"B_direct_deltas\\\":{:?},\\\"C_direct_deltas\\\":{:?},\\\"D1_cross_deltas\\\":{:?},\\\"D2_transform_deltas\\\":{:?},\\\"D2_require_deltas\\\":{:?},\\\"D2_complete_deltas\\\":{:?},\\\"mode_tonic_count\\\":{}}}",
+        "{{\"basis\":\"{}\",\"direct_helix\":{:?},\"conjugate_helix\":{:?},\"lens_anchor_pitches\":{:?},\"A_direct_deltas\":{:?},\"B_direct_deltas\":{:?},\"C_direct_deltas\":{:?},\"D1_cross_deltas\":{:?},\"D2_transform_deltas\":{:?},\"D2_require_deltas\":{:?},\"D2_complete_deltas\":{:?},\"mode_tonic_count\":{}}}",
         label, d.direct_helix, d.conjugate_helix, anchors, a, b, c, d1, d2t, d2r, d2c, d.mode_tonic_landscape.len()
     );
 }
