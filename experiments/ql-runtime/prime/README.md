@@ -38,19 +38,19 @@ The faculty consumes QL-MEF. It does not duplicate its kernel, MEF, Wiki or harm
 ## Conditions
 
 ```text
-P0 prime-native
+P0 prime-native        RLM_MAX_DEPTH=1
    Prime RLM control; QL skill absent.
 
-P2 prime-relational
+P2 prime-relational    RLM_MAX_DEPTH=1
    Root + inherited children can use executable QL/MEF/Wiki faculty.
 
-P3 prime-relational-return
+P3 prime-relational-return  RLM_MAX_DEPTH=1
    P2 + explicit returned-difference/reconstitution envelope.
 
-P4 prime-recursive-field
+P4 prime-recursive-field    RLM_MAX_DEPTH=2
    P3 + descendant recursion when the live Prime runtime admits deeper child creation.
 
-P5 prime-continual
+P5 prime-continual          RLM_MAX_DEPTH=2
    P3/P4 field + one explicit post-trajectory RPC refine invocation.
 ```
 
@@ -72,6 +72,7 @@ await ql_relational.negotiate(...)
 await ql_relational.wiki_refract(...)
 await ql_relational.constellation_contract()
 await ql_relational.harmonic_search(...)
+await ql_relational.harmonic_snapshot(...)
 ql_relational.return_envelope(...)
 ```
 
@@ -127,13 +128,20 @@ node experiments/ql-runtime/prime/run.mjs \
   --output /tmp/prime-p4-research.json
 ```
 
-The runner does not invent an undocumented Prime recursion-depth flag. If the installed release requires an explicit depth option, pass the exact live-supported CLI arguments as a JSON array:
+Prime has a real `RLM_MAX_DEPTH` runtime contract. The runner sets it explicitly from the selected condition: depth 1 for P0/P2/P3 and depth 2 for P4/P5. The manifest records the requested cap and what child/session evidence actually appeared; it does not claim grandchild recursion merely because P4 was requested.
 
-```bash
-export QL_PRIME_EXTRA_ARGS='["<exact-current-prime-flag>","<value>"]'
+Two Prime-native mechanical acceptance tasks supplement the matched Series 1 corpus:
+
+```text
+PRIME-COMPOSITION-001
+  requires at least two differentiated child Agencies over distinct source regions,
+  then root reconstitution.
+
+PRIME-RECURSIVE-001
+  deliberately exercises root → child → grandchild → child → root Return at depth 2.
 ```
 
-The manifest records what child/session evidence actually appeared; do not claim grandchild recursion merely because P4 was requested.
+These tasks establish that the recursive material path actually works. Use the unchanged Series 1 tasks for matched cognition/performance comparisons.
 
 Continual:
 
