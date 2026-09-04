@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import json
 import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -178,6 +179,72 @@ async def harmonic_search(query: str, max_matches: int = 8) -> dict[str, Any]:
         "matches": matches,
     }
     await _record("harmonic-search", {"query": query, "max_matches": max_matches}, result)
+    return result
+
+
+async def harmonic_snapshot(basis: str = "chromatic") -> dict[str, Any]:
+    """Execute the source-locked #81 pre-M harmonic derivation and return a compact numeric relational snapshot."""
+    if os.environ.get("QL_PRIME_HARMONIC") != "1":
+        raise RuntimeError("harmonic_snapshot requires QL_PRIME_HARMONIC=1 and the source-locked QL-MEF #81 checkout.")
+    if basis not in {"chromatic", "fifths"}:
+        raise ValueError("basis must be 'chromatic' or 'fifths'")
+
+    source_lock_path = os.environ.get("QL_PRIME_SOURCE_LOCK")
+    if source_lock_path:
+        lock = json.loads(Path(source_lock_path).read_text(encoding="utf-8"))
+        expected = lock["ql_mef"]["harmonic_research"]["revision"]
+        observed = await _git_revision()
+        if observed != expected:
+            raise RuntimeError(f"harmonic_snapshot source drift: expected {expected}, observed {observed}")
+
+    rust = r"""
+use ql_core::{QlFace, RelationFamily};
+use ql_mef::{MusicalBasis, CrossOperator, derive_pre_m_music, pair_interval_deltas, cross_interval_deltas};
+
+fn main() {
+    let arg = std::env::args().nth(1).unwrap_or_else(|| "chromatic".into());
+    let basis = if arg == "fifths" { MusicalBasis::Fifths } else { MusicalBasis::Chromatic };
+    let label = if arg == "fifths" { "fifths" } else { "chromatic" };
+    let d = derive_pre_m_music(basis);
+    let anchors: Vec<u8> = d.lens_anchors.iter().map(|a| a.pitch).collect();
+    let a = pair_interval_deltas(basis, RelationFamily::A, QlFace::Direct);
+    let b = pair_interval_deltas(basis, RelationFamily::B, QlFace::Direct);
+    let c = pair_interval_deltas(basis, RelationFamily::C, QlFace::Direct);
+    let d1 = cross_interval_deltas(basis, CrossOperator::SamePosition);
+    let d2t = cross_interval_deltas(basis, CrossOperator::Transform);
+    let d2r = cross_interval_deltas(basis, CrossOperator::Require);
+    let d2c = cross_interval_deltas(basis, CrossOperator::Complete);
+    println!(
+        "{{\\\"basis\\\":\\\"{}\\\",\\\"direct_helix\\\":{:?},\\\"conjugate_helix\\\":{:?},\\\"lens_anchor_pitches\\\":{:?},\\\"A_direct_deltas\\\":{:?},\\\"B_direct_deltas\\\":{:?},\\\"C_direct_deltas\\\":{:?},\\\"D1_cross_deltas\\\":{:?},\\\"D2_transform_deltas\\\":{:?},\\\"D2_require_deltas\\\":{:?},\\\"D2_complete_deltas\\\":{:?},\\\"mode_tonic_count\\\":{}}}",
+        label, d.direct_helix, d.conjugate_helix, anchors, a, b, c, d1, d2t, d2r, d2c, d.mode_tonic_landscape.len()
+    );
+}
+"""
+    with tempfile.TemporaryDirectory(prefix="ql-prime-harmonic-") as directory:
+        probe = Path(directory)
+        ql_path = str((_root() / "crates" / "ql-mef").resolve()).replace("\\", "\\\\")
+        core_path = str((_root() / "crates" / "ql-core").resolve()).replace("\\", "\\\\")
+        (probe / "src").mkdir()
+        (probe / "Cargo.toml").write_text(
+            "[package]\nname='ql-prime-harmonic-probe'\nversion='0.0.0'\nedition='2024'\n"
+            f"[dependencies]\nql-mef={{path=\"{ql_path}\"}}\nql-core={{path=\"{core_path}\"}}\n",
+            encoding="utf-8",
+        )
+        (probe / "src" / "main.rs").write_text(rust, encoding="utf-8")
+        proc = await asyncio.create_subprocess_exec(
+            "cargo", "run", "--quiet", "--manifest-path", str(probe / "Cargo.toml"), "--", basis,
+            cwd=str(_root()),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await proc.communicate()
+        if proc.returncode != 0:
+            raise RuntimeError(f"harmonic probe failed ({proc.returncode}): {stderr.decode().strip()}")
+        result = json.loads(stdout.decode())
+
+    result["revision"] = await _git_revision()
+    result["standing"] = "current-development-not-accepted-main"
+    await _record("harmonic-snapshot", {"basis": basis}, result)
     return result
 
 

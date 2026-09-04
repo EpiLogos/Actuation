@@ -2,6 +2,7 @@ export const PRIME_CONDITIONS = Object.freeze({
   'prime-native': Object.freeze({
     code: 'P0',
     relational: false,
+    maxDepth: 1,
     returnContract: false,
     recursive: false,
     continual: false,
@@ -10,6 +11,7 @@ export const PRIME_CONDITIONS = Object.freeze({
   'prime-relational': Object.freeze({
     code: 'P2',
     relational: true,
+    maxDepth: 1,
     returnContract: false,
     recursive: true,
     continual: false,
@@ -18,6 +20,7 @@ export const PRIME_CONDITIONS = Object.freeze({
   'prime-relational-return': Object.freeze({
     code: 'P3',
     relational: true,
+    maxDepth: 1,
     returnContract: true,
     recursive: true,
     continual: false,
@@ -26,6 +29,7 @@ export const PRIME_CONDITIONS = Object.freeze({
   'prime-recursive-field': Object.freeze({
     code: 'P4',
     relational: true,
+    maxDepth: 2,
     returnContract: true,
     recursive: true,
     continual: false,
@@ -34,6 +38,7 @@ export const PRIME_CONDITIONS = Object.freeze({
   'prime-continual': Object.freeze({
     code: 'P5',
     relational: true,
+    maxDepth: 2,
     returnContract: true,
     recursive: true,
     continual: true,

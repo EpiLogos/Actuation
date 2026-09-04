@@ -27,6 +27,7 @@ await ql_relational.negotiate("refract")
 await ql_relational.wiki_refract(request_dict)
 await ql_relational.constellation_contract()
 await ql_relational.harmonic_search("3:3", max_matches=8)
+await ql_relational.harmonic_snapshot("chromatic")
 ql_relational.return_envelope(...)
 ```
 
@@ -55,6 +56,8 @@ The deterministic Wiki structural contract is the common structural floor. `cons
 
 - accepted source derivation on main; and
 - when `QL_PRIME_HARMONIC=1`, the source-locked QL-MEF #81 development head containing the executable pre-M music implementation.
+
+`harmonic_snapshot()` additionally compiles a temporary path-dependent Rust probe against the exact #81 checkout and executes `derive_pre_m_music()` to return the helices, lens anchors, A/B/C and D cross-interval fields, and 84-landscape cardinality as operative data.
 
 The returned path, line and excerpt are evidence. Treat the #81 executable harmonic layer as current development until it is accepted to QL-MEF main.
 

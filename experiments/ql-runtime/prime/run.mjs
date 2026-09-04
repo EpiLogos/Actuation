@@ -5,7 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { getTask, setupTask, verifyTask } from '../comparison/series1/tasks.mjs';
+import { setupTask, verifyTask } from '../comparison/series1/tasks.mjs';
+import { getPrimeTask } from './tasks.mjs';
 import { getPrimeCondition, conditionPrompt } from './conditions.mjs';
 import { extractPrimeFamily, readJsonl, sourceSummary } from './evidence.mjs';
 import { PrimeRpcClient, parseExtraArgs } from './prime-rpc.mjs';
@@ -80,7 +81,7 @@ async function main() {
   const config = parseArgs();
   if (!Number.isFinite(config.timeoutMs) || config.timeoutMs <= 0) throw new Error('--timeout-ms must be positive.');
   const condition = getPrimeCondition(config.condition);
-  const task = getTask(config.task);
+  const task = getPrimeTask(config.task);
   const version = await primeVersion();
 
   if (!version.includes(LOCK.prime_agent.release.replace(/^v/, '')) && process.env.QL_PRIME_ALLOW_VERSION_DRIFT !== '1') {
@@ -111,7 +112,8 @@ async function main() {
       QL_MEF_ROOT: ql.root ?? '',
       QL_RELATIONAL_EVIDENCE_LOG: qlEvidence,
       QL_PRIME_HARMONIC: harmonicEnabled ? '1' : '0',
-      QL_PRIME_SOURCE_LOCK: path.join(HERE, 'source-lock.json')
+      QL_PRIME_SOURCE_LOCK: path.join(HERE, 'source-lock.json'),
+      RLM_MAX_DEPTH: String(condition.maxDepth)
     };
 
     client = new PrimeRpcClient({
@@ -135,6 +137,14 @@ async function main() {
     const verification = await verifyTask(task, workspace, { before, after, output, record: { events: client.records } });
     const qlOperations = await readJsonl(qlEvidence);
     const family = extractPrimeFamily(client.records);
+    const primeAcceptance = task.primeAcceptance ?? null;
+    const primeAcceptanceResult = primeAcceptance ? {
+      required: primeAcceptance,
+      observed_child_loci: family.child_nodes.length,
+      observed_nested_edges: family.nested_edges.length,
+      pass: family.child_nodes.length >= primeAcceptance.minChildLoci
+        && (!primeAcceptance.requireNestedChild || family.nested_edges.length > 0)
+    } : null;
 
     let refinement = null;
     if (condition.continual) {
@@ -154,7 +164,10 @@ async function main() {
         model: process.env.QL_PRIME_MODEL,
         final_state: finalState,
         session_stats: stats,
+        requested_rlm_max_depth: condition.maxDepth,
+        extra_args: parseExtraArgs(),
         family,
+        prime_acceptance: primeAcceptanceResult,
         rpc_records: client.records
       },
       ql: {
@@ -168,8 +181,9 @@ async function main() {
       claims: {
         live_prime_run: true,
         ql_relational_faculty_exercised: qlOperations.length > 0,
-        observed_child_loci: family.nodes.length,
+        observed_child_loci: family.child_nodes.length,
         observed_lineage_edges: family.edges.length,
+        observed_nested_child_edges: family.nested_edges.length,
         continual_refinement_invoked: Boolean(condition.continual)
       }
     };

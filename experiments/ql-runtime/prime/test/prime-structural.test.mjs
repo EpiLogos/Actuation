@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { PRIME_CONDITIONS, conditionPrompt, getPrimeCondition } from '../conditions.mjs';
 import { extractPrimeFamily } from '../evidence.mjs';
 import { assertPrimeReturn, createPrimeReturn, PRIME_RETURN_SCHEMA } from '../return-contract.mjs';
+import { PRIME_TASKS } from '../tasks.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.dirname(HERE);
@@ -15,6 +16,8 @@ test('Prime matrix carries real relational, recursive and continual conditions',
   assert.deepEqual(Object.values(PRIME_CONDITIONS).map((item) => item.code), ['P0', 'P2', 'P3', 'P4', 'P5']);
   assert.equal(getPrimeCondition('prime-native').relational, false);
   assert.equal(getPrimeCondition('prime-relational').recursive, true);
+  assert.equal(getPrimeCondition('prime-relational').maxDepth, 1);
+  assert.equal(getPrimeCondition('prime-recursive-field').maxDepth, 2);
   assert.equal(getPrimeCondition('prime-continual').continual, true);
 });
 
@@ -51,6 +54,8 @@ test('family extractor retains child handles and parent lineage when Prime emits
   ]);
   assert.equal(family.nodes.length, 2);
   assert.deepEqual(family.edges, [{ parent: 'child-a', child: 'child-b' }]);
+  assert.equal(family.child_nodes.length, 2);
+  assert.equal(family.nested_edges.length, 1);
 });
 
 test('source lock pins Prime stable, QL main and optional harmonic development separately', () => {
@@ -69,4 +74,20 @@ test('Python-backed QL skill package is complete', () => {
   ]) {
     assert.equal(fs.existsSync(path.join(ROOT, relative)), true, relative);
   }
+});
+
+test('Prime-native tasks pressure real child composition and nested recursion', () => {
+  const composition = PRIME_TASKS.find((task) => task.id === 'PRIME-COMPOSITION-001');
+  const recursive = PRIME_TASKS.find((task) => task.id === 'PRIME-RECURSIVE-001');
+  assert.equal(composition.primeAcceptance.minChildLoci, 2);
+  assert.equal(composition.primeAcceptance.requireNestedChild, false);
+  assert.equal(recursive.primeAcceptance.requireNestedChild, true);
+  assert.match(recursive.prompt, /child.*own child/i);
+});
+
+test('QL skill exposes executable harmonic snapshot on the pinned development head', () => {
+  const source = fs.readFileSync(path.join(ROOT, 'skills/ql-relational/src/ql_relational/__init__.py'), 'utf8');
+  assert.match(source, /async def harmonic_snapshot/);
+  assert.match(source, /derive_pre_m_music/);
+  assert.match(source, /current-development-not-accepted-main/);
 });
