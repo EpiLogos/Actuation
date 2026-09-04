@@ -1,0 +1,9 @@
+{
+  "name": "actuation-prime-recursive-experiment",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "structural": "node --test test/*.test.mjs"
+  }
+}

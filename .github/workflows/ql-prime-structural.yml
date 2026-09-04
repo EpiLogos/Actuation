@@ -1,0 +1,32 @@
+name: QL Prime recursive experiment structural gate
+
+on:
+  pull_request:
+    paths:
+      - 'experiments/ql-runtime/prime/**'
+      - '.github/workflows/ql-prime-structural.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'experiments/ql-runtime/prime/**'
+      - '.github/workflows/ql-prime-structural.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  structural:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prime experiment structure
+        working-directory: experiments/ql-runtime/prime
+        run: npm test
+      - name: QL relational Python skill syntax
+        run: python -m py_compile experiments/ql-runtime/prime/skills/ql-relational/src/ql_relational/__init__.py

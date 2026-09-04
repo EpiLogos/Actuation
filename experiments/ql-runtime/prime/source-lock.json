@@ -1,0 +1,23 @@
+{
+  "schema": "actuation.prime-source-lock/v1",
+  "actuation": {
+    "repository": "EpiLogos/Actuation",
+    "base_revision": "bd8927b54ac17016be6f879994f736e453f2881c"
+  },
+  "prime_agent": {
+    "repository": "PrimeIntellect-ai/prime-agent",
+    "release": "v0.9.1",
+    "release_revision": "81ae3cb34d27d38ee37f9e205a1e73694993b344",
+    "observed_main_revision_2026_09_04": "3484f06a1e474d961975e0e5ff44d2e59c5eac7b"
+  },
+  "ql_mef": {
+    "repository": "EpiLogos/QL-MEF",
+    "accepted_main_revision": "cddd97d3e7717954256a46f482bd569fa7448870",
+    "harmonic_research": {
+      "issue": 31,
+      "pull_request": 81,
+      "revision": "42d36ed75fd9cf8a70bcbabc5dca766cc51b6811",
+      "standing": "current-development-not-accepted-main"
+    }
+  }
+}
