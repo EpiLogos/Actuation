@@ -1,1 +1,14 @@
-a
+# Node runtime artifacts
+node_modules/
+
+# Rust build artifacts (contracts workbench)
+/target/
+
+# Local platform noise
+.DS_Store
+
+# Secrets — never commit these
+.env
+.env.*
+*.env
+*.env.*
