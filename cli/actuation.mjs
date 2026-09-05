@@ -136,6 +136,8 @@ function verify(json) {
     "contracts/realised-actuation.test.mjs",
     "contracts/actuation-stream.test.mjs",
     "contracts/activity.test.mjs",
+    "contracts/harness-detection.test.mjs",
+    "detection/catalog.test.mjs",
     "cli/actuation.test.mjs",
   ];
   const run = spawnSync(process.execPath, ["--test", ...tests], {

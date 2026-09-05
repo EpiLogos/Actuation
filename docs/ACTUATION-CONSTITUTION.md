@@ -134,7 +134,7 @@ It does **not** make the rest of the suite subordinate implementation detail:
 - **Central** remains the persistent authored personal ground and ordinary residence of world-bound agents; it is not turned into a hidden scheduler.
 - **O:I** owns whole-level composition, selective disclosure, Projection, Participant and co-internal relations; it may project an Actuation but does not execute it merely by disclosing it.
 - **Software Factory** owns developmental semantics such as Project/Run/Run Map, evidence, candidates, repair and `ExecutionDisposition`; it may demand or employ an AgenticComposition but no longer owns the generic QL agent runtime simply because the experiments began there.
-- **AIKit** resolves Context, capabilities, models, `HarnessComposition`, AgentSession and Surfaces for an operative locus. `HarnessComposition` is the body of an actor, not the semantic plurality of actors.
+- **AIKit** resolves Context, capabilities, models, `HarnessComposition`, AgentSession and Surfaces for an operative locus. `HarnessComposition` is the body of an actor, not the semantic plurality of actors. AIKit consumes Actuation's harness detection as candidates; it does not run its own harness census.
 - **Workcell** materialises processes, services, storage, networking and lifecycle without defining Agent or Actuation identity.
 - **QL-MEF** may provide formal/refraction projections over Actuation, including bimba/pratibimba and QL recurrence profiles, without making those profile terms mandatory generic primitives.
 

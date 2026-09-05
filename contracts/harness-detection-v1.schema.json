@@ -1,0 +1,389 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epilogos.github.io/actuation/contracts/harness-detection-v1.schema.json",
+  "title": "Actuation harness-detection contract v1",
+  "description": "Detection-first harness ground. A descriptor declares probeable facts; a detection run proves them live. Detected requires same-run receipts; unavailable carries a mandatory reason and never reads as absence; not-installed requires probe evidence of absence.",
+  "$defs": {
+    "ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "probeKind": {
+      "enum": [
+        "executable",
+        "config-dir",
+        "service"
+      ]
+    },
+    "state": {
+      "enum": [
+        "detected",
+        "unavailable",
+        "not-installed"
+      ]
+    },
+    "probeResult": {
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "facetKind": {
+      "enum": [
+        "skills",
+        "harness-compositions",
+        "plugins",
+        "hooks",
+        "commands",
+        "rules",
+        "extensions",
+        "agents",
+        "settings",
+        "config",
+        "models"
+      ]
+    },
+    "facetPath": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "present": {
+          "type": "boolean"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": true
+    },
+    "probeSpec": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "type": "object",
+          "properties": {
+            "names": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "version_args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "names"
+          ],
+          "additionalProperties": true
+        },
+        "config-dir": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "$ref": "#/$defs/ref"
+            }
+          },
+          "required": [
+            "path"
+          ],
+          "additionalProperties": true
+        },
+        "service": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "probeRecord": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/probeKind"
+        },
+        "result": {
+          "$ref": "#/$defs/probeResult"
+        },
+        "spec": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "result"
+      ],
+      "additionalProperties": true
+    },
+    "facetRecord": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/facetKind"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exists": {
+          "type": "boolean"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "kind",
+        "path",
+        "exists"
+      ],
+      "additionalProperties": true
+    },
+    "receipts": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mtime": {
+          "type": "number"
+        },
+        "size": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": true
+    },
+    "detectionEntry": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "$ref": "#/$defs/ref"
+        },
+        "harness_ref": {
+          "type": "string",
+          "pattern": "^harness/.+"
+        },
+        "state": {
+          "$ref": "#/$defs/state"
+        },
+        "version": {
+          "type": "string"
+        },
+        "executable": {
+          "type": "string"
+        },
+        "config_dir": {
+          "type": "string"
+        },
+        "receipts": {
+          "$ref": "#/$defs/receipts"
+        },
+        "probes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/probeRecord"
+          }
+        },
+        "facets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/facetRecord"
+          }
+        },
+        "unavailable_reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "slug",
+        "harness_ref",
+        "state"
+      ],
+      "additionalProperties": true
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "authored_by": {
+          "type": "string"
+        },
+        "drafted_by": {
+          "type": "string"
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "catalog_revision": {
+          "type": "integer"
+        },
+        "accepted_by": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authored_by",
+        "catalog_revision"
+      ],
+      "additionalProperties": true
+    },
+    "descriptor": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "actuation.harness-detection/v1"
+        },
+        "document": {
+          "const": "descriptor"
+        },
+        "slug": {
+          "$ref": "#/$defs/ref"
+        },
+        "native_kind": {
+          "$ref": "#/$defs/ref"
+        },
+        "edition": {
+          "$ref": "#/$defs/ref"
+        },
+        "native_owner": {
+          "$ref": "#/$defs/ref"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "probe": {
+          "$ref": "#/$defs/probeSpec"
+        },
+        "facets": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/facetPath"
+          }
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        }
+      },
+      "required": [
+        "schema",
+        "document",
+        "slug",
+        "native_kind",
+        "probe",
+        "provenance"
+      ],
+      "additionalProperties": true
+    },
+    "detection": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "actuation.harness-detection/v1"
+        },
+        "document": {
+          "const": "detection"
+        },
+        "detection_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "observed_at": {
+          "type": "string"
+        },
+        "catalog_revision": {
+          "type": "integer"
+        },
+        "detector": {
+          "type": "object",
+          "properties": {
+            "implementation": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "implementation",
+            "version"
+          ],
+          "additionalProperties": true
+        },
+        "harnesses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/detectionEntry"
+          }
+        },
+        "absent": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "availability": {
+          "enum": [
+            "complete",
+            "partial"
+          ]
+        },
+        "disclosure": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "schema",
+        "document",
+        "detection_ref",
+        "observed_at",
+        "catalog_revision",
+        "detector",
+        "harnesses",
+        "absent",
+        "availability"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "type": "object",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/descriptor"
+    },
+    {
+      "$ref": "#/$defs/detection"
+    }
+  ]
+}

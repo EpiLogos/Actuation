@@ -151,6 +151,7 @@ Current open research also studies model-bearing agency and epistemic cultivatio
 - [`docs/HARNESS-REFERENCE.md`](docs/HARNESS-REFERENCE.md) — maximal-reference harness policy and portability boundary.
 - [`schemas/actuation.v0.schema.json`](schemas/actuation.v0.schema.json) — language-neutral experimental `AgenticComposition` contract.
 - [`docs/QL-RUNTIME-MIGRATION.md`](docs/QL-RUNTIME-MIGRATION.md) — provenance and acceptance rules for the migrated QL runtime experiments.
+- [`detection/`](detection/) — the harness catalog and detection engine: `actuation harness detect` proves which operative bodies exist on this machine (`actuation.harness-detection/v1`).
 - [`experiments/ql-runtime/`](experiments/ql-runtime/) — pinned proving body.
 
 The Actuation Wayfinder in the issue tracker records current development state. Main and accepted evidence determine present implementation truth; open PRs are not silently described here as completed capability.
