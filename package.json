@@ -1,0 +1,12 @@
+{
+  "name": "actuation",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "bin": { "actuation": "bin/actuation", "actuation-surface": "bin/actuation" },
+  "files": ["bin/", "cli/", "contracts/", "detection/", "schemas/"],
+  "description": "Actuation: agent-harness detection and instantiation receipts for the O:I suite",
+  "scripts": {
+    "test": "node --test contracts/*.test.mjs detection/*.test.mjs cli/*.test.mjs"
+  }
+}

@@ -133,6 +133,17 @@ The tuple is useful because it makes the relation inspectable. It is not the rea
 
 **Quaternal Logic** can formally refract Actuation and can supply optional recurrence or bimba/pratibimba profiles. Generic Actuation remains number-neutral and does not require QL terminology as software ontology.
 
+## Install and use
+
+The CLI runs from a checkout (`node bin/actuation harness detect`) or
+installable via `npm link` from this repository (private, unregistered).
+
+```text
+actuation capabilities --json
+actuation harness detect [--json]
+actuation instantiation record [--allow-unattributed] [file|-] [--json]
+```
+
 ## Reference runtimes and experiments
 
 Actuation develops portable contracts against real runtimes and harnesses so the ontology is pressured by actual implementation rather than protected by toy examples.
