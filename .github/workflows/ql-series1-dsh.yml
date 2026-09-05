@@ -2,7 +2,7 @@ name: QL Series 1 DSH
 
 on:
   push:
-    branches: [foundation/first-class-actuation]
+    branches: [main]
     paths:
       - 'experiments/ql-runtime/comparison/series1/**'
       - 'experiments/ql-runtime/deep-ql/test/series1-dsh.test.js'

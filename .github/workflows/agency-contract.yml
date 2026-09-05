@@ -9,7 +9,6 @@ on:
       - ".github/workflows/agency-contract.yml"
   push:
     branches:
-      - "converge/first-suite-root-agency"
       - "main"
     paths:
       - "contracts/agency.mjs"

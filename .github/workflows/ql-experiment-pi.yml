@@ -2,7 +2,7 @@ name: QL Experiment Pi
 
 on:
   push:
-    branches: [foundation/first-class-actuation]
+    branches: [main]
     paths:
       - 'experiments/ql-runtime/foundation/**'
       - 'experiments/ql-runtime/experiments/pi/**'

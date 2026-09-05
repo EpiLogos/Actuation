@@ -1,7 +1,7 @@
 name: QL Deep Runtime
 on:
   push:
-    branches: [foundation/first-class-actuation]
+    branches: [main]
     paths:
       - 'experiments/ql-runtime/deep-ql/**'
       - 'experiments/ql-runtime/comparison/series1/**'
