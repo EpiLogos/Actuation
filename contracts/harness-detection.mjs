@@ -1,7 +1,7 @@
 export const HARNESS_DETECTION_VERSION = "actuation.harness-detection/v1";
 
 const STATES = new Set(["detected", "unavailable", "not-installed"]);
-const PROBE_KINDS = new Set(["executable", "config-dir", "service"]);
+const PROBE_KINDS = new Set(["executable", "config-dir", "service", "env"]);
 const PROBE_RESULTS = new Set(["pass", "fail"]);
 const FACET_KINDS = new Set([
   "skills",
@@ -59,9 +59,15 @@ export function validateHarnessDescriptor(input) {
   const probe = record(descriptor.probe, "HarnessDescriptor.probe");
   for (const kind of Object.keys(probe)) {
     if (!PROBE_KINDS.has(kind)) {
-      throw new TypeError(`HarnessDescriptor.probe.${kind} is not a supported probe kind (executable, config-dir, service)`);
+      throw new TypeError(`HarnessDescriptor.probe.${kind} is not a supported probe kind (executable, config-dir, service, env)`);
     }
     record(probe[kind], `HarnessDescriptor.probe.${kind}`);
+  }
+  if (probe.env != null) {
+    const names = probe.env.any_of;
+    if (!Array.isArray(names) || names.length === 0 || names.some((item) => typeof item !== "string" || item.trim() === "")) {
+      throw new TypeError("HarnessDescriptor.probe.env.any_of must be a non-empty array of non-empty environment variable names");
+    }
   }
   if (Object.keys(probe).length === 0) {
     throw new TypeError("HarnessDescriptor.probe must declare at least one probe");
@@ -209,6 +215,67 @@ export function validateHarnessDetection(input) {
 
 export function harnessDetection(input) {
   validateHarnessDetection(input);
+  return structuredClone(input);
+}
+
+/**
+ * Runtime self-identification: which catalogued harness environment is this
+ * process actually running in. Env markers are identity evidence, never
+ * presence evidence — a marker set proves "I am inside harness X", while
+ * presence (detected state, receipts) stays with the executable/config-dir/
+ * service probes of a detection run. `resolved` is exactly one match or null;
+ * more than one match is an honest ambiguity (nested harnesses are real),
+ * never silently collapsed.
+ */
+export function validateHarnessSelf(input) {
+  const self = record(input, "HarnessSelf");
+  if (self.schema !== HARNESS_DETECTION_VERSION) {
+    throw new TypeError(`HarnessSelf.schema must equal ${HARNESS_DETECTION_VERSION}`);
+  }
+  if (self.document !== "self") {
+    throw new TypeError("HarnessSelf.document must be self");
+  }
+  ref(self.self_ref, "HarnessSelf.self_ref");
+  ref(self.observed_at, "HarnessSelf.observed_at");
+  if (Number.isNaN(Date.parse(self.observed_at))) {
+    throw new TypeError("HarnessSelf.observed_at must be an ISO-compatible timestamp");
+  }
+  if (self.catalog_revision == null || !Number.isInteger(self.catalog_revision)) {
+    throw new TypeError("HarnessSelf.catalog_revision must be an integer");
+  }
+  if (!Array.isArray(self.matched)) {
+    throw new TypeError("HarnessSelf.matched must be an array");
+  }
+  for (const [index, match] of self.matched.entries()) {
+    const name = `HarnessSelf.matched[${index}]`;
+    record(match, name);
+    ref(match.slug, `${name}.slug`);
+    ref(match.harness_ref, `${name}.harness_ref`);
+    if (match.harness_ref !== `harness/${match.slug}`) {
+      throw new TypeError(`${name}.harness_ref must be harness/<slug>`);
+    }
+    stringArray(match.markers, `${name}.markers`);
+  }
+  if (self.matched.length === 1) {
+    const only = self.matched[0];
+    if (self.resolved == null || self.resolved.slug !== only.slug || self.resolved.harness_ref !== only.harness_ref) {
+      throw new TypeError("HarnessSelf.resolved must name the single match when exactly one harness matched");
+    }
+  } else if (self.resolved != null) {
+    throw new TypeError("HarnessSelf.resolved may only be set when exactly one harness matched");
+  }
+  if (typeof self.ambiguity !== "boolean") {
+    throw new TypeError("HarnessSelf.ambiguity must be a boolean");
+  }
+  ref(self.detection_ref, "HarnessSelf.detection_ref");
+  if (!self.detection || typeof self.detection !== "object") {
+    throw new TypeError("HarnessSelf.detection must carry the cross-check states from the same-run detection");
+  }
+  return self;
+}
+
+export function harnessSelf(input) {
+  validateHarnessSelf(input);
   return structuredClone(input);
 }
 

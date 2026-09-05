@@ -9,6 +9,7 @@ import { validateActivity } from "../contracts/activity.mjs";
 import { instantiationReceipt, attachDetectionEvidence } from "../contracts/instantiation.mjs";
 import { ACTUATION_CLI_SURFACE } from "./surface.mjs";
 import { runDetection } from "../detection/detect.mjs";
+import { resolveSelf } from "../detection/self.mjs";
 import { harnessDescriptors } from "../detection/catalog.mjs";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -57,6 +58,9 @@ export function executeCommand(argv, { stdin = "" } = {}) {
   if (command === "harness" && args[1] === "detect") {
     return harnessDetect(json);
   }
+  if (command === "harness" && args[1] === "self") {
+    return harnessSelfCommand(json);
+  }
   if (command === "verify") {
     return verify(json);
   }
@@ -91,7 +95,7 @@ Usage:
   actuation instantiation record [--allow-unattributed] [file|-] [--json]
   actuation verify [--json]
 
-Read-model commands project the matching Actuation contract; "harness detect" proves which harnesses exist on this machine.`;
+Read-model commands project the matching Actuation contract; "harness detect" proves which harnesses exist on this machine, "harness self" identifies which one this process runs inside.`;
 }
 
 function readJsonInput(path, stdin) {
@@ -169,6 +173,25 @@ function harnessDetect(json) {
   return {
     code: 0,
     stdout: `Harness detection (catalog r${record.catalog_revision}, ${record.availability})\n${lines.join("\n")}`,
+  };
+}
+
+function harnessSelfCommand(json) {
+  const self = resolveSelf({ descriptors: harnessDescriptors() });
+  if (json) return { code: 0, stdout: JSON.stringify(self, null, 2) };
+  const lines = self.matched.map((match) =>
+    `  ${match.slug.padEnd(18)} ${match.harness_ref}  markers: ${match.markers.join(", ")}`);
+  const headline = self.resolved
+    ? `Running inside ${self.resolved.harness_ref} (${self.resolved.markers.join(", ")})`
+    : self.ambiguity
+      ? "Ambiguous harness identity — multiple markers matched; nested harnesses are real, the innermost is not guessed"
+      : "No catalogued harness markers matched this environment";
+  const crossCheck = self.resolved && self.detection.states[self.resolved.slug] !== "detected"
+    ? `\n  disclosure: ${self.resolved.slug} is not detected on this machine (state ${self.detection.states[self.resolved.slug]}) — marker identity and machine presence disagree`
+    : "";
+  return {
+    code: 0,
+    stdout: `Harness self (catalog r${self.catalog_revision}, ${self.detection_ref})\n${headline}${crossCheck}${lines.length ? `\n${lines.join("\n")}` : ""}`,
   };
 }
 

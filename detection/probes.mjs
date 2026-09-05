@@ -77,6 +77,20 @@ function dirCountProbe(path) {
   }
 }
 
+function envProbe(names, env = process.env) {
+  const matched = {};
+  try {
+    for (const name of names) {
+      if (env[name] != null && env[name] !== "") {
+        matched[name] = env[name];
+      }
+    }
+    return { ok: true, matched };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+}
+
 export function realEffects() {
   return {
     resolveExecutable,
@@ -84,6 +98,7 @@ export function realEffects() {
     statProbe,
     hashProbe,
     dirCountProbe,
+    envProbe,
     expandHome,
   };
 }

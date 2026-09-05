@@ -57,6 +57,22 @@ function probeEntry(descriptor, effects) {
       live.detail ?? (live.ok === false ? live.reason : null),
     ));
   }
+
+  // Env probe: runtime identity evidence. A marker set proves "this process
+  // runs inside harness X"; it is deliberately NOT presence evidence for the
+  // detected state — presence keeps its receipts law (executable/config-dir/
+  // service). `harness self` reads these markers for self-identification.
+  if (spec.env) {
+    const identity = effects.envProbe
+      ? effects.envProbe(spec.env.any_of)
+      : { ok: true, matched: {} };
+    const markerList = identity.ok
+      ? (Object.keys(identity.matched).length > 0
+        ? Object.keys(identity.matched).map((name) => `${name} set`).join(", ")
+        : "no marker set")
+      : identity.error;
+    probes.push(probeRecord("env", identity.ok ? "pass" : "fail", spec.env.any_of.join(" "), markerList));
+  }
   return { probes, disclosure, wanted };
 }
 

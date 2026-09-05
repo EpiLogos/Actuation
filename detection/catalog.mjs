@@ -14,8 +14,9 @@ import grokBot from "./harnesses/grok-bot.mjs";
 import ollama from "./harnesses/ollama.mjs";
 import openclaw from "./harnesses/openclaw.mjs";
 import kimi from "./harnesses/kimi.mjs";
+import zcode from "./harnesses/zcode.mjs";
 
-export const CATALOG_REVISION = 1;
+export const CATALOG_REVISION = 2;
 
 const DESCRIPTORS = [
   claudeCode,
@@ -29,6 +30,7 @@ const DESCRIPTORS = [
   ollama,
   openclaw,
   kimi,
+  zcode,
 ].map(harnessDescriptor);
 
 export function harnessDescriptors() {

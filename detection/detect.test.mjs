@@ -107,3 +107,36 @@ test("safe live subset detects against the real machine", () => {
     assert.ok(entry.receipts.executable, `${entry.slug} carries a receipt`);
   }
 });
+
+test("env markers are identity evidence, never presence evidence", () => {
+  const record = runDetection({
+    descriptors: [descriptor("ghost", {
+      probe: { env: { any_of: ["GHOST_MARKER"] } },
+    })],
+    effects: stubEffects({
+      envProbe: () => ({ ok: true, matched: { GHOST_MARKER: "1" } }),
+    }),
+  });
+  const entry = entryOf(record, "ghost");
+  assert.equal(entry.state, "not-installed");
+  const envProbe = entry.probes.find((probe) => probe.kind === "env");
+  assert.equal(envProbe.result, "pass");
+  assert.match(envProbe.detail, /GHOST_MARKER set/);
+});
+
+test("env probe records absence honestly when no marker is set", () => {
+  const record = runDetection({
+    descriptors: [descriptor("quiet", {
+      probe: { "config-dir": { path: "~/.quiet" }, env: { any_of: ["QUIET_MARKER"] } },
+    })],
+    effects: stubEffects({
+      statProbe: () => ({ exists: true, isDir: true }),
+      envProbe: () => ({ ok: true, matched: {} }),
+    }),
+  });
+  const entry = entryOf(record, "quiet");
+  assert.equal(entry.state, "detected");
+  const envProbe = entry.probes.find((probe) => probe.kind === "env");
+  assert.equal(envProbe.result, "pass");
+  assert.equal(envProbe.detail, "no marker set");
+});
