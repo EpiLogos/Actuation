@@ -2,14 +2,15 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  MODEL_BEARING_CONTRACT_VERSION,
-  modelBearingReceipt,
+  ACTUATION_INSTANTIATION_VERSION,
+  instantiationReceipt,
   validateActuationReceipt,
   validateModelAccessProfile,
   validateModelRelation,
-} from "./model-bearing.mjs";
+  attachDetectionEvidence,
+} from "./instantiation.mjs";
 
-const schema = MODEL_BEARING_CONTRACT_VERSION;
+const schema = ACTUATION_INSTANTIATION_VERSION;
 
 function accessProfile() {
   return {
@@ -84,7 +85,7 @@ test("Colibri remains an experimental engine/material intervention rather than a
     held_constant_refs: ["task:model-interior-probe", "harness:pi"],
     variables: [{ name: "inference-materialisation-technique", value_ref: "engine:colibri@4ef9a992", facts: { comparison: "ollama-llamacpp-vllm" } }],
   };
-  const validated = modelBearingReceipt(colibri);
+  const validated = instantiationReceipt(colibri);
   assert.equal(validated.model_relation.engine.implementation_ref, "engine:colibri@4ef9a992");
   assert.equal(validated.experiment.variables[0].name, "inference-materialisation-technique");
   assert.equal("local_model_provider" in validated, false);
@@ -103,4 +104,81 @@ test("invalid placement and malformed access fail before a receipt can be accept
   const badAccess = accessProfile();
   badAccess.interior.depth = "god-mode";
   assert.throws(() => validateModelAccessProfile(badAccess), /research depth/);
+});
+
+test("legacy model-bearing documents normalise into instantiation receipts", () => {
+  const legacy = {
+    schema: "actuation.model-bearing/v1",
+    actuation_ref: "actuation:legacy-1",
+    agency_ref: "agency:development",
+    world_binding_ref: "world:project:oi",
+    model_relation: {
+      schema: "actuation.model-bearing/v1",
+      model_ref: "model/claude",
+      inference_surface: { contract_ref: "surface:claude" },
+    },
+    access_profile: {
+      schema: "actuation.model-bearing/v1",
+      inference: { allowed: ["chat"] },
+      control: { allowed: ["fs"] },
+      interior: { depth: "outputs" },
+    },
+  };
+  const receipt = instantiationReceipt(legacy);
+  assert.equal(receipt.schema, ACTUATION_INSTANTIATION_VERSION);
+  assert.equal(receipt.actuation_ref, "actuation:legacy-1");
+});
+
+test("attachDetectionEvidence binds only to detected-with-receipts harnesses", () => {
+  const detection = {
+    schema: "actuation.harness-detection/v1",
+    document: "detection",
+    detection_ref: "detection:test:9",
+    observed_at: "2026-09-05T00:00:00Z",
+    catalog_revision: 1,
+    detector: { implementation: "test", version: "0.0.0" },
+    harnesses: [
+      {
+        slug: "goodharness",
+        harness_ref: "harness/goodharness",
+        state: "detected",
+        receipts: { executable: "/opt/bin/goodharness" },
+        probes: [{ kind: "executable", result: "pass", detail: "/opt/bin/goodharness" }],
+      },
+      { slug: "ghostharness", harness_ref: "harness/ghostharness", state: "not-installed",
+        probes: [{ kind: "executable", result: "pass", detail: "not found" }] },
+    ],
+    absent: ["ghostharness"],
+    availability: "complete",
+  };
+  const receipt = (harness_ref) => ({
+    schema: ACTUATION_INSTANTIATION_VERSION,
+    actuation_ref: "actuation:b1",
+    agency_ref: "agency:development",
+    world_binding_ref: "world:x",
+    harness_ref,
+    model_relation: { schema: ACTUATION_INSTANTIATION_VERSION, model_ref: "model/m",
+      inference_surface: { contract_ref: "surface:s" } },
+    access_profile: { schema: ACTUATION_INSTANTIATION_VERSION,
+      inference: { allowed: ["chat"] }, control: { allowed: ["fs"] }, interior: { depth: "outputs" } },
+  });
+
+  const bound = attachDetectionEvidence(receipt("harness/goodharness"), detection);
+  assert.equal(bound.detection_ref, "detection:test:9");
+  assert.equal(bound.harness_receipts.executable, "/opt/bin/goodharness");
+
+  assert.throws(
+    () => attachDetectionEvidence(receipt("harness/ghostharness"), detection),
+    /not detected with receipts/,
+  );
+  assert.throws(
+    () => attachDetectionEvidence(receipt("harness/neverprobed"), detection),
+    /not detected with receipts/,
+  );
+
+  const unattributed = attachDetectionEvidence(
+    { ...receipt("harness/goodharness"), harness_ref: undefined }, detection,
+  );
+  assert.equal(unattributed.unattributed, true);
+  assert.equal(unattributed.detection_ref, undefined, "no binding, no evidence stamped");
 });

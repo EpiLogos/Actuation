@@ -1,4 +1,7 @@
-export const MODEL_BEARING_CONTRACT_VERSION = "actuation.model-bearing/v1";
+export const ACTUATION_INSTANTIATION_VERSION = "actuation.instantiation/v1";
+// Legacy window: the receipt contract was renamed from actuation.model-bearing/v1.
+export const LEGACY_MODEL_BEARING_SCHEMA = "actuation.model-bearing/v1";
+import { validateHarnessDetection } from "./harness-detection.mjs";
 
 const PLACEMENTS = new Set(["local", "remote", "distributed", "opaque"]);
 const INTERIOR_DEPTHS = new Set([
@@ -47,8 +50,8 @@ function facts(value, name) {
 
 export function validateModelRelation(input) {
   const relation = record(input, "ModelRelation");
-  if (relation.schema !== MODEL_BEARING_CONTRACT_VERSION) {
-    throw new TypeError(`ModelRelation.schema must equal ${MODEL_BEARING_CONTRACT_VERSION}`);
+  if (relation.schema !== ACTUATION_INSTANTIATION_VERSION) {
+    throw new TypeError(`ModelRelation.schema must equal ${ACTUATION_INSTANTIATION_VERSION}`);
   }
   ref(relation.model_ref, "ModelRelation.model_ref");
   ref(relation.variant_ref, "ModelRelation.variant_ref", { optional: true });
@@ -78,8 +81,8 @@ export function validateModelRelation(input) {
 
 export function validateModelAccessProfile(input) {
   const access = record(input, "ModelAccessProfile");
-  if (access.schema !== MODEL_BEARING_CONTRACT_VERSION) {
-    throw new TypeError(`ModelAccessProfile.schema must equal ${MODEL_BEARING_CONTRACT_VERSION}`);
+  if (access.schema !== ACTUATION_INSTANTIATION_VERSION) {
+    throw new TypeError(`ModelAccessProfile.schema must equal ${ACTUATION_INSTANTIATION_VERSION}`);
   }
   const inference = record(access.inference, "ModelAccessProfile.inference");
   stringArray(inference.allowed, "ModelAccessProfile.inference.allowed");
@@ -98,8 +101,8 @@ export function validateModelAccessProfile(input) {
 
 export function validateActuationReceipt(input) {
   const receipt = record(input, "ActuationReceipt");
-  if (receipt.schema !== MODEL_BEARING_CONTRACT_VERSION) {
-    throw new TypeError(`ActuationReceipt.schema must equal ${MODEL_BEARING_CONTRACT_VERSION}`);
+  if (receipt.schema !== ACTUATION_INSTANTIATION_VERSION) {
+    throw new TypeError(`ActuationReceipt.schema must equal ${ACTUATION_INSTANTIATION_VERSION}`);
   }
   ref(receipt.actuation_ref, "ActuationReceipt.actuation_ref");
   ref(receipt.agency_ref, "ActuationReceipt.agency_ref");
@@ -131,7 +134,46 @@ export function validateActuationReceipt(input) {
   return receipt;
 }
 
-export function modelBearingReceipt(input) {
+export function instantiationReceipt(input) {
+  // Legacy window: old model-bearing documents are read as instantiation
+  // receipts. The schema string is normalised here, loudly, in one place.
+  if (input && input.schema === LEGACY_MODEL_BEARING_SCHEMA) {
+    const legacy = structuredClone(input);
+    legacy.schema = ACTUATION_INSTANTIATION_VERSION;
+    if (legacy.model_relation?.schema === LEGACY_MODEL_BEARING_SCHEMA) {
+      legacy.model_relation.schema = ACTUATION_INSTANTIATION_VERSION;
+    }
+    if (legacy.access_profile?.schema === LEGACY_MODEL_BEARING_SCHEMA) {
+      legacy.access_profile.schema = ACTUATION_INSTANTIATION_VERSION;
+    }
+    validateActuationReceipt(legacy);
+    return legacy;
+  }
   validateActuationReceipt(input);
   return structuredClone(input);
+}
+
+
+/**
+ * Bind an instantiation receipt to harness evidence. Refuses a receipt
+ * whose harness is not detected-with-receipts in the supplied live record;
+ * a receipt with no harness_ref is unattributed and passes untouched.
+ * Returns the receipt with detection_ref and harness_receipts stamped.
+ */
+export function attachDetectionEvidence(receipt, detectionRecord) {
+  if (!receipt.harness_ref) {
+    return { ...structuredClone(receipt), unattributed: true };
+  }
+  const slug = receipt.harness_ref.replace(/^harness\//, "");
+  const detection = validateHarnessDetection(detectionRecord);
+  const entry = detection.harnesses.find((candidate) => candidate.slug === slug);
+  if (!entry || entry.state !== "detected" || !entry.receipts?.executable) {
+    throw new TypeError(
+      `instantiation refused: harness ${receipt.harness_ref} is not detected with receipts in ${detection.detection_ref}`,
+    );
+  }
+  const bound = structuredClone(receipt);
+  bound.detection_ref = detection.detection_ref;
+  bound.harness_receipts = structuredClone(entry.receipts);
+  return bound;
 }

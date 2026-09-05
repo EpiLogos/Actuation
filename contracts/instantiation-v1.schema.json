@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://epilogos.github.io/actuation/contracts/model-bearing-v1.schema.json",
-  "title": "Actuation model-bearing agency contract v1",
+  "$id": "https://epilogos.github.io/actuation/contracts/instantiation-v1.schema.json",
+  "title": "Actuation instantiation agency contract v1",
   "description": "Provider-neutral receipt seam. Engine, materialisation and surface remain nested refs/facts rather than promoted root identities.",
   "$defs": {
     "ref": { "type": "string", "minLength": 1 },
@@ -19,7 +19,7 @@
       "type": "object",
       "required": ["schema", "inference", "control", "interior"],
       "properties": {
-        "schema": { "const": "actuation.model-bearing/v1" },
+        "schema": { "const": "actuation.instantiation/v1" },
         "inference": { "$ref": "#/$defs/accessSet" },
         "control": { "$ref": "#/$defs/accessSet" },
         "interior": {
@@ -35,7 +35,7 @@
       "type": "object",
       "required": ["schema", "model_ref", "inference_surface"],
       "properties": {
-        "schema": { "const": "actuation.model-bearing/v1" },
+        "schema": { "const": "actuation.instantiation/v1" },
         "model_ref": { "$ref": "#/$defs/ref" },
         "variant_ref": { "$ref": "#/$defs/ref" },
         "engine": { "type": "object", "properties": { "implementation_ref": { "$ref": "#/$defs/ref" }, "provider_ref": { "$ref": "#/$defs/ref" }, "facts": { "$ref": "#/$defs/facts" } }, "additionalProperties": true },
@@ -48,7 +48,7 @@
   "type": "object",
   "required": ["schema", "actuation_ref", "agency_ref", "world_binding_ref", "model_relation", "access_profile"],
   "properties": {
-    "schema": { "const": "actuation.model-bearing/v1" },
+    "schema": { "const": "actuation.instantiation/v1" },
     "actuation_ref": { "$ref": "#/$defs/ref" },
     "agency_ref": { "$ref": "#/$defs/ref" },
     "world_binding_ref": { "$ref": "#/$defs/ref" },

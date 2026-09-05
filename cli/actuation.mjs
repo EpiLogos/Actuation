@@ -6,13 +6,13 @@ import { agencyReadModel } from "../contracts/agency.mjs";
 import { realisedActuationReadModel } from "../contracts/realised-actuation.mjs";
 import { actuationStreamReadModel } from "../contracts/actuation-stream.mjs";
 import { validateActivity } from "../contracts/activity.mjs";
-import { modelBearingReceipt } from "../contracts/model-bearing.mjs";
+import { instantiationReceipt, attachDetectionEvidence } from "../contracts/instantiation.mjs";
 import { ACTUATION_CLI_SURFACE } from "./surface.mjs";
 import { runDetection } from "../detection/detect.mjs";
 import { harnessDescriptors } from "../detection/catalog.mjs";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const INPUT_COMMANDS = new Set(["agency", "realised", "stream", "activity", "model"]);
+const INPUT_COMMANDS = new Set(["agency", "realised", "stream", "activity", "instantiation"]);
 
 export function executeCommand(argv, { stdin = "" } = {}) {
   const args = [...argv];
@@ -47,9 +47,12 @@ export function executeCommand(argv, { stdin = "" } = {}) {
     const input = readJsonInput(args[1] ?? "-", stdin);
     return output(structuredClone(validateActivity(input)), json, humanActivity);
   }
-  if (command === "model") {
+  if (command === "instantiation" && args[1] === "record") {
+    return instantiationRecord(args, stdin, json);
+  }
+  if (command === "instantiation") {
     const input = readJsonInput(args[1] ?? "-", stdin);
-    return output(modelBearingReceipt(input), json, humanModel);
+    return output(instantiationReceipt(input), json, humanInstantiation);
   }
   if (command === "harness" && args[1] === "detect") {
     return harnessDetect(json);
@@ -84,10 +87,11 @@ Usage:
   actuation realised [file|-] [--json]
   actuation stream [file|-] [--json]
   actuation activity [file|-] [--json]
-  actuation model [file|-] [--json]
+  actuation instantiation [file|-] [--json]
+  actuation instantiation record [--allow-unattributed] [file|-] [--json]
   actuation verify [--json]
 
-The command projects Actuation-owned Agency, realised Actuation, stream, Activity and model-bearing contracts.`;
+Read-model commands project the matching Actuation contract; "harness detect" proves which harnesses exist on this machine.`;
 }
 
 function readJsonInput(path, stdin) {
@@ -129,9 +133,26 @@ function humanActivity(value) {
   return `Activity ${value.activity_ref}\n${value.summary}\n${value.phase} / ${value.outcome}\nSubject: ${value.subject_ref}\nOwner: ${value.native_owner}`;
 }
 
-function humanModel(value) {
+function humanInstantiation(value) {
   const relation = value.model_relation;
-  return `Model-bearing Actuation ${value.actuation_ref}\nAgency: ${value.agency_ref}\nModel: ${relation.model_ref}\nPlacement: ${relation.material?.placement ?? "unspecified"}\nInference surface: ${relation.inference_surface.contract_ref}`;
+  return `Instantiation receipt ${value.actuation_ref}\nAgency: ${value.agency_ref}\nHarness: ${value.harness_ref ?? "unattributed"}\nModel: ${relation.model_ref}\nPlacement: ${relation.material?.placement ?? "unspecified"}\nInference surface: ${relation.inference_surface.contract_ref}`;
+}
+
+function instantiationRecord(args, stdin, json) {
+  const allowUnattributed = removeFlag(args, "--allow-unattributed");
+  const inputPath = args.slice(2).find((arg) => !arg.startsWith("--"));
+  const input = readJsonInput(inputPath ?? "-", stdin);
+  const receipt = instantiationReceipt(input);
+  if (!receipt.harness_ref && !allowUnattributed) {
+    throw new TypeError("receipt has no harness_ref; pass --allow-unattributed to record an unattributed instantiation");
+  }
+  const record = runDetection({ descriptors: harnessDescriptors() });
+  const bound = attachDetectionEvidence(receipt, record);
+  if (json) return { code: 0, stdout: JSON.stringify(bound, null, 2) };
+  const line = bound.unattributed
+    ? "unattributed instantiation (no harness binding claimed)"
+    : `bound to ${bound.harness_ref} via ${bound.detection_ref}`;
+  return { code: 0, stdout: `Instantiation recorded: ${line}; model ${bound.model_relation.model_ref}` };
 }
 
 function harnessDetect(json) {
@@ -154,7 +175,7 @@ function harnessDetect(json) {
 function verify(json) {
   const tests = [
     "contracts/agency.test.mjs",
-    "contracts/model-bearing.test.mjs",
+    "contracts/instantiation.test.mjs",
     "contracts/realised-actuation.test.mjs",
     "contracts/actuation-stream.test.mjs",
     "contracts/activity.test.mjs",

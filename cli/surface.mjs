@@ -2,7 +2,7 @@ import { AGENCY_CONTRACT_VERSION } from "../contracts/agency.mjs";
 import { ACTIVITY_VERSION } from "../contracts/activity.mjs";
 import { ACTUATION_STREAM_VERSION } from "../contracts/actuation-stream.mjs";
 import { HARNESS_DETECTION_VERSION } from "../contracts/harness-detection.mjs";
-import { MODEL_BEARING_CONTRACT_VERSION } from "../contracts/model-bearing.mjs";
+import { ACTUATION_INSTANTIATION_VERSION, LEGACY_MODEL_BEARING_SCHEMA } from "../contracts/instantiation.mjs";
 import { REALISED_ACTUATION_VERSION } from "../contracts/realised-actuation.mjs";
 
 export const ACTUATION_CLI_VERSION = "0.1.0";
@@ -20,7 +20,8 @@ export const ACTUATION_CLI_SURFACE = Object.freeze({
     "realised.read",
     "stream.read",
     "activity.read",
-    "model.read",
+    "instantiation.read",
+    "instantiation.record",
     "harness.detect",
     "verify",
   ]),
@@ -29,7 +30,8 @@ export const ACTUATION_CLI_SURFACE = Object.freeze({
     realised: REALISED_ACTUATION_VERSION,
     stream: ACTUATION_STREAM_VERSION,
     activity: ACTIVITY_VERSION,
-    model_bearing: MODEL_BEARING_CONTRACT_VERSION,
+    instantiation: ACTUATION_INSTANTIATION_VERSION,
+    model_bearing_legacy: LEGACY_MODEL_BEARING_SCHEMA,
     harness_detection: HARNESS_DETECTION_VERSION,
   }),
 });
