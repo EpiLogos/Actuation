@@ -21,6 +21,7 @@ export const ACTUATION_CLI_SURFACE = Object.freeze({
     "stream.read",
     "activity.read",
     "model.read",
+    "harness.detect",
     "verify",
   ]),
   native_contracts: Object.freeze({

@@ -8,6 +8,8 @@ import { actuationStreamReadModel } from "../contracts/actuation-stream.mjs";
 import { validateActivity } from "../contracts/activity.mjs";
 import { modelBearingReceipt } from "../contracts/model-bearing.mjs";
 import { ACTUATION_CLI_SURFACE } from "./surface.mjs";
+import { runDetection } from "../detection/detect.mjs";
+import { harnessDescriptors } from "../detection/catalog.mjs";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const INPUT_COMMANDS = new Set(["agency", "realised", "stream", "activity", "model"]);
@@ -48,6 +50,9 @@ export function executeCommand(argv, { stdin = "" } = {}) {
   if (command === "model") {
     const input = readJsonInput(args[1] ?? "-", stdin);
     return output(modelBearingReceipt(input), json, humanModel);
+  }
+  if (command === "harness" && args[1] === "detect") {
+    return harnessDetect(json);
   }
   if (command === "verify") {
     return verify(json);
@@ -129,6 +134,23 @@ function humanModel(value) {
   return `Model-bearing Actuation ${value.actuation_ref}\nAgency: ${value.agency_ref}\nModel: ${relation.model_ref}\nPlacement: ${relation.material?.placement ?? "unspecified"}\nInference surface: ${relation.inference_surface.contract_ref}`;
 }
 
+function harnessDetect(json) {
+  const record = runDetection({ descriptors: harnessDescriptors() });
+  if (json) return { code: 0, stdout: JSON.stringify(record, null, 2) };
+  const lines = record.harnesses.map((entry) => {
+    const badge = entry.state === "detected"
+      ? `${entry.version ?? entry.receipts?.executable ?? ""}`
+      : entry.state === "unavailable"
+        ? entry.unavailable_reason
+        : "not installed";
+    return `  ${entry.slug.padEnd(18)} ${entry.state.padEnd(14)} ${badge}`;
+  });
+  return {
+    code: 0,
+    stdout: `Harness detection (catalog r${record.catalog_revision}, ${record.availability})\n${lines.join("\n")}`,
+  };
+}
+
 function verify(json) {
   const tests = [
     "contracts/agency.test.mjs",
@@ -138,6 +160,7 @@ function verify(json) {
     "contracts/activity.test.mjs",
     "contracts/harness-detection.test.mjs",
     "detection/catalog.test.mjs",
+    "detection/detect.test.mjs",
     "cli/actuation.test.mjs",
   ];
   const run = spawnSync(process.execPath, ["--test", ...tests], {
