@@ -187,3 +187,5 @@ Current open research also studies model-bearing agency and epistemic cultivatio
 - [`experiments/ql-runtime/`](experiments/ql-runtime/) — pinned proving body.
 
 The Actuation Wayfinder in the issue tracker records current development state. Main and accepted evidence determine present implementation truth; open PRs are not silently described here as completed capability.
+
+<!-- branch-protection proof: PR + required native-cli check + squash merge -->
