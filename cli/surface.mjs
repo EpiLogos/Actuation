@@ -6,6 +6,7 @@ import { AGENCY_CONTRACT_VERSION } from "../contracts/agency.mjs";
 import { ACTIVITY_VERSION } from "../contracts/activity.mjs";
 import { ACTUATION_STREAM_VERSION } from "../contracts/actuation-stream.mjs";
 import { HARNESS_DETECTION_VERSION } from "../contracts/harness-detection.mjs";
+import { HARNESS_CAPABILITY_VERSION } from "../contracts/harness-capability.mjs";
 import { ACTUATION_INSTANTIATION_VERSION, LEGACY_MODEL_BEARING_SCHEMA } from "../contracts/instantiation.mjs";
 import { REALISED_ACTUATION_VERSION } from "../contracts/realised-actuation.mjs";
 
@@ -25,5 +26,6 @@ export const ACTUATION_CLI_SURFACE = Object.freeze({
     instantiation: ACTUATION_INSTANTIATION_VERSION,
     model_bearing_legacy: LEGACY_MODEL_BEARING_SCHEMA,
     harness_detection: HARNESS_DETECTION_VERSION,
+    harness_capability: HARNESS_CAPABILITY_VERSION,
   }),
 });

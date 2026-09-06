@@ -16,7 +16,7 @@ import { instantiationReceipt, attachDetectionEvidence } from "../contracts/inst
 import { harnessCatalog as harnessCatalogDocument } from "../contracts/harness-detection.mjs";
 import { runDetection } from "../detection/detect.mjs";
 import { resolveSelf } from "../detection/self.mjs";
-import { harnessDescriptors, CATALOG_REVISION } from "../detection/catalog.mjs";
+import { harnessDescriptors, capabilityDescriptors, capabilityDescriptorBySlug, CATALOG_REVISION } from "../detection/catalog.mjs";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -116,6 +116,20 @@ function humanCatalog(value) {
   return `Harness catalog (r${value.catalog_revision}, ${value.descriptors.length} declared)\n${lines.join("\n")}`;
 }
 
+function humanCapability(value) {
+  const c = value.capability;
+  const events = c.native_events.map((event) => `  ${event.event.padEnd(20)} native: ${event.native_name}  blocks: ${event.can_block ? "yes" : "no"}  context: ${event.context_channel}`);
+  return [
+    `Capability ${c.harness_slug} (catalog r${c.provenance.catalog_revision})`,
+    `Injection: ${c.injection_channel.kind} — ${c.injection_channel.mechanism}`,
+    `Blocking: ${c.blocking_semantics.kind}`,
+    `Wake: ${c.wake_capability.kind}`,
+    `Install: ${c.install_seam.config_path} (${c.install_seam.format})`,
+    `Native events:`,
+    ...events,
+  ].join("\n");
+}
+
 export const COMMANDS = Object.freeze([
   {
     name: "capabilities",
@@ -206,6 +220,32 @@ export const COMMANDS = Object.freeze([
     usage: "actuation harness self [--json]",
     input: false,
     run: ({ json }) => harnessSelfCommand(json),
+  },
+  {
+    name: "harness.capability",
+    route: ["harness", "capability"],
+    usage: "actuation harness capability [<slug>] [--json]",
+    input: false,
+    run: ({ args, json }) => {
+      const slug = args.find((arg) => !arg.startsWith("--"));
+      if (slug != null) {
+        const capability = capabilityDescriptorBySlug(slug);
+        if (!capability) {
+          throw new TypeError(`no capability descriptor declared for harness ${slug}; declared: ${capabilityDescriptors().map((c) => c.harness_slug).join(", ")}`);
+        }
+        return output({ schema: "actuation.harness-capability/v1", document: "capability-read-model", capability }, json, humanCapability);
+      }
+      return output(
+        {
+          schema: "actuation.harness-capability/v1",
+          document: "capability-catalog",
+          catalog_revision: CATALOG_REVISION,
+          capabilities: capabilityDescriptors(),
+        },
+        json,
+        (value) => `Capability catalog (r${value.catalog_revision}, ${value.capabilities.length} declared)\n${value.capabilities.map((c) => `  ${c.harness_slug.padEnd(20)} events: ${c.native_events.length}  blocking: ${c.blocking_semantics.kind.padEnd(15)} wake: ${c.wake_capability.kind}`).join("\n")}`,
+      );
+    },
   },
   {
     name: "verify",
