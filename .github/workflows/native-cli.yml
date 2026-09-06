@@ -8,6 +8,7 @@ on:
       - "contracts/**"
       - "detection/**"
       - "package.json"
+      - "README.md"
       - ".oi/product.json"
       - ".github/workflows/native-cli.yml"
   push:
@@ -19,6 +20,7 @@ on:
       - "contracts/**"
       - "detection/**"
       - "package.json"
+      - "README.md"
       - ".oi/product.json"
       - ".github/workflows/native-cli.yml"
 
@@ -33,6 +35,27 @@ jobs:
       # npm test globs every native suite; a hardcoded file list here rots
       # (it referenced contracts/model-bearing.test.mjs after the rename).
       - run: npm test
+      - name: Self-certification - the served binary certifies this build
+        run: |
+          node bin/actuation capabilities --json > capabilities.json
+          node <<'NODE'
+          const assert = require("node:assert/strict");
+          const caps = require("./capabilities.json");
+          const pkg = require("./package.json");
+          assert.equal(caps.version, pkg.version, "served version must equal package.json");
+          assert.equal(caps.revision, process.env.GITHUB_SHA, "served revision must be the build sha");
+          assert.ok(caps.commands.length >= 1, "capabilities must declare the command surface");
+          console.log(`self-certified actuation ${caps.version} @ ${caps.revision.slice(0, 12)} (${caps.commands.length} commands)`);
+          NODE
+      - name: Packaging parity - product manifest tracks the package version
+        run: |
+          node <<'NODE'
+          const assert = require("node:assert/strict");
+          const product = require("./.oi/product.json");
+          const pkg = require("./package.json");
+          assert.equal(product.version, pkg.version, ".oi/product.json version must equal package.json");
+          console.log(`packaging parity: .oi/product.json ${product.version} == package.json ${pkg.version}`);
+          NODE
       - run: ./bin/actuation --version
       - run: ./bin/actuation capabilities --json
       - run: ./bin/actuation verify --json

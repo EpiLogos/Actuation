@@ -10,6 +10,7 @@ on:
       - 'detection/**'
       - 'schemas/**'
       - 'package.json'
+      - 'README.md'
       - '.github/workflows/prelocal-build.yml'
   push:
     branches: [main]
@@ -21,6 +22,7 @@ on:
       - 'detection/**'
       - 'schemas/**'
       - 'package.json'
+      - 'README.md'
       - '.github/workflows/prelocal-build.yml'
 
 permissions:
@@ -62,6 +64,20 @@ jobs:
           printf '%s\n' "$GITHUB_SHA" > "dist/$name/source-commit.txt"
           tar -C dist -czf "dist/$name.tar.gz" "$name"
           shasum -a 256 "dist/$name.tar.gz" > "dist/$name.tar.gz.sha256"
+      - name: Serve the packaged artifact in a clean directory and verify it
+        # Completeness, not just correctness: the published tarball must
+        # actually serve — its binary runs and its own verify discovers and
+        # passes every suite — not merely the repository that built it.
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').version")"
+          name="actuation-${version}-${GITHUB_SHA::12}-component"
+          serve="$(mktemp -d)"
+          tar -C "$serve" -xzf "dist/$name.tar.gz"
+          test "$(cat "$serve/$name/source-commit.txt")" = "$GITHUB_SHA"
+          test "$(node "$serve/$name/bin/actuation" --version)" = "actuation $version"
+          node "$serve/$name/bin/actuation" verify
       - uses: actions/attest@v4
         with:
           subject-path: dist/*.tar.gz

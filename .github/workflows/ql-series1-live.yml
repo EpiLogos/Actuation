@@ -105,13 +105,44 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SOURCE="$GITHUB_WORKSPACE/.series1/deepseek-harness/node_modules/@deepseek-ai"
-          TARGET="$GITHUB_WORKSPACE/experiments/ql-runtime/comparison/series1/node_modules/@deepseek-ai"
-          mkdir -p "$TARGET"
-          for PKG in cordis dsh-llm dsh-llm-deepseek dsh-session dsh-session-persistence dsh-session-persistence-jsonl dsh-agent; do
-            rm -rf "$TARGET/$PKG"
-            ln -s "$SOURCE/$PKG" "$TARGET/$PKG"
-          done
+          export DSH_DIR="$GITHUB_WORKSPACE/.series1/deepseek-harness"
+          export SERIES1_DIR="$GITHUB_WORKSPACE/experiments/ql-runtime/comparison/series1"
+          # Project every named DSH workspace package (pnpm-workspace.yaml
+          # globs: packages/*/*, vendor/*, apps/*), then assert the plugin
+          # tree the Series 1 provider imports actually resolves.
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const dshRoot = process.env.DSH_DIR;
+          const targetRoot = path.join(process.env.SERIES1_DIR, 'node_modules');
+          const roots = ['packages', 'vendor', 'apps'].map((dir) => path.join(dshRoot, dir));
+          let projected = 0;
+          function visit(dir) {
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              if (entry.name === 'node_modules' || entry.name === '.git') continue;
+              const full = path.join(dir, entry.name);
+              if (entry.isDirectory()) { visit(full); continue; }
+              if (!entry.isFile() || entry.name !== 'package.json') continue;
+              const manifest = JSON.parse(fs.readFileSync(full, 'utf8'));
+              if (!manifest.name) continue;
+              const parts = manifest.name.startsWith('@') ? manifest.name.split('/') : [manifest.name];
+              const destination = path.join(targetRoot, ...parts);
+              fs.mkdirSync(path.dirname(destination), { recursive: true });
+              fs.rmSync(destination, { recursive: true, force: true });
+              fs.symlinkSync(path.dirname(full), destination, 'dir');
+              projected += 1;
+            }
+          }
+          for (const root of roots) visit(root);
+          if (projected === 0) throw new Error('No DSH workspace packages projected');
+          console.log(`Projected ${projected} pinned DSH workspace packages`);
+          NODE
+          while read -r pkg_name; do
+            test -f "$SERIES1_DIR/node_modules/$pkg_name/package.json" || {
+              echo "Series 1 resolution is missing $pkg_name from DSH_PLUGIN_TREE" >&2
+              exit 1
+            }
+          done < <(node -e "import('./experiments/ql-runtime/comparison/series1/dsh.mjs').then((m) => console.log(m.DSH_PLUGIN_TREE.filter((n) => n.startsWith('@deepseek-ai/')).join('\n')))")
 
       - name: Preflight and execute matched benchmark
         shell: bash
@@ -127,15 +158,11 @@ jobs:
             PREFLIGHT_HOST=(--host '${{ inputs.host }}')
           fi
 
+          # Discover the task registry from tasks.mjs (SERIES1_TASKS) — never a
+          # transcribed id list that silently drops tasks added later.
           if [[ '${{ inputs.task }}' == 'all' ]]; then
-            TASKS=(
-              S1-CODE-001
-              S1-RESEARCH-001
-              S1-EPISTEMIC-001
-              S1-SKILL-001
-              S1-AGENCY-001
-              S1-RESTRAINT-001
-            )
+            mapfile -t TASKS < <(node -e "import('./experiments/ql-runtime/comparison/series1/tasks.mjs').then((m) => console.log(m.SERIES1_TASKS.map((t) => t.id).join('\n')))")
+            (( ${#TASKS[@]} > 0 )) || { echo "no Series 1 tasks discovered from tasks.mjs" >&2; exit 1; }
           else
             TASKS=('${{ inputs.task }}')
           fi

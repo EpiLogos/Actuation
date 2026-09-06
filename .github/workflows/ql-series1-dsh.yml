@@ -63,13 +63,15 @@ jobs:
           # workspace package names merely by seeing DSH's root node_modules.
           # Project every named workspace package explicitly into the Series 1
           # resolver while keeping each link pointed at the exact cloned source.
+          # The roots follow the pinned pnpm-workspace.yaml globs: packages/*/*,
+          # vendor/* (where @deepseek-ai/cordis lives) and apps/*.
           node <<'NODE'
           const fs = require('node:fs');
           const path = require('node:path');
 
           const dshRoot = process.env.DSH_DIR;
           const targetRoot = path.join(process.env.SERIES1_DIR, 'node_modules');
-          const roots = [path.join(dshRoot, 'packages')];
+          const roots = ['packages', 'vendor', 'apps'].map((dir) => path.join(dshRoot, dir));
           let projected = 0;
 
           function visit(dir) {
@@ -101,8 +103,17 @@ jobs:
           console.log(`Projected ${projected} pinned DSH workspace packages`);
           NODE
 
-          test -f "$SERIES1_DIR/node_modules/@deepseek-ai/cordis/package.json"
-          test -f "$SERIES1_DIR/node_modules/@deepseek-ai/dsh-agent/package.json"
+          # Assert the DSH packages the Series 1 provider imports
+          # (DSH_PLUGIN_TREE in dsh.mjs) resolve — the declared source, not a
+          # transcribed subset that missed vendored packages like cordis.
+          # Non-@deepseek-ai entries are Series 1's own runtime adapters,
+          # registered in-process, not node modules to project.
+          while read -r pkg_name; do
+            test -f "$SERIES1_DIR/node_modules/$pkg_name/package.json" || {
+              echo "Series 1 resolution is missing $pkg_name from DSH_PLUGIN_TREE" >&2
+              exit 1
+            }
+          done < <(node -e "import('./experiments/ql-runtime/comparison/series1/dsh.mjs').then((m) => console.log(m.DSH_PLUGIN_TREE.filter((n) => n.startsWith('@deepseek-ai/')).join('\n')))")
 
       - name: Pure DSH Series 1 invariants
         working-directory: experiments/ql-runtime/deep-ql

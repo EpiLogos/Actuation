@@ -14,7 +14,7 @@ Use this Skill when an authorised actor needs to inspect or request Actuation op
 - Authoritative source: this `SKILL.md`; projections are copies, never source
 - Contract version: `actuation.agency/v1`
 - Public contract: `contracts/agency.mjs` and `contracts/agency-v1.schema.json`
-- Verification: `node --test contracts/agency.test.mjs` plus `bash scripts/verify-native-skills.sh`
+- Verification: `npm test` (discovers every native suite; never a transcribed file list) plus `bash scripts/verify-native-skills.sh`
 - Risk class: authority-sensitive; inspection is not mutation
 
 ## Invariants

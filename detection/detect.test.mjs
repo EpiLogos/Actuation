@@ -99,12 +99,33 @@ test("all-probes-failed yields unavailable with a mandatory reason, not absence"
   assert.equal(record.absent.length, 0, "unavailable is never listed as absent");
 });
 
-test("safe live subset detects against the real machine", () => {
-  const safe = ["claude-code", "codex", "openclaw", "kimi"];
-  const record = runDetection({ descriptors: harnessDescriptors().filter((d) => safe.includes(d.slug)) });
+test("live catalog reports every harness honestly on this machine", () => {
+  // Live-machine evidence, not a presence requirement: a CI runner has none
+  // of these installed and "not-installed" is the truthful state there. The
+  // subset is not transcribed — the whole catalog is probed by discovery, so
+  // a new descriptor joins this check automatically. Strict presence for a
+  // specific machine is opt-in via ACTUATION_EXPECT_DETECTED=<slugs>.
+  const record = runDetection({ descriptors: harnessDescriptors() });
+  const catalogued = harnessDescriptors().map((descriptor) => descriptor.slug).sort();
+  assert.deepEqual(record.harnesses.map((entry) => entry.slug).sort(), catalogued);
   for (const entry of record.harnesses) {
-    assert.equal(entry.state, "detected", `${entry.slug} should be live on this machine`);
-    assert.ok(entry.receipts.executable, `${entry.slug} carries a receipt`);
+    if (entry.state === "detected") {
+      assert.ok(
+        entry.receipts?.executable || entry.receipts?.executable_is,
+        `${entry.slug} is detected and must carry a presence receipt`,
+      );
+    } else {
+      assert.equal(entry.state, "not-installed", `${entry.slug} must not be unavailable on a readable machine`);
+      assert.ok(record.absent.includes(entry.slug), `${entry.slug} absent list agrees with its state`);
+    }
+  }
+  const pinned = (process.env.ACTUATION_EXPECT_DETECTED ?? "")
+    .split(",").map((slug) => slug.trim()).filter(Boolean);
+  for (const slug of pinned) {
+    const entry = entryOf(record, slug);
+    assert.ok(entry, `ACTUATION_EXPECT_DETECTED names unknown slug: ${slug}`);
+    assert.equal(entry.state, "detected", `${slug} pinned live via ACTUATION_EXPECT_DETECTED`);
+    assert.ok(entry.receipts?.executable || entry.receipts?.executable_is, `${slug} carries a receipt`);
   }
 });
 
