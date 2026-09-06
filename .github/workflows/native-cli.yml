@@ -2,15 +2,6 @@ name: Native CLI
 
 on:
   pull_request:
-    paths:
-      - "bin/actuation"
-      - "cli/**"
-      - "contracts/**"
-      - "detection/**"
-      - "package.json"
-      - "README.md"
-      - ".oi/product.json"
-      - ".github/workflows/native-cli.yml"
   push:
     branches:
       - main
