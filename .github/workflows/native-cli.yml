@@ -6,6 +6,8 @@ on:
       - "bin/actuation"
       - "cli/**"
       - "contracts/**"
+      - "detection/**"
+      - "package.json"
       - ".oi/product.json"
       - ".github/workflows/native-cli.yml"
   push:
@@ -15,6 +17,8 @@ on:
       - "bin/actuation"
       - "cli/**"
       - "contracts/**"
+      - "detection/**"
+      - "package.json"
       - ".oi/product.json"
       - ".github/workflows/native-cli.yml"
 
@@ -26,7 +30,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node --test contracts/agency.test.mjs contracts/model-bearing.test.mjs contracts/realised-actuation.test.mjs contracts/actuation-stream.test.mjs contracts/activity.test.mjs cli/actuation.test.mjs
+      # npm test globs every native suite; a hardcoded file list here rots
+      # (it referenced contracts/model-bearing.test.mjs after the rename).
+      - run: npm test
       - run: ./bin/actuation --version
       - run: ./bin/actuation capabilities --json
       - run: ./bin/actuation verify --json

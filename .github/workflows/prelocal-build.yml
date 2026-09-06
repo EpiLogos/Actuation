@@ -4,15 +4,23 @@ on:
   pull_request:
     paths:
       - '.oi/product.json'
+      - 'bin/actuation'
+      - 'cli/**'
       - 'contracts/**'
+      - 'detection/**'
       - 'schemas/**'
+      - 'package.json'
       - '.github/workflows/prelocal-build.yml'
   push:
     branches: [main]
     paths:
       - '.oi/product.json'
+      - 'bin/actuation'
+      - 'cli/**'
       - 'contracts/**'
+      - 'detection/**'
       - 'schemas/**'
+      - 'package.json'
       - '.github/workflows/prelocal-build.yml'
 
 permissions:
@@ -26,7 +34,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test contracts/agency.test.mjs contracts/model-bearing.test.mjs contracts/realised-actuation.test.mjs
+      # npm test globs every native suite; a hardcoded file list here rots
+      # (it referenced contracts/model-bearing.test.mjs after the rename).
+      - run: npm test
 
   artifact:
     if: github.event_name == 'push'
@@ -44,10 +54,11 @@ jobs:
         run: |
           set -euo pipefail
           short_sha="${GITHUB_SHA::12}"
-          name="actuation-0.1.0-${short_sha}-component"
+          version="$(node -p "require('./package.json').version")"
+          name="actuation-${version}-${short_sha}-component"
           mkdir -p "dist/$name"
-          cp -R contracts schemas docs .oi "dist/$name/"
-          cp README.md "dist/$name/README.md"
+          cp -R bin cli contracts detection schemas docs .oi "dist/$name/"
+          cp package.json README.md "dist/$name/"
           printf '%s\n' "$GITHUB_SHA" > "dist/$name/source-commit.txt"
           tar -C dist -czf "dist/$name.tar.gz" "$name"
           shasum -a 256 "dist/$name.tar.gz" > "dist/$name.tar.gz.sha256"

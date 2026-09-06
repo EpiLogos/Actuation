@@ -478,6 +478,34 @@
         "availability"
       ],
       "additionalProperties": true
+    },
+    "catalog": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "actuation.harness-detection/v1"
+        },
+        "document": {
+          "const": "catalog"
+        },
+        "catalog_revision": {
+          "type": "integer"
+        },
+        "descriptors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/descriptor"
+          }
+        }
+      },
+      "required": [
+        "schema",
+        "document",
+        "catalog_revision",
+        "descriptors"
+      ],
+      "additionalProperties": true
     }
   },
   "type": "object",
@@ -490,6 +518,9 @@
     },
     {
       "$ref": "#/$defs/self"
+    },
+    {
+      "$ref": "#/$defs/catalog"
     }
   ]
 }

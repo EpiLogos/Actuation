@@ -136,13 +136,34 @@ The tuple is useful because it makes the relation inspectable. It is not the rea
 ## Install and use
 
 The CLI runs from a checkout (`node bin/actuation harness detect`) or
-installable via `npm link` from this repository (private, unregistered).
+installable via `npm link` (or `npm install -g .`) from this repository
+(private, unregistered). `actuation capabilities --json` reports the full
+command surface, contract versions and the git revision the binary was
+served from.
 
 ```text
-actuation capabilities --json
-actuation harness detect [--json]
-actuation instantiation record [--allow-unattributed] [file|-] [--json]
+actuation capabilities [--json]
+actuation contract list [--json]
+actuation agency [file|-] [--json]
+actuation realised [file|-] [--json]
+actuation stream [file|-] [--json]
+actuation activity [file|-] [--json]
+actuation instantiation [file|-] [--json]
+actuation instantiation record [--allow-unattributed] [--out <file>] [file|-] [--json]
+actuation harness catalog [--json]
+actuation harness detect [--only <slugs>] [--versions] [--json]
+actuation harness self [--json]
+actuation verify [--json]
 ```
+
+The command surface, help text and capabilities listing are all derived from
+one command table (`cli/commands.mjs`); parity is enforced by the test suite,
+so the CLI cannot lie about itself. `harness catalog` declares what can be
+detected, `harness detect` proves it live on this machine, and `--versions`
+enriches receipts by executing detected binaries with their declared
+`version_args` (opt-in: some version probes are slow or prompt the
+keychain; failures are disclosed, never folded into detection state).
+`instantiation record --out <file>` appends bound receipts as JSONL.
 
 ## Reference runtimes and experiments
 

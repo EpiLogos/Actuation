@@ -140,3 +140,126 @@ test("env probe records absence honestly when no marker is set", () => {
   assert.equal(envProbe.result, "pass");
   assert.equal(envProbe.detail, "no marker set");
 });
+
+test("probeVersions stamps entry.version from the descriptor-declared args", () => {
+  let probedWith;
+  const record = runDetection({
+    descriptors: [descriptor("versioned", {
+      probe: { executable: { names: ["versioned"], version_args: ["version"] } },
+    })],
+    effects: stubEffects({
+      resolveExecutable: () => ({ found: true, path: "/opt/bin/versioned" }),
+      versionProbe: (path, args) => {
+        probedWith = { path, args };
+        return { ok: true, version: "versioned 7.3.1" };
+      },
+    }),
+    probeVersions: true,
+  });
+  const entry = entryOf(record, "versioned");
+  assert.equal(entry.version, "versioned 7.3.1");
+  assert.deepEqual(probedWith, { path: "/opt/bin/versioned", args: ["version"] });
+});
+
+test("version probing is opt-in: plain detection never spawns binaries", () => {
+  let spawned = false;
+  const record = runDetection({
+    descriptors: [descriptor("versioned", { probe: { executable: { names: ["versioned"] } } })],
+    effects: stubEffects({
+      resolveExecutable: () => ({ found: true, path: "/opt/bin/versioned" }),
+      versionProbe: () => {
+        spawned = true;
+        return { ok: true, version: "1.0.0" };
+      },
+    }),
+  });
+  assert.equal(spawned, false);
+  assert.equal(entryOf(record, "versioned").version, undefined);
+});
+
+test("version probe failure is disclosed and never changes state", () => {
+  const record = runDetection({
+    descriptors: [descriptor("grumpy", { probe: { executable: { names: ["grumpy"] } } })],
+    effects: stubEffects({
+      resolveExecutable: () => ({ found: true, path: "/opt/bin/grumpy" }),
+      versionProbe: () => ({ ok: false, reason: "exit 1: keychain prompt refused" }),
+    }),
+    probeVersions: true,
+  });
+  const entry = entryOf(record, "grumpy");
+  assert.equal(entry.state, "detected");
+  assert.equal(entry.version, undefined);
+  assert.ok(record.disclosure.some((line) => line.startsWith("grumpy: version probe failed")));
+});
+
+test("config-dir receipts are not version-probed", () => {
+  let spawned = false;
+  const record = runDetection({
+    descriptors: [descriptor("configonly", { probe: { "config-dir": { path: "~/.configonly" } } })],
+    effects: stubEffects({
+      statProbe: (path) => path.startsWith("/home/tester/.configonly")
+        ? { exists: true, isDir: true, mtimeMs: 1, size: 2 }
+        : { exists: false },
+      versionProbe: () => {
+        spawned = true;
+        return { ok: true, version: "1.0.0" };
+      },
+    }),
+    probeVersions: true,
+  });
+  assert.equal(spawned, false);
+  assert.equal(entryOf(record, "configonly").version, undefined);
+});
+
+test("a live service probe is presence evidence with receipts via config-dir", () => {
+  const record = runDetection({
+    descriptors: [descriptor("daemonish", {
+      probe: {
+        "config-dir": { path: "~/.daemonish" },
+        service: { kind: "daemon", name: "daemonish" },
+      },
+    })],
+    effects: stubEffects({
+      statProbe: (path) => path.startsWith("/home/tester/.daemonish")
+        ? { exists: true, isDir: true, mtimeMs: 1, size: 2 }
+        : { exists: false },
+      serviceProbe: () => ({ ok: true, detail: "daemon daemonish running" }),
+    }),
+  });
+  const entry = entryOf(record, "daemonish");
+  assert.equal(entry.state, "detected");
+  assert.equal(entry.receipts.executable_is, "config-dir");
+  const service = entry.probes.find((probe) => probe.kind === "service");
+  assert.equal(service.result, "pass");
+  assert.equal(service.detail, "daemon daemonish running");
+});
+
+test("a clean service absence is not presence evidence", () => {
+  const record = runDetection({
+    descriptors: [descriptor("sleepy", {
+      probe: { "config-dir": { path: "~/.sleepy" }, service: { kind: "http", default_url: "http://127.0.0.1:1" } },
+    })],
+    effects: stubEffects({
+      serviceProbe: () => ({ ok: true, detail: "no listener at http://127.0.0.1:1" }),
+    }),
+  });
+  const entry = entryOf(record, "sleepy");
+  assert.equal(entry.state, "not-installed");
+  const service = entry.probes.find((probe) => probe.kind === "service");
+  assert.equal(service.result, "pass");
+  assert.equal(service.detail, "no listener at http://127.0.0.1:1");
+});
+
+test("a failed service probe is a mechanism failure, never absence", () => {
+  const record = runDetection({
+    descriptors: [descriptor("brokensvc", {
+      probe: { service: { kind: "http", default_url: "http://127.0.0.1:1" } },
+    })],
+    effects: stubEffects({
+      serviceProbe: () => ({ ok: false, reason: "curl unavailable: spawn ENOENT" }),
+    }),
+  });
+  const entry = entryOf(record, "brokensvc");
+  assert.equal(entry.state, "unavailable");
+  assert.match(entry.unavailable_reason, /all probes failed/);
+});

@@ -76,7 +76,12 @@ function probeEntry(descriptor, effects) {
   return { probes, disclosure, wanted };
 }
 
-// Presence = executable resolved, config dir exists, or service probe passed.
+// Presence = executable resolved, config dir exists, or a live service probe.
+// Service presence is matched on the documented detail conventions of
+// probes.mjs ("http <code> from ...", "daemon <name> running"); any other
+// pass — including the declared-not-verified fallback — is not presence.
+const SERVICE_PRESENCE = /^(http \d{3} from |daemon .+ running$)/;
+
 function hasPresenceEvidence(probes) {
   const executable = probes.find((probe) => probe.kind === "executable");
   const configDir = probes.find((probe) => probe.kind === "config-dir");
@@ -84,7 +89,7 @@ function hasPresenceEvidence(probes) {
   return Boolean(
     (executable && executable.result === "pass" && executable.detail && !/not found/.test(executable.detail))
     || (configDir && configDir.result === "pass" && /exists at /.test(configDir.detail ?? ""))
-    || (service && service.result === "pass" && !/not implemented/.test(service.detail ?? "")),
+    || (service && service.result === "pass" && SERVICE_PRESENCE.test(service.detail ?? "")),
   );
 }
 
@@ -139,9 +144,13 @@ function observeFacets(descriptor, effects, disclosure) {
 
 /**
  * Run one detection pass over the given descriptors. `effects` is injectable
- * for hermetic tests; the default probes this machine for real.
+ * for hermetic tests; the default probes this machine for real. Version
+ * probing is opt-in (`probeVersions`): it executes each detected binary with
+ * its descriptor-declared version_args, which can be slow and — for some
+ * harnesses — can prompt the keychain, so plain detection never spawns
+ * harness binaries. Failures are disclosed, never folded into state.
  */
-export function runDetection({ descriptors, effects = realEffects(), now = new Date() }) {
+export function runDetection({ descriptors, effects = realEffects(), now = new Date(), probeVersions = false }) {
   const entries = [];
   const disclosure = [];
   for (const descriptor of descriptors) {
@@ -163,14 +172,30 @@ export function runDetection({ descriptors, effects = realEffects(), now = new D
         entry.state = "not-installed";
         delete entry.receipts;
         entry.probes.push(probeRecord("receipts", "fail", null, "presence evidence collapsed; no receipts captured"));
+      } else if (probeVersions) {
+        enrichWithVersion(entry, descriptor, effects, disclosure);
       }
     }
     entries.push(entry);
   }
-  return finishRecord(entries, descriptors, now);
+  return finishRecord(entries, descriptors, now, disclosure);
 }
 
-function finishRecord(entries, descriptors, now) {
+// Version is receipt enrichment over an already-proven executable: success
+// stamps entry.version, failure is disclosed and changes nothing.
+function enrichWithVersion(entry, descriptor, effects, disclosure) {
+  const executable = entry.receipts.executable;
+  if (!executable || entry.receipts.executable_is) return;
+  const args = descriptor.probe.executable?.version_args ?? ["--version"];
+  const probed = effects.versionProbe(executable, args);
+  if (probed.ok) {
+    entry.version = probed.version;
+  } else {
+    disclosure.push(`${descriptor.slug}: version probe failed (${probed.reason ?? "no reason captured"})`);
+  }
+}
+
+function finishRecord(entries, descriptors, now, disclosure = []) {
   const record = harnessDetection({
     schema: "actuation.harness-detection/v1",
     document: "detection",
@@ -181,6 +206,7 @@ function finishRecord(entries, descriptors, now) {
     harnesses: entries,
     absent: entries.filter((entry) => entry.state === "not-installed").map((entry) => entry.slug),
     availability: entries.some((entry) => entry.state === "unavailable") ? "partial" : "complete",
+    ...(disclosure.length ? { disclosure } : {}),
   });
   return record;
 }

@@ -148,6 +148,9 @@ export function validateHarnessDetection(input) {
     if (entry.state === "unavailable") {
       ref(entry.unavailable_reason, `${name}.unavailable_reason (mandatory when unavailable)`);
     }
+    if (entry.version != null && (typeof entry.version !== "string" || entry.version.trim() === "")) {
+      throw new TypeError(`${name}.version must be a non-empty string when present (live version receipt)`);
+    }
     if (entry.state === "detected") {
       const probes = entry.probes ?? [];
       if (!Array.isArray(probes) || !probes.some((probe) => probe.result === "pass")) {
@@ -276,6 +279,42 @@ export function validateHarnessSelf(input) {
 
 export function harnessSelf(input) {
   validateHarnessSelf(input);
+  return structuredClone(input);
+}
+
+/**
+ * The declared catalog itself: what this product COULD detect, independent
+ * of any live run. Descriptors are validated individually; the catalog
+ * document only adds revision and listing discipline (unique slugs, in
+ * catalog order).
+ */
+export function validateHarnessCatalog(input) {
+  const catalog = record(input, "HarnessCatalog");
+  if (catalog.schema !== HARNESS_DETECTION_VERSION) {
+    throw new TypeError(`HarnessCatalog.schema must equal ${HARNESS_DETECTION_VERSION}`);
+  }
+  if (catalog.document !== "catalog") {
+    throw new TypeError("HarnessCatalog.document must be catalog");
+  }
+  if (catalog.catalog_revision == null || !Number.isInteger(catalog.catalog_revision)) {
+    throw new TypeError("HarnessCatalog.catalog_revision must be an integer");
+  }
+  if (!Array.isArray(catalog.descriptors) || catalog.descriptors.length === 0) {
+    throw new TypeError("HarnessCatalog.descriptors must be a non-empty array");
+  }
+  const seen = new Set();
+  for (const [index, descriptor] of catalog.descriptors.entries()) {
+    validateHarnessDescriptor(descriptor);
+    if (seen.has(descriptor.slug)) {
+      throw new TypeError(`HarnessCatalog.descriptors[${index}]: duplicate slug ${descriptor.slug}`);
+    }
+    seen.add(descriptor.slug);
+  }
+  return catalog;
+}
+
+export function harnessCatalog(input) {
+  validateHarnessCatalog(input);
   return structuredClone(input);
 }
 

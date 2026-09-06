@@ -7,6 +7,7 @@ import { homedir } from "node:os";
 import { delimiter, join, resolve } from "node:path";
 
 const VERSION_TIMEOUT_MS = 5000;
+const SERVICE_TIMEOUT_MS = 4000;
 
 function expandHome(path) {
   return path.startsWith("~") ? join(homedir(), path.slice(1)) : resolve(path);
@@ -91,6 +92,45 @@ function envProbe(names, env = process.env) {
   }
 }
 
+// Service probes stay synchronous and injectable like every other effect.
+// Result convention mirrors the executable probe: ok:true with a
+// presence-shaped detail ("http 200 from ...", "daemon x running") is live
+// evidence; ok:true with an absence-shaped detail ("no listener at ...",
+// "daemon x not running") ran cleanly and found nothing; ok:false means the
+// probe mechanism itself could not run and must never read as absence.
+function httpServiceProbe(spec) {
+  const url = spec.default_url ?? spec.url;
+  if (!url) return { ok: false, reason: "http service probe requires default_url" };
+  const run = spawnSync("curl", ["-sS", "--max-time", "2", "-o", "/dev/null", "-w", "%{http_code}", url], {
+    encoding: "utf8",
+    timeout: SERVICE_TIMEOUT_MS,
+  });
+  if (run.error) return { ok: false, reason: `curl unavailable: ${run.error.message}` };
+  if (run.status === 0) {
+    const code = (run.stdout || "").trim();
+    return /^\d{3}$/.test(code)
+      ? { ok: true, detail: `http ${code} from ${url}` }
+      : { ok: false, reason: `unparseable curl output: ${code || "(empty)"}` };
+  }
+  if (run.status === 7) return { ok: true, detail: `no listener at ${url}` };
+  return { ok: false, reason: `curl exit ${run.status}: ${(run.stderr || "").trim().slice(0, 200)}` };
+}
+
+function daemonServiceProbe(spec) {
+  if (!spec.name) return { ok: false, reason: "daemon service probe requires name" };
+  const run = spawnSync("pgrep", ["-x", spec.name], { encoding: "utf8", timeout: SERVICE_TIMEOUT_MS });
+  if (run.error) return { ok: false, reason: `pgrep unavailable: ${run.error.message}` };
+  if (run.status === 0) return { ok: true, detail: `daemon ${spec.name} running` };
+  if (run.status === 1) return { ok: true, detail: `daemon ${spec.name} not running` };
+  return { ok: false, reason: `pgrep exit ${run.status}` };
+}
+
+function serviceProbe(spec) {
+  if (spec?.kind === "http") return httpServiceProbe(spec);
+  if (spec?.kind === "daemon") return daemonServiceProbe(spec);
+  return { ok: false, reason: `unsupported service kind: ${spec?.kind ?? "(none)"}` };
+}
+
 export function realEffects() {
   return {
     resolveExecutable,
@@ -99,6 +139,7 @@ export function realEffects() {
     hashProbe,
     dirCountProbe,
     envProbe,
+    serviceProbe,
     expandHome,
   };
 }

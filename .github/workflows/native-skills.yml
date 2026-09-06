@@ -26,4 +26,4 @@ jobs:
         with:
           node-version: 22
       - run: bash scripts/verify-native-skills.sh
-      - run: node --test contracts/agency.test.mjs
+      - run: npm test

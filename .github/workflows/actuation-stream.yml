@@ -26,5 +26,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node --test contracts/actuation-stream.test.mjs
+      - run: npm test
       - run: node -e 'JSON.parse(require("fs").readFileSync("contracts/actuation-stream-v1.schema.json", "utf8"))'

@@ -2,7 +2,7 @@
   "schema": "oi.product-lifecycle/v1",
   "id": "actuation",
   "public_name": "Actuation",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "repository": "https://github.com/EpiLogos/Actuation",
   "source_checkout": "Actuation",
   "artifact": {
