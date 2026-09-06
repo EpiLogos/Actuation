@@ -11,6 +11,12 @@ import { ACTUATION_CLI_SURFACE } from "./surface.mjs";
 import { agencyReadModel } from "../contracts/agency.mjs";
 import { realisedActuationReadModel } from "../contracts/realised-actuation.mjs";
 import { actuationStreamReadModel } from "../contracts/actuation-stream.mjs";
+import {
+  closeDurableStream,
+  openDurableStream,
+  recordBoundaryOccurrence,
+  replayDurableStream,
+} from "../contracts/actuation-stream-store.mjs";
 import { validateActivity } from "../contracts/activity.mjs";
 import { instantiationReceipt, attachDetectionEvidence } from "../contracts/instantiation.mjs";
 import { harnessCatalog as harnessCatalogDocument } from "../contracts/harness-detection.mjs";
@@ -98,6 +104,18 @@ function humanStream(value) {
   return `ActuationStream ${value.stream_ref}\nActuation: ${value.actuation_ref}\nAgency: ${value.agency_ref}\nState: ${value.lifecycle.state}\nEvents: ${value.events.length}`;
 }
 
+function humanStreamRecord(value) {
+  const metadata = value.event.metadata ?? {};
+  const boundary = metadata.boundary == null ? "unmapped (custom)" : metadata.boundary;
+  return `Recorded ${metadata.native_event ?? value.event.kind} (${boundary}) as ${value.event.event_ref}\nStream: ${value.stream_ref}\nSequence: ${value.event.sequence}  Next: ${value.cursor.next_sequence}  State: ${value.lifecycle.state}`;
+}
+
+function humanStreamReplay(value) {
+  const lines = value.events.map((event) => `  ${String(event.sequence).padStart(4)}  ${event.kind.padEnd(14)} ${event.event_ref}  ${event.observed_at ?? ""}${event.metadata?.native_event ? ` (${event.metadata.native_event})` : ""}`);
+  const cursor = `cursor: after ${value.cursor.after_sequence}, returned through ${value.cursor.returned_through}${value.cursor.has_more ? " (more available)" : ""}`;
+  return `${humanStream(value)}\n${cursor}${lines.length ? `\n${lines.join("\n")}` : ""}`;
+}
+
 function humanActivity(value) {
   return `Activity ${value.activity_ref}\n${value.summary}\n${value.phase} / ${value.outcome}\nSubject: ${value.subject_ref}\nOwner: ${value.native_owner}`;
 }
@@ -169,6 +187,34 @@ export const COMMANDS = Object.freeze([
     usage: "actuation stream [file|-] [--json]",
     input: true,
     run: ({ args, json, stdin }) => output(actuationStreamReadModel(readJsonInput(args[0] ?? "-", stdin)), json, humanStream),
+  },
+  {
+    name: "stream.open",
+    route: ["stream", "open"],
+    usage: "actuation stream open [--store <dir>] [file|-] [--json]",
+    input: true,
+    run: ({ args, json, stdin }) => streamOpen(args, stdin, json),
+  },
+  {
+    name: "stream.record",
+    route: ["stream", "record"],
+    usage: "actuation stream record [--store <dir>] [file|-] [--json]",
+    input: true,
+    run: ({ args, json, stdin }) => streamRecord(args, stdin, json),
+  },
+  {
+    name: "stream.replay",
+    route: ["stream", "replay"],
+    usage: "actuation stream replay <stream_ref> [--after <n>] [--limit <n>] [--store <dir>] [--json]",
+    input: false,
+    run: ({ args, json }) => streamReplay(args, json),
+  },
+  {
+    name: "stream.close",
+    route: ["stream", "close"],
+    usage: "actuation stream close <stream_ref> [--state closed|interrupted|cancelled] [--ended-at <ts>] [--store <dir>] [--json]",
+    input: false,
+    run: ({ args, json }) => streamClose(args, json),
   },
   {
     name: "activity.read",
@@ -276,6 +322,55 @@ function instantiationRecord(args, stdin, json) {
     : `bound to ${bound.harness_ref} via ${bound.detection_ref}`;
   const persisted = outPath ? `; appended to ${outPath}` : "";
   return { code: 0, stdout: `Instantiation recorded: ${line}; model ${bound.model_relation.model_ref}${persisted}` };
+}
+
+function streamOpen(args, stdin, json) {
+  const store = flagValue(args, "--store");
+  const inputPath = args.find((arg) => !arg.startsWith("--"));
+  const input = readJsonInput(inputPath ?? "-", stdin);
+  const value = openDurableStream({ root: store, ...input });
+  return output(value, json, humanStream);
+}
+
+// Boundary occurrence recording is descriptor-driven: the harness's own
+// capability descriptor decides whether the named native event exists and what
+// AIKit boundary (if any) it maps to. An undeclared event is refused — that is
+// the whole point of declaring the surface.
+function streamRecord(args, stdin, json) {
+  const store = flagValue(args, "--store");
+  const inputPath = args.find((arg) => !arg.startsWith("--"));
+  const input = readJsonInput(inputPath ?? "-", stdin);
+  const value = recordBoundaryOccurrence({ root: store, ...input });
+  return output(value, json, humanStreamRecord);
+}
+
+function streamReplay(args, json) {
+  const store = flagValue(args, "--store");
+  const afterRaw = flagValue(args, "--after");
+  const limitRaw = flagValue(args, "--limit");
+  const streamRef = args.find((arg) => !arg.startsWith("--"));
+  if (streamRef == null) {
+    throw new TypeError("stream replay requires a stream_ref");
+  }
+  const afterSequence = afterRaw == null ? 0 : Number(afterRaw);
+  const limit = limitRaw == null ? undefined : Number(limitRaw);
+  if (Number.isNaN(afterSequence) || Number.isNaN(limit)) {
+    throw new TypeError("--after and --limit must be non-negative integers");
+  }
+  const value = replayDurableStream({ root: store, stream_ref: streamRef, afterSequence, limit });
+  return output(value, json, humanStreamReplay);
+}
+
+function streamClose(args, json) {
+  const store = flagValue(args, "--store");
+  const state = flagValue(args, "--state");
+  const endedAt = flagValue(args, "--ended-at");
+  const streamRef = args.find((arg) => !arg.startsWith("--"));
+  if (streamRef == null) {
+    throw new TypeError("stream close requires a stream_ref");
+  }
+  const value = closeDurableStream({ root: store, stream_ref: streamRef, state, ended_at: endedAt });
+  return output(value, json, humanStream);
 }
 
 function harnessDetect(args, json) {
