@@ -68,6 +68,16 @@ A `return` event must correlate an explicit `return_ref`. Return therefore remai
 
 The Journal is a conformance/reference body, not a requirement that every runtime store its Stream in JavaScript memory. A Workcell service, harness adapter, gateway or other provider may implement persistence/subscription differently while preserving the portable contract.
 
+## Durable store (first-party)
+
+Occurrence recording (harness boundaries landing as `harness-event` events) needs a durable store. The first-party decision, implemented in `contracts/actuation-stream-store.mjs`:
+
+- **One append-only JSONL file per stream** under a store root (default `~/.actuation/streams`; override with `--store` or `ACTUATION_STREAM_STORE`). Line 1 is the stream header (identities, lifecycle); every following line is exactly one committed event. The filename is the percent-encoded `stream_ref` — reversible, collision-free, and unable to traverse.
+- **The portable contract is the only law.** Loading folds header + event lines and must validate as an `ActuationStream` with an exact contiguous cursor; an event line that violates the contract (gap, duplicate, malformed JSON) refuses the load and names the file position. A torn tail is never silently dropped.
+- **Appends are single-line writes; lifecycle transitions rewrite atomically** (temp file + rename). Event material is never rewritten.
+- **Recording is descriptor-driven.** `stream record` validates the named native event against the harness's own capability descriptor before normalizing: an undeclared event is refused, a declared event records as `kind: "harness-event"` with `metadata.boundary` carrying its AIKit boundary mapping (`null` for the descriptor's disclosed customs).
+- **Identity is consistent or refused.** Reopening an existing `stream_ref` with different `actuation_ref` / `agency_ref` / `agent_session_ref` fails; a caller-supplied `event_ref` that already exists fails (crash-retry visible, never silently deduplicated).
+
 ## O:I gateway / Cradle consequence
 
 The first-party Agency Gateway and Cradle should consume this canonical Stream rather than promote AIKit provider `ConnectionSignal` or a platform-native message trace into a second event ontology.
