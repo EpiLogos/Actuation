@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>Actuation — product ground</title>
+<meta name="description" content="Actuation: a candidate sixfold account of agency, acting, identity and Return, with native capability references.">
+<style>
+:root{
+  --left-w:286px;
+  --right-w:326px;
+  --top-h:56px;
+  --paper:#f5f8fb;
+  --sheet:#ffffff;
+  --sheet-2:#eef4f8;
+  --ink:#132235;
+  --muted:#5e6d7f;
+  --faint:#8c98a7;
+  --line:#d8e1e9;
+  --line-strong:#bdcad6;
+  --blue:#1f5f9d;
+  --blue-deep:#184c7c;
+  --blue-soft:#e7f0fa;
+  --teal:#197f82;
+  --teal-soft:#e6f4f3;
+  --orange:#a45c2e;
+  --orange-soft:#f5ece6;
+  --danger:#9b4e50;
+  --success:#477a5e;
+  --focus:#2a78c5;
+  --shadow:0 12px 34px rgba(22,43,68,.08);
+  --radius:14px;
+  --reading:78ch;
+  --wide:1120px;
+  --full:1400px;
+  --ui:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --serif:Georgia,"Times New Roman",Times,serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+html[data-theme="dark"]{
+  --paper:#071320;
+  --sheet:#0c1b2c;
+  --sheet-2:#10243a;
+  --ink:#e7edf5;
+  --muted:#a7b4c4;
+  --faint:#7c8ba0;
+  --line:#21364d;
+  --line-strong:#35536f;
+  --blue:#77abe5;
+  --blue-deep:#9bc5ef;
+  --blue-soft:#102e4d;
+  --teal:#5ab5b3;
+  --teal-soft:#103536;
+  --orange:#c57a45;
+  --orange-soft:#3b281d;
+  --danger:#ce8587;
+  --success:#80ad92;
+  --focus:#8ec3ff;
+  --shadow:0 18px 42px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:auto;background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:16.5px;line-height:1.7;text-rendering:optimizeLegibility}
+button,input,textarea,select{font:inherit}
+a{color:var(--blue);text-decoration-thickness:.08em;text-underline-offset:.16em}
+a:hover{color:var(--teal)}
+button{color:inherit}
+::selection{background:var(--blue-soft)}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--focus) 65%,transparent);outline-offset:2px}
+.app{min-height:100vh;display:grid;grid-template-columns:var(--left-w) minmax(0,1fr) var(--right-w);grid-template-rows:var(--top-h) 1fr;grid-template-areas:"top top top" "left main right";transition:grid-template-columns .18s ease}
+body.left-closed .app{grid-template-columns:0 minmax(0,1fr) var(--right-w)}
+body.right-closed .app{grid-template-columns:var(--left-w) minmax(0,1fr) 0}
+body.left-closed.right-closed .app{grid-template-columns:0 minmax(0,1fr) 0}
+.topbar{grid-area:top;position:sticky;top:0;z-index:80;height:var(--top-h);display:flex;align-items:center;gap:9px;padding:0 12px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--sheet) 94%,transparent);backdrop-filter:blur(14px)}
+.brand{min-width:0;margin-right:auto;display:flex;align-items:baseline;gap:10px;font-family:var(--ui)}
+.brand strong{font-size:12px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.brand span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:11.5px}
+.icon-btn{width:34px;height:34px;display:grid;place-items:center;padding:0;border:1px solid var(--line);border-radius:9px;background:var(--sheet);cursor:pointer;font:700 13px/1 var(--ui)}
+.icon-btn:hover{background:var(--blue-soft);border-color:var(--line-strong)}
+.route-chip{max-width:230px;height:32px;display:flex;align-items:center;gap:7px;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:var(--sheet);color:var(--muted);font:600 10.5px/1 var(--ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.route-chip code{color:var(--teal);font:800 10px/1 var(--mono)}
+.left-rail,.right-rail{position:sticky;top:var(--top-h);height:calc(100vh - var(--top-h));overflow:auto;background:var(--sheet);z-index:50;transition:transform .18s ease,opacity .18s ease}
+.left-rail{grid-area:left;border-right:1px solid var(--line);padding:18px 13px 34px}
+.right-rail{grid-area:right;border-left:1px solid var(--line);padding:18px 16px 34px}
+body.left-closed .left-rail{transform:translateX(-100%);opacity:0;pointer-events:none}
+body.right-closed .right-rail{transform:translateX(100%);opacity:0;pointer-events:none}
+.main{grid-area:main;min-width:0;background:var(--paper);container-type:inline-size;container-name:account-main}
+.rail-label{margin:4px 7px 10px;color:var(--faint);font:750 9.5px/1.2 var(--ui);letter-spacing:.12em;text-transform:uppercase}
+.surface-nav{display:grid;gap:5px}.nav-group{border-radius:10px}.nav-head{display:grid;grid-template-columns:minmax(0,1fr) 30px;align-items:stretch}.nav-select,.nav-toggle{border:0;background:transparent;cursor:pointer}.nav-select{display:grid;grid-template-columns:36px minmax(0,1fr);gap:7px;text-align:left;padding:9px 7px;border-radius:9px 0 0 9px}.nav-toggle{border-radius:0 9px 9px 0;font:800 11px/1 var(--ui);color:var(--muted)}.nav-head:hover .nav-select,.nav-head:hover .nav-toggle{background:var(--blue-soft)}.nav-group.active>.nav-head .nav-select,.nav-group.active>.nav-head .nav-toggle{background:var(--blue-soft)}.nav-group.active>.nav-head .nav-select{box-shadow:inset 3px 0 0 var(--blue)}.nav-q{font:800 10.5px/1.5 var(--mono);color:var(--blue)}.nav-name{font:700 11.5px/1.3 var(--ui);color:var(--ink)}.nav-gloss{display:block;margin-top:2px;color:var(--muted);font:400 10px/1.35 var(--ui)}.nav-toggle span{display:inline-block;transition:transform .15s ease}.nav-group.expanded .nav-toggle span{transform:rotate(90deg)}.subnav{display:none;margin:2px 0 5px 35px;padding:2px 0 5px 7px;border-left:1px solid var(--line)}.nav-group.expanded .subnav{display:grid;gap:1px}.subnav a{display:grid;grid-template-columns:32px minmax(0,1fr);gap:5px;padding:6px 8px;border-radius:7px;color:var(--muted);text-decoration:none;font:10.5px/1.35 var(--ui)}.subnav a:hover{background:var(--sheet-2);color:var(--ink)}.subnav a.active{background:var(--teal-soft);color:var(--ink)}.subnav code{font:800 9.5px/1.35 var(--mono);color:var(--teal)}
+.context-head{padding-bottom:15px;margin-bottom:14px;border-bottom:1px solid var(--line)}.context-kicker{margin-bottom:7px;color:var(--faint);font:750 9.5px/1 var(--ui);letter-spacing:.11em;text-transform:uppercase}.context-head h3{margin:0 0 5px;font:600 17px/1.25 var(--serif)}.context-head p{margin:0;color:var(--muted);font:11.5px/1.5 var(--ui)}.note-field{margin-top:15px}body[data-notes="false"] .note-field{display:none}.note-field label{display:block;margin-bottom:7px;color:var(--muted);font:700 10.5px/1.35 var(--ui)}.note-field textarea{width:100%;min-height:128px;resize:vertical;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);outline:none;font:12.5px/1.55 var(--ui)}.note-field textarea:focus{border-color:var(--blue)}.save-state{margin-top:5px;color:var(--faint);font:9.5px/1.3 var(--ui)}.context-slot{margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}.context-slot:empty{display:none}.context-slot h4{margin:0 0 8px;font:750 10px/1.3 var(--ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.right-details{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}.right-details summary{cursor:pointer;color:var(--muted);font:700 10.5px/1.4 var(--ui)}.meta-list{display:grid;gap:7px;margin:10px 0 0}.meta-row{display:grid;grid-template-columns:72px 1fr;gap:8px;font:10px/1.45 var(--ui)}.meta-row dt{color:var(--faint)}.meta-row dd{margin:0;color:var(--muted);overflow-wrap:anywhere}.source-list{display:grid;gap:8px;margin-top:10px}.source-list a{display:block;padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:var(--paper);text-decoration:none;color:var(--ink);font:10.5px/1.4 var(--ui)}.source-list a:hover{border-color:var(--blue)}.source-empty{margin-top:9px;color:var(--faint);font:10px/1.4 var(--ui)}
+.surface{display:none;min-height:calc(100vh - var(--top-h));padding:clamp(34px,4vw,68px) clamp(22px,5vw,84px) 112px}.surface.active{display:block}.surface-inner{width:min(100%,var(--surface-max,var(--full)));margin:0 auto}.hero{margin-bottom:clamp(70px,8vw,118px);padding-bottom:clamp(34px,5vw,58px);border-bottom:1px solid var(--line)}.hero-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;font-family:var(--ui)}.ql-badge{display:inline-flex;align-items:center;height:27px;padding:0 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font:800 10.5px/1 var(--mono)}.hero-label{color:var(--muted);font:750 10px/1 var(--ui);letter-spacing:.09em;text-transform:uppercase}h1{max-width:18ch;margin:0;font-family:var(--serif);font-size:clamp(40px,5vw,66px);font-weight:500;line-height:1.02;letter-spacing:-.03em}.hero-deck{max-width:var(--reading);margin:20px 0 0;color:var(--muted);font-size:clamp(18px,1.8vw,22px);line-height:1.5}.hero-meta{display:flex;gap:10px 16px;flex-wrap:wrap;margin-top:22px;color:var(--faint);font:10.5px/1.4 var(--ui)}.ql-node{scroll-margin-top:calc(var(--top-h) + 26px);margin:0 0 clamp(76px,9vw,126px)}.node-head{margin-bottom:clamp(28px,3.4vw,40px)}.node-eyebrow{margin-bottom:10px;color:var(--teal);font:750 9.5px/1.2 var(--ui);letter-spacing:.1em;text-transform:uppercase}.ql-node h2{max-width:25ch;margin:0;font-family:var(--serif);font-size:clamp(26px,3vw,40px);font-weight:500;line-height:1.12;letter-spacing:-.018em}.node-deck{max-width:var(--reading);margin:13px 0 0;color:var(--muted);font-size:17.5px;line-height:1.58}.prose{max-width:var(--reading);font-size:16.5px;line-height:1.72}.prose p{margin:0 0 1em}.prose p:last-child{margin-bottom:0}.prose h3{margin:2.2em 0 .7em;font:600 22px/1.25 var(--serif)}.prose h4{margin:1.8em 0 .55em;font:750 12px/1.35 var(--ui);letter-spacing:.03em}.prose ul,.prose ol{margin:.9em 0 1.2em;padding-left:1.35em}.prose li{margin:.32em 0}.prose blockquote{margin:28px 0;padding:0 0 0 18px;border-left:3px solid var(--teal);color:var(--muted);font-size:18px;line-height:1.6}.prose code{font:90%/1 var(--mono);background:var(--sheet-2);padding:.12em .28em;border-radius:4px}.reading{width:min(100%,var(--reading))}.wide{width:min(100%,var(--wide))}.full{width:min(100%,var(--full))}.centered{margin-left:auto;margin-right:auto}
+.definition,.claim,.note,.warning,.evidence{max-width:var(--reading);margin:28px 0;padding:18px 20px;border-radius:0 12px 12px 0;background:var(--sheet);border:1px solid var(--line);border-left:4px solid var(--blue)}.definition{background:var(--blue-soft)}.claim{border-left-color:var(--teal);background:var(--teal-soft)}.note{border-left-color:var(--line-strong)}.warning{border-left-color:var(--orange);background:var(--orange-soft)}.evidence{border-left-color:var(--success)}.block-label{margin-bottom:7px;color:var(--muted);font:800 9.5px/1.3 var(--ui);letter-spacing:.08em;text-transform:uppercase}.definition p,.claim p,.note p,.warning p,.evidence p{margin:0;font-size:15.5px;line-height:1.6}.figure{margin:34px 0;overflow:hidden;border:1px solid var(--line);border-radius:var(--radius);background:var(--sheet);box-shadow:var(--shadow)}.figure-head{display:flex;justify-content:space-between;gap:14px;align-items:start;padding:14px 16px;border-bottom:1px solid var(--line);font-family:var(--ui)}.figure-head strong{font-size:11.5px;line-height:1.35}.figure-head span{color:var(--muted);font-size:10px;line-height:1.4;text-align:right}.figure-body{padding:clamp(14px,2vw,24px);overflow:auto}.figure figcaption{padding:12px 16px 14px;border-top:1px solid var(--line);color:var(--muted);font:10.8px/1.55 var(--ui)}.svg-wrap svg{display:block;width:100%;height:auto}.svg-wrap.scroll-x svg{min-width:720px}.table-wrap{margin:28px 0;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--sheet)}table{width:100%;border-collapse:collapse;font:12.5px/1.5 var(--ui)}th,td{padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}th{background:var(--sheet-2);color:var(--muted);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase}tr:last-child td{border-bottom:0}.code-block,.equation{margin:28px 0;border:1px solid var(--line);border-radius:12px;background:var(--sheet);overflow:auto}.code-block pre{margin:0;padding:18px 20px;font:12.5px/1.6 var(--mono)}.equation{padding:20px 22px;font:500 clamp(20px,2.6vw,30px)/1.4 var(--serif)}.source-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:28px 0}.source-card{display:block;padding:14px 15px;border:1px solid var(--line);border-radius:12px;background:var(--sheet);text-decoration:none;color:var(--ink)}.source-card:hover{border-color:var(--blue);box-shadow:var(--shadow)}.source-card strong{display:block;font:700 11.5px/1.4 var(--ui)}.source-card span{display:block;margin-top:4px;color:var(--muted);font:10.5px/1.5 var(--ui)}.two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,54px);align-items:start}.three-col{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.mockup-frame{margin:32px 0;border:1px solid var(--line-strong);border-radius:16px;background:var(--sheet);overflow:hidden;box-shadow:var(--shadow)}.mockup-toolbar{height:38px;display:flex;align-items:center;gap:6px;padding:0 12px;border-bottom:1px solid var(--line);background:var(--sheet-2)}.mockup-dot{width:8px;height:8px;border-radius:50%;background:var(--line-strong)}.mockup-body{min-height:260px;padding:20px}.controls{display:grid;gap:18px;padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--sheet)}.control-row{display:grid;grid-template-columns:minmax(150px,.5fr) minmax(0,1fr) auto;gap:14px;align-items:center;font-family:var(--ui)}.control-row label{font-size:11.5px;font-weight:700}.control-row output{min-width:64px;text-align:right;color:var(--teal);font:800 11px/1 var(--mono)}input[type="range"]{width:100%;accent-color:var(--teal)}.toggle-row{display:flex;gap:7px;flex-wrap:wrap}.toggle-row button{padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--paper);cursor:pointer;font:700 10.5px/1.2 var(--ui)}.toggle-row button[aria-pressed="true"]{border-color:var(--blue);background:var(--blue);color:#fff}.timeline{position:relative;display:grid;gap:18px;margin:28px 0;padding-left:26px}.timeline:before{content:"";position:absolute;left:7px;top:5px;bottom:5px;width:1px;background:var(--line-strong)}.timeline-item{position:relative}.timeline-item:before{content:"";position:absolute;left:-23px;top:.55em;width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px var(--paper)}.timeline-item time{display:block;margin-bottom:3px;color:var(--faint);font:700 9.5px/1.3 var(--ui)}.timeline-item h4{margin:0 0 4px;font:650 16px/1.3 var(--serif)}.timeline-item p{margin:0;color:var(--muted);font:11.5px/1.5 var(--ui)}
+@media (max-width:1319px){.app{grid-template-columns:var(--left-w) minmax(0,1fr);grid-template-areas:"top top" "left main"}body.left-closed .app,body.left-closed.right-closed .app{grid-template-columns:0 minmax(0,1fr)}body.right-closed .app{grid-template-columns:var(--left-w) minmax(0,1fr)}.right-rail{position:fixed;top:var(--top-h);right:0;width:var(--right-w);height:calc(100vh - var(--top-h));border-left:1px solid var(--line);box-shadow:-18px 0 40px rgba(16,35,56,.14)}body.right-closed .right-rail{transform:translateX(100%);opacity:0;pointer-events:none}}
+@media (max-width:979px){.app{grid-template-columns:minmax(0,1fr);grid-template-areas:"top" "main"}body.left-closed .app,body.right-closed .app,body.left-closed.right-closed .app{grid-template-columns:minmax(0,1fr)}.left-rail{position:fixed;top:var(--top-h);left:0;width:min(var(--left-w),88vw);height:calc(100vh - var(--top-h));box-shadow:18px 0 40px rgba(16,35,56,.14)}.right-rail{width:min(var(--right-w),90vw)}.route-chip{display:none}.surface{padding-left:clamp(18px,5vw,42px);padding-right:clamp(18px,5vw,42px)}}
+@container account-main (max-width:880px){.two-col,.three-col,.source-grid{grid-template-columns:1fr}.control-row{grid-template-columns:1fr}.control-row output{text-align:left}}
+@container account-main (max-width:620px){.hero{margin-bottom:66px}.ql-node{margin-bottom:78px}.node-head{margin-bottom:26px}.figure-head{display:block}.figure-head span{display:block;margin-top:4px;text-align:left}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+@media print{:root{--paper:#fff;--sheet:#fff;--ink:#000;--muted:#444;--line:#bbb;--line-strong:#888}.topbar,.left-rail,.right-rail{display:none!important}.app{display:block}.main{display:block}.surface{display:block!important;padding:24mm 18mm;min-height:auto;break-before:page}.surface:first-child{break-before:auto}.hero{margin-bottom:18mm}.ql-node{break-inside:avoid-page}.figure,.table-wrap,.code-block,.equation{box-shadow:none;break-inside:avoid}a{color:#000;text-decoration:none}a[href^="http"]:after{content:" (" attr(href) ")";font-size:8pt;overflow-wrap:anywhere}}
+
+.right-closed .right-rail,.left-closed .left-rail{display:none}
+.svg-wrap{overflow-x:auto}.svg-wrap svg{min-width:640px}
+.unit-sources{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:22px;padding-top:14px;border-top:1px solid var(--line);font-size:12px}.unit-sources a{color:var(--muted)}
+.prose a[data-resource]{text-decoration:underline;text-underline-offset:3px}.source-unresolved{color:#a02d22}.surface-inner{max-width:1120px}.prose li{margin-bottom:.65em}
+@media print{.surface{display:block!important} .left-rail,.right-rail,.topbar{display:none!important} .main{margin:0!important}}
+.prose pre{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:auto}.capability-links{font-size:.9em;color:var(--muted)}
+[data-surface="whole"] .hero{margin-bottom:40px;padding-bottom:30px}[data-surface="whole"] .ql-node{margin-bottom:42px}[data-surface="whole"] .node-head{margin-bottom:16px}[data-surface="whole"] .ql-node h2{max-width:36ch;font-size:clamp(25px,2.3vw,31px)}
+</style>
+</head>
+<body class="right-closed" data-notes="true">
+<script type="application/json" id="account-provenance">{
+  "uid": "actuation-product-ground",
+  "kind": "html-account",
+  "title": "Actuation — product ground",
+  "project": "project:actuation",
+  "status": "draft-for-review",
+  "standing": "agent-inference",
+  "provenance": "generated-suggestion",
+  "ql": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "created": "2026-09-06",
+  "updated": "2026-09-06",
+  "source_basis": [
+    {
+      "path": "../O-I/docs/HUMAN-AGENT-COVENANT.md",
+      "sha256": "79dccdffee7cb340fddaf049a9d898cea3b99bfb577cbeec8b988cfc79c01ef5"
+    },
+    {
+      "path": "../O-I/docs/positions/FOUNDING-POSITIONS.md",
+      "sha256": "f41ed11c377133a579d1284d2366167298050c955dedbc61fb5971e3d523e490"
+    },
+    {
+      "path": "../Quaternal-Logic/docs/integrations/epi-logos/EPI-LOGOS-QL-MEF-FOUNDATION.md",
+      "sha256": "a18db400d740853cf013b69251e8a77a2c4ce758871fac155dc27a1c9c22d2ef"
+    },
+    {
+      "path": "../Software-Factory/docs/canon/QL-SOFTWARE-FACTORY-PRIMITIVE-RELATIONS.md",
+      "sha256": "171fc11e1fecc1ce20e9bcbef036fbce2aaa606208ab2ba6636707908358b773"
+    },
+    {
+      "path": "../github-recovery-mirror/mirror/Actuation/issues/1.comments.json",
+      "sha256": "0c8895e2f7818d6e581d39372445d3da7b4acd9cf0b02cb30b4c356973c53b3f"
+    },
+    {
+      "path": "../github-recovery-mirror/mirror/Actuation/issues/1.json",
+      "sha256": "480cff48d69aac7a9440121ecce7bc1b252ac8e68eafd444915450deeb353efd"
+    },
+    {
+      "path": "../github-recovery-mirror/mirror/Actuation/issues/26.json",
+      "sha256": "e8293a19f024d75e1aac642282e6b12dce87edccb89a5e122912f6381d21b65c"
+    },
+    {
+      "path": "README.md",
+      "sha256": "ce7952dc90650d073e2d9997fd5a0b19253355239028cea057ab6c23b460494e"
+    },
+    {
+      "path": "cli/actuation.test.mjs",
+      "sha256": "0f14c41dd2ef15cb4efe94ea5640e446cacd7f6626998486cb79c5a4899a2f50"
+    },
+    {
+      "path": "cli/commands.mjs",
+      "sha256": "41f6f7cd91a6d50f765e2585568a9dcbe333d9ad741a41963658d6807ceef7be"
+    },
+    {
+      "path": "contracts/activity.mjs",
+      "sha256": "6713239c68e4b48aed096d7638e6d2d642b22219f3cd715a4d89c6173e2e5901"
+    },
+    {
+      "path": "contracts/activity.test.mjs",
+      "sha256": "0577b537f2d343a0fe5044a8b56fd5e013c75b67875ed5dc7b7ed5a28ada1b4f"
+    },
+    {
+      "path": "contracts/actuation-stream.mjs",
+      "sha256": "bedf06f23f98f21277b83395f87107dd422b54d12d6e41af091876f9fb083127"
+    },
+    {
+      "path": "contracts/actuation-stream.test.mjs",
+      "sha256": "b28fb6ef4915725964aecc2b7f5a1ea4025ad5c00ba74ee2770db475cde0bdf1"
+    },
+    {
+      "path": "contracts/agency.mjs",
+      "sha256": "91f48560a2773fd93abeeaf77a6321bd04f7954e5c670d58f26d083709e2f5a5"
+    },
+    {
+      "path": "contracts/agency.test.mjs",
+      "sha256": "d777c263b7af05bd370fc1612f9453d1d834d9d8c7119dc77cadf94c36f08737"
+    },
+    {
+      "path": "contracts/harness-detection.test.mjs",
+      "sha256": "c9ae4a93c79c1fa4f5f75c139cce20b420e811826a89727d06220c1d84a5ba34"
+    },
+    {
+      "path": "contracts/instantiation.mjs",
+      "sha256": "c4b6552f410dd8876761159477816ed8253eea881ef70f7926d9bc898167d47c"
+    },
+    {
+      "path": "contracts/instantiation.test.mjs",
+      "sha256": "ef57b22557923c5b59911407d5f3a3a96408b1b253f038fb2d5c41be29a4c137"
+    },
+    {
+      "path": "contracts/realised-actuation.mjs",
+      "sha256": "c1ca31f78acce5db5bf334a445036e79fb20ee15aa18f58099b8e6f60e48b839"
+    },
+    {
+      "path": "contracts/realised-actuation.test.mjs",
+      "sha256": "acc4fd92070a05fccb6db3c64d3afae6ee1d79bee5cc83e8f4f6cf8f440911ad"
+    },
+    {
+      "path": "detection/catalog.mjs",
+      "sha256": "6f3c5e3643a437a9e517c8919a58d0c4706f1d0f4c3792c9ae4c99f97d46e7b8"
+    },
+    {
+      "path": "detection/detect.mjs",
+      "sha256": "e3af52a15ff975c5b1f3c62928c158532a1c94424d9bf5458a56675924865810"
+    },
+    {
+      "path": "detection/detect.test.mjs",
+      "sha256": "8255bd4dd3d29ea31e77d152732b9026ff074838249d1f86415fab9f3f9be760"
+    },
+    {
+      "path": "detection/self.mjs",
+      "sha256": "4e21366797b81edd944c16ed219fa74e11fa78292a0a6f95b67bc0e3b33b3c72"
+    },
+    {
+      "path": "detection/self.test.mjs",
+      "sha256": "a1082ae3bc2bae7117160df02c1f0c347c4ccf18d2168299f5520226f1364094"
+    },
+    {
+      "path": "docs/ACTIVITY.md",
+      "sha256": "8e54bae907e9d8d9e3ec70ce7bcb094fe9d7ba7f1c7d34e21ff867f59b78991c"
+    },
+    {
+      "path": "docs/ACTUATION-CONSTITUTION.md",
+      "sha256": "8124d313346c34333036d098a839de893956497f5163d512e31d969556d7ef1a"
+    },
+    {
+      "path": "docs/ACTUATION-STREAM.md",
+      "sha256": "5d4e49490ac6f98c2c831a724773cddd12b8304ebc78af8c3507c13524cea049"
+    },
+    {
+      "path": "docs/QL-RUNTIME-MIGRATION.md",
+      "sha256": "035364c5d927abbc0f7ccce3d8092cfee477c40561870cb4122ee5139ebd6567"
+    },
+    {
+      "path": "docs/REALISED-ACTUATION-LOOP.md",
+      "sha256": "f32525ef392c329d2a4cef15c34300602bcbbb84e2007696e5bf6a0619017839"
+    },
+    {
+      "path": "docs/SYSTEM-PLACEMENT.md",
+      "sha256": "57a17814d04066609e907bcffa80537a7b94983d67c9975f0f6b031e47f73425"
+    },
+    {
+      "path": "docs/WORLD-BOUND-ROOT-AGENCY.md",
+      "sha256": "b60e493d8a18c6958dd31d24442694b2374ac97ae2371f84eeee0a9dafe49816"
+    },
+    {
+      "path": "experiments/ql-runtime/prime/run.mjs",
+      "sha256": "dbcde3a4d4e2298e2b6cc3a6a1786226ecf1a74192f50bb4d0e509f7768a3c95"
+    },
+    {
+      "path": "experiments/ql-runtime/prime/test/prime-structural.test.mjs",
+      "sha256": "6bb7af928fa20582ea58c7a181e6425433d14f421be03df2a880659f74fe09b8"
+    }
+  ],
+  "relations": [
+    {
+      "relation": "anchors",
+      "target": "capability-matrix.md"
+    },
+    {
+      "relation": "grounded-by",
+      "target": "../../../O-I/docs/HUMAN-AGENT-COVENANT.md"
+    }
+  ],
+  "generator": "Agent-assisted product consolidation",
+  "seed_origin": "Agent-recovered candidate from native sources; no human adoption recorded",
+  "source_snapshot": {
+    "head": "7c59dbcb295faf42e1cb85d873efe57d85af86b7",
+    "working_tree": "Existing CLI and detection changes were discovered through read-only JSON probes; generated-account standing remains unchanged"
+  },
+  "validation": {
+    "date": "2026-09-06",
+    "selection": "Five native contract suites; 36 passing tests",
+    "limit": "Portable contract behaviour only; no live deployment or model-capability result"
+  },
+  "source_basis_path_base": "repository-root",
+  "matrix_basis": {
+    "protocol": "ql-capability-matrix/1",
+    "csv_sha256": "65d63b5488cca3addc2f9836643edf019b26a9ef954b29fb3056bb404066dc2e",
+    "manifest_sha256": "0fe32bdcdc72a701d0c1242cca1b3082f5a1a85ff54307fe5c9c6e4457a43c59",
+    "record_sha256": {
+      "cap.actuation.discovery": "144b958114d7c03a784c7bc4d0b42d55b046645a818312019842dd0cd1f2e638",
+      "cap.actuation.world-binding": "429eb2bb3f31596f9bb73eca0a44f1283e36ca100fa61686242c3f8a750e5df7",
+      "cap.actuation.metagency": "8f1eba6a17e3610c87273283bf2da140195038e7003b1c02938a9c83d29f9c6f",
+      "cap.actuation.determination": "0d63a9f9d3eccba2bc264d553d7170ea6e85e400e5f5730c7d71553da4a20e9d",
+      "cap.actuation.return": "4bd819f9fbcd5e97c28f672c8a2df828459c77c1afd182c4b9acba750272d4c6",
+      "cap.actuation.realised": "5c95cf34ca2888c6dcebb083d19f156487db9c6092eb983c68062465835701f7",
+      "cap.actuation.continuity": "0913d44a9a90eacdf833052f8adb9ca68d7073de3646c1870c8caa3a9a574e84",
+      "cap.actuation.stream": "9f9e2100274a01e4d831684a39c95543d6059b31a1f7da4c988db79609a48126",
+      "cap.actuation.activity": "2be4595791da781a61d9426215377d126a6d1c886659330bb137a77948fd466a",
+      "cap.actuation.harness-detection": "ae6a43333b69fe9a79c7669fa1007760e47bc708e4974e2202157495b0998e6a",
+      "cap.actuation.harness-self": "fb3bd32bfcac84955f26e9071873cbd3f78f06686dec1af499c7c567d178578e",
+      "cap.actuation.instantiation": "583b6bebae9694556defa9e8e286a0cf5cd947c256a63c0afb2bda233a6cf501",
+      "cap.actuation.research": "ef42ce4c6507121f5b6253edffdaa17b379b6295008f4b723350dd504c61748d",
+      "cap.actuation.verification": "52fc6f25ec58aa708685026b2e98bd3f3ff4ae3565f43d54e84d0f9580287652",
+      "H0->H1": "897f7ada22215eb2475c390eb2a8da28bde64dafa8aa68347df3972059aeeb7f",
+      "H0->A1": "4c3bf92ed04b542bef48c5574ab7cc250805e281017ba8b59acc29c8c15fa35c",
+      "H1->H0": "7b07fa19b09576feb8229d1fdb1525d4be327467edcc304a8ad7a80245769521",
+      "H1->H1": "c2a4fd59423e8d9de2187dda1aec24952fa9ca15009983674c39ab5e985b0621",
+      "H1->H2": "3977320b1123451976cc19de91adfa58245ac53bf6de2c5f7e33e11aa9598f65",
+      "H1->H3": "4def0ac2a4b858a7da37d959a0f2c0f7c5ce8841f09e854dbcfd07a776e0586f",
+      "H1->H4": "c3870603922d8f4e3c21f72b29eb673f4f5980ea14c0600e6df1338123fbc80a",
+      "H1->H5": "efcb308ee26ca6ab3eb60847304f649e9b9a5d4ab68fa8d4db1aeef9543c1100",
+      "H1->A0": "394946ada65bd8d570574da321559c5e56832e79f857dfadb1409c348bd8e5b0",
+      "H1->A1": "cab1f0c9b22354dea25eb4f4a7d6b959edbc979276f96cd94d7243e7a487dc21",
+      "H1->A2": "6870307c9eb3964a221f1e7affa9d7295cf7a9f8093cd312076c5bbc970adcb7",
+      "H1->A3": "83f15fa33f0fc16789f5ea5645723e7069c0e73465ba458b1fc2ce4a239aef4e",
+      "H1->A4": "4f06b8108410b8318943abd90f8ac1e6fa2bc7c4704d9f6945866426c42d37ef",
+      "H1->A5": "0d508dc5141e94a45c44967d4f025adea7415358e9cea1a983bf2208e7b0f6ab",
+      "H2->H1": "c826abbfca1b7a57747287257534486463a37fb79b13f5290ce22a6b1b343753",
+      "H2->A1": "a2b692890e84e4ea577479246d02c7368799148ef8de4ee750d0820e3d2aa5eb",
+      "H3->H1": "cb7a562929d5270cfb2a7e019dcd8c178449a404d5f55dee5ec19216e6f2b2d4",
+      "H3->A1": "7364a216a69c66e47c677cfd8678e3523e3ce0db393296a6de2291ab0db0ed9a",
+      "H4->H1": "1d44c5c50efdd6a62be0b729d75f7365e728bc4d83c27aa4664a44114a3c4219",
+      "H4->A1": "1df959da78517289e714d4f654dba9d31c8e79fa126fbae1be8ed8da27501812",
+      "H5->H1": "d8dd3b5f3868df3d3d694c9b9195389fb87f683753d19fdde71356a8284a56ba",
+      "H5->A1": "85c91f32b90e641c5b183ee6b2c71ab60e4717644ab76654d4d3e71925b92cd9",
+      "A0->H1": "e43eae12ee4a71bdbc5d79daf38013c5e1c8a875cd8ecdd38d454866a03dfaef",
+      "A0->A1": "2a85cef92ba4138f1d0661e4df59c7b1034760599ac2a300bbc3641abd51b139",
+      "A1->H0": "99eb454d9d4c83633327d37ffd71a9eb54e2a25fa81d9adfd36e6236cdd77be5",
+      "A1->H1": "aaa2d2e26744c56b779b3c9fa4f9373e035d99fd8278274a677b4467989b07ba",
+      "A1->H2": "ae205590c65d125a334ab1afce0823b9b30367d3486e4c9f5108f63fd1e640ef",
+      "A1->H3": "e63318952482fa58013119d93f3a17c212175f5c802625a14795e15f5d5b6d22",
+      "A1->H4": "b3321320b1a7998f4e42e5382c0f9c908b783355b880d88807300c5da6fe9ab0",
+      "A1->H5": "960bbff1ec9445b900bf6620a748632b1178216f1b7a1be10f11e95ee73c7c61",
+      "A1->A0": "0cad17c3171671d2f46ef4928f60a2d8c4d653d7a89388b6187cacb88246a030",
+      "A1->A1": "5f81fa4e14964e94d3a37cab94c2917841dd534c2603f022854add07ee92fbc0",
+      "A1->A2": "1773bbc67201df681ec8c62fe5543406650608dd798446cda3ec5a0082b9291f",
+      "A1->A3": "1f48955fa79f6dd57abccad8ba4bf2262d9319349895edeaa905142c831c9e52",
+      "A1->A4": "20077144e1f99a04969e47ec739b3319f933a2af7e9666571d6aa8d2f4c783ef",
+      "A1->A5": "253dff3f89cff9e25267037a8b1da787446cfec5f83d4074fd74240be56c6591",
+      "A2->H1": "e6edb8f2e712dd7488cd2259c1cbe845c7181ee1698808337cb79986327e4c63",
+      "A2->A1": "ebfb414bfc5959fb9dda28d0d15eaf83896b065c60f894897eb18b68a7c8a7ac",
+      "A3->H1": "d399f85d9e70865ebe2784929ad138e94b8b699ce4a6417aa3f8fd02769a9fbe",
+      "A3->A1": "eddd3bc4af96437d5d4a2340c4e7fd3ee8a479e79f140beb8223726627331881",
+      "A4->H1": "6862f2d2d2167dfd100389c6f645d2a5a962c9bf66ad32e73570be8c4eed9c7f",
+      "A4->A1": "654b8b5b5aff292908548d84d5323c9505be6b36ade5c16090fb5ff65e33467b",
+      "A5->H1": "10e8430c3684187fc0c7db43c7ba380cf2063ec1e7af9289c665ae7d64d03ba1",
+      "A5->A1": "e9df731af6e6838bf43d72b8a893fb07bea2be0f4888700166d68d8653b3bab6",
+      "rel.actuation.q0.S": "1b9ad04943051f0e9205ac85b49a3f7aa530487c195fe641e4045e384c0286f2",
+      "rel.actuation.q1.S": "61299c370f1c9258bc94f0d26cb721b9bce6b19639318bdcbf33037b837eba0d",
+      "rel.actuation.q2.S": "591550b041749468a87c65ea7ebbf35c3ec7efbf786cbb429c4ac4a87f735279",
+      "rel.actuation.q3.S": "97b970abb5c2bd1ac5af50714a539d72c832277ecf26432087f0c06ca5b0470b",
+      "rel.actuation.q4.S": "aa94668b381ada66ccf6341e0e6c3e6d4387cb4299511bcdb4a6e1e814162436",
+      "rel.actuation.q5.S": "74b8e9ee1646a76f19fb2049d4ab995c0a3bb9990aeb8be8137023701ed1b7e2",
+      "rel.actuation.q3.S0": "fbb42b6b77647bbfc72dbc4d06f801a67bbf146b0403f5d38871afa855dd8478",
+      "rel.actuation.q3.S2": "20492ac8a2a3b4b494e539dbbd2bd683f0f60037df29d86e1660d83876dafbc1",
+      "rel.actuation.q2.S3": "f802b9c802fbfd42c796ee27bb410d08680a84c0ade40f6a3ca42e0ffba5b8c4",
+      "rel.actuation.q3.S4": "b60906e394082263af107d5435c37da3fadee5af6c08635aed4cd65ef4021426"
+    },
+    "change_ref": "codex:thread:01a07608-d2ec-7b10-9713-74c445adf8a5",
+    "reviewed_at": "2026-09-06T14:37:53.672657+00:00",
+    "reviewed_sections": []
+  }
+}</script>
+<script type="application/json" id="ground-resources">
+{
+  "source:constitution": {
+    "title": "Constitution",
+    "href": "../../docs/ACTUATION-CONSTITUTION.md"
+  },
+  "source:wayfinder": {
+    "title": "Wayfinder",
+    "href": "../../../github-recovery-mirror/mirror/Actuation/issues/1.json"
+  },
+  "source:corrections": {
+    "title": "Corrections",
+    "href": "../../../github-recovery-mirror/mirror/Actuation/issues/1.comments.json"
+  },
+  "source:commands": {
+    "title": "Commands",
+    "href": "../../cli/commands.mjs"
+  },
+  "source:placement": {
+    "title": "Placement",
+    "href": "../../docs/SYSTEM-PLACEMENT.md"
+  },
+  "source:loop": {
+    "title": "Loop",
+    "href": "../../docs/REALISED-ACTUATION-LOOP.md"
+  },
+  "source:ql": {
+    "title": "Ql",
+    "href": "../../../Quaternal-Logic/docs/integrations/epi-logos/EPI-LOGOS-QL-MEF-FOUNDATION.md"
+  },
+  "source:covenant": {
+    "title": "Covenant",
+    "href": "../../../O-I/docs/HUMAN-AGENT-COVENANT.md"
+  },
+  "source:foundations": {
+    "title": "Foundations",
+    "href": "../../../O-I/docs/positions/FOUNDING-POSITIONS.md"
+  },
+  "source:primitives": {
+    "title": "Primitives",
+    "href": "../../../Software-Factory/docs/canon/QL-SOFTWARE-FACTORY-PRIMITIVE-RELATIONS.md"
+  },
+  "actuation:matrix": {
+    "title": "Actuation capability matrix",
+    "href": "capability-matrix.md"
+  },
+  "actuation:matrix:csv": {
+    "title": "Actuation matrix CSV",
+    "href": "capability-matrix.csv"
+  },
+  "actuation:seed:q0": {
+    "title": "Why?",
+    "href": "#whole/why"
+  },
+  "actuation:seed:q1": {
+    "title": "What?",
+    "href": "#whole/what"
+  },
+  "actuation:seed:q2": {
+    "title": "How?",
+    "href": "#whole/how"
+  },
+  "actuation:seed:q3": {
+    "title": "Who / Whereby?",
+    "href": "#whole/whereby"
+  },
+  "actuation:seed:q4": {
+    "title": "Where / When?",
+    "href": "#whole/context"
+  },
+  "actuation:seed:q5": {
+    "title": "Why-For?",
+    "href": "#whole/purpose"
+  },
+  "actuation:doc:need": {
+    "title": "The missing account of who is acting",
+    "href": "#q0/need"
+  },
+  "actuation:doc:consequence": {
+    "title": "Let experience reach the governing decision",
+    "href": "#q0/consequence"
+  },
+  "actuation:doc:shared-language": {
+    "title": "Ground the product in shared identities",
+    "href": "#q0/shared-language"
+  },
+  "actuation:doc:product": {
+    "title": "What you can use from the checkout",
+    "href": "#q1/product"
+  },
+  "actuation:doc:agency": {
+    "title": "Inspect situated authority and lineage",
+    "href": "#q1/agency"
+  },
+  "actuation:doc:observation": {
+    "title": "Inspect acting and follow its unfolding",
+    "href": "#q1/observation"
+  },
+  "actuation:doc:first-encounter": {
+    "title": "Understand the session already in front of you",
+    "href": "#q2/first-encounter"
+  },
+  "actuation:doc:commission": {
+    "title": "Give another Agent bounded work",
+    "href": "#q2/commission"
+  },
+  "actuation:doc:follow": {
+    "title": "Follow work, inspect evidence and receive Return",
+    "href": "#q2/follow"
+  },
+  "actuation:doc:identities": {
+    "title": "The relationships that make one actor intelligible",
+    "href": "#q3/identities"
+  },
+  "actuation:doc:boundaries": {
+    "title": "Authority is an explicit relation",
+    "href": "#q3/boundaries"
+  },
+  "actuation:doc:integration": {
+    "title": "Each product contributes its native part",
+    "href": "#q3/integration"
+  },
+  "actuation:doc:environment": {
+    "title": "Use observations in their actual environment",
+    "href": "#q4/environment"
+  },
+  "actuation:doc:research": {
+    "title": "Study how the constitution changes the work",
+    "href": "#q4/research"
+  },
+  "actuation:doc:frontier": {
+    "title": "The next functional proof",
+    "href": "#q4/frontier"
+  },
+  "actuation:doc:whole": {
+    "title": "An intelligible actor across the whole World",
+    "href": "#q5/whole"
+  },
+  "actuation:doc:verification": {
+    "title": "What this documentation pass established",
+    "href": "#q5/verification"
+  },
+  "actuation:doc:reconciliation": {
+    "title": "Keep the seed, capabilities and implementation aligned",
+    "href": "#q5/reconciliation"
+  },
+  "cap.actuation.discovery": {
+    "title": "Discovery",
+    "href": "capability-matrix.md#cap-actuation-discovery"
+  },
+  "cap.actuation.world-binding": {
+    "title": "World Binding",
+    "href": "capability-matrix.md#cap-actuation-world-binding"
+  },
+  "cap.actuation.metagency": {
+    "title": "Metagency",
+    "href": "capability-matrix.md#cap-actuation-metagency"
+  },
+  "cap.actuation.determination": {
+    "title": "Determination",
+    "href": "capability-matrix.md#cap-actuation-determination"
+  },
+  "cap.actuation.return": {
+    "title": "Return",
+    "href": "capability-matrix.md#cap-actuation-return"
+  },
+  "cap.actuation.realised": {
+    "title": "Realised",
+    "href": "capability-matrix.md#cap-actuation-realised"
+  },
+  "cap.actuation.continuity": {
+    "title": "Continuity",
+    "href": "capability-matrix.md#cap-actuation-continuity"
+  },
+  "cap.actuation.stream": {
+    "title": "Stream",
+    "href": "capability-matrix.md#cap-actuation-stream"
+  },
+  "cap.actuation.activity": {
+    "title": "Activity",
+    "href": "capability-matrix.md#cap-actuation-activity"
+  },
+  "cap.actuation.harness-detection": {
+    "title": "Harness Detection",
+    "href": "capability-matrix.md#cap-actuation-harness-detection"
+  },
+  "cap.actuation.harness-self": {
+    "title": "Harness Self",
+    "href": "capability-matrix.md#cap-actuation-harness-self"
+  },
+  "cap.actuation.instantiation": {
+    "title": "Instantiation",
+    "href": "capability-matrix.md#cap-actuation-instantiation"
+  },
+  "cap.actuation.research": {
+    "title": "Research",
+    "href": "capability-matrix.md#cap-actuation-research"
+  },
+  "cap.actuation.verification": {
+    "title": "Verification",
+    "href": "capability-matrix.md#cap-actuation-verification"
+  }
+}
+</script>
+<div class="app">
+  <header class="topbar">
+    <button class="icon-btn" id="leftToggle" aria-label="Toggle contents" aria-controls="leftRail" aria-expanded="true">☰</button>
+    <div class="brand"><strong>Actuation</strong><span>Product ground · review draft</span></div>
+    <div class="route-chip" id="routeChip"><code>#0</code><span>Ground</span></div>
+    <button class="icon-btn" id="themeToggle" aria-label="Switch theme">◐</button>
+    <button class="icon-btn" id="rightToggle" aria-label="Toggle context" aria-controls="rightRail" aria-expanded="false">✎</button>
+  </header>
+  <nav class="left-rail" id="leftRail" aria-label="Account contents"><div class="rail-label">Account</div><div class="surface-nav" id="surfaceNav"></div></nav>
+  <main class="main" id="mainContent"><article class="surface active" data-surface="whole" data-whole-anchor="0/1" data-title="Actuation · overview" data-gloss="0/1 · The whole in six questions"><div class="surface-inner"><header class="hero"><div class="hero-line"><span class="ql-badge">0/1</span><span class="hero-label">Whole-account overview</span></div><h1>Actuation</h1><p class="hero-deck">A CLI and portable contracts for understanding who acts, through what body, and what returns.</p><div class="hero-meta"><span>Agent-recovered candidate seed · human review pending</span><a href="capability-matrix.md">Capability matrix</a></div></header><section class="ql-node" id="whole-why" data-node=".0" data-route="why" data-nav="Make agency understandable" data-context="founding-position · agent-inference · review draft" data-vessel="founding-position" data-standing="agent-inference" data-tags="actuation whole why seed overview l0" data-resource="actuation:seed:q0"><header class="node-head"><div class="node-eyebrow">#0 · <span data-seed-question="actuation:seed:q0">Why?</span></div><h2>Make agency understandable</h2></header><div class="prose"><div data-seed-content="actuation:seed:q0"><p>Actuation addresses a gap between asking AI to work and understanding the agency that actually acts. A person needs to know who is acting, in which World, with what purpose and permission, and how the experience of that work returns. As work moves between models, harnesses, sessions and collaborating Agents, these relationships should stay inspectable. Actuation gives them an explicit form so that authority can remain answerable to consequence.</p></div><p><a href="#q0" data-expansion-link="q0">Read the expanded #0 — Why?</a></p></div></section><section class="ql-node" id="whole-what" data-node=".1" data-route="what" data-nav="A CLI and portable contracts for agency" data-context="founding-position · agent-inference · review draft" data-vessel="founding-position" data-standing="agent-inference" data-tags="actuation whole what seed overview l0" data-resource="actuation:seed:q1"><header class="node-head"><div class="node-eyebrow">#1 · <span data-seed-question="actuation:seed:q1">What?</span></div><h2>A CLI and portable contracts for agency</h2></header><div class="prose"><div data-seed-content="actuation:seed:q1"><p>Actuation is a CLI and a set of portable software contracts for identifying, inspecting and studying technological agency. Its current product detects available harnesses and reads structured accounts of situated Agency, realised acting loops, their unfolding Streams, semantic Activity and model-bearing instantiation. Its wider purpose is to make the constitution and management of agency an explicit part of an O:I World, from an ordinary coding session to a bounded composition of Agents.</p></div><p><a href="#q1" data-expansion-link="q1">Read the expanded #1 — What?</a></p></div></section><section class="ql-node" id="whole-how" data-node=".2" data-route="how" data-nav="Connect the actor, its body and what happens" data-context="founding-position · agent-inference · review draft" data-vessel="founding-position" data-standing="agent-inference" data-tags="actuation whole how seed overview l0" data-resource="actuation:seed:q2"><header class="node-head"><div class="node-eyebrow">#2 · <span data-seed-question="actuation:seed:q2">How?</span></div><h2>Connect the actor, its body and what happens</h2></header><div class="prose"><div data-seed-content="actuation:seed:q2"><p>Actuation relates an enduring Agent to a situated Agency and an explicit WorldBinding. Receipts identify the acting condition and its model, harness and material relations. Ordered Streams preserve attributable events; Activity makes those events understandable; Return carries results, evidence and difference back to the governing relation. Portable contracts let native runtimes supply these facts while preserving their own richer records.</p></div><p><a href="#q2" data-expansion-link="q2">Read the expanded #2 — How?</a></p></div></section><section class="ql-node" id="whole-whereby" data-node=".3" data-route="whereby" data-nav="For people who work with and build agency" data-context="founding-position · agent-inference · review draft" data-vessel="founding-position" data-standing="agent-inference" data-tags="actuation whole whereby seed overview l0" data-resource="actuation:seed:q3"><header class="node-head"><div class="node-eyebrow">#3 · <span data-seed-question="actuation:seed:q3">Who / Whereby?</span></div><h2>For people who work with and build agency</h2></header><div class="prose"><div data-seed-content="actuation:seed:q3"><p>Actuation serves people shaping their relationship with AI, Agents working within declared bounds, and developers connecting harnesses and interfaces. Its identity and authority contracts make collaboration inspectable: an existing Agent can receive delegated work, a new Agent can have explicit lineage, and an independent participant can retain its own standing. Researchers can then study how the constitution of agency changes the work it produces.</p></div><p><a href="#q3" data-expansion-link="q3">Read the expanded #3 — Who / Whereby?</a></p></div></section><section class="ql-node" id="whole-context" data-node=".4" data-route="context" data-nav="Where a model is actually acting" data-context="founding-position · agent-inference · review draft" data-vessel="founding-position" data-standing="agent-inference" data-tags="actuation whole context seed overview l0" data-resource="actuation:seed:q4"><header class="node-head"><div class="node-eyebrow">#4 · <span data-seed-question="actuation:seed:q4">Where / When?</span></div><h2>Where a model is actually acting</h2></header><div class="prose"><div data-seed-content="actuation:seed:q4"><p>Actuation begins wherever a model acts in a persistent working World, including an ordinary directory-bound coding harness. The same semantic account can accompany a richer body, another Surface or a different machine. Observations belong to their actual time and environment. Continuity and change remain attributable as sessions, models and material conditions evolve.</p></div><p><a href="#q4" data-expansion-link="q4">Read the expanded #4 — Where / When?</a></p></div></section><section class="ql-node" id="whole-purpose" data-node=".5" data-route="purpose" data-nav="Agency that can receive what its work reveals" data-context="founding-position · agent-inference · review draft" data-vessel="founding-position" data-standing="agent-inference" data-tags="actuation whole purpose seed overview l0" data-resource="actuation:seed:q5"><header class="node-head"><div class="node-eyebrow">#5 · <span data-seed-question="actuation:seed:q5">Why-For?</span></div><h2>Agency that can receive what its work reveals</h2></header><div class="prose"><div data-seed-content="actuation:seed:q5"><p>Actuation is for an O:I World in which agency can be deliberately constituted, encountered and revised. Central supplies durable authored ground; AIKit provisions the operative body and context; Workcell supplies material execution; Factory commissions developmental work; O:I presents the whole. Actuation gives that work an intelligible actor and a return path. Its research programme investigates how models, contexts and ways of acting can be cultivated, while keeping experiment results distinct from the intentions that motivate them.</p></div><p><a href="#q5" data-expansion-link="q5">Read the expanded #5 — Why-For?</a></p></div></section></div></article><article class="surface" data-surface="q0" data-title="Why?" data-gloss="Why?" data-seed-ref="actuation:seed:q0" data-seed-sha256="5e3f1dc43daf0e04a6c8045514cc0de8c3c6cf820678fc57fcb054a831c4f67e"><div class="surface-inner"><header class="hero"><div class="hero-line"><span class="ql-badge">#0</span><span class="hero-label">Why?</span></div><h1>Make agency understandable</h1><p class="hero-deck">Why? — the expanded product account.</p><div class="hero-meta"><a href="#whole/why">Return to the 0/1 seed</a><span>Source-grounded candidate · review draft</span></div></header><section class="ql-node" id="q0-need" data-node=".0" data-route="need" data-nav="The missing account of who is acting" data-context="vision · agent-inference · review draft" data-vessel="vision" data-standing="agent-inference" data-tags="actuation q0 need vision" data-resource="actuation:doc:need"><header class="node-head"><div class="node-eyebrow">vision</div><h2>The missing account of who is acting</h2></header><div class="prose"><p>A coding session can edit a project before anyone has clearly expressed the relationship between its Agent, the person, the project and the machine. The immediate work may succeed. Later, the person still needs to understand whose purpose guided it, which bounds applied and what survived the session.</p><p>Actuation makes this relationship an object that can be inspected. The experiential aim is simple: when a person asks for work, they can locate the actor, understand the commission and follow what comes back. An Agent joining existing work can discover its situated role without treating its process identifier or model name as its identity.</p><p>The [[source:constitution|constitution]] establishes this intention. The [[source:wayfinder|wayfinder]] develops it through actual harnesses and research. Its later correction makes the ordinary acting loop the starting case. This keeps the product grounded in AI work people already do.</p><p class="capability-links">Capabilities: [[cap.actuation.realised|Realised]].</p></div></section><section class="ql-node" id="q0-consequence" data-node=".1" data-route="consequence" data-nav="Let experience reach the governing decision" data-context="vision · agent-inference · review draft" data-vessel="vision" data-standing="agent-inference" data-tags="actuation q0 consequence vision" data-resource="actuation:doc:consequence"><header class="node-head"><div class="node-eyebrow">vision</div><h2>Let experience reach the governing decision</h2></header><div class="prose"><p>Someone determines the purpose and bounds of work; an actor encounters the actual world. Those two positions may belong to different Agents or to the same Agent at different moments. The encounter can expose a false assumption, a missing capability, a useful artifact or a disagreement.</p><p>The governing relation needs to receive that difference before deciding what follows. A useful return preserves who found it, what supports it and which work produced it. The person can then revise a commission, recognise a result or retain a disagreement for further investigation.</p><p>This is why Return belongs near Actuation’s purpose. It gives the agency that determines work a way to learn from its consequences. A single polished answer is often useful, but the underlying evidence and attributable contributions are also needed when the answer is questioned.</p><p class="capability-links">Capabilities: [[cap.actuation.return|Return]].</p></div></section><section class="ql-node" id="q0-shared-language" data-node=".2" data-route="shared-language" data-nav="Ground the product in shared identities" data-context="founding-position · agent-inference · review draft" data-vessel="founding-position" data-standing="agent-inference" data-tags="actuation q0 shared-language founding-position" data-resource="actuation:doc:shared-language"><header class="node-head"><div class="node-eyebrow">founding position</div><h2>Ground the product in shared identities</h2></header><div class="prose"><p>An Agent is an enduring identity. Agency is that Agent situated for an act, with a World, role, capability, authority and context. A session supplies runtime continuity. Execution is a concrete act. A harness supplies an operational body.</p><p>These meanings are grounded in the [[source:covenant|O:I Covenant]] and [[source:foundations|founding positions]], with the earlier [[source:primitives|experienced ontology]] retained as provenance. Actuation’s native contracts make the agency relations concrete. The distinctions help answer everyday questions: did an existing Agent change its working body, or was a new Agent deliberately created?</p><p>The six questions in this account organise a candidate product understanding. Their use follows the [[source:ql|QL foundation]] and the human-selected documentation convention. Formal coordinates can help inspect a relation while the public agency contracts retain semantic field names.</p><p class="capability-links">Capabilities: [[cap.actuation.world-binding|World Binding]].</p></div></section></div></article><article class="surface" data-surface="q1" data-title="What?" data-gloss="What?" data-seed-ref="actuation:seed:q1" data-seed-sha256="0e8b1ab545cbda254836a7c24ea3fc596d110776ef62ff90095bf917f92f7af4"><div class="surface-inner"><header class="hero"><div class="hero-line"><span class="ql-badge">#1</span><span class="hero-label">What?</span></div><h1>A CLI and portable contracts for agency</h1><p class="hero-deck">What? — the expanded product account.</p><div class="hero-meta"><a href="#whole/what">Return to the 0/1 seed</a><span>Source-grounded candidate · review draft</span></div></header><section class="ql-node" id="q1-product" data-node=".0" data-route="product" data-nav="What you can use from the checkout" data-context="readme · agent-inference · review draft" data-vessel="readme" data-standing="agent-inference" data-tags="actuation q1 product readme" data-resource="actuation:doc:product"><header class="node-head"><div class="node-eyebrow">readme</div><h2>What you can use from the checkout</h2></header><div class="prose"><p>The usable package is a Node-based CLI with versioned contract modules. A terminal user can list commands and contracts, inspect a supplied JSON agency document, read an acting-loop receipt, inspect a Stream or Activity, and discover locally available harnesses. Applications can call the exported modules directly to validate or construct the same portable readings.</p><p>The current command table also exposes an instantiation recorder. It relates a supplied model-bearing receipt to a fresh harness detection and can append the bound result as JSONL. This gives an integration a concrete record of what it claimed to instantiate and which local detection supported that claim.</p><p>Run <code>node bin/actuation capabilities --json</code> from the checkout to inspect its command surface. The [[source:commands|command table]] is the inspected implementation. Several CLI and detection files already contain unrelated working-tree changes at this documentation snapshot; the account records those as inspected checkout behaviour, rather than silently attributing them to committed main.</p><p class="capability-links">Capabilities: [[cap.actuation.discovery|Discovery]] · [[cap.actuation.instantiation|Instantiation]].</p></div></section><section class="ql-node" id="q1-agency" data-node=".1" data-route="agency" data-nav="Inspect situated authority and lineage" data-context="surface-discovery · agent-inference · review draft" data-vessel="surface-discovery" data-standing="agent-inference" data-tags="actuation q1 agency surface-discovery" data-resource="actuation:doc:agency"><header class="node-head"><div class="node-eyebrow">surface discovery</div><h2>Inspect situated authority and lineage</h2></header><div class="prose"><p>The agency contract reads a WorldBinding together with root scope, metagency grants, determinations and Returns. The result identifies the Agent, Agency, World and scope, and states which explicit metagency operations are available in that relation.</p><p>Root Agency means the Agency bound to the enclosing World for the scope being read. The role is positional. A person can therefore inspect a project’s governing Agency using the same grammar as an Agency governing a wider World.</p><p>Determination records preserve self-differentiation, delegation, derivation and federation. Recursive lineage checks connect a child determination to its exact parent and granted autonomy. These are implemented validation and reading facilities. The separate public operation that actually creates or binds Agency remains a development question in the latest recovered wayfinder correction.</p><p class="capability-links">Capabilities: [[cap.actuation.world-binding|World Binding]] · [[cap.actuation.metagency|Metagency]] · [[cap.actuation.determination|Determination]].</p></div></section><section class="ql-node" id="q1-observation" data-node=".2" data-route="observation" data-nav="Inspect acting and follow its unfolding" data-context="surface-discovery · agent-inference · review draft" data-vessel="surface-discovery" data-standing="agent-inference" data-tags="actuation q1 observation surface-discovery" data-resource="actuation:doc:observation"><header class="node-head"><div class="node-eyebrow">surface discovery</div><h2>Inspect acting and follow its unfolding</h2></header><div class="prose"><p>A realised Actuation receipt accounts for an existing acting condition. It binds Agent, Agency, WorldBinding and Actuation to evidence of recurrence. A minimal valid case can describe a model acting in a persistent directory-bound World. Richer receipts add external harness, session, process, model and material references.</p><p>A Stream supplies ordered attributable material from that act: messages, tool operations, observations, artifacts, interruptions and Returns. A cursor lets a reader resume after a known event sequence. The reference Journal demonstrates append, replay, subscription and closure using the portable contract.</p><p>Activity gives a consumer a semantic reading of that material. It can identify the subject, phase and outcome, and expose the trace relationship needed to inspect the underlying events. A meaningful world observation can be Activity even when no Action invocation produced it.</p><p class="capability-links">Capabilities: [[cap.actuation.realised|Realised]] · [[cap.actuation.stream|Stream]] · [[cap.actuation.activity|Activity]].</p></div></section></div></article><article class="surface" data-surface="q2" data-title="How?" data-gloss="How?" data-seed-ref="actuation:seed:q2" data-seed-sha256="bf8f87c91459a438d4b39c3852afcaf9c8774cfa492683328baf0f4dc3512b99"><div class="surface-inner"><header class="hero"><div class="hero-line"><span class="ql-badge">#2</span><span class="hero-label">How?</span></div><h1>Connect the actor, its body and what happens</h1><p class="hero-deck">How? — the expanded product account.</p><div class="hero-meta"><a href="#whole/how">Return to the 0/1 seed</a><span>Source-grounded candidate · review draft</span></div></header><section class="ql-node" id="q2-first-encounter" data-node=".0" data-route="first-encounter" data-nav="Understand the session already in front of you" data-context="implementation-guide · agent-inference · review draft" data-vessel="implementation-guide" data-standing="agent-inference" data-tags="actuation q2 first-encounter implementation-guide" data-resource="actuation:doc:first-encounter"><header class="node-head"><div class="node-eyebrow">implementation guide</div><h2>Understand the session already in front of you</h2></header><div class="prose"><p>Begin with the ordinary situation: a person has opened a coding harness inside a project and asked it to work. The integration should disclose the existing Agent and situated Agency, the World being acted within and evidence that the loop is actually acting. A supplied realised receipt can then be read through <code>actuation realised receipt.json --json</code>.</p><p>The useful result is an inspectable account of the present actor. If the harness can disclose a session, process or material binding, those references enrich the account. If a facility is unsupported, the receipt carries that condition. An interface can show the basic acting relationship first and reveal the richer body facts on request.</p><p>Harness detection is a complementary step. <code>actuation harness catalog --json</code> describes detectable candidates; <code>actuation harness detect --json</code> inspects this machine. Installation evidence and an observed acting receipt answer different questions. The encounter should make both easy to inspect without making a person interpret a raw process listing.</p><p class="capability-links">Capabilities: [[cap.actuation.harness-detection|Harness Detection]] · [[cap.actuation.realised|Realised]].</p></div></section><section class="ql-node" id="q2-commission" data-node=".1" data-route="commission" data-nav="Give another Agent bounded work" data-context="constitution-design-commitment · agent-inference · review draft" data-vessel="constitution-design-commitment" data-standing="agent-inference" data-tags="actuation q2 commission constitution-design-commitment" data-resource="actuation:doc:commission"><header class="node-head"><div class="node-eyebrow">constitution design commitment</div><h2>Give another Agent bounded work</h2></header><div class="prose"><p>The intended journey begins with a human or governing Agency selecting an existing Agent, or explicitly determining a new one where authorised. The commission identifies the World, purpose, permitted autonomy, bounds and Return relation. If an independent Agent joins, the relationship preserves its independent origin and the authority it actually granted.</p><p>Before a nested commission is accepted, its parent relation should be inspectable. The recipient needs to understand what it can decide locally and which questions must return. If it meets a constraint or evidence that changes the task, it should return that material with attribution so the governing decision can be revised.</p><p>The agency module currently validates these relations and produces a read model. The September 2 wayfinder comment asks for the smallest public create/bind operation and its conformance. The inspected CLI does not expose that mutation. This journey is consequently a design commitment supported by executable relation checks, with the public commissioning step still requiring native implementation or discovery and proof.</p><p class="capability-links">Capabilities: [[cap.actuation.determination|Determination]] · [[cap.actuation.metagency|Metagency]] · [[cap.actuation.return|Return]].</p></div></section><section class="ql-node" id="q2-follow" data-node=".2" data-route="follow" data-nav="Follow work, inspect evidence and receive Return" data-context="protocol-method · agent-inference · review draft" data-vessel="protocol-method" data-standing="agent-inference" data-tags="actuation q2 follow protocol-method" data-resource="actuation:doc:follow"><header class="node-head"><div class="node-eyebrow">protocol method</div><h2>Follow work, inspect evidence and receive Return</h2></header><div class="prose"><p>A reader first sees an Activity summary: what is happening, the subject and the current result or phase. Selecting its trace opens the corresponding Stream and event references. Sequence cursors let another Surface resume the same material after a disconnect, provided its provider implements that continuity.</p><p>As several loci contribute, event attribution preserves the contribution of each. When a Return arrives, it cites a Return reference and can connect to artifacts and evidence. A review can therefore follow the result back to the work that produced it and retain dissent before synthesis.</p><p>Receipt, recognition and a resulting World change are separate steps. The native Return validator enforces their ordering. The intended interface should make those steps visible: received material awaits a decision; a recognised result may authorise a later change; an applied change should have its own evidence. Factory and source-owning products carry their respective recognition and mutation procedures.</p><p class="capability-links">Capabilities: [[cap.actuation.stream|Stream]] · [[cap.actuation.activity|Activity]] · [[cap.actuation.return|Return]].</p></div></section></div></article><article class="surface" data-surface="q3" data-title="Who / Whereby?" data-gloss="Who / Whereby?" data-seed-ref="actuation:seed:q3" data-seed-sha256="ed84e4337a88344419fa5ab8519560930d6ba4e102d91c1d399273cde900a93b"><div class="surface-inner"><header class="hero"><div class="hero-line"><span class="ql-badge">#3</span><span class="hero-label">Who / Whereby?</span></div><h1>For people who work with and build agency</h1><p class="hero-deck">Who / Whereby? — the expanded product account.</p><div class="hero-meta"><a href="#whole/whereby">Return to the 0/1 seed</a><span>Source-grounded candidate · review draft</span></div></header><section class="ql-node" id="q3-identities" data-node=".0" data-route="identities" data-nav="The relationships that make one actor intelligible" data-context="architecture-contract · agent-inference · review draft" data-vessel="architecture-contract" data-standing="agent-inference" data-tags="actuation q3 identities architecture-contract" data-resource="actuation:doc:identities"><header class="node-head"><div class="node-eyebrow">architecture contract</div><h2>The relationships that make one actor intelligible</h2></header><div class="prose"><p>The portable design uses stable references to connect identities whose owners can evolve independently. WorldBinding supplies the situated relation between an Agency and its World. A realised receipt relates that semantic actor to the actual body condition. The Stream relates its unfolding material to the same Actuation and Agency.</p><p>Body replacement is a useful test of this design. If an Agent reconnects through another process or model condition, an observer should identify the change while retaining the enduring Agent where that continuity is actually declared. The exported <code>continuityDelta</code> compares realised receipts for this purpose.</p><p>This makes the architecture useful to the person who changes machine, harness or Surface. They can ask what changed and what continued. The answer comes from explicit references and observations; runtime names alone cannot settle semantic continuity.</p><p class="capability-links">Capabilities: [[cap.actuation.continuity|Continuity]] · [[cap.actuation.realised|Realised]].</p></div></section><section class="ql-node" id="q3-boundaries" data-node=".1" data-route="boundaries" data-nav="Authority is an explicit relation" data-context="architecture-contract · agent-inference · review draft" data-vessel="architecture-contract" data-standing="agent-inference" data-tags="actuation q3 boundaries architecture-contract" data-resource="actuation:doc:boundaries"><header class="node-head"><div class="node-eyebrow">architecture contract</div><h2>Authority is an explicit relation</h2></header><div class="prose"><p>A WorldBinding carries bounds, authority and references to constraints such as human commitments, security policy, evidence and external reality. Metagency grants specify operations over agency within that binding. A root position makes scope intelligible while those constraints remain in force.</p><p>The native determination checks preserve a practical boundary: communication or participation alone does not establish authority over another Agent. Federation can relate independent participants. Delegation can carry explicit bounded authority. Recursion requires the parent’s granted autonomy and exact lineage.</p><p>These checks establish the validity of supplied portable relations. Runtime enforcement, launch, source writes and material permissions still require their native operations. An interface must distinguish reading a valid grant from exercising it. This is the bounded contract on which the intended Create Agent or commission experience should build.</p><p class="capability-links">Capabilities: [[cap.actuation.world-binding|World Binding]] · [[cap.actuation.metagency|Metagency]] · [[cap.actuation.determination|Determination]].</p></div></section><section class="ql-node" id="q3-integration" data-node=".2" data-route="integration" data-nav="Each product contributes its native part" data-context="architecture-contract · agent-inference · review draft" data-vessel="architecture-contract" data-standing="agent-inference" data-tags="actuation q3 integration architecture-contract" data-resource="actuation:doc:integration"><header class="node-head"><div class="node-eyebrow">architecture contract</div><h2>Each product contributes its native part</h2></header><div class="prose"><p>Central provides durable authored ground and the project or personal World in which agency is situated. AIKit resolves the body, Context, Skills, models, sessions and Surfaces for an operative locus. Workcell materialises processes, services, storage and lifecycle. Actuation supplies the semantic relationship of agency and its attributable acting.</p><p>Factory uses that agency when developmental work needs a commission, evidence and a candidate result. O:I can present the relationships through its desktop and communication Surfaces. Activity’s attention signal supplies information to that whole; the consuming product determines notification and attention policy.</p><p>The integration direction is concrete: preserve the supplied Agency and Actuation references when provisioning a body, project its Stream rather than inventing a disconnected activity history, and return native evidence by reference. The [[source:placement|placement account]] and [[source:loop|realised-loop contract]] explain these owner boundaries.</p><p class="capability-links">Capabilities: [[cap.actuation.activity|Activity]] · [[cap.actuation.instantiation|Instantiation]].</p></div></section></div></article><article class="surface" data-surface="q4" data-title="Where / When?" data-gloss="Where / When?" data-seed-ref="actuation:seed:q4" data-seed-sha256="95ed77bfb6e424213d1f025ee51cee752f0337ef960ff39422ccbefe5dc3bb4a"><div class="surface-inner"><header class="hero"><div class="hero-line"><span class="ql-badge">#4</span><span class="hero-label">Where / When?</span></div><h1>Where a model is actually acting</h1><p class="hero-deck">Where / When? — the expanded product account.</p><div class="hero-meta"><a href="#whole/context">Return to the 0/1 seed</a><span>Source-grounded candidate · review draft</span></div></header><section class="ql-node" id="q4-environment" data-node=".0" data-route="environment" data-nav="Use observations in their actual environment" data-context="protocol-method · agent-inference · review draft" data-vessel="protocol-method" data-standing="agent-inference" data-tags="actuation q4 environment protocol-method" data-resource="actuation:doc:environment"><header class="node-head"><div class="node-eyebrow">protocol method</div><h2>Use observations in their actual environment</h2></header><div class="prose"><p>Harness discovery describes this machine at the moment the probes run. Catalog descriptors declare the supported probe strategies. Results distinguish detected, absent and unavailable conditions, with the evidence or reason needed to interpret them. Optional version probing executes a declared version command, so callers should choose it deliberately when richer receipts are needed.</p><p>Self-detection reads known environment markers and compares them with the local detection result. Nested harnesses can leave several markers. An ambiguous result is useful information: the caller should retain the candidates rather than guessing which is innermost.</p><p>A recorded instantiation can attach detection evidence to a harness binding and append JSONL to a chosen file. That operation supplies local attribution. It does not itself establish the quality of a model’s work or prove that every declared remote facility is available. The person or integration can follow the recorded references when a later environment behaves differently.</p><p class="capability-links">Capabilities: [[cap.actuation.harness-detection|Harness Detection]] · [[cap.actuation.harness-self|Harness Self]] · [[cap.actuation.instantiation|Instantiation]].</p></div></section><section class="ql-node" id="q4-research" data-node=".1" data-route="research" data-nav="Study how the constitution changes the work" data-context="research-notes-transcripts · agent-inference · review draft" data-vessel="research-notes-transcripts" data-standing="agent-inference" data-tags="actuation q4 research research-notes-transcripts" data-resource="actuation:doc:research"><header class="node-head"><div class="node-eyebrow">research notes transcripts</div><h2>Study how the constitution changes the work</h2></header><div class="prose"><p>Actuation also houses experiments on model-bearing agency, harnesses and epistemic cultivation: the deliberate shaping of source material, contexts, dialogue and learning conditions. The wayfinder asks how those choices change provenance handling, uncertainty, contradiction retention, transfer and synthesis.</p><p>The QL runtime programme supplies pinned experimental bodies and comparison procedures. Its migration record preserves the historical evidence boundary: structural conformance existed while live Series 1 capability effects were unclaimed at migration. The Prime programme continues recursive relational Agency and harness research as an open experimental direction.</p><p>A useful experiment varies an explicit condition, retains attributable inputs and outputs, and returns a finding that can survive critique or reproduction. This account does not infer a positive QL effect from structural tests. The research belongs in the product’s purpose and horizon, while each result remains attached to its actual experiment and evidence.</p><p class="capability-links">Capabilities: [[cap.actuation.research|Research]].</p></div></section><section class="ql-node" id="q4-frontier" data-node=".2" data-route="frontier" data-nav="The next functional proof" data-context="temporal-working-state · agent-inference · review draft" data-vessel="temporal-working-state" data-standing="agent-inference" data-tags="actuation q4 frontier temporal-working-state" data-resource="actuation:doc:frontier"><header class="node-head"><div class="node-eyebrow">temporal working state</div><h2>The next functional proof</h2></header><div class="prose"><p>The smallest unresolved product step is the public determination journey identified by the corrected wayfinder: bind an existing Agent into a project World, or explicitly actualise a permitted new Agency, retaining lineage, bounds and Return. The current read-model and validation functions provide a basis for that work.</p><p>The native operation should be discoverable alongside its exact inputs, result and refusal conditions. A functional proof should exercise the operation itself, then reconnect its AIKit and Workcell body while checking semantic continuity. A valid document alone would leave the user journey incomplete.</p><p>The repository also contains ongoing CLI and detection edits outside this documentation work. Their source can inform a provisional capability reading, but a future accepted revision must reconcile those claims against the landed state. The issue mirror supplies a dated recovery source, not a live assertion that remote issue state is unchanged.</p><p class="capability-links">Capabilities: [[cap.actuation.discovery|Discovery]] · [[cap.actuation.determination|Determination]].</p></div></section></div></article><article class="surface" data-surface="q5" data-title="Why-For?" data-gloss="Why-For?" data-seed-ref="actuation:seed:q5" data-seed-sha256="1645c2ddf52e972ea1e658d137b280a17318a8bac5977035aea05ba3dfcd4625"><div class="surface-inner"><header class="hero"><div class="hero-line"><span class="ql-badge">#5</span><span class="hero-label">Why-For?</span></div><h1>Agency that can receive what its work reveals</h1><p class="hero-deck">Why-For? — the expanded product account.</p><div class="hero-meta"><a href="#whole/purpose">Return to the 0/1 seed</a><span>Source-grounded candidate · review draft</span></div></header><section class="ql-node" id="q5-whole" data-node=".0" data-route="whole" data-nav="An intelligible actor across the whole World" data-context="vision · agent-inference · review draft" data-vessel="vision" data-standing="agent-inference" data-tags="actuation q5 whole vision" data-resource="actuation:doc:whole"><header class="node-head"><div class="node-eyebrow">vision</div><h2>An intelligible actor across the whole World</h2></header><div class="prose"><p>The intended outcome is a World where a person can encounter agency without reconstructing it from scattered logs. They can inspect who acts, follow the work through its Surfaces, understand the relevant authority and receive the evidence that should shape what happens next.</p><p>The minimal case is already familiar: an Agent working in a project directory. The fuller case can involve several Agents, models and machines. The account stays coherent because identity, situated role, body, activity and Return have explicit relationships at both scales.</p><p>For the suite, this supplies the actor-related meaning that other products can compose. Central’s ground can inform the act; AIKit can provision it; Workcell can realise its body; Factory can develop through it; O:I can make it encounterable. The resulting work can then return to the World that bore its consequences.</p><p class="capability-links">Capabilities: [[cap.actuation.realised|Realised]] · [[cap.actuation.return|Return]].</p></div></section><section class="ql-node" id="q5-verification" data-node=".1" data-route="verification" data-nav="What this documentation pass established" data-context="evidence · agent-inference · review draft" data-vessel="evidence" data-standing="agent-inference" data-tags="actuation q5 verification evidence" data-resource="actuation:doc:verification"><header class="node-head"><div class="node-eyebrow">evidence</div><h2>What this documentation pass established</h2></header><div class="prose"><p>On 2026-09-06, this pass inspected the native contract modules, CLI command table, detection sources, constitution, realised-loop and Stream contracts, and retained wayfinder issues and comments. The account is generated synthesis awaiting review, including its six-answer seed.</p><p>The selected native checks executed 36 tests across agency, realised Actuation, Stream, Activity and instantiation contracts. They exercise actual validation, continuity comparison, immutable event operations, replay/subscription and receipt functions. All 36 passed. Their evidence concerns portable software behaviour; it does not constitute a live multi-harness deployment or an experimental model capability result.</p><p>Each [[actuation:matrix|capability entry]] links its governing account unit to the source and code/test files that support it. Relation records use declared views in the same matrix contract, including the seed × field contribution view. A future change can therefore be followed from the affected operation back to its intended result and seed, without rewriting the entire product account.</p><p class="capability-links">Capabilities: [[cap.actuation.verification|Verification]].</p></div></section><section class="ql-node" id="q5-reconciliation" data-node=".2" data-route="reconciliation" data-nav="Keep the seed, capabilities and implementation aligned" data-context="protocol-method · agent-inference · review draft" data-vessel="protocol-method" data-standing="agent-inference" data-tags="actuation q5 reconciliation protocol-method" data-resource="actuation:doc:reconciliation"><header class="node-head"><div class="node-eyebrow">protocol method</div><h2>Keep the seed, capabilities and implementation aligned</h2></header><div class="prose"><p>Review the six overview answers first. Their wording is a candidate recovered from native sources; a human can correct the product’s purpose and experiential basis before adopting it. Each expansion records the corresponding seed hash so an edit prompts reconciliation of that layer.</p><p>Then follow its capability links. Decide whether the operation, intended result or contract needs to change, and identify the native work needed to realise that change. An implementation gap can change a status or produce a commission while the human’s purpose remains clear.</p><p>The HTML is one editable source collection. The Markdown and CSV matrix carry addressable capabilities alongside it. Future wiki disclosure should retain those unit identities, source standing and evidence links just as it does for an ordinary ad hoc file. Recognition and file retirement belong to the later coordinated review; the prior sources remain available throughout.</p><p class="capability-links">Capabilities: [[cap.actuation.verification|Verification]].</p><p>The <a href="capability-matrix.md#seed--field-contribution">seed × field grid</a> opens the <a href="capability-matrix.json">declared matrix views</a>. Edit its <a href="capability-matrix.csv">CSV records</a> under the <a href="../../../Central/docs/CAPABILITY-MATRIX-PROTOCOL.md">shared capability protocol</a>, then reconcile affected passages in this account. Central owns retirement’s filesystem structure; AIKit owns its operations and the wiki population procedure.</p></div></section></div></article></main>
+  <aside class="right-rail" id="rightRail" aria-label="Section context"><div class="context-head"><div class="context-kicker" id="contextCoord">#0 · .0</div><h3 id="contextTitle">Source context</h3><p id="contextSummary">Select a section to inspect its source and standing.</p></div><div class="note-field" id="noteField"><label for="sectionNote">Section notes</label><textarea id="sectionNote" placeholder="Write a note for this section…"></textarea><div class="save-state" id="saveState">Saved locally when available.</div></div><div class="context-slot" id="contextSlot"></div><details class="right-details" open><summary>Sources in this section</summary><div class="source-list" id="sectionSources"></div><div class="source-empty" id="sourceEmpty">No section sources listed.</div></details><details class="right-details"><summary>Provenance</summary><dl class="meta-list" id="metaList"></dl></details></aside>
+</div>
+
+<script>
+(() => {
+  const resources=JSON.parse(document.getElementById('ground-resources').textContent);
+  const walker=document.createTreeWalker(document.getElementById('mainContent'),NodeFilter.SHOW_TEXT,{acceptNode(node){return node.parentElement.closest('script,style,code,pre,a')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT;}});
+  const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+  for(const node of nodes){const raw=node.textContent;const pattern=/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;let match,last=0,changed=false;const fragment=document.createDocumentFragment();
+    while((match=pattern.exec(raw))){changed=true;fragment.append(document.createTextNode(raw.slice(last,match.index)));const ref=match[1].trim(),entry=resources[ref];const el=document.createElement(entry?'a':'span');el.textContent=match[2]||entry?.title||ref;if(entry){el.href=entry.href;el.dataset.resource=ref;}else{el.className='source-unresolved';el.title='Unresolved authored source: '+ref;}fragment.append(el);last=pattern.lastIndex;}
+    if(changed){fragment.append(document.createTextNode(raw.slice(last)));node.replaceWith(fragment);}
+  }
+})();
+</script>
+<script>
+(() => {
+  'use strict';
+  const body = document.body;
+  const root = document.documentElement;
+  const surfaces = [...document.querySelectorAll('.surface')];
+  const surfaceNav = document.getElementById('surfaceNav');
+  const leftToggle = document.getElementById('leftToggle');
+  const rightToggle = document.getElementById('rightToggle');
+  const themeToggle = document.getElementById('themeToggle');
+  const routeChip = document.getElementById('routeChip');
+  const contextCoord = document.getElementById('contextCoord');
+  const contextTitle = document.getElementById('contextTitle');
+  const contextSummary = document.getElementById('contextSummary');
+  const contextSlot = document.getElementById('contextSlot');
+  const sectionSources = document.getElementById('sectionSources');
+  const sourceEmpty = document.getElementById('sourceEmpty');
+  const sectionNote = document.getElementById('sectionNote');
+  const saveState = document.getElementById('saveState');
+  const metaList = document.getElementById('metaList');
+  const provenance = readProvenance();
+  let activeSurface = surfaces[0];
+  let activeNode = activeSurface.querySelector('.ql-node');
+  let scrollFrame = 0;
+  function safeGet(key){try{return localStorage.getItem(key)}catch(_){return null}}
+  function safeSet(key,value){try{localStorage.setItem(key,value);return true}catch(_){return false}}
+  function readProvenance(){try{return JSON.parse(document.getElementById('account-provenance').textContent)}catch(_){return {}}}
+  function buildMetadata(){const fields=[['UID',provenance.uid],['Project',provenance.project],['Session',provenance.session],['Status',provenance.status],['Created',provenance.created],['Updated',provenance.updated],['Generator',provenance.generator]];metaList.innerHTML='';for(const [label,value] of fields){if(!value)continue;const row=document.createElement('div');row.className='meta-row';row.innerHTML=`<dt>${escapeHTML(label)}</dt><dd>${escapeHTML(String(value))}</dd>`;metaList.appendChild(row)}}
+  function escapeHTML(value){return value.replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]))}
+  function buildNav(){surfaceNav.innerHTML='';surfaces.forEach(surface=>{const q=surface.dataset.surface;const qNumber=q==='whole'?'0/1':q.replace(/^q/,'');const title=surface.dataset.title||q;const gloss=surface.dataset.gloss||'';const group=document.createElement('div');group.className='nav-group';group.dataset.surface=q;const head=document.createElement('div');head.className='nav-head';const select=document.createElement('button');select.type='button';select.className='nav-select';select.innerHTML=`<span class="nav-q">${q==='whole'?'':'#'}${qNumber}</span><span class="nav-name">${escapeHTML(title)}<span class="nav-gloss">${escapeHTML(gloss)}</span></span>`;select.addEventListener('click',()=>navigate(q,null,true));const toggle=document.createElement('button');toggle.type='button';toggle.className='nav-toggle';toggle.setAttribute('aria-label',`Toggle sections for ${title}`);toggle.setAttribute('aria-expanded','false');toggle.innerHTML='<span>›</span>';toggle.addEventListener('click',()=>{const open=group.classList.toggle('expanded');toggle.setAttribute('aria-expanded',String(open))});head.append(select,toggle);group.appendChild(head);const subnav=document.createElement('div');subnav.className='subnav';[...surface.querySelectorAll('.ql-node')].forEach(node=>{const a=document.createElement('a');const route=node.dataset.route||node.id;a.href=`#${q}/${encodeURIComponent(route)}`;a.dataset.nodeId=node.id;a.innerHTML=`<code>${escapeHTML(node.dataset.node||'')}</code><span>${escapeHTML(node.dataset.nav||node.querySelector('h2')?.textContent||route)}</span>`;a.addEventListener('click',event=>{event.preventDefault();navigate(q,route,true)});subnav.appendChild(a)});group.appendChild(subnav);surfaceNav.appendChild(group)})}
+  function parseHash(){let raw=location.hash.slice(1).trim();try{raw=decodeURIComponent(raw)}catch{}if(!raw)return{surface:surfaces[0]?.dataset.surface||'q0',route:null};const[surface,route]=raw.split('/');return{surface:surfaces.some(s=>s.dataset.surface===surface)?surface:(surfaces[0]?.dataset.surface||'q0'),route:route||null}}
+  function findNode(surface,route){const nodes=[...surface.querySelectorAll('.ql-node')];if(!route)return nodes[0]||null;return nodes.find(node=>node.dataset.route===route||node.id===route)||nodes[0]||null}
+  function navigate(surfaceId,route,push){const surface=surfaces.find(item=>item.dataset.surface===surfaceId)||surfaces[0];const node=findNode(surface,route);activateSurface(surface);activeNode=node;updateActiveUI();if(push){const hash=`#${surface.dataset.surface}${route?'/'+encodeURIComponent(route):''}`;history.pushState(null,'',hash)}requestAnimationFrame(()=>{if(route&&node)node.scrollIntoView({behavior:prefersReducedMotion()?'auto':'smooth',block:'start'});else window.scrollTo({top:0,behavior:'auto'})})}
+  function activateSurface(surface){if(activeSurface!==surface){activeSurface.classList.remove('active');surface.classList.add('active');activeSurface=surface;window.scrollTo({top:0,behavior:'auto'})}document.querySelectorAll('.nav-group').forEach(group=>{const isActive=group.dataset.surface===surface.dataset.surface;group.classList.toggle('active',isActive);if(isActive){group.classList.add('expanded');const toggle=group.querySelector('.nav-toggle');if(toggle)toggle.setAttribute('aria-expanded','true')}})}
+  function updateActiveUI(){if(!activeNode)return;document.querySelectorAll('.subnav a').forEach(a=>a.classList.toggle('active',a.dataset.nodeId===activeNode.id));const qNumber=activeSurface.dataset.surface==='whole'?'0/1':activeSurface.dataset.surface.replace(/^q/,'');routeChip.innerHTML=`<code>${qNumber==='0/1'?'':'#'}${qNumber} · ${escapeHTML(activeNode.dataset.node||'')}</code><span>${escapeHTML(activeNode.dataset.nav||'')}</span>`;updateContext(qNumber,activeNode)}
+  function updateContext(qNumber,node){contextCoord.textContent=`${qNumber==='0/1'?'':'#'}${qNumber} · ${node.dataset.node||''}`;contextTitle.textContent=node.dataset.nav||node.querySelector('h2')?.textContent||'Section';contextSummary.textContent=node.dataset.context||'Section-relative context.';const panel=node.querySelector('template[data-context-panel]');contextSlot.innerHTML='';if(panel)contextSlot.appendChild(panel.content.cloneNode(true));const sources=[...node.querySelectorAll('a[data-source]')];sectionSources.innerHTML='';sourceEmpty.hidden=sources.length>0;sources.forEach(source=>{const clone=document.createElement('a');clone.href=source.href;clone.target='_blank';clone.rel='noopener noreferrer';clone.textContent=source.textContent.trim()||source.href;sectionSources.appendChild(clone)});const noteKey=noteStorageKey(activeSurface.dataset.surface,node.dataset.route||node.id);sectionNote.value=safeGet(noteKey)||'';sectionNote.dataset.storageKey=noteKey}
+  function noteStorageKey(surface,route){return`ql-html-account:${provenance.uid||'anonymous'}:${surface}:${route}:note`}
+  function updateFromScroll(){scrollFrame=0;if(!activeSurface)return;const nodes=[...activeSurface.querySelectorAll('.ql-node')];if(!nodes.length)return;let current=nodes[0];const offset=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--top-h'))+34;const atBottom=window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-4;if(atBottom){current=nodes[nodes.length-1]}else{for(const node of nodes){if(node.getBoundingClientRect().top<=offset)current=node;else break}}if(current!==activeNode){activeNode=current;updateActiveUI();const route=current.dataset.route||current.id;const nextHash=`#${activeSurface.dataset.surface}/${encodeURIComponent(route)}`;history.replaceState(null,'',nextHash)}}
+  function scheduleScrollUpdate(){if(scrollFrame)return;scrollFrame=requestAnimationFrame(updateFromScroll)}
+  function routeFromLocation(){const{surface,route}=parseHash();const targetSurface=surfaces.find(s=>s.dataset.surface===surface)||surfaces[0];const node=findNode(targetSurface,route);activateSurface(targetSurface);activeNode=node;updateActiveUI();requestAnimationFrame(()=>{if(route&&node)node.scrollIntoView({behavior:'auto',block:'start'});else window.scrollTo({top:0,behavior:'auto'})})}
+  function prefersReducedMotion(){return window.matchMedia('(prefers-reduced-motion: reduce)').matches}
+  function setTheme(theme){root.dataset.theme=theme;safeSet('ql-html-account:theme',theme)}
+  function applyResponsiveRailDefaults(){const width=window.innerWidth;if(width<980){body.classList.add('left-closed','right-closed')}else if(width<1320){if(!body.dataset.userLeft)body.classList.remove('left-closed');if(!body.dataset.userRight)body.classList.add('right-closed')}syncRailAria()}
+  function syncRailAria(){leftToggle.setAttribute('aria-expanded',String(!body.classList.contains('left-closed')));rightToggle.setAttribute('aria-expanded',String(!body.classList.contains('right-closed')))}
+  leftToggle.addEventListener('click',()=>{body.dataset.userLeft='1';body.classList.toggle('left-closed');syncRailAria()});rightToggle.addEventListener('click',()=>{body.dataset.userRight='1';body.classList.toggle('right-closed');syncRailAria()});themeToggle.addEventListener('click',()=>{setTheme(root.dataset.theme==='dark'?'light':'dark')});sectionNote.addEventListener('input',()=>{const ok=safeSet(sectionNote.dataset.storageKey||'',sectionNote.value);saveState.textContent=ok?'Saved locally.':'Local persistence is unavailable. The note remains in this page until it closes.'});window.addEventListener('scroll',scheduleScrollUpdate,{passive:true});window.addEventListener('popstate',routeFromLocation);window.addEventListener('hashchange',routeFromLocation);window.addEventListener('resize',applyResponsiveRailDefaults,{passive:true});buildMetadata();buildNav();setTheme(safeGet('ql-html-account:theme')||'light');applyResponsiveRailDefaults();routeFromLocation();
+})();
+</script>
+</body>
+</html>
