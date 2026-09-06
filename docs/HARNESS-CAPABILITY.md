@@ -50,8 +50,18 @@ Capability descriptors live in `detection/capabilities/<slug>.mjs`, aligned
 slug-for-slug with `detection/harnesses/<slug>.mjs`, and are validated against
 the detection catalog by `detection/capabilities.test.mjs`. Declared today:
 `claude-code` (8 events, deny-and-block, additional-context channel),
-`codex` (4 events, no injection channel, no wake), `zcode` (8 events,
-deny-and-block, additional-context channel, plugin seam).
+`codex` (4 events, no injection channel, no wake), `zcode` (seven native
+events — no PreCompact, no Notification — deny-and-block, additional-context
+channel, config-json seam with the plugin seam documented alongside).
 
 Read models: `actuation harness capability` (catalog) and
 `actuation harness capability <slug>` (one descriptor, human or `--json`).
+
+## Correction discipline
+
+Descriptors are corrected against the real product surface, never defended:
+zcode rev 1 claimed claude's eight-event grammar; zcode's own shipped
+diagnosing-hooks documentation says exactly seven events (no PreCompact, no
+Notification) — rev 2 corrects the descriptor and records the correction in
+its provenance. Consumers must read the event set from the descriptor, which
+is the entire point of owning it in one place.

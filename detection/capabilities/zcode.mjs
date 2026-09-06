@@ -1,113 +1,107 @@
 // Declared harness capability. What zcode IS for dispatch projections.
-// zcode exposes a Claude-grammar hook surface (the same event names and
-// stdin/stdout JSON grammar) through its plugin and settings system; its
-// plugin facet is the detection-declared seam on this machine. The exact
-// user-level settings path is deliberately not claimed: on this machine
-// only the plugin facet is observable, and the descriptor says so.
+// Grounded in zcode's own shipped hook documentation (the zcode-guide
+// plugin's diagnosing-hooks skill): exactly seven native events, plugin
+// hooks via hooks/hooks.json, and configuration-file hooks under
+// ~/.zcode/cli/config.json that stay disabled until hooks.enabled: true.
+// Notification and PreCompact are NOT supported — a deliberate difference
+// from claude-code that consumers must read from here, never assume away.
 export default {
   "schema": "actuation.harness-capability/v1",
   "document": "capability",
   "harness_slug": "zcode",
-  "summary": "Claude-grammar hooks (same event names, stdin JSON, stdout JSON outcomes) exposed through the plugin/settings system; plugins facet is the observed seam; deny-and-block on pre-tool boundaries; no external wake.",
+  "summary": "Seven native hook events (SessionStart, UserPromptSubmit, PreToolUse, PermissionRequest, PostToolUse, PostToolUseFailure, Stop); stdout JSON additionalContext; exit 2 denies pre-tool and permission boundaries; configuration-file hooks need hooks.enabled, plugin hooks auto-enable; no PreCompact, no Notification, no external wake.",
   "native_events": [
     {
       "event": "session-start",
       "native_name": "SessionStart",
-      "transport": "plugin-or-settings-hooks-map",
+      "transport": "config-json-hooks-map",
       "can_block": false,
       "context_channel": "stdout-additional-context",
-      "notes": "session-opening context via stdout additional-context outcome, as in the Claude hook grammar."
+      "notes": "matcher value is the session mode: startup, resume, clear or compact."
     },
     {
       "event": "user-prompt-submit",
       "native_name": "UserPromptSubmit",
-      "transport": "plugin-or-settings-hooks-map",
+      "transport": "config-json-hooks-map",
       "can_block": true,
       "context_channel": "stdout-additional-context",
-      "notes": "deny-and-block at prompt submission; stdout additional context is added to the turn."
+      "notes": "matcher value is the prompt text; stdout JSON additionalContext joins the turn."
     },
     {
       "event": "pre-tool-use",
       "native_name": "PreToolUse",
-      "transport": "plugin-or-settings-hooks-map",
+      "transport": "config-json-hooks-map",
       "can_block": true,
       "context_channel": "stdout-additional-context",
-      "notes": "pre-tool additional-context travels the hook outcome channel (not stdout text); exit 2 denies the call."
+      "notes": "exit 2 is a deny for this invocation; the hook may also return a permission decision of allow/ask/deny. additionalContext is injected."
     },
     {
       "event": "post-tool-use",
       "native_name": "PostToolUse",
-      "transport": "plugin-or-settings-hooks-map",
+      "transport": "config-json-hooks-map",
       "can_block": false,
       "context_channel": "stdout-additional-context",
-      "notes": "after tool success; advisory only."
+      "notes": "runs after tool success; advisory."
     },
     {
       "event": "stop",
       "native_name": "Stop",
-      "transport": "plugin-or-settings-hooks-map",
-      "can_block": false,
+      "transport": "config-json-hooks-map",
+      "can_block": true,
       "context_channel": "none",
-      "notes": "turn-end boundary; observation/capture phase of the dispatcher."
+      "notes": "the hook may request continuation, up to three times."
     },
     {
-      "event": "pre-compact",
-      "native_name": "PreCompact",
-      "transport": "plugin-or-settings-hooks-map",
-      "can_block": false,
-      "context_channel": "stdout-additional-context",
-      "notes": "context carried into the compacted window."
+      "event": "custom",
+      "native_name": "PermissionRequest",
+      "transport": "config-json-hooks-map",
+      "can_block": true,
+      "context_channel": "exit-code-payload",
+      "notes": "no AIKit boundary kind; exit 2 denies the permission request. Declared so consumers see the whole native surface."
     },
     {
-      "event": "notification",
-      "native_name": "Notification",
-      "transport": "plugin-or-settings-hooks-map",
+      "event": "custom",
+      "native_name": "PostToolUseFailure",
+      "transport": "config-json-hooks-map",
       "can_block": false,
       "context_channel": "none",
-      "notes": "outbound attention notice from the harness."
-    },
-    {
-      "event": "session-end",
-      "native_name": "SessionEnd",
-      "transport": "plugin-or-settings-hooks-map",
-      "can_block": false,
-      "context_channel": "none",
-      "notes": "cleanup boundary."
+      "notes": "no AIKit boundary kind; fires after a failed tool call."
     }
   ],
   "injection_channel": {
     "kind": "stdout-additional-context",
-    "mechanism": "hook stdout JSON outcome additionalContext, per the Claude hook grammar zcode implements; exit 2 stderr is the deny channel.",
-    "notes": "machine observation covers the plugin facet; the settings path for user hooks is not claimed here and must be read from the harness's own surface at install time."
+    "mechanism": "hook stdout is parsed as a strict JSON schema; additionalContext is injected into the conversation. Exit codes carry the deny channel: 0 pass, 2 block, other non-zero error.",
+    "notes": "the schema is strict — any extra key fails validation, so a projection must emit exactly the admitted fields."
   },
   "blocking_semantics": {
     "kind": "deny-and-block",
-    "notes": "pre-tool-use and user-prompt-submit accept deny via exit 2 / decision block; matching the shared hook grammar."
+    "notes": "PreToolUse and PermissionRequest accept exit-2 denies; Stop accepts bounded continuation requests."
   },
   "wake_capability": {
     "kind": "none",
-    "notes": "hooks run inside a live session only; no external wake channel is declared."
+    "notes": "hooks run inside a live session only; there is no Notification event and no external wake channel."
   },
   "install_seam": {
-    "config_path": "~/.zcode/cli/plugins",
+    "config_path": "~/.zcode/cli/config.json",
     "format": "json",
-    "entry_shape": "installed plugin carrying hook declarations (plugin manifest + hooks map); the installing projection records its own manifest id",
-    "ownership_marker": "plugin manifest id / hook command resolves to the AIKit dispatch executable",
+    "entry_shape": "top-level hooks block: { enabled: true, events: { <Event>: [ { matcher?, hooks: [{type: \"command\", command, ...}] } ] } }; configuration-file hooks stay disabled until hooks.enabled is true",
+    "ownership_marker": "hook command resolves to the AIKit dispatch executable",
     "preserves_foreign_entries": true
   },
   "uninstall_seam": {
-    "config_path": "~/.zcode/cli/plugins",
+    "config_path": "~/.zcode/cli/config.json",
     "format": "json",
-    "entry_shape": "remove the projection-owned plugin manifest; foreign plugins and settings are untouched",
-    "ownership_marker": "plugin manifest id / hook command resolves to the AIKit dispatch executable",
+    "entry_shape": "entries whose command matches the ownership marker are removed and empty event keys pruned; foreign hooks and every other top-level key are untouched",
+    "ownership_marker": "hook command resolves to the AIKit dispatch executable",
     "preserves_foreign_entries": true
   },
   "provenance": {
-    "authored_by": "O:I capability descriptor programme (plugin facet observed on this machine; event grammar declared from the Claude-grammar hook surface zcode documents, 2026-09-06)",
+    "authored_by": "O:I capability descriptor programme (zcode hook grammar read from the shipped zcode-guide plugin's diagnosing-hooks documentation; config surfaces observed on this machine, 2026-09-06)",
     "source_refs": [
       "survey:local-machine-2026-09-06",
-      "upstream:zcode-hook-grammar"
+      "upstream:zcode-guide-diagnosing-hooks",
+      "correction:rev1-claimed-claude-grammar-with-precompact-notification;the-shipped-event-list-says-otherwise"
     ],
-    "catalog_revision": 3
+    "catalog_revision": 4
   }
 };
