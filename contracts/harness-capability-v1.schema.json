@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epilogos.github.io/actuation/contracts/harness-capability-v1.schema.json",
+  "title": "Actuation harness-capability contract v1",
+  "description": "What each harness IS: the native lifecycle events it provides, how additional context travels, what a hook can block, whether the harness can be woken, and the install/uninstall seams dispatch projections must use. Actuation owns this contract; consumers (AIKit installers, doctor, relay) read it and never rediscover harness facts.",
+  "$defs": {
+    "ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eventKind": {
+      "enum": [
+        "session-start",
+        "user-prompt-submit",
+        "pre-tool-use",
+        "post-tool-use",
+        "stop",
+        "session-end",
+        "pre-compact",
+        "notification",
+        "custom"
+      ]
+    },
+    "injectionChannelKind": {
+      "enum": [
+        "stdout-additional-context",
+        "stdout-plain-text",
+        "exit-code-payload",
+        "none"
+      ]
+    },
+    "blockingKind": {
+      "enum": [
+        "deny-and-block",
+        "advisory-only",
+        "none"
+      ]
+    },
+    "wakeKind": {
+      "enum": [
+        "immediate-wake",
+        "next-event",
+        "none"
+      ]
+    },
+    "configFormat": {
+      "enum": [
+        "json",
+        "jsonc",
+        "toml"
+      ]
+    },
+    "nativeEvent": {
+      "type": "object",
+      "properties": {
+        "event": {
+          "$ref": "#/$defs/eventKind"
+        },
+        "native_name": {
+          "$ref": "#/$defs/ref"
+        },
+        "transport": {
+          "$ref": "#/$defs/ref"
+        },
+        "can_block": {
+          "type": "boolean"
+        },
+        "context_channel": {
+          "$ref": "#/$defs/injectionChannelKind"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "event",
+        "native_name",
+        "transport",
+        "can_block",
+        "context_channel"
+      ],
+      "additionalProperties": false
+    },
+    "injectionChannel": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/injectionChannelKind"
+        },
+        "mechanism": {
+          "$ref": "#/$defs/ref"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "mechanism"
+      ],
+      "additionalProperties": false
+    },
+    "blockingSemantics": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/blockingKind"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "wakeCapability": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/wakeKind"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "seam": {
+      "type": "object",
+      "properties": {
+        "config_path": {
+          "$ref": "#/$defs/ref"
+        },
+        "format": {
+          "$ref": "#/$defs/configFormat"
+        },
+        "entry_shape": {
+          "$ref": "#/$defs/ref"
+        },
+        "ownership_marker": {
+          "$ref": "#/$defs/ref"
+        },
+        "preserves_foreign_entries": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "config_path",
+        "format",
+        "entry_shape",
+        "ownership_marker",
+        "preserves_foreign_entries"
+      ],
+      "additionalProperties": false
+    },
+    "capabilityEntry": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "actuation.harness-capability/v1"
+        },
+        "document": {
+          "const": "capability"
+        },
+        "harness_slug": {
+          "$ref": "#/$defs/ref"
+        },
+        "summary": {
+          "$ref": "#/$defs/ref"
+        },
+        "native_events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nativeEvent"
+          }
+        },
+        "injection_channel": {
+          "$ref": "#/$defs/injectionChannel"
+        },
+        "blocking_semantics": {
+          "$ref": "#/$defs/blockingSemantics"
+        },
+        "wake_capability": {
+          "$ref": "#/$defs/wakeCapability"
+        },
+        "install_seam": {
+          "$ref": "#/$defs/seam"
+        },
+        "uninstall_seam": {
+          "$ref": "#/$defs/seam"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "authored_by": {
+              "$ref": "#/$defs/ref"
+            },
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "catalog_revision": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "authored_by",
+            "source_refs"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "schema",
+        "document",
+        "harness_slug",
+        "native_events",
+        "injection_channel",
+        "blocking_semantics",
+        "wake_capability",
+        "install_seam",
+        "uninstall_seam",
+        "provenance"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$ref": "#/$defs/capabilityEntry"
+}

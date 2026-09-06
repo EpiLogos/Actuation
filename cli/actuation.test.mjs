@@ -172,8 +172,8 @@ test("every declared command route matches the dispatcher", () => {
 });
 
 test("bare harness names its subcommands instead of a generic unknown", () => {
-  assert.throws(() => executeCommand(["harness"]), /expected catalog, detect or self/);
-  assert.throws(() => executeCommand(["harness", "teleport"]), /expected catalog, detect or self/);
+  assert.throws(() => executeCommand(["harness"]), /expected catalog, detect, self or capability/);
+  assert.throws(() => executeCommand(["harness", "teleport"]), /expected catalog, detect, self or capability/);
 });
 
 test("invalid command fails rather than fabricating a fallback", () => {

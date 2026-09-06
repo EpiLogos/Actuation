@@ -31,7 +31,7 @@ export function executeCommand(argv, { stdin = "" } = {}) {
   const match = matchRoute(args);
   if (!match) {
     if (command === "harness") {
-      throw new TypeError(`unknown harness subcommand ${args[1] ?? "(none)"}; expected catalog, detect or self`);
+      throw new TypeError(`unknown harness subcommand ${args[1] ?? "(none)"}; expected catalog, detect, self or capability`);
     }
     throw new TypeError(`unknown command ${command}; run actuation help`);
   }
@@ -59,7 +59,7 @@ Usage:
   actuation --version
 ${usage}
 
-Read-model commands project the matching Actuation contract; "harness catalog" declares what this product can detect, "harness detect" proves which of them exist on this machine, and "harness self" identifies which one this process runs inside.`;
+Read-model commands project the matching Actuation contract; "harness catalog" declares what this product can detect, "harness capability" declares what the dispatch-relevant harnesses are, "harness detect" proves which of them exist on this machine, and "harness self" identifies which one this process runs inside.`;
 }
 
 function commandNeedsStdin(argv) {
