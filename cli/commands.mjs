@@ -15,9 +15,11 @@ import {
   closeDurableStream,
   openDurableStream,
   recordBoundaryOccurrence,
+  recordModelUsageObservation,
   replayDurableStream,
 } from "../contracts/actuation-stream-store.mjs";
 import { validateActivity } from "../contracts/activity.mjs";
+import { modelUsageFromClaudeCodeTranscript, validateModelUsageObservation } from "../contracts/model-usage.mjs";
 import { instantiationReceipt, attachDetectionEvidence } from "../contracts/instantiation.mjs";
 import { harnessCatalog as harnessCatalogDocument } from "../contracts/harness-detection.mjs";
 import { runDetection } from "../detection/detect.mjs";
@@ -118,6 +120,14 @@ function humanStreamReplay(value) {
 
 function humanActivity(value) {
   return `Activity ${value.activity_ref}\n${value.summary}\n${value.phase} / ${value.outcome}\nSubject: ${value.subject_ref}\nOwner: ${value.native_owner}`;
+}
+
+function humanUsage(value) {
+  return `Model usage ${value.usage_ref}\nInvocation: ${value.invocation_ref}\nModel: ${value.model.name ?? value.model.ref ?? value.model.standing}\nTokens: ${value.tokens.input ?? "not reported"} in / ${value.tokens.output ?? "not reported"} out\nCost: ${value.cost.amount ?? value.cost.standing}`;
+}
+
+function humanUsageRecord(value) {
+  return `${value.deduplicated ? "Replayed" : "Recorded"} ${value.event.model_usage.usage_ref}\nStream: ${value.stream_ref}\nSequence: ${value.event.sequence}`;
 }
 
 function humanInstantiation(value) {
@@ -222,6 +232,20 @@ export const COMMANDS = Object.freeze([
     usage: "actuation activity [file|-] [--json]",
     input: true,
     run: ({ args, json, stdin }) => output(structuredClone(validateActivity(readJsonInput(args[0] ?? "-", stdin))), json, humanActivity),
+  },
+  {
+    name: "usage.read",
+    route: ["usage"],
+    usage: "actuation usage [file|-] [--json]",
+    input: true,
+    run: ({ args, json, stdin }) => output(structuredClone(validateModelUsageObservation(readJsonInput(args[0] ?? "-", stdin))), json, humanUsage),
+  },
+  {
+    name: "stream.usage",
+    route: ["stream", "usage"],
+    usage: "actuation stream usage [--store <dir>] [file|-] [--json]",
+    input: true,
+    run: ({ args, json, stdin }) => streamUsage(args, stdin, json),
   },
   {
     name: "instantiation.read",
@@ -342,6 +366,24 @@ function streamRecord(args, stdin, json) {
   const input = readJsonInput(inputPath ?? "-", stdin);
   const value = recordBoundaryOccurrence({ root: store, ...input });
   return output(value, json, humanStreamRecord);
+}
+
+function streamUsage(args, stdin, json) {
+  const store = flagValue(args, "--store");
+  const inputPath = args.find((arg) => !arg.startsWith("--"));
+  const input = readJsonInput(inputPath ?? "-", stdin);
+  if (input.adapter !== "claude-code-transcript") {
+    throw new TypeError("stream usage currently supports adapter claude-code-transcript");
+  }
+  const observation = modelUsageFromClaudeCodeTranscript(input.native_event, input.correlation);
+  const value = recordModelUsageObservation({
+    root: store,
+    stream_ref: input.stream_ref,
+    identity: input.identity,
+    observation,
+    event_ref: input.event_ref,
+  });
+  return output(value, json, humanUsageRecord);
 }
 
 function streamReplay(args, json) {

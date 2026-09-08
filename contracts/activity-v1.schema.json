@@ -43,6 +43,7 @@
     "result_ref": { "$ref": "#/$defs/ref" },
     "return_ref": { "$ref": "#/$defs/ref" },
     "evidence_refs": { "$ref": "#/$defs/refs" },
+    "usage_refs": { "$ref": "#/$defs/refs" },
     "verb": { "$ref": "#/$defs/text" },
     "object": { "$ref": "#/$defs/text" },
     "summary": { "$ref": "#/$defs/text" },

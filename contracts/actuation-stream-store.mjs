@@ -26,6 +26,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
+import { isDeepStrictEqual } from "node:util";
 import {
   ACTUATION_STREAM_VERSION,
   actuationStreamReadModel,
@@ -35,6 +36,7 @@ import {
   validateActuationStreamEvent,
 } from "./actuation-stream.mjs";
 import { capabilityDescriptorBySlug } from "../detection/catalog.mjs";
+import { validateModelUsageObservation } from "./model-usage.mjs";
 
 export const ACTUATION_STREAM_STORE_DEFAULT_ROOT = join(homedir(), ".actuation", "streams");
 
@@ -262,4 +264,50 @@ export function recordBoundaryOccurrence({ root, stream_ref, harness, native_eve
     cursor: { ...appended.cursor },
     lifecycle: { ...appended.lifecycle },
   };
+}
+
+export function recordModelUsageObservation({ root, stream_ref, identity, observation, event_ref } = {}) {
+  if (typeof stream_ref !== "string" || stream_ref.trim() === "") {
+    throw new TypeError("recording model usage requires a non-empty stream_ref");
+  }
+  const usage = structuredClone(validateModelUsageObservation(observation));
+  const path = streamFilePath(root, stream_ref);
+  let stream = loadStreamFile(path);
+  if (!stream) {
+    if (!identity) throw new TypeError(`durable ActuationStream ${stream_ref} does not exist; supply its identity to open it with this usage observation`);
+    openDurableStream({ root, ...identity, stream_ref });
+    stream = loadStreamFile(path);
+  } else if (identity) {
+    checkIdentityConsistency(stream, identity);
+  }
+  if (stream.actuation_ref !== usage.actuation_ref) {
+    throw new TypeError(`ModelUsageObservation actuation_ref ${usage.actuation_ref} does not match stream ${stream.actuation_ref}`);
+  }
+  for (const [key, streamKey] of [["agency_ref", "agency_ref"], ["agent_session_ref", "agent_session_ref"]]) {
+    if (usage.correlation[key] != null && usage.correlation[key] !== stream[streamKey]) {
+      throw new TypeError(`ModelUsageObservation correlation.${key} ${usage.correlation[key]} does not match stream ${stream[streamKey]}`);
+    }
+  }
+
+  const existing = stream.events.find((event) => event.kind === "model-usage" && event.model_usage.usage_ref === usage.usage_ref);
+  if (existing) {
+    if (!isDeepStrictEqual(existing.model_usage, usage)) {
+      throw new TypeError(`ModelUsageObservation ${usage.usage_ref} was replayed with conflicting evidence`);
+    }
+    return { stream_ref, event: structuredClone(existing), cursor: { ...stream.cursor }, lifecycle: { ...stream.lifecycle }, deduplicated: true };
+  }
+
+  const occurrence = {
+    event_ref: event_ref ?? `actuation:event:${randomUUID()}`,
+    sequence: stream.cursor.next_sequence,
+    kind: "model-usage",
+    observed_at: usage.provenance.observed_at,
+    native_trace_ref: usage.provenance.raw_evidence_refs[0],
+    evidence_refs: [...usage.provenance.raw_evidence_refs],
+    disclosure: "portable",
+    model_usage: usage,
+  };
+  const appended = appendActuationStreamEvent(stream, occurrence);
+  appendFileSync(path, `${JSON.stringify(appended.events.at(-1))}\n`, { encoding: "utf8" });
+  return { stream_ref, event: structuredClone(appended.events.at(-1)), cursor: { ...appended.cursor }, lifecycle: { ...appended.lifecycle }, deduplicated: false };
 }

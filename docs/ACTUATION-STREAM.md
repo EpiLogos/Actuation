@@ -78,6 +78,33 @@ Occurrence recording (harness boundaries landing as `harness-event` events) need
 - **Recording is descriptor-driven.** `stream record` validates the named native event against the harness's own capability descriptor before normalizing: an undeclared event is refused, a declared event records as `kind: "harness-event"` with `metadata.boundary` carrying its AIKit boundary mapping (`null` for the descriptor's disclosed customs).
 - **Identity is consistent or refused.** Reopening an existing `stream_ref` with different `actuation_ref` / `agency_ref` / `agent_session_ref` fails; a caller-supplied `event_ref` that already exists fails (crash-retry visible, never silently deduplicated).
 
+## Model-usage observations
+
+`actuation.model-usage/v1` is an attached observation, not a vendor field bag
+copied into every Activity row. A `model-usage` Stream event retains the typed
+observation and raw native trace refs; Activity exposes only the corresponding
+`usage_refs` for reversible drill-down.
+
+The first supported native adapter consumes a Claude Code transcript assistant
+record. That record shape was observed live: provider message/request/session
+identity, model name, input/output tokens, cache-read/cache-creation tokens,
+service tier, completion timestamp and stop reason are projected exactly where
+present. The adapter deliberately does not persist message content. Claude Code
+can route through more than one provider and the transcript row does not name
+that route, so provider identity remains `not-reported`; it likewise supplies
+neither request-start latency nor monetary cost.
+
+The observation gives every evidence class an explicit standing. Absence never
+becomes zero. Provider-reported cost remains distinct from derived cost; a
+derived monetary value is invalid without an exact pricing source, revision and
+effective date. A `max_tokens` stop is retained as partial usage. Synthetic
+error rows are refused as provider evidence.
+
+Native transcript replay is common, so `recordModelUsageObservation` deduplicates
+the stable `usage_ref` idempotently. An identical replay returns the original
+Stream event and cursor; a replay with changed evidence is a conflict and is
+refused rather than double-counted or overwritten.
+
 ## O:I gateway / Cradle consequence
 
 The first-party Agency Gateway and Cradle should consume this canonical Stream rather than promote AIKit provider `ConnectionSignal` or a platform-native message trace into a second event ontology.

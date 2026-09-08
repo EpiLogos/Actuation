@@ -65,7 +65,18 @@ Read-model commands project the matching Actuation contract; "harness catalog" d
 function commandNeedsStdin(argv) {
   const args = argv.filter((arg) => arg !== "--json");
   const match = matchRoute(args);
-  return Boolean(match?.entry.input) && (match.rest[0] == null || match.rest[0] === "-");
+  if (!match?.entry.input) return false;
+  const valueFlags = new Set(["--store", "--out"]);
+  const positional = [];
+  for (let index = 0; index < match.rest.length; index += 1) {
+    const value = match.rest[index];
+    if (valueFlags.has(value)) {
+      index += 1;
+    } else if (!value.startsWith("--")) {
+      positional.push(value);
+    }
+  }
+  return positional.length === 0 || positional[0] === "-";
 }
 
 function removeFlag(args, flag) {

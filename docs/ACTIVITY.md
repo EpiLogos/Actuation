@@ -28,3 +28,9 @@ needs_attention != invocation or mutation authority
 `needs_attention` is only a portable semantic signal. O:I composes it with the user's Attention/Inbox and notification policy. A normal live Activity remains globally visible even when `needs_attention` is false.
 
 The `trace` member is the reversible seam back to the same `ActuationStream`: stream ref, event refs/sequences and native trace refs. This is what allows a Session Observatory to present a semantic reading first and then disclose raw evidence without maintaining a second activity log.
+
+When a Stream contains `actuation.model-usage/v1` observations, Activity may
+carry their stable `usage_refs`. It does not aggregate or copy provider-specific
+metrics. Factory can group those refs under externally owned Run/workflow-unit
+refs in `subject_ref` or the observation's `correlation.external_refs` without
+Actuation acquiring Factory semantics.

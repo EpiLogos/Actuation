@@ -10,9 +10,11 @@ import {
   loadDurableStream,
   openDurableStream,
   recordBoundaryOccurrence,
+  recordModelUsageObservation,
   replayDurableStream,
   streamFileName,
 } from "./actuation-stream-store.mjs";
+import { modelUsageFromClaudeCodeTranscript } from "./model-usage.mjs";
 import { capabilityDescriptorBySlug } from "../detection/catalog.mjs";
 
 function store() {
@@ -126,6 +128,72 @@ test("a duplicate caller event_ref is refused, so crash-retry stays visible", ()
     ),
     /already exists/,
   );
+});
+
+test("replayed native model usage is idempotent while conflicting evidence is refused", () => {
+  const root = store();
+  const native = {
+    type: "assistant",
+    sessionId: "session-real-shape",
+    requestId: "request-real-shape",
+    timestamp: "2026-09-08T20:00:00Z",
+    message: {
+      id: "message-real-shape",
+      model: "claude-fable-5",
+      stop_reason: "end_turn",
+      usage: { input_tokens: 11, output_tokens: 7, cache_read_input_tokens: 5 },
+    },
+  };
+  const observation = modelUsageFromClaudeCodeTranscript(native, {
+    actuation_ref: identity.actuation_ref,
+    agent_session_ref: identity.agent_session_ref,
+    native_trace_ref: "trace:claude-code:line-42",
+  });
+  const first = recordModelUsageObservation({ root, stream_ref: identity.stream_ref, identity, observation });
+  const replay = recordModelUsageObservation({ root, stream_ref: identity.stream_ref, observation });
+  assert.equal(first.deduplicated, false);
+  assert.equal(replay.deduplicated, true);
+  assert.equal(replay.event.sequence, 1);
+  assert.equal(loadDurableStream({ root, stream_ref: identity.stream_ref }).events.length, 1);
+
+  const conflict = structuredClone(observation);
+  conflict.tokens.output = 8;
+  assert.throws(() => recordModelUsageObservation({ root, stream_ref: identity.stream_ref, observation: conflict }), /conflicting evidence/);
+});
+
+test("partial usage is retained before a cancelled stream closes", () => {
+  const root = store();
+  const native = {
+    type: "assistant",
+    sessionId: "session-cancelled",
+    timestamp: "2026-09-08T20:00:00Z",
+    message: { id: "message-cancelled", model: "claude-fable-5", stop_reason: "max_tokens", usage: { input_tokens: 4, output_tokens: 2 } },
+  };
+  const observation = modelUsageFromClaudeCodeTranscript(native, {
+    actuation_ref: identity.actuation_ref,
+    native_trace_ref: "trace:claude-code:cancelled-line",
+  });
+  recordModelUsageObservation({ root, stream_ref: identity.stream_ref, identity, observation });
+  const closed = closeDurableStream({ root, stream_ref: identity.stream_ref, state: "cancelled", ended_at: "2026-09-08T20:00:01Z" });
+  assert.equal(closed.events[0].model_usage.outcome.state, "partial");
+  assert.equal(closed.events[0].model_usage.tokens.output, 2);
+  assert.equal(closed.lifecycle.state, "cancelled");
+});
+
+test("usage correlation cannot silently change the Stream Agency or AgentSession", () => {
+  const root = store();
+  const native = {
+    type: "assistant",
+    sessionId: "session-wrong-agency",
+    timestamp: "2026-09-08T20:00:00Z",
+    message: { id: "message-wrong-agency", model: "claude-fable-5", stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 } },
+  };
+  const observation = modelUsageFromClaudeCodeTranscript(native, {
+    actuation_ref: identity.actuation_ref,
+    agency_ref: "agency:not-the-stream",
+    native_trace_ref: "trace:claude-code:wrong-agency",
+  });
+  assert.throws(() => recordModelUsageObservation({ root, stream_ref: identity.stream_ref, identity, observation }), /does not match stream/);
 });
 
 test("reopening a stream_ref with different identity is refused", () => {
