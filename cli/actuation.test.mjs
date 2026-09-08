@@ -13,6 +13,7 @@ import { ACTUATION_STREAM_VERSION, appendActuationStreamEvent } from "../contrac
 import { activityFromActuationStream } from "../contracts/activity.mjs";
 import { ACTUATION_INSTANTIATION_VERSION } from "../contracts/instantiation.mjs";
 import { CATALOG_REVISION } from "../detection/catalog.mjs";
+import { modelUsageFromClaudeCodeTranscript } from "../contracts/model-usage.mjs";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -215,6 +216,18 @@ test("activity command validates and projects the Activity contract", () => {
   const value = JSON.parse(result.stdout);
   assert.equal(value.activity_ref, "activity:cli-test-1");
   assert.match(executeCommand(["activity", "-"], { stdin: JSON.stringify(activityFixture()) }).stdout, /Activity activity:cli-test-1/);
+});
+
+test("usage command validates and reads the model-usage contract", () => {
+  const usage = modelUsageFromClaudeCodeTranscript({
+    type: "assistant",
+    sessionId: "session-cli-usage",
+    timestamp: "2026-09-08T20:00:00Z",
+    message: { id: "message-cli-usage", model: "claude-fable-5", stop_reason: "end_turn", usage: { input_tokens: 5, output_tokens: 2 } },
+  }, { actuation_ref: "actuation:cli-usage", native_trace_ref: "trace:cli-usage" });
+  const result = executeCommand(["usage", "-", "--json"], { stdin: JSON.stringify(usage) });
+  assert.equal(JSON.parse(result.stdout).usage_ref, usage.usage_ref);
+  assert.match(executeCommand(["usage", "-"], { stdin: JSON.stringify(usage) }).stdout, /5 in \/ 2 out/);
 });
 
 test("instantiation read validates receipts and reads legacy model-bearing documents", () => {

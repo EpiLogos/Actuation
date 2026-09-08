@@ -1,3 +1,5 @@
+import { validateModelUsageObservation } from "./model-usage.mjs";
+
 export const ACTUATION_STREAM_VERSION = "actuation.stream/v1";
 
 const STREAM_STATES = new Set(["open", "closed", "interrupted", "cancelled"]);
@@ -6,6 +8,7 @@ const EVENT_KINDS = new Set([
   "model-message",
   "model-delta",
   "model-result",
+  "model-usage",
   "capability-request",
   "capability-result",
   "tool-request",
@@ -127,6 +130,11 @@ export function validateActuationStreamEvent(input, { expectedSequence } = {}) {
     throw new TypeError("ActuationStreamEvent.content must be a string when supplied");
   }
   if (event.metadata != null) object(event.metadata, "ActuationStreamEvent.metadata");
+  if (event.kind === "model-usage") {
+    validateModelUsageObservation(event.model_usage);
+  } else if (event.model_usage != null) {
+    throw new TypeError("ActuationStreamEvent.model_usage is only valid when kind is model-usage");
+  }
 
   if (event.kind === "return" && event.return_ref == null) {
     throw new TypeError("return ActuationStreamEvent requires return_ref");

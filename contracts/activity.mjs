@@ -98,6 +98,7 @@ export function validateActivity(input) {
   ref(activity.result_ref, "Activity.result_ref", { optional: true });
   ref(activity.return_ref, "Activity.return_ref", { optional: true });
   refs(activity.evidence_refs, "Activity.evidence_refs", { optional: true });
+  refs(activity.usage_refs, "Activity.usage_refs", { optional: true });
   text(activity.verb, "Activity.verb");
   text(activity.object, "Activity.object");
   text(activity.summary, "Activity.summary");
@@ -195,6 +196,7 @@ export function activityFromActuationStream(
   const phase = phaseFromStream(stream);
   const startedAt = stream.lifecycle.started_at ?? stream.events.at(0)?.observed_at;
   const updatedAt = stream.lifecycle.ended_at ?? lastEvent?.observed_at ?? startedAt;
+  const usageRefs = [...new Set(stream.events.filter((event) => event.kind === "model-usage").map((event) => event.model_usage.usage_ref))];
   if (startedAt == null || updatedAt == null) {
     throw new TypeError("Activity projection requires stream lifecycle/event timestamps");
   }
@@ -211,6 +213,7 @@ export function activityFromActuationStream(
     actuation_ref: stream.actuation_ref,
     result_ref: resultRef,
     evidence_refs: [...evidenceRefs],
+    ...(usageRefs.length ? { usage_refs: usageRefs } : {}),
     return_ref: returnRef ?? lastEvent?.return_ref,
     verb,
     object: activityObject,
@@ -279,6 +282,7 @@ export function activityFromStreamEvent(
     actuation_ref: stream.actuation_ref,
     result_ref: resultRef,
     evidence_refs: [...evidenceRefs, ...(event.evidence_refs ?? [])],
+    ...(event.kind === "model-usage" ? { usage_refs: [event.model_usage.usage_ref] } : {}),
     return_ref: returnRef ?? event.return_ref,
     verb,
     object: activityObject,

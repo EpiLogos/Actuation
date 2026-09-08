@@ -13,6 +13,7 @@ import {
   activityNeedsAttention,
   validateActivity,
 } from "./activity.mjs";
+import { modelUsageFromClaudeCodeTranscript } from "./model-usage.mjs";
 
 function baseStream() {
   return {
@@ -122,6 +123,41 @@ test("Activity remains globally visible without becoming Attention by default", 
   });
   assert.equal(activityNeedsAttention(activity), false);
   assert.equal(activity.completed_at, undefined);
+});
+
+test("Activity exposes usage refs while raw evidence remains reconstructable through its Stream trace", () => {
+  const usage = modelUsageFromClaudeCodeTranscript({
+    type: "assistant",
+    sessionId: "session-activity-usage",
+    requestId: "request-activity-usage",
+    timestamp: "2026-08-31T10:00:01Z",
+    message: { id: "message-activity-usage", model: "claude-fable-5", stop_reason: "end_turn", usage: { input_tokens: 9, output_tokens: 3 } },
+  }, { actuation_ref: "actuation:dev-1", native_trace_ref: "trace:provider:usage-1" });
+  const stream = appendActuationStreamEvent(baseStream(), event(1, "model-usage", {
+    native_trace_ref: "trace:provider:usage-1",
+    evidence_refs: ["trace:provider:usage-1"],
+    model_usage: usage,
+  }));
+  const activity = activityFromActuationStream(stream, {
+    activityRef: "activity:usage",
+    subjectRef: "factory:workflow-unit:external",
+    nativeOwner: "actuation",
+    verb: "used",
+    object: "model invocation",
+    summary: "The invocation returned provider usage evidence.",
+  });
+  assert.deepEqual(activity.usage_refs, [usage.usage_ref]);
+  assert.deepEqual(activity.trace.native_trace_refs, ["trace:provider:usage-1"]);
+
+  const single = activityFromStreamEvent(stream, "event:1", {
+    activityRef: "activity:usage-event",
+    subjectRef: "factory:workflow-unit:external",
+    nativeOwner: "actuation",
+    verb: "observed",
+    object: "model usage",
+    summary: "One provider usage observation was recorded.",
+  });
+  assert.deepEqual(single.usage_refs, [usage.usage_ref]);
 });
 
 test("attention signal is explicit data and carries no notification or invocation authority", () => {

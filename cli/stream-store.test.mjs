@@ -3,6 +3,7 @@ import test from "node:test";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { spawnSync } from "node:child_process";
 
 import { executeCommand } from "./actuation.mjs";
 import { capabilityDescriptorBySlug } from "../detection/catalog.mjs";
@@ -64,4 +65,61 @@ test("stream record refuses an undeclared native event through the CLI", () => {
     /Notification/,
     "an undeclared native event is a refusal, not a silent record",
   );
+});
+
+test("stream usage normalizes a native provider record, persists no content, and deduplicates replay", () => {
+  const root = store();
+  const document = {
+    adapter: "claude-code-transcript",
+    stream_ref: identity.stream_ref,
+    identity,
+    correlation: {
+      actuation_ref: identity.actuation_ref,
+      agent_session_ref: identity.agent_session_ref,
+      native_trace_ref: "trace:claude-code:cli-line-1",
+    },
+    native_event: {
+      type: "assistant",
+      sessionId: "session-cli-native",
+      requestId: "request-cli-native",
+      timestamp: "2026-09-08T20:00:00Z",
+      message: {
+        id: "message-cli-native",
+        model: "claude-fable-5",
+        stop_reason: "end_turn",
+        content: [{ type: "text", text: "must not persist" }],
+        usage: { input_tokens: 17, output_tokens: 5, cache_read_input_tokens: 13 },
+      },
+    },
+  };
+  const first = run(["stream", "usage", "--store", root, "-"], JSON.stringify(document));
+  const replay = run(["stream", "usage", "--store", root, "-"], JSON.stringify(document));
+  assert.equal(first.deduplicated, false);
+  assert.equal(replay.deduplicated, true);
+  assert.equal(replay.cursor.last_sequence, 1);
+  assert.equal(replay.event.model_usage.tokens.input, 17);
+  assert.equal(JSON.stringify(replay).includes("must not persist"), false);
+});
+
+test("the served binary reads stream usage from stdin when --store precedes the input marker", () => {
+  const root = store();
+  const document = {
+    adapter: "claude-code-transcript",
+    stream_ref: identity.stream_ref,
+    identity,
+    correlation: { actuation_ref: identity.actuation_ref, native_trace_ref: "trace:served-cli" },
+    native_event: {
+      type: "assistant",
+      sessionId: "session-served-cli",
+      timestamp: "2026-09-08T20:00:00Z",
+      message: { id: "message-served-cli", model: "claude-fable-5", stop_reason: "end_turn", usage: { input_tokens: 3, output_tokens: 1 } },
+    },
+  };
+  const result = spawnSync(process.execPath, ["bin/actuation", "stream", "usage", "--store", root, "-", "--json"], {
+    cwd: new URL("..", import.meta.url),
+    input: JSON.stringify(document),
+    encoding: "utf8",
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(JSON.parse(result.stdout).event.model_usage.tokens.input, 3);
 });

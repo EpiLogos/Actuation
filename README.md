@@ -149,9 +149,11 @@ actuation realised [file|-] [--json]
 actuation stream [file|-] [--json]
 actuation stream open [--store <dir>] [file|-] [--json]
 actuation stream record [--store <dir>] [file|-] [--json]
+actuation stream usage [--store <dir>] [file|-] [--json]
 actuation stream replay <stream_ref> [--after <n>] [--limit <n>] [--store <dir>] [--json]
 actuation stream close <stream_ref> [--state closed|interrupted|cancelled] [--ended-at <ts>] [--store <dir>] [--json]
 actuation activity [file|-] [--json]
+actuation usage [file|-] [--json]
 actuation instantiation [file|-] [--json]
 actuation instantiation record [--allow-unattributed] [--out <file>] [file|-] [--json]
 actuation harness catalog [--json]
@@ -169,6 +171,12 @@ enriches receipts by executing detected binaries with their declared
 `version_args` (opt-in: some version probes are slow or prompt the
 keychain; failures are disclosed, never folded into detection state).
 `instantiation record --out <file>` appends bound receipts as JSONL.
+`stream usage` accepts one declared native adapter document, currently a
+Claude Code transcript assistant event, and writes only its typed usage
+observation into the durable Stream. Provider message/request identity,
+model, tokens and cache facts are retained where the native record supplies
+them; prompt and response content are never persisted. Missing provider,
+latency or cost evidence remains explicitly `not-reported`.
 
 ## Reference runtimes and experiments
 

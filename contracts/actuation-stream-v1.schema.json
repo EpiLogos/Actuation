@@ -65,7 +65,7 @@
         "sequence": { "type": "integer", "minimum": 1 },
         "kind": {
           "enum": [
-            "human-message", "model-message", "model-delta", "model-result",
+            "human-message", "model-message", "model-delta", "model-result", "model-usage",
             "capability-request", "capability-result", "tool-request", "tool-result",
             "harness-event", "world-observation", "delegation", "locus-event",
             "permission", "refusal", "interruption", "cancellation", "execution-event",
@@ -83,7 +83,8 @@
         "evidence_refs": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
         "disclosure": { "enum": ["portable", "surface", "reference-only"] },
         "content": { "type": "string" },
-        "metadata": { "type": "object" }
+        "metadata": { "type": "object" },
+        "model_usage": { "$ref": "model-usage-v1.schema.json" }
       }
     }
   }
