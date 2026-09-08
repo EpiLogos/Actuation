@@ -2,6 +2,15 @@ name: Native CLI
 
 on:
   pull_request:
+    paths:
+      - "bin/actuation"
+      - "cli/**"
+      - "contracts/**"
+      - "detection/**"
+      - "package.json"
+      - "README.md"
+      - ".oi/product.json"
+      - ".github/workflows/native-cli.yml"
   push:
     branches:
       - main
@@ -15,9 +24,14 @@ on:
       - ".oi/product.json"
       - ".github/workflows/native-cli.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   native-cli:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
