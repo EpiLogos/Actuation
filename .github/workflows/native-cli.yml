@@ -42,6 +42,7 @@ jobs:
       # npm test globs every native suite; a hardcoded file list here rots
       # (it referenced contracts/model-bearing.test.mjs after the rename).
       - run: npm test
+      - run: node --test ProjectCentral/tests/register.integrity.mjs
       - name: Self-certification - the served binary certifies this build
         run: |
           node bin/actuation capabilities --json > capabilities.json
