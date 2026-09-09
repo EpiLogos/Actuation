@@ -6,7 +6,7 @@
   "kind": "handoff",
   "recorded_at_unix_seconds": 1788912342,
   "subject": "Complete the Actuation ProjectCentral NOW register",
-  "result": "Recovered the partial ProjectCentral from Actuation main 4d6fec62f478e9f6eea5cf681cd373f3e767321c using Central additive reprojection, stamped the distributed governance starters, initialized the canonical NOW/DAY field, and federated the project Wiki with the Central root. Canonical inspection now reports ProjectCentral healthy and NOW available. Landing and Wayfinder receipt continue through the owning pull request.",
+  "result": "Structural initialization only. PR #41 recovered the partial ProjectCentral from Actuation main 4d6fec62f478e9f6eea5cf681cd373f3e767321c, stamped the distributed governance starters, initialized the NOW/DAY field, and federated the project Wiki with the Central root. This did not reconcile the pre-existing Actuation programme horizon and was therefore not operational completion; the live owner-state returns added by the subsequent reconciliation supersede that claim.",
   "status": "resolved",
   "source_refs": [
     "ProjectCentral/project.json",
