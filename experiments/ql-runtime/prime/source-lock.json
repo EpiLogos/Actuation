@@ -2,22 +2,26 @@
   "schema": "actuation.prime-source-lock/v1",
   "actuation": {
     "repository": "EpiLogos/Actuation",
-    "base_revision": "bd8927b54ac17016be6f879994f736e453f2881c"
+    "base_revision": "7925f69c99a068fc064eeec6518efea9bb7aa265"
   },
   "prime_agent": {
     "repository": "PrimeIntellect-ai/prime-agent",
-    "release": "v0.9.1",
-    "release_revision": "81ae3cb34d27d38ee37f9e205a1e73694993b344",
-    "observed_main_revision_2026_09_04": "3484f06a1e474d961975e0e5ff44d2e59c5eac7b"
+    "release": "v0.9.4",
+    "release_revision": "f771dfcedd684d1afff84ca2c6fa95c7a21efbc2",
+    "observed_main_revision": "55ade48b73f636d992855b7cab797d71dc1f6f1c",
+    "observed_at": "2026-09-09T09:04:24Z"
   },
   "ql_mef": {
     "repository": "EpiLogos/QL-MEF",
-    "accepted_main_revision": "cddd97d3e7717954256a46f482bd569fa7448870",
+    "accepted_main_revision": "44ed3cd0e7a8bc25508a4e18ad3bb4c730013913",
+    "observed_at": "2026-09-09T09:04:24Z",
     "harmonic_research": {
       "issue": 31,
       "pull_request": 81,
       "revision": "42d36ed75fd9cf8a70bcbabc5dca766cc51b6811",
-      "standing": "current-development-not-accepted-main"
+      "pull_request_state": "closed-unmerged",
+      "accepted_via_revision": "781981374eaa1f02952249dcdbca1af671d1ece4",
+      "standing": "accepted-main-history-carrier"
     }
   }
 }

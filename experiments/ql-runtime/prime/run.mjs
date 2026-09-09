@@ -10,9 +10,10 @@ import { getPrimeTask } from './tasks.mjs';
 import { getPrimeCondition, conditionPrompt } from './conditions.mjs';
 import { extractPrimeFamily, readJsonl, sourceSummary } from './evidence.mjs';
 import { PrimeRpcClient, parseExtraArgs } from './prime-rpc.mjs';
+import { classifyQlRevision, validateSourceLock } from './source-lock.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const LOCK = JSON.parse(await fs.readFile(path.join(HERE, 'source-lock.json'), 'utf8'));
+const LOCK = validateSourceLock(JSON.parse(await fs.readFile(path.join(HERE, 'source-lock.json'), 'utf8')));
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -66,15 +67,17 @@ async function qlState(root, harmonicEnabled) {
   const revisionResult = await exec('git', ['rev-parse', 'HEAD'], { cwd: root });
   if (revisionResult.code !== 0) throw new Error(`QL_MEF_ROOT is not a readable Git checkout: ${revisionResult.stderr}`);
   const revision = revisionResult.stdout.trim();
-  const accepted = revision === LOCK.ql_mef.accepted_main_revision;
-  const harmonic = revision === LOCK.ql_mef.harmonic_research.revision;
-  if (harmonicEnabled && !harmonic && process.env.QL_PRIME_ALLOW_QL_DRIFT !== '1') {
-    throw new Error(`Harmonic condition requires the source-locked QL-MEF #81 head ${LOCK.ql_mef.harmonic_research.revision}; observed ${revision}.`);
+  const diffResult = await exec('git', ['diff', '--quiet', 'HEAD', '--'], { cwd: root });
+  if (![0, 1].includes(diffResult.code)) {
+    throw new Error(`QL_MEF_ROOT working-tree inspection failed: ${diffResult.stderr || diffResult.stdout}`);
   }
-  if (!harmonicEnabled && !accepted && process.env.QL_PRIME_ALLOW_QL_DRIFT !== '1') {
+  const sourceDirty = diffResult.code === 1;
+  const status = classifyQlRevision(LOCK, revision, { harmonicEnabled, sourceDirty });
+  const accepted = status === 'accepted-main' || status === 'accepted-main-harmonic';
+  if (!accepted && process.env.QL_PRIME_ALLOW_QL_DRIFT !== '1') {
     throw new Error(`Relational condition requires source-locked QL-MEF main ${LOCK.ql_mef.accepted_main_revision}; observed ${revision}. Set QL_PRIME_ALLOW_QL_DRIFT=1 only for an explicitly recorded development run.`);
   }
-  return { root, revision, harmonic_enabled: harmonicEnabled, status: harmonic ? 'harmonic-development-head' : (accepted ? 'accepted-main' : 'explicit-drift') };
+  return { root, revision, source_dirty: sourceDirty, harmonic_enabled: harmonicEnabled, status };
 }
 
 async function main() {
@@ -113,8 +116,19 @@ async function main() {
       QL_RELATIONAL_EVIDENCE_LOG: qlEvidence,
       QL_PRIME_HARMONIC: harmonicEnabled ? '1' : '0',
       QL_PRIME_SOURCE_LOCK: path.join(HERE, 'source-lock.json'),
-      RLM_MAX_DEPTH: String(condition.maxDepth)
+      RLM_MAX_DEPTH: String(condition.maxDepth),
+      DO_NOT_TRACK: '1'
     };
+
+    // Prime v0.9.4 enables automatic refinement by default. The experiment owns
+    // refinement explicitly, so project-local settings suppress ambient passes;
+    // P5 invokes exactly one recorded RPC refinement below.
+    await fs.mkdir(path.join(workspace, '.prime', 'agent'), { recursive: true });
+    await fs.writeFile(
+      path.join(workspace, '.prime', 'agent', 'settings.json'),
+      `${JSON.stringify({ autoRefine: { enabled: false } }, null, 2)}\n`,
+      'utf8'
+    );
 
     client = new PrimeRpcClient({
       cwd: workspace,

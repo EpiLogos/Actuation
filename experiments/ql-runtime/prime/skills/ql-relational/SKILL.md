@@ -19,7 +19,7 @@ Available calls:
 
 ```python
 await ql_relational.capabilities()
-await ql_relational.kernel_apply("conjugate-address", "ql:0")
+await ql_relational.kernel_apply("conjugate-address", "qladdr:sixfold@1/direct/P2/d0")
 await ql_relational.mef_lenses()
 await ql_relational.context_frames()
 await ql_relational.vak_locate("<vak-ref>")
@@ -55,11 +55,11 @@ The deterministic Wiki structural contract is the common structural floor. `cons
 `harmonic_search()` does not reimplement the musical/harmonic system in Actuation. It searches the exact source-locked QL-MEF checkout:
 
 - accepted source derivation on main; and
-- when `QL_PRIME_HARMONIC=1`, the source-locked QL-MEF #81 development head containing the executable pre-M music implementation.
+- when `QL_PRIME_HARMONIC=1`, the source-locked accepted QL-MEF main containing the executable pre-M music implementation first carried by the historical #81 head.
 
-`harmonic_snapshot()` additionally compiles a temporary path-dependent Rust probe against the exact #81 checkout and executes `derive_pre_m_music()` to return the helices, lens anchors, A/B/C and D cross-interval fields, and 84-landscape cardinality as operative data.
+`harmonic_snapshot()` additionally compiles a temporary path-dependent Rust probe against the exact accepted-main checkout and executes `derive_pre_m_music()` to return the helices, lens anchors, A/B/C and D cross-interval fields, and 84-landscape cardinality as operative data.
 
-The returned path, line and excerpt are evidence. Treat the #81 executable harmonic layer as current development until it is accepted to QL-MEF main.
+The returned path, line and excerpt are evidence. The original #81 pull request closed unmerged, but its head is an ancestor of accepted main through the recorded integration revision; the lock preserves both facts instead of calling accepted code current development.
 
 ## Return
 
