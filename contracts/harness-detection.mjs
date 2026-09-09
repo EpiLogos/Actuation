@@ -17,6 +17,15 @@ const FACET_KINDS = new Set([
   "models",
 ]);
 
+// A facet may declare a typed inventory: the identities the facet holds,
+// rather than how many things sit in a directory. Only `http-json` is
+// supported today — the provider's own service answers with its own names,
+// which is the authoritative reading. Directory listing is deliberately NOT
+// an inventory source: the shared directory probe counts entries and must
+// never start disclosing the contents of config or skill directories.
+const INVENTORY_KINDS = new Set(["http-json"]);
+const INVENTORY_SOURCES = new Set(["service"]);
+
 function record(value, name) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new TypeError(`${name} must be an object`);
@@ -36,6 +45,35 @@ function stringArray(value, name, { optional = false } = {}) {
   if (!Array.isArray(value) || value.some((item) => typeof item !== "string" || item.trim() === "")) {
     throw new TypeError(`${name} must be an array of non-empty strings`);
   }
+}
+
+/**
+ * A facet's declared inventory. It says where the identities come from and
+ * how to read them out of the answer; it never asserts that any of them
+ * exist. `from: "service"` binds the inventory to the descriptor's own
+ * `probe.service` endpoint, so a descriptor cannot name a second, unprobed
+ * network address here.
+ */
+function validateInventoryDeclaration(input, name, descriptor) {
+  const inventory = record(input, name);
+  if (!INVENTORY_KINDS.has(inventory.kind)) {
+    throw new TypeError(`${name}.kind must be one of: ${[...INVENTORY_KINDS].join(", ")}`);
+  }
+  if (!INVENTORY_SOURCES.has(inventory.from)) {
+    throw new TypeError(`${name}.from must be one of: ${[...INVENTORY_SOURCES].join(", ")}`);
+  }
+  if (inventory.from === "service" && descriptor?.probe?.service == null) {
+    throw new TypeError(`${name}.from is "service" but the descriptor declares no probe.service to read it from`);
+  }
+  ref(inventory.route, `${name}.route`);
+  if (!inventory.route.startsWith("/")) {
+    throw new TypeError(`${name}.route must be a path on the declared service endpoint (leading "/")`);
+  }
+  ref(inventory.collection, `${name}.collection`);
+  ref(inventory.id_field, `${name}.id_field`);
+  stringArray(inventory.also_id_fields, `${name}.also_id_fields`, { optional: true });
+  stringArray(inventory.detail_fields, `${name}.detail_fields`, { optional: true });
+  return inventory;
 }
 
 /**
@@ -81,6 +119,9 @@ export function validateHarnessDescriptor(input) {
       }
       const shape = record(facet, `HarnessDescriptor.facets.${kind}`);
       ref(shape.path, `HarnessDescriptor.facets.${kind}.path`);
+      if (shape.inventory != null) {
+        validateInventoryDeclaration(shape.inventory, `HarnessDescriptor.facets.${kind}.inventory`, descriptor);
+      }
     }
   }
 
@@ -97,6 +138,52 @@ export function validateHarnessDescriptor(input) {
 export function harnessDescriptor(input) {
   validateHarnessDescriptor(input);
   return structuredClone(input);
+}
+
+/**
+ * An observed facet's inventory evidence. The same three-state law the
+ * detection record itself enforces applies one level down: a present
+ * `inventory` is what the provider itself answered, and a failed read is an
+ * `inventory_unavailable_reason` — never an empty list read as "this provider
+ * offers nothing". Every entry carries the receipt that observed it.
+ */
+function validateFacetInventory(facet, name) {
+  if (facet.inventory == null) {
+    if (facet.inventory_receipt != null) {
+      throw new TypeError(`${name}.inventory_receipt may only accompany an observed inventory`);
+    }
+    ref(facet.inventory_unavailable_reason, `${name}.inventory_unavailable_reason`, { optional: true });
+    return;
+  }
+  if (facet.inventory_unavailable_reason != null) {
+    throw new TypeError(`${name}: an inventory cannot be both observed and unavailable`);
+  }
+  if (!Array.isArray(facet.inventory)) {
+    throw new TypeError(`${name}.inventory must be an array when present`);
+  }
+  const seenIds = new Set();
+  for (const [index, item] of facet.inventory.entries()) {
+    const itemName = `${name}.inventory[${index}]`;
+    record(item, itemName);
+    ref(item.id, `${itemName}.id`);
+    if (seenIds.has(item.id)) {
+      throw new TypeError(`${itemName}: duplicate inventory id ${item.id}`);
+    }
+    seenIds.add(item.id);
+    stringArray(item.also_known_as, `${itemName}.also_known_as`, { optional: true });
+  }
+  const receipt = record(facet.inventory_receipt, `${name}.inventory_receipt (mandatory when an inventory is observed)`);
+  if (!INVENTORY_KINDS.has(receipt.kind)) {
+    throw new TypeError(`${name}.inventory_receipt.kind must be one of: ${[...INVENTORY_KINDS].join(", ")}`);
+  }
+  ref(receipt.source, `${name}.inventory_receipt.source`);
+  ref(receipt.observed_at, `${name}.inventory_receipt.observed_at`);
+  if (Number.isNaN(Date.parse(receipt.observed_at))) {
+    throw new TypeError(`${name}.inventory_receipt.observed_at must be an ISO-compatible timestamp`);
+  }
+  if (receipt.item_count !== facet.inventory.length) {
+    throw new TypeError(`${name}.inventory_receipt.item_count must equal the observed inventory length`);
+  }
 }
 
 /**
@@ -135,6 +222,14 @@ export function validateHarnessDetection(input) {
     record(entry, name);
     ref(entry.slug, `${name}.slug`);
     ref(entry.harness_ref, `${name}.harness_ref`);
+    // The descriptor's declared native kind rides onto the record. Without it
+    // a model-provider is semantically indistinguishable from an agent harness
+    // downstream, and a consumer would have to guess from the slug. It stays
+    // optional in this already-shipped /v1 schema — a record written before
+    // the field existed is still a valid record — but the detector emits it
+    // for every catalogued descriptor, and a consumer must read its absence as
+    // "unclassified", never as a default kind.
+    ref(entry.native_kind, `${name}.native_kind`, { optional: true });
     if (entry.harness_ref !== `harness/${entry.slug}`) {
       throw new TypeError(`${name}.harness_ref must be harness/<slug>`);
     }
@@ -184,6 +279,7 @@ export function validateHarnessDetection(input) {
       if (typeof facet.exists !== "boolean") {
         throw new TypeError(`${name}.facets[${facetIndex}].exists must be a boolean`);
       }
+      validateFacetInventory(facet, `${name}.facets[${facetIndex}]`);
     }
     const probesAll = entry.probes ?? [];
     if (!Array.isArray(probesAll)) {

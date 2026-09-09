@@ -101,6 +101,80 @@ test("stream usage normalizes a native provider record, persists no content, and
   assert.equal(JSON.stringify(replay).includes("must not persist"), false);
 });
 
+// A pre-normalised actuation.model-usage/v1 observation needs no native-format
+// translation — the "observation" adapter's whole job is to validate it and
+// hand it to the exact same durable-store path every other adapter uses.
+function normalisedObservation(overrides = {}) {
+  return {
+    schema: "actuation.model-usage/v1",
+    usage_ref: "model-usage:test:observation-adapter-1",
+    actuation_ref: identity.actuation_ref,
+    invocation_ref: "invocation:test:observation-adapter-1",
+    correlation: { agent_session_ref: identity.agent_session_ref },
+    provider: { standing: "provider-reported", ref: "provider:anthropic" },
+    model: { standing: "provider-reported", name: "claude-fable-5" },
+    tokens: { standing: "provider-reported", input: 42, output: 7 },
+    cache: { standing: "not-reported" },
+    timing: { latency: { standing: "not-reported" } },
+    cost: { standing: "not-reported" },
+    outcome: { state: "completed", standing: "provider-reported" },
+    provenance: {
+      reporter_ref: "test-harness",
+      native_event_ref: "test:event:observation-adapter-1",
+      native_schema: "test.native-schema/v1",
+      observed_at: "2026-09-09T00:00:00Z",
+      raw_evidence_refs: ["trace:test:observation-adapter-1"],
+    },
+    ...overrides,
+  };
+}
+
+test("stream usage adapter 'observation' records an already-normalised observation and dedups a replay", () => {
+  const root = store();
+  const document = {
+    adapter: "observation",
+    stream_ref: identity.stream_ref,
+    identity,
+    native_event: normalisedObservation(),
+  };
+  const first = run(["stream", "usage", "--store", root, "-"], JSON.stringify(document));
+  const replay = run(["stream", "usage", "--store", root, "-"], JSON.stringify(document));
+  assert.equal(first.deduplicated, false);
+  assert.equal(replay.deduplicated, true);
+  assert.equal(replay.cursor.last_sequence, 1);
+  assert.equal(replay.event.model_usage.tokens.input, 42);
+  assert.equal(replay.event.model_usage.provider.ref, "provider:anthropic");
+});
+
+test("stream usage adapter 'observation' refuses an invalid observation", () => {
+  const root = store();
+  const document = {
+    adapter: "observation",
+    stream_ref: identity.stream_ref,
+    identity,
+    native_event: { schema: "actuation.model-usage/v1" },
+  };
+  assert.throws(
+    () => executeCommand(["stream", "usage", "--store", root, "-", "--json"], { stdin: JSON.stringify(document) }),
+    /ModelUsageObservation/,
+    "an invalid observation must be refused before it ever reaches the durable store",
+  );
+});
+
+test("stream usage refuses an unknown adapter and names the accepted ones", () => {
+  const root = store();
+  const document = {
+    adapter: "some-other-route",
+    stream_ref: identity.stream_ref,
+    identity,
+    native_event: normalisedObservation(),
+  };
+  assert.throws(
+    () => executeCommand(["stream", "usage", "--store", root, "-", "--json"], { stdin: JSON.stringify(document) }),
+    /stream usage adapter must be one of claude-code-transcript, codex-exec-jsonl, observation/,
+  );
+});
+
 test("the served binary reads stream usage from stdin when --store precedes the input marker", () => {
   const root = store();
   const document = {

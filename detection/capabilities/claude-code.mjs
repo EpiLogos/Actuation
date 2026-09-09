@@ -100,12 +100,30 @@ export default {
     "ownership_marker": "hook command resolves to the AIKit dispatch executable",
     "preserves_foreign_entries": true
   },
+  "model_dispatch": {
+    "kind": "native-provider-binding",
+    "providers": [
+      {
+        "provider_ref": "provider:anthropic",
+        "selector": {
+          "kind": "config-key",
+          "name": "model"
+        },
+        "credential": {
+          "required": true,
+          "hint": "Anthropic API key or an active subscription session"
+        },
+        "notes": "model is named by the config-key selector on the harness's own settings surface; Actuation does not enumerate Anthropic's model catalogue here."
+      }
+    ]
+  },
   "provenance": {
     "authored_by": "O:I capability descriptor programme (live settings/hooks observation on this machine + upstream hooks documentation, 2026-09-06)",
     "source_refs": [
       "survey:local-machine-2026-09-06",
-      "upstream:claude-code-hooks-reference"
+      "upstream:claude-code-hooks-reference",
+      "upstream:claude-code-settings-reference"
     ],
-    "catalog_revision": 3
+    "catalog_revision": 6
   }
 };

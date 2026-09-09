@@ -33,6 +33,13 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 // suite can never be silently outside the verification gate.
 const TEST_DIRS = ["contracts", "detection", "cli"];
 
+// Every route a model invocation's telemetry can arrive by. "observation" is
+// the general path: whatever produced the usage already normalized it to
+// actuation.model-usage/v1, so there is nothing left to translate — only to
+// validate and record through the one durable-store path every adapter
+// shares. Adding a route here is the whole cost of admitting a new source;
+// nothing about dedup, stream consistency or the JSONL append changes.
+
 function readJsonInput(path, stdin) {
   const text = path === "-" ? stdin : readFileSync(path, "utf8");
   if (typeof text !== "string" || text.trim() === "") {
@@ -255,7 +262,7 @@ export const COMMANDS = Object.freeze([
   {
     name: "stream.usage",
     route: ["stream", "usage"],
-    usage: "actuation stream usage [--store <dir>] [file|-] [--json]",
+    usage: "actuation stream usage [--store <dir>] [file|-] [--json] [adapter: claude-code-transcript|observation]",
     input: true,
     run: ({ args, json, stdin }) => streamUsage(args, stdin, json),
   },
@@ -387,9 +394,13 @@ function streamUsage(args, stdin, json) {
   const adapters = {
     "claude-code-transcript": () => modelUsageFromClaudeCodeTranscript(input.native_event, input.correlation),
     "codex-exec-jsonl": () => modelUsageFromCodexExecEvents(input.native_events, input.correlation),
+    // "observation" trusts its caller to have already normalized the evidence;
+    // every other adapter still owns the native-format translation. Either way
+    // the result is validated before it ever reaches the durable store.
+    observation: () => validateModelUsageObservation(input.native_event),
   };
   if (adapters[input.adapter] == null) {
-    throw new TypeError("stream usage supports adapters claude-code-transcript and codex-exec-jsonl");
+    throw new TypeError(`stream usage adapter must be one of ${Object.keys(adapters).join(", ")}`);
   }
   const observation = adapters[input.adapter]();
   const value = recordModelUsageObservation({

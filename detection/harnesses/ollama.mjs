@@ -28,14 +28,30 @@ export default {
   },
   "facets": {
     "models": {
-      "path": "~/.ollama/models"
+      "path": "~/.ollama/models",
+      "inventory": {
+        "kind": "http-json",
+        "from": "service",
+        "route": "/api/tags",
+        "collection": "models",
+        "id_field": "model",
+        "also_id_fields": [
+          "name"
+        ],
+        "detail_fields": [
+          "digest",
+          "size",
+          "modified_at"
+        ]
+      }
     }
   },
   "provenance": {
     "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
     "source_refs": [
-      "survey:local-machine-2026-09-05"
+      "survey:local-machine-2026-09-05",
+      "https://github.com/ollama/ollama/blob/main/docs/api.md"
     ],
-    "catalog_revision": 1
+    "catalog_revision": 5
   }
 };

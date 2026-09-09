@@ -150,7 +150,7 @@ actuation realised [file|-] [--json]
 actuation stream [file|-] [--json]
 actuation stream open [--store <dir>] [file|-] [--json]
 actuation stream record [--store <dir>] [file|-] [--json]
-actuation stream usage [--store <dir>] [file|-] [--json]
+actuation stream usage [--store <dir>] [file|-] [--json] [adapter: claude-code-transcript|observation]
 actuation stream replay <stream_ref> [--after <n>] [--limit <n>] [--store <dir>] [--json]
 actuation stream close <stream_ref> [--state closed|interrupted|cancelled] [--ended-at <ts>] [--store <dir>] [--json]
 actuation activity [file|-] [--json]
@@ -178,12 +178,17 @@ authorises determination (and, for derivation, actualisation), and covers the
 declared bounds. Its receipt preserves Agent/Agency identity, WorldBinding,
 lineage, authority and Return while explicitly performing no materialisation,
 Factory recognition or source mutation.
-`stream usage` accepts one declared native adapter document, currently a
-Claude Code transcript assistant event, and writes only its typed usage
-observation into the durable Stream. Provider message/request identity,
-model, tokens and cache facts are retained where the native record supplies
-them; prompt and response content are never persisted. Missing provider,
-latency or cost evidence remains explicitly `not-reported`.
+`stream usage` accepts one declared adapter document and writes only its
+typed usage observation into the durable Stream: `claude-code-transcript`
+normalizes a native Claude Code transcript assistant event, and
+`observation` takes an already-normalized `actuation.model-usage/v1`
+observation straight through — both adapters validate before anything is
+recorded, and both share the exact same stream-consistency, dedup and
+append-only path. Provider message/request identity, model, tokens and cache
+facts are retained where the native record supplies them; prompt and
+response content are never persisted. Missing provider, latency or cost
+evidence remains explicitly `not-reported`. An undeclared adapter is refused
+by name rather than silently accepted.
 
 ## Reference runtimes and experiments
 
