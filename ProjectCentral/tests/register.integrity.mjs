@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import test from "node:test";
@@ -10,7 +10,7 @@ async function readJson(relativePath) {
   return JSON.parse(await readFile(path.join(root, relativePath), "utf8"));
 }
 
-test("the checked-in ProjectCentral register is complete and its NOW return is attributable", async () => {
+test("the checked-in ProjectCentral register has its full ownership floor", async () => {
   const manifest = await readJson("ProjectCentral/project.json");
   assert.deepEqual(manifest, {
     human_source: "ProjectCentral/user",
@@ -57,4 +57,38 @@ test("the checked-in ProjectCentral register is complete and its NOW return is a
   assert.ok(completion.source_refs.includes("ProjectCentral/project.json"));
   assert.ok(completion.evidence_refs.includes("https://github.com/EpiLogos/Actuation/issues/1"));
   assert.ok(completion.preserve_refs.includes("https://github.com/EpiLogos/Actuation/pull/41"));
+  assert.match(completion.result, /Structural initialization only/);
+});
+
+test("the Actuation NOW horizon represents every reconciled live owner carrier", async () => {
+  const agentsPath = path.join(root, "ProjectCentral/now/agents");
+  const records = await Promise.all(
+    (await readdir(agentsPath))
+      .filter((name) => name.endsWith(".json"))
+      .map((name) => readJson(path.join("ProjectCentral/now/agents", name))),
+  );
+  const live = records
+    .filter((record) => ["active", "waiting", "carried"].includes(record.status))
+    .sort((left, right) => left.id.localeCompare(right.id));
+
+  assert.deepEqual(
+    live.map(({ id, status }) => ({ id, status })),
+    [
+      { id: "actuation-wayfinder-programme-2026-09-09", status: "active" },
+      { id: "branch-hygiene-report-remains-scheduler-owned-2026-09-09", status: "waiting" },
+      { id: "prime-recursive-relational-agency-experiment-2026-09-09", status: "active" },
+      { id: "public-determination-and-agency-actualisation-operation-2026-09-09", status: "active" },
+      { id: "reinspect-codex-stop-event-capability-evidence-2026-09-09", status: "active" },
+      { id: "supply-actuation-intent-and-grant-integration-handoff-2026-09-09", status: "active" },
+    ],
+  );
+
+  for (const record of live) {
+    assert.equal(record.schema, "central.project-now.handoff/v1");
+    assert.equal(record.provenance, "agent-authored-bounded-return");
+    assert.ok(record.actor);
+    assert.ok(record.subject);
+    assert.match(record.result, /Next condition:|waiting on the next scheduled inspection/);
+    assert.ok(record.evidence_refs?.length > 0);
+  }
 });
