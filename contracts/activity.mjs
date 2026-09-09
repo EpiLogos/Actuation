@@ -90,6 +90,12 @@ export function validateActivity(input) {
   ref(activity.activity_ref, "Activity.activity_ref");
   validateActor(activity.actor);
   ref(activity.agent_session_ref, "Activity.agent_session_ref", { optional: true });
+  // Factory/developmental identities are correlations supplied by their native
+  // owner. They remain optional: Direct/non-Factory Agency is fully valid and
+  // Actuation never derives these refs from process, provider or Git state.
+  ref(activity.plan_ref, "Activity.plan_ref", { optional: true });
+  ref(activity.journey_ref, "Activity.journey_ref", { optional: true });
+  ref(activity.run_ref, "Activity.run_ref", { optional: true });
   ref(activity.subject_ref, "Activity.subject_ref");
   ref(activity.native_owner, "Activity.native_owner");
   ref(activity.action_ref, "Activity.action_ref", { optional: true });
@@ -184,6 +190,9 @@ export function activityFromActuationStream(
     needsAttention = false,
     actionRef,
     invocationRef,
+    planRef,
+    journeyRef,
+    runRef,
     resultRef,
     evidenceRefs = [],
     returnRef,
@@ -206,6 +215,9 @@ export function activityFromActuationStream(
     activity_ref: activityRef,
     actor: actorFromEvent(stream, lastEvent),
     agent_session_ref: stream.agent_session_ref,
+    ...(planRef == null ? {} : { plan_ref: planRef }),
+    ...(journeyRef == null ? {} : { journey_ref: journeyRef }),
+    ...(runRef == null ? {} : { run_ref: runRef }),
     subject_ref: subjectRef,
     native_owner: nativeOwner,
     action_ref: actionRef,
@@ -259,6 +271,9 @@ export function activityFromStreamEvent(
     needsAttention = false,
     actionRef,
     invocationRef,
+    planRef,
+    journeyRef,
+    runRef,
     resultRef,
     evidenceRefs = [],
     returnRef,
@@ -275,6 +290,9 @@ export function activityFromStreamEvent(
     activity_ref: activityRef,
     actor: actorFromEvent(stream, event),
     agent_session_ref: stream.agent_session_ref,
+    ...(planRef == null ? {} : { plan_ref: planRef }),
+    ...(journeyRef == null ? {} : { journey_ref: journeyRef }),
+    ...(runRef == null ? {} : { run_ref: runRef }),
     subject_ref: subjectRef,
     native_owner: nativeOwner,
     action_ref: actionRef,
