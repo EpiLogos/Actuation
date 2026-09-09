@@ -5,8 +5,9 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { PRIME_CONDITIONS, conditionPrompt, getPrimeCondition } from '../conditions.mjs';
-import { extractPrimeFamily } from '../evidence.mjs';
+import { extractPrimeFamily, stableDigest } from '../evidence.mjs';
 import { assertPrimeReturn, createPrimeReturn, PRIME_RETURN_SCHEMA } from '../return-contract.mjs';
+import { classifyQlRevision, validateSourceLock } from '../source-lock.mjs';
 import { PRIME_TASKS } from '../tasks.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -58,12 +59,26 @@ test('family extractor retains child handles and parent lineage when Prime emits
   assert.equal(family.nested_edges.length, 1);
 });
 
-test('source lock pins Prime stable, QL main and optional harmonic development separately', () => {
+test('source lock pins current Prime stable/main and truthful QL harmonic standing separately', () => {
   const lock = JSON.parse(fs.readFileSync(path.join(ROOT, 'source-lock.json'), 'utf8'));
-  assert.equal(lock.prime_agent.release, 'v0.9.1');
-  assert.equal(lock.prime_agent.release_revision, '81ae3cb34d27d38ee37f9e205a1e73694993b344');
-  assert.equal(lock.ql_mef.accepted_main_revision, 'cddd97d3e7717954256a46f482bd569fa7448870');
-  assert.equal(lock.ql_mef.harmonic_research.standing, 'current-development-not-accepted-main');
+  assert.equal(validateSourceLock(lock), lock);
+  assert.equal(lock.prime_agent.release, 'v0.9.4');
+  assert.equal(lock.prime_agent.release_revision, 'f771dfcedd684d1afff84ca2c6fa95c7a21efbc2');
+  assert.equal(lock.prime_agent.observed_main_revision, '55ade48b73f636d992855b7cab797d71dc1f6f1c');
+  assert.equal(lock.ql_mef.accepted_main_revision, '44ed3cd0e7a8bc25508a4e18ad3bb4c730013913');
+  assert.equal(lock.ql_mef.harmonic_research.pull_request_state, 'closed-unmerged');
+  assert.equal(lock.ql_mef.harmonic_research.standing, 'accepted-main-history-carrier');
+  assert.equal(classifyQlRevision(lock, lock.ql_mef.accepted_main_revision, { harmonicEnabled: true }), 'accepted-main-harmonic');
+  assert.equal(classifyQlRevision(lock, lock.ql_mef.accepted_main_revision, { sourceDirty: true }), 'explicit-drift');
+  assert.equal(classifyQlRevision(lock, lock.ql_mef.harmonic_research.revision, { harmonicEnabled: true }), 'historical-harmonic-head');
+});
+
+test('evidence digests include nested values and remain key-order stable', () => {
+  const first = { result: { state: 'available', count: 2 }, request: ['a'] };
+  const reordered = { request: ['a'], result: { count: 2, state: 'available' } };
+  const changed = { request: ['a'], result: { count: 3, state: 'available' } };
+  assert.equal(stableDigest(first), stableDigest(reordered));
+  assert.notEqual(stableDigest(first), stableDigest(changed));
 });
 
 test('Python-backed QL skill package is complete', () => {
@@ -85,9 +100,9 @@ test('Prime-native tasks pressure real child composition and nested recursion', 
   assert.match(recursive.prompt, /child.*own child/i);
 });
 
-test('QL skill exposes executable harmonic snapshot on the pinned development head', () => {
+test('QL skill exposes executable harmonic snapshot on accepted main', () => {
   const source = fs.readFileSync(path.join(ROOT, 'skills/ql-relational/src/ql_relational/__init__.py'), 'utf8');
   assert.match(source, /async def harmonic_snapshot/);
   assert.match(source, /derive_pre_m_music/);
-  assert.match(source, /current-development-not-accepted-main/);
+  assert.match(source, /accepted-main/);
 });

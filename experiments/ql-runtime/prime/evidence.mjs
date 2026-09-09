@@ -2,7 +2,12 @@ import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 
 export function stableDigest(value) {
-  return crypto.createHash('sha256').update(JSON.stringify(value, Object.keys(value ?? {}).sort())).digest('hex');
+  const canonicalize = (entry) => {
+    if (Array.isArray(entry)) return entry.map(canonicalize);
+    if (!entry || typeof entry !== 'object') return entry;
+    return Object.fromEntries(Object.keys(entry).sort().map((key) => [key, canonicalize(entry[key])]));
+  };
+  return crypto.createHash('sha256').update(JSON.stringify(canonicalize(value))).digest('hex');
 }
 
 export async function readJsonl(pathname) {
@@ -79,10 +84,13 @@ export function sourceSummary(lock, qlState = null) {
   return {
     prime_release: lock.prime_agent.release,
     prime_release_revision: lock.prime_agent.release_revision,
+    prime_observed_main_revision: lock.prime_agent.observed_main_revision,
     actuation_base_revision: lock.actuation.base_revision,
     ql_mef_expected_main_revision: lock.ql_mef.accepted_main_revision,
     ql_mef_observed: qlState?.revision ?? null,
     harmonic_research_revision: lock.ql_mef.harmonic_research.revision,
+    harmonic_research_standing: lock.ql_mef.harmonic_research.standing,
+    harmonic_accepted_via_revision: lock.ql_mef.harmonic_research.accepted_via_revision,
     harmonic_enabled: Boolean(qlState?.harmonic_enabled)
   };
 }

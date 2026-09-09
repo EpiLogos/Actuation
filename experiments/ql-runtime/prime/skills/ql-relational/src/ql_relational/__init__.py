@@ -183,16 +183,16 @@ async def harmonic_search(query: str, max_matches: int = 8) -> dict[str, Any]:
 
 
 async def harmonic_snapshot(basis: str = "chromatic") -> dict[str, Any]:
-    """Execute the source-locked #81 pre-M harmonic derivation and return a compact numeric relational snapshot."""
+    """Execute the accepted-main pre-M harmonic derivation and return a compact numeric relational snapshot."""
     if os.environ.get("QL_PRIME_HARMONIC") != "1":
-        raise RuntimeError("harmonic_snapshot requires QL_PRIME_HARMONIC=1 and the source-locked QL-MEF #81 checkout.")
+        raise RuntimeError("harmonic_snapshot requires QL_PRIME_HARMONIC=1 and the source-locked QL-MEF main checkout.")
     if basis not in {"chromatic", "fifths"}:
         raise ValueError("basis must be 'chromatic' or 'fifths'")
 
     source_lock_path = os.environ.get("QL_PRIME_SOURCE_LOCK")
     if source_lock_path:
         lock = json.loads(Path(source_lock_path).read_text(encoding="utf-8"))
-        expected = lock["ql_mef"]["harmonic_research"]["revision"]
+        expected = lock["ql_mef"]["accepted_main_revision"]
         observed = await _git_revision()
         if observed != expected:
             raise RuntimeError(f"harmonic_snapshot source drift: expected {expected}, observed {observed}")
@@ -243,7 +243,7 @@ fn main() {
         result = json.loads(stdout.decode())
 
     result["revision"] = await _git_revision()
-    result["standing"] = "current-development-not-accepted-main"
+    result["standing"] = "accepted-main"
     await _record("harmonic-snapshot", {"basis": basis}, result)
     return result
 

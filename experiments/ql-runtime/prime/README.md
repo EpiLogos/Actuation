@@ -8,12 +8,12 @@ It uses Prime's native RLM recursion and Continual Harness to test the open Actu
 
 ## Source lock
 
-`source-lock.json` currently pins:
+`source-lock.json` was deliberately reinspected on 2026-09-09 and now pins:
 
-- Actuation base `bd8927b54ac17016be6f879994f736e453f2881c`;
-- Prime Agent stable `v0.9.1` / `81ae3cb34d27d38ee37f9e205a1e73694993b344`;
-- QL-MEF accepted main `cddd97d3e7717954256a46f482bd569fa7448870`;
-- optional harmonic current-development carrier QL-MEF #81 `42d36ed75fd9cf8a70bcbabc5dca766cc51b6811`.
+- Actuation base `7925f69c99a068fc064eeec6518efea9bb7aa265`;
+- Prime Agent stable `v0.9.4` / `f771dfcedd684d1afff84ca2c6fa95c7a21efbc2`, separately from observed main `55ade48b73f636d992855b7cab797d71dc1f6f1c`;
+- QL-MEF accepted main `44ed3cd0e7a8bc25508a4e18ad3bb4c730013913`;
+- the historical harmonic #81 head `42d36ed75fd9cf8a70bcbabc5dca766cc51b6811`, whose pull request closed unmerged but whose exact commit entered accepted main through `781981374eaa1f02952249dcdbca1af671d1ece4`.
 
 Re-source-lock deliberately when those products move. Do not silently accept drift.
 
@@ -76,7 +76,7 @@ await ql_relational.harmonic_snapshot(...)
 ql_relational.return_envelope(...)
 ```
 
-The deterministic constellation/Return source comes directly from QL-MEF `docs/wiki-structural-contract-v2.md`. Wiki refraction executes the real `ql-wiki-refraction` binary. Harmonic search stays source-relative: accepted V3 source is available on main, while executable harmonic material is admitted only when the checkout is the pinned #81 head and `QL_PRIME_HARMONIC=1`.
+The deterministic constellation/Return source comes directly from QL-MEF `docs/wiki-structural-contract-v2.md`. Wiki refraction executes the real `ql-wiki-refraction` binary. Harmonic search stays source-relative. Both accepted V3 source and executable harmonic material are now on main; executable access remains deliberate and requires `QL_PRIME_HARMONIC=1` at the exact accepted-main lock.
 
 Each call appends a provenance record to the experiment evidence log.
 
@@ -154,12 +154,12 @@ node experiments/ql-runtime/prime/run.mjs \
 
 P5 performs exactly one explicit RPC `refine` after the task trajectory completes and records Prime's refinement result. This is deliberate experiment authority, not ambient self-modification.
 
-## Harmonic development run
+## Harmonic accepted-main run
 
-Check out QL-MEF PR #81 at the source-locked head, then:
+Use QL-MEF at the source-locked accepted main, then:
 
 ```bash
-export QL_MEF_ROOT=/path/to/QL-MEF-at-42d36ed75fd9cf8a70bcbabc5dca766cc51b6811
+export QL_MEF_ROOT=/path/to/QL-MEF-at-44ed3cd0e7a8bc25508a4e18ad3bb4c730013913
 export QL_PRIME_HARMONIC=1
 
 node experiments/ql-runtime/prime/run.mjs \
@@ -168,7 +168,7 @@ node experiments/ql-runtime/prime/run.mjs \
   --output /tmp/prime-p4-harmonic.json
 ```
 
-That run is explicitly **current-development research**, not evidence that the harmonic implementation is accepted QL-MEF main.
+That run exercises **accepted-main harmonic code**. The source lock separately preserves that #81 itself closed unmerged and identifies the integration revision by which its exact head entered main.
 
 ## Evidence
 
