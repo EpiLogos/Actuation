@@ -1,17 +1,9 @@
 name: Native CLI
 
 on:
+  # This check is branch-required, so it must report on every pull request.
+  # Push builds remain path-scoped below to avoid redundant mainline work.
   pull_request:
-    paths:
-      - "bin/actuation"
-      - "cli/**"
-      - "contracts/**"
-      - "detection/**"
-      - "package.json"
-      - "README.md"
-      - ".oi/product.json"
-      - "ProjectCentral/**"
-      - ".github/workflows/native-cli.yml"
   push:
     branches:
       - main
