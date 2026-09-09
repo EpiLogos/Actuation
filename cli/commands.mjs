@@ -20,7 +20,7 @@ import {
   replayDurableStream,
 } from "../contracts/actuation-stream-store.mjs";
 import { validateActivity } from "../contracts/activity.mjs";
-import { modelUsageFromClaudeCodeTranscript, validateModelUsageObservation } from "../contracts/model-usage.mjs";
+import { modelUsageFromClaudeCodeTranscript, modelUsageFromCodexExecEvents, validateModelUsageObservation } from "../contracts/model-usage.mjs";
 import { instantiationReceipt, attachDetectionEvidence } from "../contracts/instantiation.mjs";
 import { harnessCatalog as harnessCatalogDocument } from "../contracts/harness-detection.mjs";
 import { runDetection } from "../detection/detect.mjs";
@@ -384,10 +384,14 @@ function streamUsage(args, stdin, json) {
   const store = flagValue(args, "--store");
   const inputPath = args.find((arg) => !arg.startsWith("--"));
   const input = readJsonInput(inputPath ?? "-", stdin);
-  if (input.adapter !== "claude-code-transcript") {
-    throw new TypeError("stream usage currently supports adapter claude-code-transcript");
+  const adapters = {
+    "claude-code-transcript": () => modelUsageFromClaudeCodeTranscript(input.native_event, input.correlation),
+    "codex-exec-jsonl": () => modelUsageFromCodexExecEvents(input.native_events, input.correlation),
+  };
+  if (adapters[input.adapter] == null) {
+    throw new TypeError("stream usage supports adapters claude-code-transcript and codex-exec-jsonl");
   }
-  const observation = modelUsageFromClaudeCodeTranscript(input.native_event, input.correlation);
+  const observation = adapters[input.adapter]();
   const value = recordModelUsageObservation({
     root: store,
     stream_ref: input.stream_ref,
