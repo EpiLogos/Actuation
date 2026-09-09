@@ -196,3 +196,145 @@ test("schema document agrees with the contract version", () => {
   assert.ok(consts.length >= 2, "schema pins the contract version");
   assert.equal(schema.$id.includes("harness-detection-v1.schema.json"), true);
 });
+
+// --- typed model-provider inventory ------------------------------------
+
+function inventoryDescriptor(inventory) {
+  return descriptor({
+    native_kind: "model-provider",
+    probe: {
+      "config-dir": { path: "~/.modelhost" },
+      service: { kind: "http", default_url: "http://127.0.0.1:11434" },
+    },
+    facets: { models: { path: "~/.modelhost/models", inventory } },
+  });
+}
+
+const declaredInventory = {
+  kind: "http-json",
+  from: "service",
+  route: "/api/tags",
+  collection: "models",
+  id_field: "model",
+};
+
+test("a facet may declare a service-backed inventory", () => {
+  const validated = harnessDescriptor(inventoryDescriptor(declaredInventory));
+  assert.equal(validated.facets.models.inventory.route, "/api/tags");
+});
+
+test("an inventory declaration must bind to a declared service probe", () => {
+  assert.throws(
+    () => validateHarnessDescriptor(descriptor({
+      facets: { models: { path: "~/.modelhost/models", inventory: declaredInventory } },
+    })),
+    /declares no probe.service/,
+  );
+});
+
+test("unsupported inventory kinds and sources are refused", () => {
+  assert.throws(
+    () => validateHarnessDescriptor(inventoryDescriptor({ ...declaredInventory, kind: "dir-listing" })),
+    /inventory.kind must be one of/,
+  );
+  assert.throws(
+    () => validateHarnessDescriptor(inventoryDescriptor({ ...declaredInventory, from: "directory" })),
+    /inventory.from must be one of/,
+  );
+});
+
+function detectedWithFacet(facet) {
+  return {
+    schema: HARNESS_DETECTION_VERSION,
+    document: "detection",
+    detection_ref: "detection:2026-09-09T00:00:00Z",
+    observed_at: "2026-09-09T00:00:00Z",
+    catalog_revision: 5,
+    detector: { implementation: "test", version: "0.0.0" },
+    harnesses: [detectionEntry("modelhost", "detected", {
+      native_kind: "model-provider",
+      receipts: { executable: "/home/tester/.modelhost", executable_is: "config-dir" },
+      probes: [{ kind: "config-dir", result: "pass", detail: "exists at /home/tester/.modelhost" }],
+      facets: [facet],
+    })],
+    absent: [],
+    availability: "complete",
+  };
+}
+
+const observedFacet = {
+  kind: "models",
+  path: "~/.modelhost/models",
+  exists: true,
+  count: 3,
+  inventory: [{ id: "llama3.2:latest" }, { id: "smollm2:135m" }],
+  inventory_receipt: {
+    kind: "http-json",
+    source: "http://127.0.0.1:11434/api/tags",
+    observed_at: "2026-09-09T00:00:00Z",
+    item_count: 2,
+  },
+};
+
+test("an observed facet inventory validates with its receipt and native_kind", () => {
+  const validated = harnessDetection(detectedWithFacet(observedFacet));
+  assert.equal(validated.harnesses[0].native_kind, "model-provider");
+  assert.equal(validated.harnesses[0].facets[0].inventory.length, 2);
+});
+
+test("an observed inventory without a receipt is refused", () => {
+  const facet = { ...observedFacet };
+  delete facet.inventory_receipt;
+  assert.throws(() => validateHarnessDetection(detectedWithFacet(facet)), /inventory_receipt \(mandatory/);
+});
+
+test("a receipt count that disagrees with the inventory is refused", () => {
+  assert.throws(
+    () => validateHarnessDetection(detectedWithFacet({
+      ...observedFacet,
+      inventory_receipt: { ...observedFacet.inventory_receipt, item_count: 7 },
+    })),
+    /item_count must equal/,
+  );
+});
+
+test("an inventory cannot be both observed and unavailable", () => {
+  assert.throws(
+    () => validateHarnessDetection(detectedWithFacet({
+      ...observedFacet,
+      inventory_unavailable_reason: "connection refused",
+    })),
+    /cannot be both observed and unavailable/,
+  );
+});
+
+test("an unread inventory carries a reason and no receipt", () => {
+  const validated = harnessDetection(detectedWithFacet({
+    kind: "models",
+    path: "~/.modelhost/models",
+    exists: true,
+    count: 3,
+    inventory_unavailable_reason: "inventory read from http://127.0.0.1:11434/api/tags failed: curl exit 7",
+  }));
+  assert.equal(validated.harnesses[0].facets[0].inventory, undefined);
+  assert.match(validated.harnesses[0].facets[0].inventory_unavailable_reason, /curl exit 7/);
+});
+
+test("duplicate inventory ids are refused", () => {
+  assert.throws(
+    () => validateHarnessDetection(detectedWithFacet({
+      ...observedFacet,
+      inventory: [{ id: "llama3.2:latest" }, { id: "llama3.2:latest" }],
+      inventory_receipt: { ...observedFacet.inventory_receipt, item_count: 2 },
+    })),
+    /duplicate inventory id/,
+  );
+});
+
+test("native_kind stays optional for records written before the field existed", () => {
+  const record = detectedWithFacet(observedFacet);
+  delete record.harnesses[0].native_kind;
+  assert.equal(harnessDetection(record).harnesses[0].native_kind, undefined);
+  record.harnesses[0].native_kind = "";
+  assert.throws(() => validateHarnessDetection(record), /native_kind must be a non-empty string/);
+});

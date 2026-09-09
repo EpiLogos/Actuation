@@ -23,7 +23,7 @@ import claudeCodeCapability from "./capabilities/claude-code.mjs";
 import codexCapability from "./capabilities/codex.mjs";
 import zcodeCapability from "./capabilities/zcode.mjs";
 
-export const CATALOG_REVISION = 4;
+export const CATALOG_REVISION = 5;
 
 const DESCRIPTORS = [
   claudeCode,

@@ -57,6 +57,9 @@
         "count": {
           "type": "integer",
           "minimum": 0
+        },
+        "inventory": {
+          "$ref": "#/$defs/inventoryDeclaration"
         }
       },
       "required": [
@@ -163,6 +166,20 @@
         "count": {
           "type": "integer",
           "minimum": 0
+        },
+        "inventory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/inventoryItem"
+          }
+        },
+        "inventory_receipt": {
+          "$ref": "#/$defs/inventoryReceipt"
+        },
+        "inventory_unavailable_reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The inventory could not be read. Never read this as 'the provider offers nothing'."
         }
       },
       "required": [
@@ -200,6 +217,10 @@
         "harness_ref": {
           "type": "string",
           "pattern": "^harness/.+"
+        },
+        "native_kind": {
+          "$ref": "#/$defs/ref",
+          "description": "The descriptor's declared native kind, carried onto the record so a model-provider is not indistinguishable from an agent harness downstream. Absent on records written before the field existed: read absence as unclassified, never as a default kind."
         },
         "state": {
           "$ref": "#/$defs/state"
@@ -504,6 +525,98 @@
         "document",
         "catalog_revision",
         "descriptors"
+      ],
+      "additionalProperties": true
+    },
+    "inventoryDeclaration": {
+      "type": "object",
+      "description": "A facet's declared identity inventory. Says where the names come from and how to read them; asserts nothing about what exists. Directory listing is deliberately not an inventory source.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "http-json"
+          ]
+        },
+        "from": {
+          "enum": [
+            "service"
+          ]
+        },
+        "route": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "collection": {
+          "$ref": "#/$defs/ref"
+        },
+        "id_field": {
+          "$ref": "#/$defs/ref"
+        },
+        "also_id_fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "detail_fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        }
+      },
+      "required": [
+        "kind",
+        "from",
+        "route",
+        "collection",
+        "id_field"
+      ],
+      "additionalProperties": true
+    },
+    "inventoryItem": {
+      "type": "object",
+      "description": "One provider-native identity the provider itself named. Opaque route metadata to consumers; never a canonical Model identity.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/ref"
+        },
+        "also_known_as": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": true
+    },
+    "inventoryReceipt": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "http-json"
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/ref"
+        },
+        "observed_at": {
+          "type": "string"
+        },
+        "item_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "kind",
+        "source",
+        "observed_at",
+        "item_count"
       ],
       "additionalProperties": true
     }

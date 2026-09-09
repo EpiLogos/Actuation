@@ -125,6 +125,26 @@ function daemonServiceProbe(spec) {
   return { ok: false, reason: `pgrep exit ${run.status}` };
 }
 
+// Read one JSON document from an already-proven-live local service endpoint.
+// Same convention as every other effect: ok:false means the read itself could
+// not be completed and must never be read as "the provider offers nothing".
+function httpJsonProbe(url) {
+  const run = spawnSync("curl", ["-sS", "--max-time", "3", "-f", url], {
+    encoding: "utf8",
+    timeout: SERVICE_TIMEOUT_MS,
+    maxBuffer: 4 * 1024 * 1024,
+  });
+  if (run.error) return { ok: false, reason: `curl unavailable: ${run.error.message}` };
+  if (run.status !== 0) {
+    return { ok: false, reason: `curl exit ${run.status}: ${(run.stderr || "").trim().slice(0, 200)}` };
+  }
+  try {
+    return { ok: true, body: JSON.parse(run.stdout) };
+  } catch (error) {
+    return { ok: false, reason: `unparseable JSON from ${url}: ${error.message}` };
+  }
+}
+
 function serviceProbe(spec) {
   if (spec?.kind === "http") return httpServiceProbe(spec);
   if (spec?.kind === "daemon") return daemonServiceProbe(spec);
@@ -140,6 +160,7 @@ export function realEffects() {
     dirCountProbe,
     envProbe,
     serviceProbe,
+    httpJsonProbe,
     expandHome,
   };
 }

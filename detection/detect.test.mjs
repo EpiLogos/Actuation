@@ -284,3 +284,146 @@ test("a failed service probe is a mechanism failure, never absence", () => {
   assert.equal(entry.state, "unavailable");
   assert.match(entry.unavailable_reason, /all probes failed/);
 });
+
+// --- typed model-provider inventory ------------------------------------
+//
+// The break these close: the shared directory probe answers "count: 3" for
+// ~/.ollama/models, so nothing downstream can name a single model. The
+// declared service inventory names them; the directory count stays a
+// presence signal and the shared probe is untouched.
+
+function modelProvider(extra = {}) {
+  return descriptor("modelhost", {
+    native_kind: "model-provider",
+    probe: {
+      "config-dir": { path: "~/.modelhost" },
+      service: { kind: "http", default_url: "http://127.0.0.1:11434" },
+    },
+    facets: {
+      models: {
+        path: "~/.modelhost/models",
+        inventory: {
+          kind: "http-json",
+          from: "service",
+          route: "/api/tags",
+          collection: "models",
+          id_field: "model",
+          also_id_fields: ["name"],
+          detail_fields: ["digest", "size"],
+        },
+      },
+    },
+    ...extra,
+  });
+}
+
+function modelHostEffects(overrides = {}) {
+  return stubEffects({
+    statProbe: (path) => (path.startsWith("/home/tester/.modelhost")
+      ? { exists: true, mtimeMs: 5, size: 1, isDir: !path.endsWith(".json") }
+      : { exists: false }),
+    dirCountProbe: () => ({ exists: true, count: 3 }),
+    serviceProbe: () => ({ ok: true, detail: "http 200 from http://127.0.0.1:11434" }),
+    ...overrides,
+  });
+}
+
+test("a live declared service inventory names provider-native models, not a directory count", () => {
+  const record = runDetection({
+    descriptors: [modelProvider()],
+    effects: modelHostEffects({
+      httpJsonProbe: (url) => {
+        assert.equal(url, "http://127.0.0.1:11434/api/tags");
+        return {
+          ok: true,
+          body: {
+            models: [
+              { name: "llama3.2:latest", model: "llama3.2:latest", digest: "d1", size: 10 },
+              { name: "smollm2:135m", model: "smollm2:135m", digest: "d2", size: 20 },
+              { name: "qwen2.5-coder:7b", model: "qwen2.5-coder:7b", digest: "d3", size: 30 },
+            ],
+          },
+        };
+      },
+    }),
+  });
+  const facet = entryOf(record, "modelhost").facets.find((item) => item.kind === "models");
+  assert.equal(facet.count, 3, "the directory count stays a presence signal");
+  assert.deepEqual(facet.inventory.map((item) => item.id), [
+    "llama3.2:latest",
+    "smollm2:135m",
+    "qwen2.5-coder:7b",
+  ]);
+  assert.deepEqual(facet.inventory[0], { id: "llama3.2:latest", digest: "d1", size: 10 });
+  assert.equal(facet.inventory_receipt.source, "http://127.0.0.1:11434/api/tags");
+  assert.equal(facet.inventory_receipt.item_count, 3);
+});
+
+test("a differing secondary id field is carried as also_known_as, never as a second identity", () => {
+  const record = runDetection({
+    descriptors: [modelProvider()],
+    effects: modelHostEffects({
+      httpJsonProbe: () => ({ ok: true, body: { models: [{ name: "llama3.2:latest", model: "llama3.2" }] } }),
+    }),
+  });
+  const facet = entryOf(record, "modelhost").facets.find((item) => item.kind === "models");
+  assert.deepEqual(facet.inventory, [{ id: "llama3.2", also_known_as: ["llama3.2:latest"] }]);
+});
+
+test("a failed inventory read is a disclosed reason, never an empty offering", () => {
+  const record = runDetection({
+    descriptors: [modelProvider()],
+    effects: modelHostEffects({
+      httpJsonProbe: () => ({ ok: false, reason: "curl exit 7: connection refused" }),
+    }),
+  });
+  const facet = entryOf(record, "modelhost").facets.find((item) => item.kind === "models");
+  assert.equal(facet.inventory, undefined);
+  assert.match(facet.inventory_unavailable_reason, /connection refused/);
+  assert.ok(record.disclosure.some((line) => line.startsWith("modelhost: model inventory read failed")));
+});
+
+test("a service that is not proven live is never read for inventory", () => {
+  let called = false;
+  const record = runDetection({
+    descriptors: [modelProvider()],
+    effects: modelHostEffects({
+      serviceProbe: () => ({ ok: true, detail: "no listener at http://127.0.0.1:11434" }),
+      httpJsonProbe: () => { called = true; return { ok: true, body: { models: [] } }; },
+    }),
+  });
+  const facet = entryOf(record, "modelhost").facets.find((item) => item.kind === "models");
+  assert.equal(called, false);
+  assert.equal(facet.count, 3);
+  assert.match(facet.inventory_unavailable_reason, /did not prove a live endpoint/);
+});
+
+test("facets without a declared inventory never gain one (unrelated directories stay counted, not listed)", () => {
+  const record = runDetection({
+    descriptors: [descriptor("plainskills", {
+      probe: { "config-dir": { path: "~/.plainskills" } },
+      facets: { skills: { path: "~/.plainskills/skills" } },
+    })],
+    effects: stubEffects({
+      statProbe: (path) => (path.startsWith("/home/tester/.plainskills")
+        ? { exists: true, mtimeMs: 1, size: 1, isDir: true }
+        : { exists: false }),
+      dirCountProbe: () => ({ exists: true, count: 9 }),
+      httpJsonProbe: () => { throw new Error("must never be reached"); },
+    }),
+  });
+  assert.deepEqual(entryOf(record, "plainskills").facets, [
+    { kind: "skills", path: "~/.plainskills/skills", exists: true, count: 9 },
+  ]);
+});
+
+test("every catalogued descriptor's native_kind rides onto its detection entry", () => {
+  const descriptors = harnessDescriptors();
+  const record = runDetection({ descriptors, effects: stubEffects() });
+  for (const declared of descriptors) {
+    const entry = entryOf(record, declared.slug);
+    assert.equal(entry.native_kind, declared.native_kind, `${declared.slug} must carry its declared native_kind`);
+  }
+  assert.equal(entryOf(record, "ollama").native_kind, "model-provider");
+  assert.equal(entryOf(record, "claude-code").native_kind, "harness");
+});

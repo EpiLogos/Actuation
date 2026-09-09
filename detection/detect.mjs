@@ -124,7 +124,7 @@ function buildReceipts(descriptor, resolution, wanted, effects, disclosure) {
   return receipts;
 }
 
-function observeFacets(descriptor, effects, disclosure) {
+function observeFacets(descriptor, probes, effects, disclosure, now) {
   const observed = [];
   for (const [kind, facet] of Object.entries(descriptor.facets ?? {})) {
     const path = effects.expandHome(facet.path);
@@ -134,12 +134,79 @@ function observeFacets(descriptor, effects, disclosure) {
     }
     let count;
     if (stat.isDir) {
+      // The shared directory probe stays a presence signal: it counts, it does
+      // not name. Identities come from the declared inventory below, never
+      // from listing a directory that also holds unrelated material.
       const dir = effects.dirCountProbe(path);
       if (dir.exists) count = dir.count;
     }
-    observed.push({ kind, path: facet.path, exists: true, ...(count != null ? { count } : {}) });
+    const entry = { kind, path: facet.path, exists: true, ...(count != null ? { count } : {}) };
+    if (facet.inventory) {
+      Object.assign(entry, observeInventory(descriptor, facet.inventory, probes, effects, disclosure, now));
+    }
+    observed.push(entry);
   }
   return observed;
+}
+
+// The declared service endpoint is the authoritative inventory: the provider
+// answers with its own names. It is read only when the same run's service
+// probe proved the endpoint live — an inventory is never attempted against a
+// service we have no evidence is there, and a failed read is disclosed as an
+// unavailable reason, never as an empty offering.
+function observeInventory(descriptor, declared, probes, effects, disclosure, now) {
+  const service = probes.find((probe) => probe.kind === "service");
+  const live = service && service.result === "pass" && SERVICE_PRESENCE.test(service.detail ?? "");
+  if (!live) {
+    const reason = service
+      ? `declared service inventory not read: service probe did not prove a live endpoint (${service.detail ?? service.result})`
+      : "declared service inventory not read: no service probe ran";
+    return { inventory_unavailable_reason: reason };
+  }
+  const base = descriptor.probe.service.default_url ?? descriptor.probe.service.url;
+  const url = `${base.replace(/\/$/, "")}${declared.route}`;
+  if (!effects.httpJsonProbe) {
+    return { inventory_unavailable_reason: `declared service inventory not read: no http-json probe effect available for ${url}` };
+  }
+  const answer = effects.httpJsonProbe(url);
+  if (!answer.ok) {
+    disclosure.push(`${descriptor.slug}: model inventory read failed (${answer.reason ?? "no reason captured"})`);
+    return { inventory_unavailable_reason: `inventory read from ${url} failed: ${answer.reason ?? "no reason captured"}` };
+  }
+  const collection = answer.body?.[declared.collection];
+  if (!Array.isArray(collection)) {
+    return { inventory_unavailable_reason: `inventory read from ${url} returned no "${declared.collection}" array` };
+  }
+  const inventory = [];
+  const seen = new Set();
+  for (const item of collection) {
+    if (!item || typeof item !== "object") continue;
+    const id = item[declared.id_field];
+    if (typeof id !== "string" || id.trim() === "" || seen.has(id)) continue;
+    seen.add(id);
+    const alsoKnownAs = (declared.also_id_fields ?? [])
+      .map((field) => item[field])
+      .filter((value) => typeof value === "string" && value.trim() !== "" && value !== id);
+    const details = {};
+    for (const field of declared.detail_fields ?? []) {
+      const value = item[field];
+      if (typeof value === "string" || typeof value === "number") details[field] = value;
+    }
+    inventory.push({
+      id,
+      ...(alsoKnownAs.length ? { also_known_as: [...new Set(alsoKnownAs)] } : {}),
+      ...details,
+    });
+  }
+  return {
+    inventory,
+    inventory_receipt: {
+      kind: declared.kind,
+      source: url,
+      observed_at: now.toISOString(),
+      item_count: inventory.length,
+    },
+  };
 }
 
 /**
@@ -159,6 +226,7 @@ export function runDetection({ descriptors, effects = realEffects(), now = new D
     const entry = {
       slug: descriptor.slug,
       harness_ref: `harness/${descriptor.slug}`,
+      native_kind: descriptor.native_kind,
       state: derived.state,
       probes,
     };
@@ -166,7 +234,7 @@ export function runDetection({ descriptors, effects = realEffects(), now = new D
     if (derived.state === "detected") {
       const resolution = probes.find((probe) => probe.kind === "executable" && probe.result === "pass");
       entry.receipts = buildReceipts(descriptor, resolution ? { found: true, path: resolution.detail } : null, wanted, effects, disclosure);
-      entry.facets = observeFacets(descriptor, effects, disclosure);
+      entry.facets = observeFacets(descriptor, probes, effects, disclosure, now);
       if (entry.facets.length === 0) delete entry.facets;
       if (!Object.keys(entry.receipts).length) {
         entry.state = "not-installed";
