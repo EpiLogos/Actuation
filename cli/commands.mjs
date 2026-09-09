@@ -20,7 +20,7 @@ import {
   replayDurableStream,
 } from "../contracts/actuation-stream-store.mjs";
 import { validateActivity } from "../contracts/activity.mjs";
-import { modelUsageFromClaudeCodeTranscript, validateModelUsageObservation } from "../contracts/model-usage.mjs";
+import { modelUsageFromClaudeCodeTranscript, modelUsageFromCodexExecEvents, validateModelUsageObservation } from "../contracts/model-usage.mjs";
 import { instantiationReceipt, attachDetectionEvidence } from "../contracts/instantiation.mjs";
 import { harnessCatalog as harnessCatalogDocument } from "../contracts/harness-detection.mjs";
 import { runDetection } from "../detection/detect.mjs";
@@ -39,7 +39,6 @@ const TEST_DIRS = ["contracts", "detection", "cli"];
 // validate and record through the one durable-store path every adapter
 // shares. Adding a route here is the whole cost of admitting a new source;
 // nothing about dedup, stream consistency or the JSONL append changes.
-const USAGE_ADAPTERS = new Set(["claude-code-transcript", "observation"]);
 
 function readJsonInput(path, stdin) {
   const text = path === "-" ? stdin : readFileSync(path, "utf8");
@@ -392,15 +391,18 @@ function streamUsage(args, stdin, json) {
   const store = flagValue(args, "--store");
   const inputPath = args.find((arg) => !arg.startsWith("--"));
   const input = readJsonInput(inputPath ?? "-", stdin);
-  if (!USAGE_ADAPTERS.has(input.adapter)) {
-    throw new TypeError(`stream usage adapter must be one of ${[...USAGE_ADAPTERS].join(", ")}`);
+  const adapters = {
+    "claude-code-transcript": () => modelUsageFromClaudeCodeTranscript(input.native_event, input.correlation),
+    "codex-exec-jsonl": () => modelUsageFromCodexExecEvents(input.native_events, input.correlation),
+    // "observation" trusts its caller to have already normalized the evidence;
+    // every other adapter still owns the native-format translation. Either way
+    // the result is validated before it ever reaches the durable store.
+    observation: () => validateModelUsageObservation(input.native_event),
+  };
+  if (adapters[input.adapter] == null) {
+    throw new TypeError(`stream usage adapter must be one of ${Object.keys(adapters).join(", ")}`);
   }
-  // "observation" trusts its caller to have already normalized the evidence;
-  // every other adapter still owns the native-format translation. Either way
-  // the result is validated before it ever reaches the durable store.
-  const observation = input.adapter === "observation"
-    ? validateModelUsageObservation(input.native_event)
-    : modelUsageFromClaudeCodeTranscript(input.native_event, input.correlation);
+  const observation = adapters[input.adapter]();
   const value = recordModelUsageObservation({
     root: store,
     stream_ref: input.stream_ref,

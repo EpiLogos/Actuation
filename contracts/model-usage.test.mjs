@@ -3,8 +3,18 @@ import test from "node:test";
 
 import {
   modelUsageFromClaudeCodeTranscript,
+  modelUsageFromCodexExecEvents,
   validateModelUsageObservation,
 } from "./model-usage.mjs";
+
+function codexEvents() {
+  return [
+    { type: "thread.started", thread_id: "01a08641-70e1-7552-9adc-c969a82504ae" },
+    { type: "turn.started" },
+    { type: "item.completed", item: { id: "item_0", type: "agent_message", text: "content deliberately ignored" } },
+    { type: "turn.completed", usage: { input_tokens: 20213, cached_input_tokens: 12288, cache_write_input_tokens: 0, output_tokens: 9, reasoning_output_tokens: 0 } },
+  ];
+}
 
 // Shape and fields observed in a real Claude Code transcript on 2026-09-08.
 // Identifiers are fixture-local; content is deliberately omitted because it is
@@ -100,6 +110,36 @@ test("the bounded provider-fact field refuses arbitrary scalar payloads", () => 
   const observed = modelUsageFromClaudeCodeTranscript(nativeEvent(), correlation);
   observed.provider_facts.api_key = "must-never-cross";
   assert.throws(() => validateModelUsageObservation(observed), /not an admitted bounded native fact/);
+});
+
+test("real Codex exec JSONL evidence normalizes only the facts its terminal event supplies", () => {
+  const observed = modelUsageFromCodexExecEvents(codexEvents(), {
+    actuation_ref: "actuation:codex-provider-proof",
+    invocation_ref: "invocation:codex:provider-proof-1",
+    native_trace_ref: "trace:codex:provider-proof-2026-09-09",
+    observed_at: "2026-09-09T13:00:38.593Z",
+    agent_session_ref: "agent-session:codex-provider-proof",
+  });
+  assert.deepEqual(observed.tokens, { standing: "normalized-from-native", input: 20213, output: 9 });
+  assert.deepEqual(observed.cache, { standing: "normalized-from-native", read_input: 12288, creation_input: 0 });
+  assert.deepEqual(observed.usage_classes, [{ class: "reasoning_output", quantity: 0, unit: "tokens", standing: "normalized-from-native" }]);
+  assert.equal(observed.provider.standing, "not-reported");
+  assert.equal(observed.model.standing, "not-reported");
+  assert.equal(observed.timing.latency.standing, "not-reported");
+  assert.equal(observed.cost.standing, "not-reported");
+  assert.equal(observed.outcome.state, "completed");
+  assert.equal(observed.correlation.native_session_ref, "codex:thread:01a08641-70e1-7552-9adc-c969a82504ae");
+});
+
+test("Codex exec evidence refuses ambiguous or incomplete invocation boundaries", () => {
+  const options = {
+    actuation_ref: "actuation:codex-provider-proof",
+    invocation_ref: "invocation:codex:provider-proof-1",
+    native_trace_ref: "trace:codex:provider-proof-2026-09-09",
+    observed_at: "2026-09-09T13:00:38.593Z",
+  };
+  assert.throws(() => modelUsageFromCodexExecEvents(codexEvents().slice(0, -1), options), /exactly one/);
+  assert.throws(() => modelUsageFromCodexExecEvents([...codexEvents(), codexEvents().at(-1)], options), /exactly one/);
 });
 
 export { correlation, nativeEvent };

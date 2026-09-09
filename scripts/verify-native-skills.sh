@@ -22,6 +22,8 @@ done
 grep -q 'actuation:operator' "$operator"
 grep -q 'Skill available != Capability granted' "$operator"
 grep -q 'world mutation' "$operator"
+grep -q 'actuation agency actualise' "$operator"
+grep -qi 'cannot manufacture authority' "$operator"
 
 grep -q 'actuation:extension-developer' "$extension"
 grep -q 'native-owner review' "$extension"

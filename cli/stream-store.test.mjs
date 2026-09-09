@@ -171,7 +171,7 @@ test("stream usage refuses an unknown adapter and names the accepted ones", () =
   };
   assert.throws(
     () => executeCommand(["stream", "usage", "--store", root, "-", "--json"], { stdin: JSON.stringify(document) }),
-    /stream usage adapter must be one of claude-code-transcript, observation/,
+    /stream usage adapter must be one of claude-code-transcript, codex-exec-jsonl, observation/,
   );
 });
 
@@ -196,4 +196,33 @@ test("the served binary reads stream usage from stdin when --store precedes the 
   });
   assert.equal(result.status, 0, result.stderr);
   assert.equal(JSON.parse(result.stdout).event.model_usage.tokens.input, 3);
+});
+
+test("stream usage accepts real Codex exec JSONL shape and retains no message content", () => {
+  const root = store();
+  const document = {
+    adapter: "codex-exec-jsonl",
+    stream_ref: identity.stream_ref,
+    identity,
+    correlation: {
+      actuation_ref: identity.actuation_ref,
+      agent_session_ref: identity.agent_session_ref,
+      invocation_ref: "invocation:codex:cli-provider-proof-1",
+      native_trace_ref: "trace:codex:cli-provider-proof-2026-09-09",
+      observed_at: "2026-09-09T13:00:38.593Z",
+    },
+    native_events: [
+      { type: "thread.started", thread_id: "01a08641-70e1-7552-9adc-c969a82504ae" },
+      { type: "turn.started" },
+      { type: "item.completed", item: { id: "item_0", type: "agent_message", text: "must not persist" } },
+      { type: "turn.completed", usage: { input_tokens: 20213, cached_input_tokens: 12288, cache_write_input_tokens: 0, output_tokens: 9, reasoning_output_tokens: 0 } },
+    ],
+  };
+  const first = run(["stream", "usage", "--store", root, "-"], JSON.stringify(document));
+  const replay = run(["stream", "usage", "--store", root, "-"], JSON.stringify(document));
+  assert.equal(first.deduplicated, false);
+  assert.equal(replay.deduplicated, true);
+  assert.deepEqual(replay.event.model_usage.tokens, { standing: "normalized-from-native", input: 20213, output: 9 });
+  assert.equal(replay.event.model_usage.model.standing, "not-reported");
+  assert.equal(JSON.stringify(replay).includes("must not persist"), false);
 });

@@ -198,7 +198,7 @@ The current maximal reference harness is the pinned public **DeepSeek Harness (D
 
 The QL Agent Runtime experimental programme was migrated from Software Factory with its evidential status intact. At the migration boundary there were **zero claimed live Series 1 capability runs**, so structural/conformance evidence must not be rewritten as a capability-effect result.
 
-Current open research also studies model-bearing agency and epistemic cultivation. Those branches are development/research state until accepted; their observations should return into the constitution explicitly rather than being promoted by prose alone.
+Current research also studies model-bearing agency and epistemic cultivation. The accepted experiment-local record floor validates and persists declared research artifacts and their access/provenance conditions; it does not claim that a provider exposed model-interior access or that any empirical result occurred. Observations should return into the constitution explicitly rather than being promoted by prose alone.
 
 ## Repository map
 
@@ -206,10 +206,13 @@ Current open research also studies model-bearing agency and epistemic cultivatio
 - [`docs/ACTUATION-RELATION.md`](docs/ACTUATION-RELATION.md) — the one↔many↔return relation and recursive composition grammar.
 - [`docs/SYSTEM-PLACEMENT.md`](docs/SYSTEM-PLACEMENT.md) — placement across the wider O:I field.
 - [`docs/HARNESS-REFERENCE.md`](docs/HARNESS-REFERENCE.md) — maximal-reference harness policy and portability boundary.
+- [`docs/EPISTEMIC-CULTIVATION-AND-MODEL-INTERIOR-RESEARCH.md`](docs/EPISTEMIC-CULTIVATION-AND-MODEL-INTERIOR-RESEARCH.md) — research specification for epistemic cultivation and graded model-interior access.
+- [`docs/MODEL-BEARING-AGENCY-RESEARCH-AND-MATERIALISATION.md`](docs/MODEL-BEARING-AGENCY-RESEARCH-AND-MATERIALISATION.md) — model-bearing agency and materialisation research ground.
 - [`schemas/actuation.v0.schema.json`](schemas/actuation.v0.schema.json) — language-neutral experimental `AgenticComposition` contract.
 - [`docs/QL-RUNTIME-MIGRATION.md`](docs/QL-RUNTIME-MIGRATION.md) — provenance and acceptance rules for the migrated QL runtime experiments.
 - [`detection/`](detection/) — the harness catalog and detection engine: `actuation harness detect` proves which operative bodies exist on this machine (`actuation.harness-detection/v1`).
 - [`experiments/ql-runtime/`](experiments/ql-runtime/) — pinned proving body.
+- [`experiments/epistemic-cultivation/`](experiments/epistemic-cultivation/) — validated experiment-local records and persistence for the epistemic programme.
 
 The Actuation Wayfinder in the issue tracker records current development state. Main and accepted evidence determine present implementation truth; open PRs are not silently described here as completed capability.
 

@@ -9,8 +9,12 @@ on:
       - 'contracts/**'
       - 'detection/**'
       - 'schemas/**'
+      - 'skills/**'
       - 'package.json'
       - 'README.md'
+      - 'docs/EPISTEMIC-CULTIVATION-AND-MODEL-INTERIOR-RESEARCH.md'
+      - 'docs/MODEL-BEARING-AGENCY-RESEARCH-AND-MATERIALISATION.md'
+      - 'experiments/epistemic-cultivation/**'
       - '.github/workflows/prelocal-build.yml'
   push:
     branches: [main]
@@ -21,8 +25,12 @@ on:
       - 'contracts/**'
       - 'detection/**'
       - 'schemas/**'
+      - 'skills/**'
       - 'package.json'
       - 'README.md'
+      - 'docs/EPISTEMIC-CULTIVATION-AND-MODEL-INTERIOR-RESEARCH.md'
+      - 'docs/MODEL-BEARING-AGENCY-RESEARCH-AND-MATERIALISATION.md'
+      - 'experiments/epistemic-cultivation/**'
       - '.github/workflows/prelocal-build.yml'
 
 permissions:
@@ -44,6 +52,16 @@ jobs:
       # npm test globs every native suite; a hardcoded file list here rots
       # (it referenced contracts/model-bearing.test.mjs after the rename).
       - run: npm test
+      - name: Verify the npm package in a clean directory
+        shell: bash
+        run: |
+          set -euo pipefail
+          pack_dir="$(mktemp -d)"
+          serve_dir="$(mktemp -d)"
+          archive="$(npm pack --pack-destination "$pack_dir" --silent)"
+          tar -C "$serve_dir" -xzf "$pack_dir/$archive"
+          test "$(node "$serve_dir/package/bin/actuation" --version)" = "actuation $(node -p "require('./package.json').version")"
+          node "$serve_dir/package/bin/actuation" verify
 
   artifact:
     if: github.event_name == 'push'
@@ -64,8 +82,9 @@ jobs:
           short_sha="${GITHUB_SHA::12}"
           version="$(node -p "require('./package.json').version")"
           name="actuation-${version}-${short_sha}-component"
-          mkdir -p "dist/$name"
-          cp -R bin cli contracts detection schemas docs .oi "dist/$name/"
+          mkdir -p "dist/$name/experiments"
+          cp -R bin cli contracts detection schemas skills docs .oi "dist/$name/"
+          cp -R experiments/epistemic-cultivation "dist/$name/experiments/"
           cp package.json README.md "dist/$name/"
           printf '%s\n' "$GITHUB_SHA" > "dist/$name/source-commit.txt"
           tar -C dist -czf "dist/$name.tar.gz" "$name"

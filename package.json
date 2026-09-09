@@ -4,7 +4,7 @@
   "version": "0.2.0",
   "type": "module",
   "bin": { "actuation": "bin/actuation", "actuation-surface": "bin/actuation" },
-  "files": ["bin/", "cli/", "contracts/", "detection/", "schemas/"],
+  "files": ["bin/", "cli/", "contracts/", "detection/", "schemas/", "skills/", "docs/", "experiments/epistemic-cultivation/"],
   "description": "Actuation: agent-harness detection and instantiation receipts for the O:I suite",
   "scripts": {
     "test": "node --test contracts/*.test.mjs detection/*.test.mjs cli/*.test.mjs"

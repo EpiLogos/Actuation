@@ -85,14 +85,23 @@ copied into every Activity row. A `model-usage` Stream event retains the typed
 observation and raw native trace refs; Activity exposes only the corresponding
 `usage_refs` for reversible drill-down.
 
-The first supported native adapter consumes a Claude Code transcript assistant
-record. That record shape was observed live: provider message/request/session
+The Claude Code adapter consumes a transcript assistant record. That record
+shape was observed live: provider message/request/session
 identity, model name, input/output tokens, cache-read/cache-creation tokens,
 service tier, completion timestamp and stop reason are projected exactly where
 present. The adapter deliberately does not persist message content. Claude Code
 can route through more than one provider and the transcript row does not name
 that route, so provider identity remains `not-reported`; it likewise supplies
 neither request-start latency nor monetary cost.
+
+The Codex adapter consumes one bounded `codex exec --json` invocation: exactly
+one `thread.started` and one terminal `turn.completed` event. A live Codex
+0.153.0 invocation supplied thread identity, input/output tokens, cache-read and
+cache-write input tokens, and reasoning-output tokens. It did not supply model
+or provider identity, timestamps suitable for latency, or cost, so those fields
+remain `not-reported`. Callers must provide a distinct invocation ref because
+the native terminal event has no turn identifier; ambiguous or incomplete
+event boundaries are refused, and message content is never retained.
 
 The observation gives every evidence class an explicit standing. Absence never
 becomes zero. Provider-reported cost remains distinct from derived cost; a

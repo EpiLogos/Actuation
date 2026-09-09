@@ -226,3 +226,63 @@ export function modelUsageFromClaudeCodeTranscript(nativeInput, options = {}) {
     ...(Object.keys(providerFacts).length ? { provider_facts: providerFacts } : {}),
   });
 }
+
+/** Normalize the terminal usage event emitted by a real `codex exec --json` invocation. */
+export function modelUsageFromCodexExecEvents(nativeInput, options = {}) {
+  const events = Array.isArray(nativeInput) ? nativeInput : object(nativeInput, "CodexExecEvents").events;
+  if (!Array.isArray(events) || events.length === 0) throw new TypeError("CodexExecEvents must contain native events");
+  const starts = events.filter((event) => event?.type === "thread.started");
+  const completions = events.filter((event) => event?.type === "turn.completed");
+  if (starts.length !== 1 || completions.length !== 1) {
+    throw new TypeError("CodexExecEvents requires exactly one thread.started and one turn.completed event");
+  }
+  const thread = object(starts[0], "CodexExecEvents.thread.started");
+  const completed = object(completions[0], "CodexExecEvents.turn.completed");
+  const usage = object(completed.usage, "CodexExecEvents.turn.completed.usage");
+  for (const [value, name] of [
+    [thread.thread_id, "thread_id"],
+    [options.actuation_ref, "actuation_ref"],
+    [options.invocation_ref, "invocation_ref"],
+    [options.native_trace_ref, "native_trace_ref"],
+    [options.observed_at, "observed_at"],
+  ]) text(value, `CodexExecEvents.${name}`);
+  timestamp(options.observed_at, "CodexExecEvents.observed_at");
+
+  const correlation = {
+    harness_ref: "harness:codex",
+    native_session_ref: `codex:thread:${thread.thread_id}`,
+  };
+  for (const key of ["activity_ref", "agent_ref", "agency_ref", "agent_session_ref", "body_ref"]) {
+    if (options[key] != null) correlation[key] = options[key];
+  }
+  if (options.external_refs != null) correlation.external_refs = options.external_refs;
+
+  const input = nativeCount(usage.input_tokens, "turn.completed.usage.input_tokens");
+  const output = nativeCount(usage.output_tokens, "turn.completed.usage.output_tokens");
+  const cacheRead = nativeCount(usage.cached_input_tokens, "turn.completed.usage.cached_input_tokens");
+  const cacheWrite = nativeCount(usage.cache_write_input_tokens, "turn.completed.usage.cache_write_input_tokens");
+  const reasoning = nativeCount(usage.reasoning_output_tokens, "turn.completed.usage.reasoning_output_tokens");
+
+  return validateModelUsageObservation({
+    schema: MODEL_USAGE_VERSION,
+    usage_ref: `model-usage:codex:${options.invocation_ref}`,
+    actuation_ref: options.actuation_ref,
+    invocation_ref: options.invocation_ref,
+    correlation,
+    provider: { standing: "not-reported" },
+    model: { standing: "not-reported" },
+    tokens: { standing: "normalized-from-native", input, output },
+    cache: { standing: "normalized-from-native", read_input: cacheRead, creation_input: cacheWrite },
+    usage_classes: [{ class: "reasoning_output", quantity: reasoning, unit: "tokens", standing: "normalized-from-native" }],
+    timing: { latency: { standing: "not-reported" } },
+    cost: { standing: "not-reported" },
+    outcome: { state: "completed", standing: "normalized-from-native" },
+    provenance: {
+      reporter_ref: "harness:codex",
+      native_event_ref: `codex:event:${options.invocation_ref}:turn.completed`,
+      native_schema: "codex.exec-jsonl/turn.completed",
+      observed_at: options.observed_at,
+      raw_evidence_refs: [options.native_trace_ref],
+    },
+  });
+}

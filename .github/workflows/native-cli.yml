@@ -16,6 +16,9 @@ on:
       - "README.md"
       - ".oi/product.json"
       - "ProjectCentral/**"
+      - "docs/EPISTEMIC-CULTIVATION-AND-MODEL-INTERIOR-RESEARCH.md"
+      - "docs/MODEL-BEARING-AGENCY-RESEARCH-AND-MATERIALISATION.md"
+      - "experiments/epistemic-cultivation/**"
       - ".github/workflows/native-cli.yml"
 
 concurrency:
