@@ -145,6 +145,7 @@ served from.
 actuation capabilities [--json]
 actuation contract list [--json]
 actuation agency [file|-] [--json]
+actuation agency actualise [file|-] [--json]
 actuation realised [file|-] [--json]
 actuation stream [file|-] [--json]
 actuation stream open [--store <dir>] [file|-] [--json]
@@ -171,6 +172,12 @@ enriches receipts by executing detected binaries with their declared
 `version_args` (opt-in: some version probes are slow or prompt the
 keychain; failures are disclosed, never folded into detection state).
 `instantiation record --out <file>` appends bound receipts as JSONL.
+`agency actualise` accepts one complete semantic request and fails closed unless
+its `MetagencyGrant` matches the exact governing Agency and WorldBinding,
+authorises determination (and, for derivation, actualisation), and covers the
+declared bounds. Its receipt preserves Agent/Agency identity, WorldBinding,
+lineage, authority and Return while explicitly performing no materialisation,
+Factory recognition or source mutation.
 `stream usage` accepts one declared native adapter document, currently a
 Claude Code transcript assistant event, and writes only its typed usage
 observation into the durable Stream. Provider message/request identity,

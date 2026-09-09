@@ -7,11 +7,14 @@
   "recorded_at_unix_seconds": 1788914157,
   "subject": "Prime recursive relational Agency experiment",
   "result": "Issue #26 is open. The structural Prime harness and source-lock material exist under experiments/ql-runtime/prime, while the issue acceptance remains unclosed and its 2026-09-04 source locks require fresh inspection before any physical campaign. Next condition: re-read live Prime and QL-MEF revisions, run the deterministic structural gate, then execute the provider-backed P0/P2/P3/P4/P5 campaign without converting absence of provider evidence into success.",
-  "status": "active",
+  "status": "resolved",
   "source_refs": [
     "experiments/ql-runtime/prime"
   ],
   "evidence_refs": [
     "https://github.com/EpiLogos/Actuation/issues/26"
+  ],
+  "preserve_refs": [
+    "https://github.com/EpiLogos/Actuation/pull/46"
   ]
 }
