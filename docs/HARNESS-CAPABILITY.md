@@ -1,10 +1,16 @@
+---
+Register: episteme
+Standing: architecture-contract
+---
+
 # Harness capability descriptors
 
 `actuation.harness-capability/v1` declares **what a harness is** for the
 products that dispatch into it: the native lifecycle events it provides, the
 channel additional context travels through, what a hook can block, whether the
-harness can be woken from outside, and the install/uninstall seams a dispatch
-projection must use.
+harness can be woken from outside, the install/uninstall seams a dispatch
+projection must use, and (optionally) which model providers it natively
+dispatches to.
 
 It exists because detection and dispatch are different knowledge and must not
 be rediscovered per product. Detection (`harness-detection-v1`) proves *that a
@@ -25,6 +31,10 @@ capability
   wake_capability       immediate-wake | next-event | none
   install_seam          config_path, format, entry_shape, ownership_marker
   uninstall_seam        same shape; must preserve foreign entries
+  model_dispatch        optional; kind (native-provider-binding | none)
+                        providers[] when binding: provider_ref,
+                        selector (config-key | cli-flag | env-var + name),
+                        credential (required + hint when required)
   provenance            authored_by + source_refs
 ```
 
@@ -36,8 +46,11 @@ capability
 - **Honesty.** Absence is declared as absence. codex, for example, declares
   `injection_channel: none` and `wake_capability: none` on the surface observed
   in 2026-09: hooks and notify invoke programs, they do not inject context, and
-  nothing wakes the harness. Consumers must treat declared absence as truth —
-  never print to stdout and hope, never pretend a wake.
+  nothing wakes the harness. The same law covers `model_dispatch`: a
+  descriptor that cannot evidence a provider binding declares `kind: none`
+  rather than guessing one. Consumers must treat declared absence as truth —
+  never print to stdout and hope, never pretend a wake, never invent a
+  provider.
 - **Reversibility.** Every seam must declare `preserves_foreign_entries: true`.
   Uninstall removes only entries matching the ownership marker; native config
   the projection does not own is untouched.
@@ -53,6 +66,11 @@ the detection catalog by `detection/capabilities.test.mjs`. Declared today:
 `codex` (4 events, no injection channel, no wake), `zcode` (seven native
 events — no PreCompact, no Notification — deny-and-block, additional-context
 channel, config-json seam with the plugin seam documented alongside).
+Catalog r6 adds optional `model_dispatch` on those three: `claude-code`
+binds `provider:anthropic`, `codex` binds `provider:openai`, and `zcode`
+declares `kind: none` because no provider binding is evidenced in this
+repo. The block names how a model is selected on the harness's own surface;
+it does not enumerate a provider's model catalogue.
 
 Read models: `actuation harness capability` (catalog) and
 `actuation harness capability <slug>` (one descriptor, human or `--json`).

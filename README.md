@@ -150,7 +150,7 @@ actuation realised [file|-] [--json]
 actuation stream [file|-] [--json]
 actuation stream open [--store <dir>] [file|-] [--json]
 actuation stream record [--store <dir>] [file|-] [--json]
-actuation stream usage [--store <dir>] [file|-] [--json] [adapter: claude-code-transcript|observation]
+actuation stream usage [--store <dir>] [file|-] [--json] [adapter: claude-code-transcript|codex-exec-jsonl|observation]
 actuation stream replay <stream_ref> [--after <n>] [--limit <n>] [--store <dir>] [--json]
 actuation stream close <stream_ref> [--state closed|interrupted|cancelled] [--ended-at <ts>] [--store <dir>] [--json]
 actuation activity [file|-] [--json]
@@ -180,11 +180,12 @@ lineage, authority and Return while explicitly performing no materialisation,
 Factory recognition or source mutation.
 `stream usage` accepts one declared adapter document and writes only its
 typed usage observation into the durable Stream: `claude-code-transcript`
-normalizes a native Claude Code transcript assistant event, and
-`observation` takes an already-normalized `actuation.model-usage/v1`
-observation straight through — both adapters validate before anything is
-recorded, and both share the exact same stream-consistency, dedup and
-append-only path. Provider message/request identity, model, tokens and cache
+normalizes a native Claude Code transcript assistant event,
+`codex-exec-jsonl` normalizes one bounded Codex `exec --json` invocation,
+and `observation` takes an already-normalized `actuation.model-usage/v1`
+observation straight through — all three adapters validate before anything
+is recorded, and all three share the exact same stream-consistency, dedup
+and append-only path. Provider message/request identity, model, tokens and cache
 facts are retained where the native record supplies them; prompt and
 response content are never persisted. Missing provider, latency or cost
 evidence remains explicitly `not-reported`. An undeclared adapter is refused
@@ -206,6 +207,7 @@ Current research also studies model-bearing agency and epistemic cultivation. Th
 - [`docs/ACTUATION-RELATION.md`](docs/ACTUATION-RELATION.md) — the one↔many↔return relation and recursive composition grammar.
 - [`docs/SYSTEM-PLACEMENT.md`](docs/SYSTEM-PLACEMENT.md) — placement across the wider O:I field.
 - [`docs/HARNESS-REFERENCE.md`](docs/HARNESS-REFERENCE.md) — maximal-reference harness policy and portability boundary.
+- [`docs/HARNESS-CAPABILITY.md`](docs/HARNESS-CAPABILITY.md) — `actuation.harness-capability/v1`: what a dispatch-relevant harness is, including optional `model_dispatch`.
 - [`docs/EPISTEMIC-CULTIVATION-AND-MODEL-INTERIOR-RESEARCH.md`](docs/EPISTEMIC-CULTIVATION-AND-MODEL-INTERIOR-RESEARCH.md) — research specification for epistemic cultivation and graded model-interior access.
 - [`docs/MODEL-BEARING-AGENCY-RESEARCH-AND-MATERIALISATION.md`](docs/MODEL-BEARING-AGENCY-RESEARCH-AND-MATERIALISATION.md) — model-bearing agency and materialisation research ground.
 - [`schemas/actuation.v0.schema.json`](schemas/actuation.v0.schema.json) — language-neutral experimental `AgenticComposition` contract.
