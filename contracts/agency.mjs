@@ -150,8 +150,30 @@ export function validateReturn(input) {
   refArray(returned.claim_refs, "Return.claim_refs", { optional: true });
   refArray(returned.evidence_refs, "Return.evidence_refs", { optional: true });
 
+  // Return provenance is an attributable correlation surface, not a second
+  // owner of Activity/Factory/Workcell semantics. Every field below is
+  // optional except agency lineage: callers preserve exact refs they actually
+  // know, and absence remains absence rather than being reconstructed from a
+  // provider process, Git state, or material location.
   const provenance = record(returned.provenance, "Return.provenance");
   refArray(provenance.agency_lineage_refs, "Return.provenance.agency_lineage_refs", { nonEmpty: true });
+  refArray(provenance.agent_refs, "Return.provenance.agent_refs", { optional: true });
+  refArray(provenance.world_binding_refs, "Return.provenance.world_binding_refs", { optional: true });
+  refArray(provenance.authority_decision_refs, "Return.provenance.authority_decision_refs", { optional: true });
+  refArray(provenance.authority_refs, "Return.provenance.authority_refs", { optional: true });
+  refArray(provenance.bounds_refs, "Return.provenance.bounds_refs", { optional: true });
+  refArray(provenance.activity_refs, "Return.provenance.activity_refs", { optional: true });
+  refArray(provenance.actuation_refs, "Return.provenance.actuation_refs", { optional: true });
+  refArray(provenance.result_refs, "Return.provenance.result_refs", { optional: true });
+  refArray(provenance.request_refs, "Return.provenance.request_refs", { optional: true });
+  refArray(provenance.agent_session_refs, "Return.provenance.agent_session_refs", { optional: true });
+  refArray(provenance.action_refs, "Return.provenance.action_refs", { optional: true });
+  refArray(provenance.invocation_refs, "Return.provenance.invocation_refs", { optional: true });
+  refArray(provenance.plan_refs, "Return.provenance.plan_refs", { optional: true });
+  refArray(provenance.journey_refs, "Return.provenance.journey_refs", { optional: true });
+  refArray(provenance.run_refs, "Return.provenance.run_refs", { optional: true });
+  refArray(provenance.provider_refs, "Return.provenance.provider_refs", { optional: true });
+  refArray(provenance.harness_refs, "Return.provenance.harness_refs", { optional: true });
   refArray(provenance.material_refs, "Return.provenance.material_refs", { optional: true });
   refArray(provenance.external_source_refs, "Return.provenance.external_source_refs", { optional: true });
 
@@ -196,6 +218,9 @@ export function agencyReadModel({ binding, root_scope, metagency_grants = [], de
   const grants = metagency_grants.map(validateMetagencyGrant).filter((grant) => grant.agency_ref === worldBinding.agency_ref);
   const lineage = determinations.length ? validateDeterminationLineage(determinations) : [];
   const returnModels = returns.map(validateReturn);
+  const relatedReturns = returnModels.filter(
+    (item) => item.to_agency_ref === worldBinding.agency_ref || item.from_agency_ref === worldBinding.agency_ref,
+  );
   return {
     schema: AGENCY_CONTRACT_VERSION,
     agency_ref: worldBinding.agency_ref,
@@ -220,6 +245,7 @@ export function agencyReadModel({ binding, root_scope, metagency_grants = [], de
       received: returnModels.filter((item) => item.to_agency_ref === worldBinding.agency_ref && item.received).map((item) => item.return_ref),
       recognised: returnModels.filter((item) => item.to_agency_ref === worldBinding.agency_ref && item.recognition_state === "recognised").map((item) => item.return_ref),
       world_mutated: returnModels.filter((item) => item.to_agency_ref === worldBinding.agency_ref && item.world_mutation_state === "applied").map((item) => item.return_ref),
+      records: relatedReturns.map((item) => structuredClone(item)),
     },
     constraints: worldBinding.constraints ?? {},
   };
