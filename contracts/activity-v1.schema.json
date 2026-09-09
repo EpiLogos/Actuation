@@ -35,6 +35,9 @@
       "additionalProperties": false
     },
     "agent_session_ref": { "$ref": "#/$defs/ref" },
+    "plan_ref": { "$ref": "#/$defs/ref" },
+    "journey_ref": { "$ref": "#/$defs/ref" },
+    "run_ref": { "$ref": "#/$defs/ref" },
     "subject_ref": { "$ref": "#/$defs/ref" },
     "native_owner": { "$ref": "#/$defs/ref" },
     "action_ref": { "$ref": "#/$defs/ref" },
