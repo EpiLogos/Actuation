@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epilogos.github.io/actuation/contracts/request-correlation-v1.schema.json",
+  "title": "Actuation request-correlation contract v1",
+  "description": "Four-side correlation read model for an upstream-issued permission/activity request identity, actuation.request-correlation/v1. An AuthorityDecision is the join hub: it carries the verbatim request_ref and names the activity identities it governs. The read model correlates authority (allowed/refused/pending + basis), activity records, attention context (needs_attention activities and pending permission events) and the stream-recorded permission outcome. Omitted corpus sides are reported available:false rather than silently empty; unknown-identity, no-recorded-activity and correlation-unavailable are explicit states, never fabricated results.",
+  "$defs": {
+    "ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authorityDecisionValue": {
+      "enum": ["allowed", "refused", "pending"]
+    },
+    "authorityDecision": {
+      "type": "object",
+      "properties": {
+        "schema": { "const": "actuation.request-correlation/v1" },
+        "document": { "const": "authority-decision" },
+        "decision_ref": { "$ref": "#/$defs/ref" },
+        "request_ref": { "$ref": "#/$defs/ref" },
+        "decision": { "$ref": "#/$defs/authorityDecisionValue" },
+        "basis": { "type": "string", "minLength": 1 },
+        "determination_ref": { "$ref": "#/$defs/ref" },
+        "bounds_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "decided_by": { "$ref": "#/$defs/ref" },
+        "observed_at": { "type": "string", "format": "date-time" },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "activity_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "schema",
+        "document",
+        "decision_ref",
+        "request_ref",
+        "decision",
+        "basis",
+        "determination_ref",
+        "decided_by",
+        "observed_at",
+        "activity_refs"
+      ],
+      "additionalProperties": false
+    },
+    "correlationState": {
+      "enum": ["correlated", "unknown-identity", "no-recorded-activity", "correlation-unavailable"]
+    },
+    "correlatedActivity": {
+      "type": "object",
+      "properties": {
+        "activity_ref": { "$ref": "#/$defs/ref" },
+        "native_owner": { "$ref": "#/$defs/ref" },
+        "verb": { "type": "string", "minLength": 1 },
+        "object": { "type": "string", "minLength": 1 },
+        "summary": { "type": "string", "minLength": 1 },
+        "phase": { "type": "string", "minLength": 1 },
+        "outcome": { "type": "string", "minLength": 1 },
+        "salience": { "enum": ["ambient", "normal", "important", "critical"] },
+        "needs_attention": { "type": "boolean" },
+        "started_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "activity_ref",
+        "native_owner",
+        "verb",
+        "object",
+        "summary",
+        "phase",
+        "outcome",
+        "salience",
+        "needs_attention",
+        "started_at",
+        "updated_at"
+      ],
+      "additionalProperties": false
+    },
+    "authoritySide": {
+      "type": "object",
+      "properties": {
+        "available": { "type": "boolean" },
+        "unavailable_reason": { "type": "string" },
+        "decisions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/authorityDecision" }
+        },
+        "decision_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "resolution": { "enum": ["allowed", "refused", "pending", "none"] }
+      },
+      "required": ["available", "decisions", "decision_refs", "resolution"],
+      "additionalProperties": false
+    },
+    "activitySide": {
+      "type": "object",
+      "properties": {
+        "available": { "type": "boolean" },
+        "unavailable_reason": { "type": "string" },
+        "correlated": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/correlatedActivity" }
+        },
+        "activity_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "unrecorded_activity_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        }
+      },
+      "required": ["available", "correlated", "activity_refs", "unrecorded_activity_refs"],
+      "additionalProperties": false
+    },
+    "attentionSide": {
+      "type": "object",
+      "properties": {
+        "available": { "type": "boolean" },
+        "unavailable_reason": { "type": "string" },
+        "tracked": { "type": "boolean" },
+        "activity_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "pending_permission_event_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        }
+      },
+      "required": ["available", "tracked", "activity_refs", "pending_permission_event_refs"],
+      "additionalProperties": false
+    },
+    "permissionSide": {
+      "type": "object",
+      "properties": {
+        "available": { "type": "boolean" },
+        "unavailable_reason": { "type": "string" },
+        "outcome": { "enum": ["granted", "refused", "pending", "none"] },
+        "event_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        }
+      },
+      "required": ["available", "outcome", "event_refs"],
+      "additionalProperties": false
+    },
+    "correlationReadModel": {
+      "type": "object",
+      "properties": {
+        "schema": { "const": "actuation.request-correlation/v1" },
+        "request_ref": { "$ref": "#/$defs/ref" },
+        "state": { "$ref": "#/$defs/correlationState" },
+        "authority": { "$ref": "#/$defs/authoritySide" },
+        "activities": { "$ref": "#/$defs/activitySide" },
+        "attention": { "$ref": "#/$defs/attentionSide" },
+        "permission": { "$ref": "#/$defs/permissionSide" }
+      },
+      "required": ["schema", "request_ref", "state", "authority", "activities", "attention", "permission"],
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "$ref": "#/$defs/authorityDecision" },
+    { "$ref": "#/$defs/correlationReadModel" }
+  ]
+}
