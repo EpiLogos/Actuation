@@ -1,3 +1,7 @@
+---
+Register: episteme
+---
+
 # ActuationStream
 
 `ActuationStream` is the canonical portable relation for the **ordered attributable material through which a situated Actuation unfolds**.
@@ -102,6 +106,13 @@ or provider identity, timestamps suitable for latency, or cost, so those fields
 remain `not-reported`. Callers must provide a distinct invocation ref because
 the native terminal event has no turn identifier; ambiguous or incomplete
 event boundaries are refused, and message content is never retained.
+
+The generic `observation` adapter accepts an already-normalised
+`actuation.model-usage/v1` observation and records it through the same
+stream-consistency, dedup and append-only path. It does not translate a
+native vendor format; it only validates and attaches. The three live
+`stream usage` adapters are therefore `claude-code-transcript`,
+`codex-exec-jsonl` and `observation`.
 
 The observation gives every evidence class an explicit standing. Absence never
 becomes zero. Provider-reported cost remains distinct from derived cost; a

@@ -262,7 +262,7 @@ export const COMMANDS = Object.freeze([
   {
     name: "stream.usage",
     route: ["stream", "usage"],
-    usage: "actuation stream usage [--store <dir>] [file|-] [--json] [adapter: claude-code-transcript|observation]",
+    usage: "actuation stream usage [--store <dir>] [file|-] [--json] [adapter: claude-code-transcript|codex-exec-jsonl|observation]",
     input: true,
     run: ({ args, json, stdin }) => streamUsage(args, stdin, json),
   },
