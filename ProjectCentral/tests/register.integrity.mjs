@@ -76,7 +76,8 @@ test("the Actuation NOW horizon represents every reconciled live owner carrier",
     [
       { id: "actuation-wayfinder-programme-2026-09-09", status: "active" },
       { id: "branch-hygiene-report-remains-scheduler-owned-2026-09-09", status: "waiting" },
-      { id: "prime-recursive-relational-agency-experiment-2026-09-09", status: "active" },
+      { id: "epistemic-cultivation-research-ground-and-record-2026-09-09", status: "active" },
+      { id: "prime-physical-relational-campaign-awaits-a-2026-09-09", status: "waiting" },
       { id: "public-determination-and-agency-actualisation-operation-2026-09-09", status: "active" },
       { id: "reinspect-codex-stop-event-capability-evidence-2026-09-09", status: "active" },
       { id: "supply-actuation-intent-and-grant-integration-handoff-2026-09-09", status: "active" },
@@ -88,7 +89,7 @@ test("the Actuation NOW horizon represents every reconciled live owner carrier",
     assert.equal(record.provenance, "agent-authored-bounded-return");
     assert.ok(record.actor);
     assert.ok(record.subject);
-    assert.match(record.result, /Next condition:|waiting on the next scheduled inspection/);
+    assert.match(record.result, /Next condition:|Waiting condition:|waiting on the next scheduled inspection/);
     assert.ok(record.evidence_refs?.length > 0);
   }
 });
