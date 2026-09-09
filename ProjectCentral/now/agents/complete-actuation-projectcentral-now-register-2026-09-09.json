@@ -7,7 +7,7 @@
   "recorded_at_unix_seconds": 1788912342,
   "subject": "Complete the Actuation ProjectCentral NOW register",
   "result": "Recovered the partial ProjectCentral from Actuation main 4d6fec62f478e9f6eea5cf681cd373f3e767321c using Central additive reprojection, stamped the distributed governance starters, initialized the canonical NOW/DAY field, and federated the project Wiki with the Central root. Canonical inspection now reports ProjectCentral healthy and NOW available. Landing and Wayfinder receipt continue through the owning pull request.",
-  "status": "active",
+  "status": "resolved",
   "source_refs": [
     "ProjectCentral/project.json",
     "ProjectCentral/agents/wiki/wiki.json",
@@ -15,5 +15,8 @@
   ],
   "evidence_refs": [
     "https://github.com/EpiLogos/Actuation/issues/1"
+  ],
+  "preserve_refs": [
+    "https://github.com/EpiLogos/Actuation/pull/41"
   ]
 }
