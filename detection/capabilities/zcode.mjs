@@ -95,13 +95,18 @@ export default {
     "ownership_marker": "hook command resolves to the AIKit dispatch executable",
     "preserves_foreign_entries": true
   },
+  "model_dispatch": {
+    "kind": "none",
+    "notes": "neither zcode's detection descriptor nor its shipped hook documentation evidences a model-provider binding in this repo — no service probe, no provider config key, no upstream reference naming one. Declaring a provider here would be a guess, not a reading. Re-declare when zcode's own config or plugin surface names one."
+  },
   "provenance": {
     "authored_by": "O:I capability descriptor programme (zcode hook grammar read from the shipped zcode-guide plugin's diagnosing-hooks documentation; config surfaces observed on this machine, 2026-09-06)",
     "source_refs": [
       "survey:local-machine-2026-09-06",
       "upstream:zcode-guide-diagnosing-hooks",
-      "correction:rev1-claimed-claude-grammar-with-precompact-notification;the-shipped-event-list-says-otherwise"
+      "correction:rev1-claimed-claude-grammar-with-precompact-notification;the-shipped-event-list-says-otherwise",
+      "investigation:zcode-model-dispatch-not-evidenced-2026-09-09"
     ],
-    "catalog_revision": 4
+    "catalog_revision": 6
   }
 };

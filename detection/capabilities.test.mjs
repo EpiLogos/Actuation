@@ -79,3 +79,36 @@ test("install and uninstall seams are declared and reversible", () => {
 test("catalog revision moved with the capability addition", () => {
   assert.ok(CATALOG_REVISION >= 3, "capability descriptors require a catalog revision bump");
 });
+
+// A harness that is silent about model dispatch is indistinguishable from one
+// nobody has looked at yet. Every shipped descriptor must take a position —
+// name its provider(s), or declare kind "none" and say so — never omit the
+// block outright.
+test("every shipped capability descriptor declares its model dispatch surface", () => {
+  for (const capability of capabilityDescriptors()) {
+    assert.ok(capability.model_dispatch, `${capability.harness_slug} must declare model_dispatch`);
+    assert.ok(
+      ["native-provider-binding", "none"].includes(capability.model_dispatch.kind),
+      `${capability.harness_slug} model_dispatch.kind must be a closed enum value`,
+    );
+    if (capability.model_dispatch.kind === "native-provider-binding") {
+      assert.ok(capability.model_dispatch.providers?.length > 0, `${capability.harness_slug} claims native-provider-binding with no providers`);
+    } else {
+      assert.equal(capability.model_dispatch.providers, undefined, `${capability.harness_slug} claims kind none but still lists providers`);
+    }
+  }
+});
+
+test("claude-code and codex each name their real single-provider binding; zcode declares the honest absence", () => {
+  const claudeCode = capabilityDescriptorBySlug("claude-code");
+  assert.equal(claudeCode.model_dispatch.kind, "native-provider-binding");
+  assert.equal(claudeCode.model_dispatch.providers[0].provider_ref, "provider:anthropic");
+
+  const codex = capabilityDescriptorBySlug("codex");
+  assert.equal(codex.model_dispatch.kind, "native-provider-binding");
+  assert.equal(codex.model_dispatch.providers[0].provider_ref, "provider:openai");
+
+  const zcode = capabilityDescriptorBySlug("zcode");
+  assert.equal(zcode.model_dispatch.kind, "none", "zcode's model provider is not evidenced in this repo; guessing one is inadmissible");
+  assert.ok(zcode.model_dispatch.notes?.trim().length > 0, "the honest absence must say so, not just be silent");
+});

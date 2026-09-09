@@ -159,6 +159,94 @@
       ],
       "additionalProperties": false
     },
+    "modelDispatchKind": {
+      "enum": [
+        "native-provider-binding",
+        "none"
+      ]
+    },
+    "modelSelectorKind": {
+      "enum": [
+        "config-key",
+        "cli-flag",
+        "env-var"
+      ]
+    },
+    "modelSelector": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/modelSelectorKind"
+        },
+        "name": {
+          "$ref": "#/$defs/ref"
+        }
+      },
+      "required": [
+        "kind",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "modelDispatchCredential": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "hint": {
+          "$ref": "#/$defs/ref"
+        }
+      },
+      "required": [
+        "required"
+      ],
+      "additionalProperties": false
+    },
+    "modelDispatchProvider": {
+      "type": "object",
+      "properties": {
+        "provider_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "selector": {
+          "$ref": "#/$defs/modelSelector"
+        },
+        "credential": {
+          "$ref": "#/$defs/modelDispatchCredential"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider_ref",
+        "selector",
+        "credential"
+      ],
+      "additionalProperties": false
+    },
+    "modelDispatch": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/modelDispatchKind"
+        },
+        "providers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/modelDispatchProvider"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "additionalProperties": false
+    },
     "capabilityEntry": {
       "type": "object",
       "properties": {
@@ -194,6 +282,9 @@
         },
         "uninstall_seam": {
           "$ref": "#/$defs/seam"
+        },
+        "model_dispatch": {
+          "$ref": "#/$defs/modelDispatch"
         },
         "provenance": {
           "type": "object",

@@ -70,12 +70,30 @@ export default {
     "ownership_marker": "hook command resolves to the AIKit dispatch executable",
     "preserves_foreign_entries": true
   },
+  "model_dispatch": {
+    "kind": "native-provider-binding",
+    "providers": [
+      {
+        "provider_ref": "provider:openai",
+        "selector": {
+          "kind": "config-key",
+          "name": "model"
+        },
+        "credential": {
+          "required": true,
+          "hint": "OpenAI API key or an active ChatGPT sign-in session"
+        },
+        "notes": "model is named by the config-key selector in config.toml; Actuation does not enumerate OpenAI's model catalogue here."
+      }
+    ]
+  },
   "provenance": {
     "authored_by": "O:I capability descriptor programme (codex-cli 0.153.0 observed on this machine: config.toml notify + [hooks.state] entries, 2026-09-06)",
     "source_refs": [
       "survey:local-machine-2026-09-06",
-      "upstream:openai-codex-cli-0.153.0"
+      "upstream:openai-codex-cli-0.153.0",
+      "upstream:openai-codex-cli-config-reference"
     ],
-    "catalog_revision": 3
+    "catalog_revision": 6
   }
 };
