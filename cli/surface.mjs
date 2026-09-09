@@ -3,6 +3,7 @@
 // which is the single source of truth for routes, usage and handlers.
 // surface ↔ table parity is asserted by cli/actuation.test.mjs.
 import { AGENCY_CONTRACT_VERSION } from "../contracts/agency.mjs";
+import { AGENCY_ACTUALISATION_VERSION } from "../contracts/agency-actualisation.mjs";
 import { ACTIVITY_VERSION } from "../contracts/activity.mjs";
 import { ACTUATION_STREAM_VERSION } from "../contracts/actuation-stream.mjs";
 import { HARNESS_DETECTION_VERSION } from "../contracts/harness-detection.mjs";
@@ -21,6 +22,7 @@ export const ACTUATION_CLI_SURFACE = Object.freeze({
   version: ACTUATION_CLI_VERSION,
   native_contracts: Object.freeze({
     agency: AGENCY_CONTRACT_VERSION,
+    agency_actualisation: AGENCY_ACTUALISATION_VERSION,
     realised: REALISED_ACTUATION_VERSION,
     stream: ACTUATION_STREAM_VERSION,
     activity: ACTIVITY_VERSION,

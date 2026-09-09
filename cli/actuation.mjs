@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { ACTUATION_CLI_SURFACE } from "./surface.mjs";
 import { COMMANDS } from "./commands.mjs";
 
-// Longest route first so "instantiation record" wins over "instantiation".
+// Longest route first so operation routes win over their read-model parents.
 const ROUTES = [...COMMANDS].sort((a, b) => b.route.length - a.route.length);
 
 export function matchRoute(args) {
