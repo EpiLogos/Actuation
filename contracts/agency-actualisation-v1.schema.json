@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epilogos.dev/schemas/actuation.agency-actualisation-v1.schema.json",
+  "title": "Actuation Agency Actualisation Request and Receipt",
+  "oneOf": [
+    { "$ref": "#/$defs/request" },
+    { "$ref": "#/$defs/receipt" }
+  ],
+  "$defs": {
+    "ref": { "type": "string", "minLength": 1 },
+    "refs": { "type": "array", "items": { "$ref": "#/$defs/ref" } },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "request_ref", "requester_ref", "governing_binding", "metagency_grant", "determination", "differentiated_binding", "agent_identity", "provenance"],
+      "properties": {
+        "schema": { "const": "actuation.agency-actualisation/v1" },
+        "request_ref": { "$ref": "#/$defs/ref" },
+        "requester_ref": { "$ref": "#/$defs/ref" },
+        "governing_binding": { "$ref": "https://epilogos.dev/schemas/actuation.agency-v1.schema.json#/$defs/worldBinding" },
+        "metagency_grant": { "$ref": "https://epilogos.dev/schemas/actuation.agency-v1.schema.json#/$defs/metagencyGrant" },
+        "determination": { "$ref": "https://epilogos.dev/schemas/actuation.agency-v1.schema.json#/$defs/determination" },
+        "differentiated_binding": { "$ref": "https://epilogos.dev/schemas/actuation.agency-v1.schema.json#/$defs/worldBinding" },
+        "prior_determinations": { "type": "array", "items": { "$ref": "https://epilogos.dev/schemas/actuation.agency-v1.schema.json#/$defs/determination" } },
+        "agent_identity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["standing", "evidence_refs"],
+          "properties": {
+            "standing": { "enum": ["existing", "actualised"] },
+            "evidence_refs": { "$ref": "#/$defs/refs", "minItems": 1 }
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source_refs"],
+          "properties": {
+            "source_refs": { "$ref": "#/$defs/refs", "minItems": 1 },
+            "context_refs": { "$ref": "#/$defs/refs" }
+          }
+        }
+      }
+    },
+    "receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "receipt_ref", "request_ref", "requester_ref", "status", "governing_binding", "differentiated_binding", "metagency", "determination", "lineage", "bounds_refs", "return_relation", "agent_identity", "effects", "provenance"],
+      "properties": {
+        "schema": { "const": "actuation.agency-actualisation/v1" },
+        "receipt_ref": { "$ref": "#/$defs/ref" },
+        "request_ref": { "$ref": "#/$defs/ref" },
+        "requester_ref": { "$ref": "#/$defs/ref" },
+        "status": { "const": "actualised" },
+        "governing_binding": { "$ref": "https://epilogos.dev/schemas/actuation.agency-v1.schema.json#/$defs/worldBinding" },
+        "differentiated_binding": { "$ref": "https://epilogos.dev/schemas/actuation.agency-v1.schema.json#/$defs/worldBinding" },
+        "metagency": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["grant_ref", "authority_ref", "operations_used"],
+          "properties": {
+            "grant_ref": { "$ref": "#/$defs/ref" },
+            "authority_ref": { "$ref": "#/$defs/ref" },
+            "operations_used": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "enum": ["determine-agency", "actualise-agency"] }
+            }
+          }
+        },
+        "determination": { "$ref": "https://epilogos.dev/schemas/actuation.agency-v1.schema.json#/$defs/determination" },
+        "lineage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["determination_refs", "agency_refs"],
+          "properties": {
+            "determination_refs": { "$ref": "#/$defs/refs", "minItems": 1, "uniqueItems": true },
+            "agency_refs": { "$ref": "#/$defs/refs", "minItems": 2 }
+          }
+        },
+        "bounds_refs": { "$ref": "#/$defs/refs", "minItems": 1 },
+        "return_relation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode"],
+          "properties": {
+            "mode": { "enum": ["required", "optional", "autonomous-termination"] },
+            "return_relation_ref": { "$ref": "#/$defs/ref" }
+          }
+        },
+        "agent_identity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["standing", "agent_ref", "evidence_refs"],
+          "properties": {
+            "standing": { "enum": ["existing", "actualised"] },
+            "agent_ref": { "$ref": "#/$defs/ref" },
+            "evidence_refs": { "$ref": "#/$defs/refs", "minItems": 1 }
+          }
+        },
+        "effects": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["semantic_relation", "materialisation", "factory_recognition", "source_mutation"],
+          "properties": {
+            "semantic_relation": { "const": "actualised" },
+            "materialisation": { "const": "not-performed" },
+            "factory_recognition": { "const": "not-performed" },
+            "source_mutation": { "const": "not-performed" }
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source_refs", "context_refs"],
+          "properties": {
+            "source_refs": { "$ref": "#/$defs/refs", "minItems": 1 },
+            "context_refs": { "$ref": "#/$defs/refs" }
+          }
+        }
+      }
+    }
+  }
+}

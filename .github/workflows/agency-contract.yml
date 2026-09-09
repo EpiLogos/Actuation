@@ -6,6 +6,12 @@ on:
       - "contracts/agency.mjs"
       - "contracts/agency.test.mjs"
       - "contracts/agency-v1.schema.json"
+      - "contracts/agency-actualisation.mjs"
+      - "contracts/agency-actualisation-v1.schema.json"
+      - "cli/agency-actualisation.test.mjs"
+      - "cli/commands.mjs"
+      - "cli/surface.mjs"
+      - "skills/actuation-operation/SKILL.md"
       - ".github/workflows/agency-contract.yml"
   push:
     branches:
@@ -14,6 +20,12 @@ on:
       - "contracts/agency.mjs"
       - "contracts/agency.test.mjs"
       - "contracts/agency-v1.schema.json"
+      - "contracts/agency-actualisation.mjs"
+      - "contracts/agency-actualisation-v1.schema.json"
+      - "cli/agency-actualisation.test.mjs"
+      - "cli/commands.mjs"
+      - "cli/surface.mjs"
+      - "skills/actuation-operation/SKILL.md"
       - ".github/workflows/agency-contract.yml"
 
 concurrency:
@@ -31,3 +43,4 @@ jobs:
           node-version: 22
       - run: npm test
       - run: node -e 'JSON.parse(require("fs").readFileSync("contracts/agency-v1.schema.json", "utf8"))'
+      - run: node -e 'JSON.parse(require("fs").readFileSync("contracts/agency-actualisation-v1.schema.json", "utf8"))'

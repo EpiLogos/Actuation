@@ -9,6 +9,7 @@ import { dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { ACTUATION_CLI_SURFACE } from "./surface.mjs";
 import { agencyReadModel } from "../contracts/agency.mjs";
+import { actualiseAgency } from "../contracts/agency-actualisation.mjs";
 import { realisedActuationReadModel } from "../contracts/realised-actuation.mjs";
 import { actuationStreamReadModel } from "../contracts/actuation-stream.mjs";
 import {
@@ -98,6 +99,10 @@ function humanAgency(value) {
   return `Agency ${value.agency_ref}\nAgent: ${value.agent_ref}\nWorld: ${value.world_ref}\nScope: ${value.scope_ref}\nRoot for scope: ${value.root_for_scope ? "yes" : "no"}\nMetagency: ${value.metagency.available ? value.metagency.operations.join(", ") : "none"}`;
 }
 
+function humanAgencyActualisation(value) {
+  return `Actualised ${value.differentiated_binding.agency_ref}\nAgent: ${value.differentiated_binding.agent_ref}\nWorld: ${value.differentiated_binding.world_ref}\nDetermination: ${value.determination.kind} (${value.determination.determination_ref})\nAuthority: ${value.metagency.grant_ref}\nReturn: ${value.return_relation.return_relation_ref ?? value.return_relation.mode}`;
+}
+
 function humanRealised(value) {
   return `Realised Actuation ${value.realised_ref}\nActuation: ${value.actuation_ref}\nAgency: ${value.agency_ref}\nRecurrence: ${value.recurrence}\nObservation: ${value.observation.state}`;
 }
@@ -183,6 +188,13 @@ export const COMMANDS = Object.freeze([
     usage: "actuation agency [file|-] [--json]",
     input: true,
     run: ({ args, json, stdin }) => output(agencyReadModel(readJsonInput(args[0] ?? "-", stdin)), json, humanAgency),
+  },
+  {
+    name: "agency.actualise",
+    route: ["agency", "actualise"],
+    usage: "actuation agency actualise [file|-] [--json]",
+    input: true,
+    run: ({ args, json, stdin }) => output(actualiseAgency(readJsonInput(args[0] ?? "-", stdin)), json, humanAgencyActualisation),
   },
   {
     name: "realised.read",

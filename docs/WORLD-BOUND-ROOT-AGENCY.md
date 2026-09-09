@@ -12,6 +12,15 @@ The same Agency can therefore be governed upward and governing downward. Recursi
 
 `MetagencyGrant` is explicit authority to determine/configure/actualise/reintegrate agency in a bound world. Visibility of another Agent, communication with it, or A2A reachability is not metagency.
 
+The public `actuation agency actualise` operation exercises this relation. It
+requires the exact governing and differentiated bindings, a matching grant,
+the complete determination lineage, Agent-identity evidence, bounds and Return
+relation. `derivation` additionally requires `actualise-agency`; the other
+three kinds require `determine-agency` without silently changing the Agent's
+identity standing. Source visibility, an available AIKit capability, or
+AgentSet/Factory Journey participation is retained only as context and never
+accepted as authority.
+
 ## Distinct multi-agent relations
 
 `Determination.kind` keeps these separate:
@@ -22,6 +31,10 @@ The same Agency can therefore be governed upward and governing downward. Recursi
 - `federation` — independently grounded Agencies cooperate without inherited determining authority.
 
 Federation carrying determining authority is rejected by the executable validator; use an explicit delegation relation instead.
+
+An accepted actualisation receipt establishes this semantic relation in the
+calling process. It does not provision an operative body, recognise a Factory
+Return, or mutate a source tree; those effects remain with their native owners.
 
 ## Return is not synthesis
 
