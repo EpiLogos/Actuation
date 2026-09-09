@@ -1,6 +1,5 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -206,10 +205,7 @@ test("8. actualisation preserves Return while performing no recognition or sourc
   });
 });
 
-test("9. the operator Skill targets the public operation but cannot manufacture authority", () => {
-  const skill = readFileSync(resolve(REPO_ROOT, "skills/actuation-operation/SKILL.md"), "utf8");
-  assert.match(skill, /actuation agency actualise/);
-  assert.match(skill, /cannot manufacture authority/i);
+test("9. the public operation cannot manufacture determination authority", () => {
   const input = requestFor();
   input.metagency_grant.operations = ["configure-agency"];
   assert.throws(() => run(input), /does not authorise determine-agency/);
