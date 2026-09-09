@@ -12,6 +12,9 @@ on:
       - 'skills/**'
       - 'package.json'
       - 'README.md'
+      - 'docs/EPISTEMIC-CULTIVATION-AND-MODEL-INTERIOR-RESEARCH.md'
+      - 'docs/MODEL-BEARING-AGENCY-RESEARCH-AND-MATERIALISATION.md'
+      - 'experiments/epistemic-cultivation/**'
       - '.github/workflows/prelocal-build.yml'
   push:
     branches: [main]
@@ -25,6 +28,9 @@ on:
       - 'skills/**'
       - 'package.json'
       - 'README.md'
+      - 'docs/EPISTEMIC-CULTIVATION-AND-MODEL-INTERIOR-RESEARCH.md'
+      - 'docs/MODEL-BEARING-AGENCY-RESEARCH-AND-MATERIALISATION.md'
+      - 'experiments/epistemic-cultivation/**'
       - '.github/workflows/prelocal-build.yml'
 
 permissions:
@@ -76,8 +82,9 @@ jobs:
           short_sha="${GITHUB_SHA::12}"
           version="$(node -p "require('./package.json').version")"
           name="actuation-${version}-${short_sha}-component"
-          mkdir -p "dist/$name"
+          mkdir -p "dist/$name/experiments"
           cp -R bin cli contracts detection schemas skills docs .oi "dist/$name/"
+          cp -R experiments/epistemic-cultivation "dist/$name/experiments/"
           cp package.json README.md "dist/$name/"
           printf '%s\n' "$GITHUB_SHA" > "dist/$name/source-commit.txt"
           tar -C dist -czf "dist/$name.tar.gz" "$name"
