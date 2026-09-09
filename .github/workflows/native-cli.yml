@@ -10,6 +10,7 @@ on:
       - "package.json"
       - "README.md"
       - ".oi/product.json"
+      - "ProjectCentral/**"
       - ".github/workflows/native-cli.yml"
   push:
     branches:
@@ -22,6 +23,7 @@ on:
       - "package.json"
       - "README.md"
       - ".oi/product.json"
+      - "ProjectCentral/**"
       - ".github/workflows/native-cli.yml"
 
 concurrency:
