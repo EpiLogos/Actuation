@@ -1,0 +1,134 @@
+name: Serial source import
+on:
+  pull_request:
+    paths:
+      - 'scripts/migration/authoring-*'
+      - '.github/workflows/serial-authoring.yml'
+permissions:
+  contents: write
+concurrency:
+  group: actuation-r4-serial-import
+  cancel-in-progress: false
+jobs:
+  import-exact-source:
+    if: github.event.pull_request.head.ref == 'act-rust/r4-durable-actuality' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Admit exactly the independently tested source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, hashlib, io, json, lzma, os, pathlib, subprocess
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+          root = pathlib.Path.cwd()
+          basis = '6398b23e0972e85d61295ddc1cfcbb83989dc00b'
+          expected_tree = '269950f7017c586a28acfc1dbc0c190ed38a7f49'
+          expected_hash = '002ae8e1aa06d63ebd86c46a2582fb54f0970b78bd2f4bfdbc6d2e11e038e250'
+          header_path = 'scripts/migration/authoring-capsule.json'
+          parts = [f'scripts/migration/authoring-{n}.txt' for n in range(5)]
+          transport = {header_path, '.github/workflows/serial-authoring.yml', *parts}
+          header = json.loads(pathlib.Path(header_path).read_text())
+          assert header['schema'] == 'actuation.serial-authoring/v1'
+          assert header['encoding'] == 'xz+base64' and header['parts'] == parts
+          assert header['basis_revision'] == basis and header['expected_tree'] == expected_tree
+          assert header['sha256'] == expected_hash and header['change_count'] == 36
+          assert git('rev-parse', 'HEAD^') == basis
+          assert set(git('diff', '--name-only', basis, 'HEAD').splitlines()) == transport
+          encoded = ''.join(pathlib.Path(path).read_text() for path in parts)
+          compressed = base64.b64decode(encoded, validate=True)
+          with lzma.LZMAFile(io.BytesIO(compressed)) as stream:
+              raw = stream.read(12 * 1024 * 1024 + 1)
+          assert len(raw) <= 12 * 1024 * 1024
+          assert hashlib.sha256(raw).hexdigest() == expected_hash
+          source = json.loads(raw)
+          assert source['schema'] == header['schema'] and source['basis_revision'] == basis
+          assert source['expected_tree'] == expected_tree and len(source['changes']) == 36
+          paths = set()
+          for change in source['changes']:
+              path = change['path']
+              relative = pathlib.PurePosixPath(path)
+              assert not relative.is_absolute() and '..' not in relative.parts and '.git' not in relative.parts
+              assert str(relative) == path and path not in paths and path not in transport
+              assert '.github' not in relative.parts and change['mode'] in ['100644', '100755']
+              paths.add(path)
+              target = root / path
+              assert not target.is_symlink() and target.resolve().is_relative_to(root)
+              previous = git('ls-tree', basis, '--', path)
+              assert (previous.split()[2] if previous else None) == change['before_blob'], path
+              if change['content'] is None:
+                  target.unlink()
+              else:
+                  assert isinstance(change['content'], str)
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_bytes(change['content'].encode('utf-8'))
+                  target.chmod(0o755 if change['mode'] == '100755' else 0o644)
+          for path in transport:
+              pathlib.Path(path).unlink()
+          subprocess.run(['git', 'add', '--all', '--', *sorted(paths | transport)], check=True)
+          assert git('write-tree') == expected_tree, 'clean readable tree must match the tested candidate'
+          evidence = pathlib.Path(os.environ['RUNNER_TEMP']) / 'serial-source-evidence'
+          evidence.mkdir(parents=True, exist_ok=True)
+          (evidence / 'source-import.json').write_text(json.dumps({
+              'schema': 'actuation.serial-source-receipt/v1', 'basis_revision': basis,
+              'transport_revision': git('rev-parse', 'HEAD'), 'source_tree': expected_tree,
+              'source_payload_sha256': expected_hash, 'evidence_class': 'D',
+              'standing': 'exact authored candidate; not accepted main'
+          }, indent=2) + '\n')
+          PY
+      - name: Verify native actuality, JSONL continuity and original product
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/serial-source-evidence"
+          bash scripts/migration/verify-native.sh "$evidence/native"
+          npm test | tee "$evidence/node-native-tests.log"
+          node scripts/migration/verify-corpus.mjs | tee "$evidence/corpus-integrity.json"
+          node scripts/migration/parity.mjs | tee "$evidence/node-pure-parity.json"
+          node scripts/migration/scenario-parity.mjs | tee "$evidence/node-scenario-parity.json"
+          bash scripts/verify-native-skills.sh | tee "$evidence/native-skills.log"
+          node --test experiments/ql-runtime/foundation/test/*.test.js experiments/ql-runtime/deep-ql/test/*.test.js experiments/ql-runtime/prime/test/*.test.mjs experiments/epistemic-cultivation/test/*.test.mjs | tee "$evidence/research-tests.log"
+      - name: Publish readable code on this same migration branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git write-tree)" = '269950f7017c586a28acfc1dbc0c190ed38a7f49'
+          # The bot cannot change workflow files. Retain unchanged transport in
+          # this temporary commit; the connected API removes it before review.
+          git restore --source=HEAD --staged --worktree -- .github/workflows/serial-authoring.yml scripts/migration/authoring-capsule.json scripts/migration/authoring-{0,1,2,3,4}.txt
+          test -z "$(git diff --cached --name-only -- .github)"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m '[ACT-RUST R4] Publish verified native actuality and compatible durable stream source'
+          git push origin HEAD:refs/heads/act-rust/r4-durable-actuality
+      - name: Preserve source and actual verification evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/serial-source-evidence"
+          mkdir -p "$evidence"
+          git rev-parse HEAD > "$evidence/source-commit.txt"
+          git ls-tree -r HEAD > "$evidence/source-tree.txt"
+          git archive --format=tar.gz HEAD > "$evidence/source.tar.gz"
+          git bundle create "$evidence/source.bundle" HEAD
+          (cd "$evidence" && sha256sum source.tar.gz source.bundle > SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: actuation-r4-source-${{ github.event.pull_request.head.sha }}
+          path: ${{ runner.temp }}/serial-source-evidence/
+          if-no-files-found: error
+          retention-days: 30
