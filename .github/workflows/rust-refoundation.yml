@@ -1,0 +1,64 @@
+name: Rust refoundation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  migration-oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preserve exact source basis
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p migration-evidence
+          git rev-parse HEAD > migration-evidence/source-commit.txt
+          git ls-tree -r HEAD > migration-evidence/source-tree.txt
+          git archive --format=tar.gz HEAD > migration-evidence/source.tar.gz
+          git bundle create migration-evidence/source.bundle HEAD
+          sha256sum migration-evidence/source.tar.gz migration-evidence/source.bundle > migration-evidence/SHA256SUMS
+      - name: Existing native product and Skills
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm test | tee migration-evidence/node-native-tests.log
+          node bin/actuation verify --json | tee migration-evidence/node-verify.json
+          bash scripts/verify-native-skills.sh | tee migration-evidence/native-skills.log
+      - name: Research programmes remain active
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test experiments/ql-runtime/foundation/test/*.test.js experiments/ql-runtime/deep-ql/test/*.test.js experiments/ql-runtime/prime/test/*.test.mjs experiments/epistemic-cultivation/test/*.test.mjs | tee migration-evidence/research-tests.log
+          python3 -m py_compile experiments/ql-runtime/prime/skills/ql-relational/src/ql_relational/__init__.py experiments/ql-runtime/comparison/series1/pydantic_bridge.py
+      - name: Enforce frozen compatibility oracle (never recapture in a passing gate)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test scripts/migration/check-recorder.mjs
+          node scripts/migration/verify-corpus.mjs | tee migration-evidence/corpus-integrity.json
+          node scripts/migration/parity.mjs | tee migration-evidence/pure-parity.json
+          node scripts/migration/scenario-parity.mjs | tee migration-evidence/scenario-parity.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: actuation-migration-evidence-${{ github.sha }}
+          path: migration-evidence/
+          if-no-files-found: error
+          retention-days: 30

@@ -1,0 +1,309 @@
+{
+  "schema": "ql-foundation-gate/0.1",
+  "deterministic": true,
+  "network_required": false,
+  "model_api_required": false,
+  "fixture_count": 22,
+  "passed": true,
+  "fixtures": [
+    {
+      "id": "QLF-001",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R01",
+        "R11"
+      ],
+      "capability_calls": 1,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLF-002",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R01",
+        "R13"
+      ],
+      "capability_calls": 1,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLF-003",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R02",
+        "R23"
+      ],
+      "capability_calls": 1,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLF-004",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R03",
+        "R31"
+      ],
+      "capability_calls": 0,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLF-005",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R04",
+        "R43"
+      ],
+      "capability_calls": 1,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLF-006",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R05",
+        "R55",
+        "R51"
+      ],
+      "capability_calls": 0,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLF-007",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R05",
+        "R55",
+        "R52"
+      ],
+      "capability_calls": 0,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLF-008",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R05",
+        "R55",
+        "R53"
+      ],
+      "capability_calls": 0,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLF-009",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R05",
+        "R55",
+        "R54"
+      ],
+      "capability_calls": 0,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLF-010",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R05",
+        "R55",
+        "R50"
+      ],
+      "capability_calls": 0,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLF-011",
+      "passed": true,
+      "failures": [],
+      "result_status": "completed",
+      "relations": [
+        "R04",
+        "R45"
+      ],
+      "capability_calls": 0,
+      "positive_closure": true,
+      "reentry": true
+    },
+    {
+      "id": "QLF-012",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R01",
+        "R11",
+        "R13",
+        "R34"
+      ],
+      "capability_calls": 3,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLF-013",
+      "passed": true,
+      "failures": [],
+      "result_status": "completed",
+      "relations": [
+        "R03",
+        "R34",
+        "R45"
+      ],
+      "capability_calls": 0,
+      "positive_closure": true,
+      "reentry": true
+    },
+    {
+      "id": "QLF-014",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R01",
+        "R12",
+        "R24"
+      ],
+      "capability_calls": 3,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLF-017",
+      "passed": true,
+      "failures": [],
+      "result_status": "completed",
+      "relations": [
+        "R03",
+        "R34",
+        "R45"
+      ],
+      "capability_calls": 0,
+      "positive_closure": true,
+      "reentry": true
+    },
+    {
+      "id": "QLF-018",
+      "passed": true,
+      "failures": [],
+      "result_status": "completed",
+      "relations": [
+        "R04",
+        "R45"
+      ],
+      "capability_calls": 0,
+      "positive_closure": true,
+      "reentry": true
+    },
+    {
+      "id": "QLN-001",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R05"
+      ],
+      "capability_calls": 0,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLN-002",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R04",
+        "R43"
+      ],
+      "capability_calls": 1,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLN-003",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R05",
+        "R55",
+        "R51"
+      ],
+      "capability_calls": 0,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLN-004",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R03"
+      ],
+      "capability_calls": 0,
+      "positive_closure": false,
+      "reentry": false
+    },
+    {
+      "id": "QLN-006",
+      "passed": true,
+      "failures": [],
+      "result_status": "completed",
+      "relations": [
+        "R03",
+        "R34",
+        "R45"
+      ],
+      "capability_calls": 0,
+      "positive_closure": true,
+      "reentry": true
+    },
+    {
+      "id": "QLN-007",
+      "passed": true,
+      "failures": [],
+      "result_status": "exhausted",
+      "relations": [
+        "R05",
+        "R55",
+        "R51",
+        "R15",
+        "R54"
+      ],
+      "capability_calls": 1,
+      "positive_closure": false,
+      "reentry": false
+    }
+  ]
+}
