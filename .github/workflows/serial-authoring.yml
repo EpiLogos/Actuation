@@ -1,0 +1,132 @@
+# Temporary exact-source transport, not an agent or a product workflow.
+# The sole acting agent has already authored and tested these bytes.
+# The connector removes this workflow before the final read-only PR checks.
+name: Serial source import
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  import-exact-source:
+    if: github.head_ref == 'act-rust/r3-realised-runtime' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Import exact preverified tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, hashlib, io, json, lzma, os, pathlib, subprocess
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+          root = pathlib.Path.cwd()
+          header_path = 'scripts/migration/authoring-capsule.json'
+          header = json.loads(pathlib.Path(header_path).read_text())
+          assert header['schema'] == 'actuation.serial-authoring/v1'
+          assert header['encoding'] == 'xz+base64'
+          basis = '05e440f4628bbc40eca30f2cabb869a76e99ddd9'
+          assert header['basis_revision'] == basis
+          parts = [f'scripts/migration/authoring-{n}.txt' for n in range(4)]
+          assert header['parts'] == parts
+          transport = {header_path, '.github/workflows/serial-authoring.yml', *parts}
+          assert git('rev-parse', 'HEAD^') == basis, 'transport must begin at accepted main'
+          assert set(git('diff', '--name-only', basis, 'HEAD').splitlines()) == transport
+          compressed = base64.b64decode(''.join(pathlib.Path(path).read_text() for path in parts), validate=True)
+          with lzma.LZMAFile(io.BytesIO(compressed)) as stream:
+              raw = stream.read(12 * 1024 * 1024 + 1)
+          assert len(raw) <= 12 * 1024 * 1024
+          assert hashlib.sha256(raw).hexdigest() == header['sha256']
+          source = json.loads(raw)
+          assert source['schema'] == header['schema'] and source['basis_revision'] == basis
+          assert source['expected_tree'] == '9fae3f750011e2c16ab035a11e538d0afe63cc83'
+          assert len(source['changes']) == 20
+          paths = set()
+          for change in source['changes']:
+              path = change['path']
+              relative = pathlib.PurePosixPath(path)
+              assert not relative.is_absolute() and '..' not in relative.parts and '.git' not in relative.parts
+              assert str(relative) == path and path not in paths and path not in transport
+              assert change['mode'] in ['100644', '100755']
+              paths.add(path)
+              target = root / path
+              assert not target.is_symlink() and target.resolve().is_relative_to(root)
+              previous = git('ls-tree', basis, '--', path)
+              blob = previous.split()[2] if previous else None
+              assert blob == change['before_blob'], f'basis drift: {path}'
+              if change['content'] is None:
+                  target.unlink()
+              else:
+                  assert isinstance(change['content'], str)
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_bytes(change['content'].encode('utf-8'))
+                  target.chmod(0o755 if change['mode'] == '100755' else 0o644)
+          for path in transport:
+              pathlib.Path(path).unlink()
+          subprocess.run(['git', 'add', '--all', '--', *sorted(paths | transport)], check=True)
+          assert git('write-tree') == source['expected_tree'], 'readable tree must match tested source exactly'
+          evidence = pathlib.Path(os.environ['RUNNER_TEMP']) / 'serial-source-evidence'
+          evidence.mkdir()
+          (evidence / 'source-import.json').write_text(json.dumps({
+              'schema': 'actuation.serial-source-receipt/v1', 'basis_revision': basis,
+              'transport_revision': git('rev-parse', 'HEAD'), 'source_tree': source['expected_tree'],
+              'source_payload_sha256': header['sha256'], 'evidence_class': 'D',
+              'standing': 'exact authored candidate; not accepted main'
+          }, indent=2) + '\n')
+          PY
+      - name: Verify readable native source and unchanged original product
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/serial-source-evidence"
+          bash scripts/migration/verify-native.sh "$evidence/native"
+          npm test | tee "$evidence/node-native-tests.log"
+          node scripts/migration/verify-corpus.mjs | tee "$evidence/corpus-integrity.json"
+          node scripts/migration/parity.mjs | tee "$evidence/node-pure-parity.json"
+          node scripts/migration/scenario-parity.mjs | tee "$evidence/node-scenario-parity.json"
+          bash scripts/verify-native-skills.sh | tee "$evidence/native-skills.log"
+      - name: Publish source on the sole migration branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git write-tree)" = '9fae3f750011e2c16ab035a11e538d0afe63cc83'
+          test ! -e scripts/migration/authoring-capsule.json
+          # The workflow token cannot mutate workflow files. Retain only this
+          # already-present transport file; the authorised connector deletes
+          # it before final maintained CI and squash acceptance.
+          git show HEAD:.github/workflows/serial-authoring.yml > .github/workflows/serial-authoring.yml
+          git add .github/workflows/serial-authoring.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m '[ACT-RUST R3] Introduce realised agency, bounded admission and ordinary acting runtime'
+          git push origin HEAD:refs/heads/act-rust/r3-realised-runtime
+      - name: Preserve exact candidate and verification evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/serial-source-evidence"
+          mkdir -p "$evidence"
+          git rev-parse HEAD > "$evidence/source-commit.txt"
+          git archive --format=tar.gz HEAD > "$evidence/source.tar.gz"
+          git bundle create "$evidence/source.bundle" HEAD
+          (cd "$evidence" && sha256sum source.tar.gz source.bundle > SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: actuation-r3-source-${{ github.event.pull_request.head.sha }}
+          path: ${{ runner.temp }}/serial-source-evidence/
+          if-no-files-found: error
+          retention-days: 30
