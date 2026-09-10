@@ -8,11 +8,13 @@ mod actualisation;
 mod locus;
 mod loop_runtime;
 mod realised;
+mod stream_observer;
 pub use actualisation::*;
 pub use actuation_core::{Error, Result};
 pub use locus::*;
 pub use loop_runtime::*;
 pub use realised::*;
+pub use stream_observer::*;
 
 pub type PortFuture<'a, T> =
     std::pin::Pin<Box<dyn std::future::Future<Output = Result<T>> + Send + 'a>>;

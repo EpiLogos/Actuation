@@ -1,0 +1,26 @@
+{
+  "schema": "actuation.native-tranche/v1",
+  "phase": "R4",
+  "basis_revision": "6398b23e0972e85d61295ddc1cfcbb83989dc00b",
+  "native_sources": [
+    "crates/actuation-stream/src/stream.rs",
+    "crates/actuation-stream/src/event.rs",
+    "crates/actuation-stream/src/journal.rs",
+    "crates/actuation-stream/src/store.rs",
+    "crates/actuation-stream/src/activity.rs",
+    "crates/actuation-stream/src/usage.rs",
+    "crates/actuation-stream/src/correlation.rs",
+    "crates/actuation-runtime/src/stream_observer.rs"
+  ],
+  "temporary_codec_owner": "crates/actuation-stream/src/usage_native.rs",
+  "codec_final_owner": "actuation-adapters at R5",
+  "original_product_standing": "unchanged Node served until R7",
+  "evidence_class": "D",
+  "not_claimed": [
+    "R5-R10",
+    "provider",
+    "owner-machine",
+    "human",
+    "concurrent mixed Node/Rust writers"
+  ]
+}

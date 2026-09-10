@@ -1,0 +1,80 @@
+{
+  "schema": "actuation.r4-frozen-stores/v1",
+  "source_revision": "1c862c6bf58478adf6842a090214906dd2337001",
+  "source_corpus": "fixtures/migration/scenarios.json",
+  "standing": "Exact extraction of already frozen R1 files; no recapture",
+  "stores": [
+    {
+      "path": "stores/01.jsonl",
+      "sha256": "1009dfc27f2e2ed5aacefe63552f7b4598d2cb920ab0f509cc2264542b616483",
+      "source_case": "durable-identity-cursor-usage-lifecycle",
+      "source_step": 0,
+      "source_label": "open",
+      "original_name": "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl",
+      "stream_ref": "stream:oracle/雪 !'()*"
+    },
+    {
+      "path": "stores/02.jsonl",
+      "sha256": "d396e10e45fd9074ed950aaf6e5b5cd67af51b310fb64327af8055f3987ced89",
+      "source_case": "durable-identity-cursor-usage-lifecycle",
+      "source_step": 3,
+      "source_label": "record",
+      "original_name": "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl",
+      "stream_ref": "stream:oracle/雪 !'()*"
+    },
+    {
+      "path": "stores/03.jsonl",
+      "sha256": "6b15e416db1bd0f770a5fa3331f8ef07f1349f34a9e89e7e7bb3fb92008518aa",
+      "source_case": "durable-identity-cursor-usage-lifecycle",
+      "source_step": 6,
+      "source_label": "declared-custom",
+      "original_name": "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl",
+      "stream_ref": "stream:oracle/雪 !'()*"
+    },
+    {
+      "path": "stores/04.jsonl",
+      "sha256": "7d93e44b108ae4e9382eac798c4d5f51aade6300f9749e934f828660cdd0fc4c",
+      "source_case": "durable-identity-cursor-usage-lifecycle",
+      "source_step": 7,
+      "source_label": "usage",
+      "original_name": "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl",
+      "stream_ref": "stream:oracle/雪 !'()*"
+    },
+    {
+      "path": "stores/05.jsonl",
+      "sha256": "9b99b234c7153777ac99d0aa087dddd09092a2415d2114cb374317c51bdbe0b4",
+      "source_case": "durable-identity-cursor-usage-lifecycle",
+      "source_step": 11,
+      "source_label": "close",
+      "original_name": "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl",
+      "stream_ref": "stream:oracle/雪 !'()*"
+    },
+    {
+      "path": "stores/06.jsonl",
+      "sha256": "ed3ff923e4c25d31964af860d6aab4bd0753c6b41b1cd455daf7e3870ff49783",
+      "source_case": "durable-interrupted",
+      "source_step": 2,
+      "source_label": "close",
+      "original_name": "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl",
+      "stream_ref": "stream:oracle/雪 !'()*"
+    },
+    {
+      "path": "stores/07.jsonl",
+      "sha256": "01a88ea1ec89f7f2bb675d53f2accd8991784c42f97489c93ef4ac279bff2c00",
+      "source_case": "durable-cancelled",
+      "source_step": 2,
+      "source_label": "close",
+      "original_name": "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl",
+      "stream_ref": "stream:oracle/雪 !'()*"
+    },
+    {
+      "path": "stores/08.jsonl",
+      "sha256": "22b7fcfb5ca635d7bce1b886364acfadff4493aacd310935119b596256bd24f9",
+      "source_case": "durable-implicit-Direct-open",
+      "source_step": 0,
+      "source_label": "record",
+      "original_name": "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl",
+      "stream_ref": "stream:oracle/雪 !'()*"
+    }
+  ]
+}

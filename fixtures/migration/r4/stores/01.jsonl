@@ -1,0 +1,1 @@
+{"schema":"actuation.stream/v1","stream_ref":"stream:oracle/雪 !'()*","actuation_ref":"actuation:oracle","agency_ref":"agency:oracle","agent_session_ref":"session:oracle","lifecycle":{"state":"open","started_at":"2026-09-10T00:00:00.000Z"},"cursor":{"last_sequence":0,"next_sequence":1},"events":[],"world_binding_ref":"binding:oracle","provenance":["source:oracle"]}
