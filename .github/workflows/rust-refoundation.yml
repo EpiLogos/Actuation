@@ -32,7 +32,8 @@ jobs:
           git rev-parse HEAD > migration-evidence/source-commit.txt
           git ls-tree -r HEAD > migration-evidence/source-tree.txt
           git archive --format=tar.gz HEAD > migration-evidence/source.tar.gz
-          sha256sum migration-evidence/source.tar.gz > migration-evidence/source.tar.gz.sha256
+          git bundle create migration-evidence/source.bundle HEAD
+          sha256sum migration-evidence/source.tar.gz migration-evidence/source.bundle > migration-evidence/SHA256SUMS
       - name: Existing native product and Skills
         shell: bash
         run: |
@@ -50,7 +51,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node --test scripts/migration/recorder.test.mjs
+          node --test scripts/migration/check-recorder.mjs
           node scripts/migration/verify-corpus.mjs | tee migration-evidence/corpus-integrity.json
           node scripts/migration/parity.mjs | tee migration-evidence/pure-parity.json
           node scripts/migration/scenario-parity.mjs | tee migration-evidence/scenario-parity.json
@@ -88,7 +89,7 @@ jobs:
             exit 0
           fi
           mkdir -p fixtures/migration docs/rust-refoundation
-          node --test scripts/migration/recorder.test.mjs
+          node --test scripts/migration/check-recorder.mjs
           node scripts/migration/build-ledger.mjs docs/rust-refoundation/ledger.json
           node scripts/migration/capture.mjs fixtures/migration/oracle.json
           node scripts/migration/capture-scenarios.mjs fixtures/migration/oracle.json fixtures/migration/scenarios.json
@@ -110,7 +111,9 @@ jobs:
           mkdir -p capture-evidence
           git rev-parse HEAD > capture-evidence/source-commit.txt
           git archive --format=tar.gz HEAD > capture-evidence/source.tar.gz
+          git bundle create capture-evidence/source.bundle HEAD
           if test -d fixtures/migration; then cp -R fixtures/migration capture-evidence/fixtures; fi
+          sha256sum capture-evidence/source.tar.gz capture-evidence/source.bundle > capture-evidence/SHA256SUMS
       - uses: actions/upload-artifact@v4
         if: always()
         with:

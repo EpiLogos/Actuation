@@ -3,11 +3,13 @@
 The authority is committed fixture data from source `1c862c6bf58478adf6842a090214906dd2337001`, not a freshly generated expectation. `SHA256SUMS` freezes public JSON cases, state/effect/CLI scenarios, the exact source ledger and historical Foundation gate. Capture refuses changed original source and refuses overwriting an existing output.
 
 ```sh
-node --test scripts/migration/recorder.test.mjs
+node --test scripts/migration/check-recorder.mjs
 node scripts/migration/verify-corpus.mjs
 node scripts/migration/parity.mjs
 node scripts/migration/scenario-parity.mjs
 ```
+
+The recorder check is migration tooling, not a native product suite. It deliberately does not use the `.test.mjs` native-suite suffix. The original product's tracked-tree suite-discovery invariant remains unchanged and continues to reject forgotten native suites.
 
 The pure runner discovers each committed operation, checks total ordered responses, success/refusal, and deep semantic JSON. It refuses zero cases. Phase filters select R2–R6. A Rust test executable may consume JSONL requests `{id,operation,args}` and return `{id,ok,value|error}`:
 
