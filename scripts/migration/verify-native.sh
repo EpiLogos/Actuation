@@ -19,3 +19,5 @@ cargo clippy --locked --workspace --all-targets -- -D warnings 2>&1 | tee "$evid
 cargo test --locked --workspace 2>&1 | tee "$evidence/tests.log"
 cargo build --locked --examples
 node scripts/migration/parity.mjs --phase R2 -- target/debug/examples/constitutional-oracle | tee "$evidence/R2-parity.json"
+node scripts/migration/verify-runtime-corpus.mjs | tee "$evidence/R3-corpus-integrity.json"
+node scripts/migration/parity.mjs --phase R3 -- target/debug/examples/runtime-oracle | tee "$evidence/R3-parity.json"

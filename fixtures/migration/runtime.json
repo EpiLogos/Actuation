@@ -1,0 +1,2923 @@
+{
+  "schema": "actuation.runtime-extraction/v1",
+  "source_revision": "1c862c6bf58478adf6842a090214906dd2337001",
+  "evidence_class": "D",
+  "cases": [
+    {
+      "id": "zero-tool",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "content": "done",
+            "capabilityCalls": []
+          }
+        ],
+        "request": {
+          "taskId": "zero-tool",
+          "input": "task input",
+          "runId": "trace:zero-tool"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "completed",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:zero-tool",
+          "iterations": 1,
+          "modelCalls": 1,
+          "capabilityCalls": 0,
+          "outcome": "done",
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            },
+            {
+              "role": "assistant",
+              "content": "done",
+              "capabilityCalls": []
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:zero-tool:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:zero-tool",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "zero-tool"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:zero-tool:classic:1",
+            "event_type": "run_completed",
+            "run_id": "trace:zero-tool",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 1,
+              "outcome": "done"
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "zero-tool",
+                "input": "task input",
+                "runId": "trace:zero-tool",
+                "id": "zero-tool",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": "done",
+                  "capabilityCalls": []
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "zero-tool",
+                "input": "task input",
+                "runId": "trace:zero-tool",
+                "id": "zero-tool",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "two-tools",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "content": "tools",
+            "capabilityCalls": [
+              {
+                "id": "c1",
+                "name": "read",
+                "args": {
+                  "path": "a"
+                }
+              },
+              {
+                "name": "write",
+                "args": {
+                  "path": "b"
+                }
+              }
+            ]
+          },
+          {
+            "content": "done"
+          }
+        ],
+        "capabilities": {
+          "read": {
+            "content": "a"
+          },
+          "write": {
+            "ok": true
+          }
+        },
+        "request": {
+          "taskId": "two-tools",
+          "input": "task input",
+          "runId": "trace:two-tools"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "completed",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:two-tools",
+          "iterations": 2,
+          "modelCalls": 2,
+          "capabilityCalls": 2,
+          "outcome": "done",
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            },
+            {
+              "role": "assistant",
+              "content": "tools",
+              "capabilityCalls": [
+                {
+                  "id": "c1",
+                  "name": "read",
+                  "args": {
+                    "path": "a"
+                  }
+                },
+                {
+                  "name": "write",
+                  "args": {
+                    "path": "b"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "capability",
+              "name": "read",
+              "callId": "c1",
+              "result": {
+                "content": "a"
+              }
+            },
+            {
+              "role": "capability",
+              "name": "write",
+              "callId": null,
+              "result": {
+                "ok": true
+              }
+            },
+            {
+              "role": "assistant",
+              "content": "done"
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:two-tools:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:two-tools",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "two-tools"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:two-tools:classic:1",
+            "event_type": "run_completed",
+            "run_id": "trace:two-tools",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 2,
+              "outcome": "done"
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "two-tools",
+                "input": "task input",
+                "runId": "trace:two-tools",
+                "id": "two-tools",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "capability",
+            "call": {
+              "name": "read",
+              "args": {
+                "path": "a"
+              },
+              "request": {
+                "taskId": "two-tools",
+                "input": "task input",
+                "runId": "trace:two-tools",
+                "id": "two-tools",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "capability",
+            "call": {
+              "name": "write",
+              "args": {
+                "path": "b"
+              },
+              "request": {
+                "taskId": "two-tools",
+                "input": "task input",
+                "runId": "trace:two-tools",
+                "id": "two-tools",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": "tools",
+                  "capabilityCalls": [
+                    {
+                      "id": "c1",
+                      "name": "read",
+                      "args": {
+                        "path": "a"
+                      }
+                    },
+                    {
+                      "name": "write",
+                      "args": {
+                        "path": "b"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "role": "capability",
+                  "name": "read",
+                  "callId": "c1",
+                  "result": {
+                    "content": "a"
+                  }
+                },
+                {
+                  "role": "capability",
+                  "name": "write",
+                  "callId": null,
+                  "result": {
+                    "ok": true
+                  }
+                }
+              ],
+              "iteration": 2,
+              "request": {
+                "taskId": "two-tools",
+                "input": "task input",
+                "runId": "trace:two-tools",
+                "id": "two-tools",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": "tools",
+                  "capabilityCalls": [
+                    {
+                      "id": "c1",
+                      "name": "read",
+                      "args": {
+                        "path": "a"
+                      }
+                    },
+                    {
+                      "name": "write",
+                      "args": {
+                        "path": "b"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "role": "capability",
+                  "name": "read",
+                  "callId": "c1",
+                  "result": {
+                    "content": "a"
+                  }
+                },
+                {
+                  "role": "capability",
+                  "name": "write",
+                  "callId": null,
+                  "result": {
+                    "ok": true
+                  }
+                },
+                {
+                  "role": "assistant",
+                  "content": "done"
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "two-tools",
+                "input": "task input",
+                "runId": "trace:two-tools",
+                "id": "two-tools",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "failed-tool-recovery",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "capabilityCalls": [
+              {
+                "name": "fail"
+              }
+            ]
+          },
+          {
+            "content": "recovered"
+          }
+        ],
+        "capabilities": {
+          "fail": {
+            "throw": "capability failed"
+          }
+        },
+        "request": {
+          "taskId": "failed-tool-recovery",
+          "input": "task input",
+          "runId": "trace:failed-tool-recovery"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "completed",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:failed-tool-recovery",
+          "iterations": 2,
+          "modelCalls": 2,
+          "capabilityCalls": 1,
+          "outcome": "recovered",
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            },
+            {
+              "role": "assistant",
+              "capabilityCalls": [
+                {
+                  "name": "fail"
+                }
+              ]
+            },
+            {
+              "role": "capability",
+              "name": "fail",
+              "callId": null,
+              "result": {
+                "ok": false,
+                "error": "capability failed"
+              }
+            },
+            {
+              "role": "assistant",
+              "content": "recovered"
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:failed-tool-recovery:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:failed-tool-recovery",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "failed-tool-recovery"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:failed-tool-recovery:classic:1",
+            "event_type": "run_completed",
+            "run_id": "trace:failed-tool-recovery",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 2,
+              "outcome": "recovered"
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "failed-tool-recovery",
+                "input": "task input",
+                "runId": "trace:failed-tool-recovery",
+                "id": "failed-tool-recovery",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "capability",
+            "call": {
+              "name": "fail",
+              "args": {},
+              "request": {
+                "taskId": "failed-tool-recovery",
+                "input": "task input",
+                "runId": "trace:failed-tool-recovery",
+                "id": "failed-tool-recovery",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "capabilityCalls": [
+                    {
+                      "name": "fail"
+                    }
+                  ]
+                },
+                {
+                  "role": "capability",
+                  "name": "fail",
+                  "callId": null,
+                  "result": {
+                    "ok": false,
+                    "error": "capability failed"
+                  }
+                }
+              ],
+              "iteration": 2,
+              "request": {
+                "taskId": "failed-tool-recovery",
+                "input": "task input",
+                "runId": "trace:failed-tool-recovery",
+                "id": "failed-tool-recovery",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "capabilityCalls": [
+                    {
+                      "name": "fail"
+                    }
+                  ]
+                },
+                {
+                  "role": "capability",
+                  "name": "fail",
+                  "callId": null,
+                  "result": {
+                    "ok": false,
+                    "error": "capability failed"
+                  }
+                },
+                {
+                  "role": "assistant",
+                  "content": "recovered"
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "failed-tool-recovery",
+                "input": "task input",
+                "runId": "trace:failed-tool-recovery",
+                "id": "failed-tool-recovery",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "tool-returns-failure",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "capabilityCalls": [
+              {
+                "name": "fail"
+              }
+            ]
+          },
+          {
+            "content": "recovered"
+          }
+        ],
+        "capabilities": {
+          "fail": {
+            "ok": false,
+            "error": "truthful failure"
+          }
+        },
+        "request": {
+          "taskId": "tool-returns-failure",
+          "input": "task input",
+          "runId": "trace:tool-returns-failure"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "completed",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:tool-returns-failure",
+          "iterations": 2,
+          "modelCalls": 2,
+          "capabilityCalls": 1,
+          "outcome": "recovered",
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            },
+            {
+              "role": "assistant",
+              "capabilityCalls": [
+                {
+                  "name": "fail"
+                }
+              ]
+            },
+            {
+              "role": "capability",
+              "name": "fail",
+              "callId": null,
+              "result": {
+                "ok": false,
+                "error": "truthful failure"
+              }
+            },
+            {
+              "role": "assistant",
+              "content": "recovered"
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:tool-returns-failure:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:tool-returns-failure",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "tool-returns-failure"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:tool-returns-failure:classic:1",
+            "event_type": "run_completed",
+            "run_id": "trace:tool-returns-failure",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 2,
+              "outcome": "recovered"
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "tool-returns-failure",
+                "input": "task input",
+                "runId": "trace:tool-returns-failure",
+                "id": "tool-returns-failure",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "capability",
+            "call": {
+              "name": "fail",
+              "args": {},
+              "request": {
+                "taskId": "tool-returns-failure",
+                "input": "task input",
+                "runId": "trace:tool-returns-failure",
+                "id": "tool-returns-failure",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "capabilityCalls": [
+                    {
+                      "name": "fail"
+                    }
+                  ]
+                },
+                {
+                  "role": "capability",
+                  "name": "fail",
+                  "callId": null,
+                  "result": {
+                    "ok": false,
+                    "error": "truthful failure"
+                  }
+                }
+              ],
+              "iteration": 2,
+              "request": {
+                "taskId": "tool-returns-failure",
+                "input": "task input",
+                "runId": "trace:tool-returns-failure",
+                "id": "tool-returns-failure",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "capabilityCalls": [
+                    {
+                      "name": "fail"
+                    }
+                  ]
+                },
+                {
+                  "role": "capability",
+                  "name": "fail",
+                  "callId": null,
+                  "result": {
+                    "ok": false,
+                    "error": "truthful failure"
+                  }
+                },
+                {
+                  "role": "assistant",
+                  "content": "recovered"
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "tool-returns-failure",
+                "input": "task input",
+                "runId": "trace:tool-returns-failure",
+                "id": "tool-returns-failure",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "follow-up",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "content": "first"
+          },
+          {
+            "content": "second"
+          }
+        ],
+        "human": [
+          "steer"
+        ],
+        "request": {
+          "taskId": "follow-up",
+          "input": "task input",
+          "runId": "trace:follow-up"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "completed",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:follow-up",
+          "iterations": 2,
+          "modelCalls": 2,
+          "capabilityCalls": 0,
+          "outcome": "second",
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            },
+            {
+              "role": "assistant",
+              "content": "first"
+            },
+            {
+              "role": "user",
+              "content": "steer"
+            },
+            {
+              "role": "assistant",
+              "content": "second"
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:follow-up:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:follow-up",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "follow-up"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:follow-up:classic:1",
+            "event_type": "run_completed",
+            "run_id": "trace:follow-up",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 2,
+              "outcome": "second"
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "follow-up",
+                "input": "task input",
+                "runId": "trace:follow-up",
+                "id": "follow-up",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": "first"
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "follow-up",
+                "input": "task input",
+                "runId": "trace:follow-up",
+                "id": "follow-up",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": "first"
+                },
+                {
+                  "role": "user",
+                  "content": "steer"
+                }
+              ],
+              "iteration": 2,
+              "request": {
+                "taskId": "follow-up",
+                "input": "task input",
+                "runId": "trace:follow-up",
+                "id": "follow-up",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": "first"
+                },
+                {
+                  "role": "user",
+                  "content": "steer"
+                },
+                {
+                  "role": "assistant",
+                  "content": "second"
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "follow-up",
+                "input": "task input",
+                "runId": "trace:follow-up",
+                "id": "follow-up",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "false-is-follow-up",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "content": "first"
+          },
+          {
+            "content": "second"
+          }
+        ],
+        "human": [
+          false
+        ],
+        "request": {
+          "taskId": "false-is-follow-up",
+          "input": "task input",
+          "runId": "trace:false-is-follow-up"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "completed",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:false-is-follow-up",
+          "iterations": 2,
+          "modelCalls": 2,
+          "capabilityCalls": 0,
+          "outcome": "second",
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            },
+            {
+              "role": "assistant",
+              "content": "first"
+            },
+            {
+              "role": "user",
+              "content": false
+            },
+            {
+              "role": "assistant",
+              "content": "second"
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:false-is-follow-up:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:false-is-follow-up",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "false-is-follow-up"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:false-is-follow-up:classic:1",
+            "event_type": "run_completed",
+            "run_id": "trace:false-is-follow-up",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 2,
+              "outcome": "second"
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "false-is-follow-up",
+                "input": "task input",
+                "runId": "trace:false-is-follow-up",
+                "id": "false-is-follow-up",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": "first"
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "false-is-follow-up",
+                "input": "task input",
+                "runId": "trace:false-is-follow-up",
+                "id": "false-is-follow-up",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": "first"
+                },
+                {
+                  "role": "user",
+                  "content": false
+                }
+              ],
+              "iteration": 2,
+              "request": {
+                "taskId": "false-is-follow-up",
+                "input": "task input",
+                "runId": "trace:false-is-follow-up",
+                "id": "false-is-follow-up",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": "first"
+                },
+                {
+                  "role": "user",
+                  "content": false
+                },
+                {
+                  "role": "assistant",
+                  "content": "second"
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "false-is-follow-up",
+                "input": "task input",
+                "runId": "trace:false-is-follow-up",
+                "id": "false-is-follow-up",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "empty-string-is-follow-up",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "content": "first"
+          },
+          {
+            "content": "second"
+          }
+        ],
+        "human": [
+          ""
+        ],
+        "request": {
+          "taskId": "empty-string-is-follow-up",
+          "input": "task input",
+          "runId": "trace:empty-string-is-follow-up"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "completed",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:empty-string-is-follow-up",
+          "iterations": 2,
+          "modelCalls": 2,
+          "capabilityCalls": 0,
+          "outcome": "second",
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            },
+            {
+              "role": "assistant",
+              "content": "first"
+            },
+            {
+              "role": "user",
+              "content": ""
+            },
+            {
+              "role": "assistant",
+              "content": "second"
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:empty-string-is-follow-up:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:empty-string-is-follow-up",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "empty-string-is-follow-up"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:empty-string-is-follow-up:classic:1",
+            "event_type": "run_completed",
+            "run_id": "trace:empty-string-is-follow-up",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 2,
+              "outcome": "second"
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "empty-string-is-follow-up",
+                "input": "task input",
+                "runId": "trace:empty-string-is-follow-up",
+                "id": "empty-string-is-follow-up",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": "first"
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "empty-string-is-follow-up",
+                "input": "task input",
+                "runId": "trace:empty-string-is-follow-up",
+                "id": "empty-string-is-follow-up",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": "first"
+                },
+                {
+                  "role": "user",
+                  "content": ""
+                }
+              ],
+              "iteration": 2,
+              "request": {
+                "taskId": "empty-string-is-follow-up",
+                "input": "task input",
+                "runId": "trace:empty-string-is-follow-up",
+                "id": "empty-string-is-follow-up",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": "first"
+                },
+                {
+                  "role": "user",
+                  "content": ""
+                },
+                {
+                  "role": "assistant",
+                  "content": "second"
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "empty-string-is-follow-up",
+                "input": "task input",
+                "runId": "trace:empty-string-is-follow-up",
+                "id": "empty-string-is-follow-up",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "max-step-exhaustion",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "capabilityCalls": [
+              {
+                "name": "again"
+              }
+            ]
+          }
+        ],
+        "capabilities": {
+          "again": {
+            "ok": true
+          }
+        },
+        "request": {
+          "taskId": "max-step-exhaustion",
+          "input": "task input",
+          "runId": "trace:max-step-exhaustion",
+          "maxSteps": 1
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "exhausted",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:max-step-exhaustion",
+          "iterations": 1,
+          "modelCalls": 1,
+          "capabilityCalls": 1,
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            },
+            {
+              "role": "assistant",
+              "capabilityCalls": [
+                {
+                  "name": "again"
+                }
+              ]
+            },
+            {
+              "role": "capability",
+              "name": "again",
+              "callId": null,
+              "result": {
+                "ok": true
+              }
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:max-step-exhaustion:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:max-step-exhaustion",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "max-step-exhaustion"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:max-step-exhaustion:classic:1",
+            "event_type": "run_exhausted",
+            "run_id": "trace:max-step-exhaustion",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "max_steps": 1
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "max-step-exhaustion",
+                "input": "task input",
+                "runId": "trace:max-step-exhaustion",
+                "maxSteps": 1,
+                "id": "max-step-exhaustion",
+                "successConditions": []
+              }
+            }
+          },
+          {
+            "method": "capability",
+            "call": {
+              "name": "again",
+              "args": {},
+              "request": {
+                "taskId": "max-step-exhaustion",
+                "input": "task input",
+                "runId": "trace:max-step-exhaustion",
+                "maxSteps": 1,
+                "id": "max-step-exhaustion",
+                "successConditions": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "cancel-before-start",
+      "kind": "loop",
+      "input": {
+        "aborted": true,
+        "request": {
+          "taskId": "cancel-before-start",
+          "input": "task input",
+          "runId": "trace:cancel-before-start"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "cancelled",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:cancel-before-start",
+          "iterations": 0,
+          "modelCalls": 0,
+          "capabilityCalls": 0,
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:cancel-before-start:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:cancel-before-start",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "cancel-before-start"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:cancel-before-start:classic:1",
+            "event_type": "run_cancelled",
+            "run_id": "trace:cancel-before-start",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 0
+            }
+          }
+        ],
+        "calls": []
+      }
+    },
+    {
+      "id": "cancel-after-model-before-tool",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "capabilityCalls": [
+              {
+                "name": "never"
+              }
+            ]
+          }
+        ],
+        "abort_after_model": true,
+        "request": {
+          "taskId": "cancel-after-model-before-tool",
+          "input": "task input",
+          "runId": "trace:cancel-after-model-before-tool"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "cancelled",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:cancel-after-model-before-tool",
+          "iterations": 1,
+          "modelCalls": 1,
+          "capabilityCalls": 0,
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            },
+            {
+              "role": "assistant",
+              "capabilityCalls": [
+                {
+                  "name": "never"
+                }
+              ]
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:cancel-after-model-before-tool:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:cancel-after-model-before-tool",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "cancel-after-model-before-tool"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:cancel-after-model-before-tool:classic:1",
+            "event_type": "run_cancelled",
+            "run_id": "trace:cancel-after-model-before-tool",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 1,
+              "during": "capability"
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "cancel-after-model-before-tool",
+                "input": "task input",
+                "runId": "trace:cancel-after-model-before-tool",
+                "id": "cancel-after-model-before-tool",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "host-abort",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "throw": "provider interrupted",
+            "error_name": "AbortError"
+          }
+        ],
+        "request": {
+          "taskId": "host-abort",
+          "input": "task input",
+          "runId": "trace:host-abort"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "cancelled",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:host-abort",
+          "iterations": 1,
+          "modelCalls": 0,
+          "capabilityCalls": 0,
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:host-abort:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:host-abort",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "host-abort"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:host-abort:classic:1",
+            "event_type": "run_cancelled",
+            "run_id": "trace:host-abort",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 1
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "host-abort",
+                "input": "task input",
+                "runId": "trace:host-abort",
+                "id": "host-abort",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "model-failure",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "throw": "provider unavailable"
+          }
+        ],
+        "request": {
+          "taskId": "model-failure",
+          "input": "task input",
+          "runId": "trace:model-failure"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "failed",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:model-failure",
+          "iterations": 1,
+          "modelCalls": 0,
+          "capabilityCalls": 0,
+          "error": "provider unavailable",
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:model-failure:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:model-failure",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "model-failure"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:model-failure:classic:1",
+            "event_type": "run_failed",
+            "run_id": "trace:model-failure",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 1,
+              "error": "provider unavailable"
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "model-failure",
+                "input": "task input",
+                "runId": "trace:model-failure",
+                "id": "model-failure",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "human-failure",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "content": "done"
+          }
+        ],
+        "human": [
+          {
+            "throw": "input failed"
+          }
+        ],
+        "request": {
+          "taskId": "human-failure",
+          "input": "task input",
+          "runId": "trace:human-failure"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "failed",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:human-failure",
+          "iterations": 1,
+          "modelCalls": 1,
+          "capabilityCalls": 0,
+          "error": "input failed",
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            },
+            {
+              "role": "assistant",
+              "content": "done"
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:human-failure:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:human-failure",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "human-failure"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:human-failure:classic:1",
+            "event_type": "run_failed",
+            "run_id": "trace:human-failure",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 1,
+              "error": "input failed"
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "human-failure",
+                "input": "task input",
+                "runId": "trace:human-failure",
+                "id": "human-failure",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": "done"
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "human-failure",
+                "input": "task input",
+                "runId": "trace:human-failure",
+                "id": "human-failure",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "human-abort",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "content": "done"
+          }
+        ],
+        "human": [
+          {
+            "throw": "input cancelled",
+            "error_name": "AbortError"
+          }
+        ],
+        "request": {
+          "taskId": "human-abort",
+          "input": "task input",
+          "runId": "trace:human-abort"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "cancelled",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:human-abort",
+          "iterations": 1,
+          "modelCalls": 1,
+          "capabilityCalls": 0,
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            },
+            {
+              "role": "assistant",
+              "content": "done"
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:human-abort:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:human-abort",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "human-abort"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:human-abort:classic:1",
+            "event_type": "run_cancelled",
+            "run_id": "trace:human-abort",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 1
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "human-abort",
+                "input": "task input",
+                "runId": "trace:human-abort",
+                "id": "human-abort",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": "done"
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "human-abort",
+                "input": "task input",
+                "runId": "trace:human-abort",
+                "id": "human-abort",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "null-model",
+      "kind": "loop",
+      "input": {
+        "models": [
+          null
+        ],
+        "request": {
+          "taskId": "null-model",
+          "input": "task input",
+          "runId": "trace:null-model"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "completed",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:null-model",
+          "iterations": 1,
+          "modelCalls": 1,
+          "capabilityCalls": 0,
+          "outcome": null,
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            },
+            {
+              "role": "assistant"
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:null-model:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:null-model",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "null-model"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:null-model:classic:1",
+            "event_type": "run_completed",
+            "run_id": "trace:null-model",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 1,
+              "outcome": null
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "null-model",
+                "input": "task input",
+                "runId": "trace:null-model",
+                "id": "null-model",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant"
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "null-model",
+                "input": "task input",
+                "runId": "trace:null-model",
+                "id": "null-model",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "null-content-keeps-result",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "content": null,
+            "opaque": {
+              "native": "trace"
+            }
+          }
+        ],
+        "request": {
+          "taskId": "null-content-keeps-result",
+          "input": "task input",
+          "runId": "trace:null-content-keeps-result"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "completed",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:null-content-keeps-result",
+          "iterations": 1,
+          "modelCalls": 1,
+          "capabilityCalls": 0,
+          "outcome": {
+            "content": null,
+            "opaque": {
+              "native": "trace"
+            }
+          },
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            },
+            {
+              "role": "assistant",
+              "content": null,
+              "opaque": {
+                "native": "trace"
+              }
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:null-content-keeps-result:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:null-content-keeps-result",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "null-content-keeps-result"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:null-content-keeps-result:classic:1",
+            "event_type": "run_completed",
+            "run_id": "trace:null-content-keeps-result",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 1,
+              "outcome": {
+                "content": null,
+                "opaque": {
+                  "native": "trace"
+                }
+              }
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "null-content-keeps-result",
+                "input": "task input",
+                "runId": "trace:null-content-keeps-result",
+                "id": "null-content-keeps-result",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "assistant",
+                  "content": null,
+                  "opaque": {
+                    "native": "trace"
+                  }
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "null-content-keeps-result",
+                "input": "task input",
+                "runId": "trace:null-content-keeps-result",
+                "id": "null-content-keeps-result",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "caller-role-preserved",
+      "kind": "loop",
+      "input": {
+        "models": [
+          {
+            "role": "native-assistant",
+            "content": "done"
+          }
+        ],
+        "request": {
+          "taskId": "caller-role-preserved",
+          "input": "task input",
+          "runId": "trace:caller-role-preserved"
+        }
+      },
+      "expected": {
+        "result": {
+          "status": "completed",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:caller-role-preserved",
+          "iterations": 1,
+          "modelCalls": 1,
+          "capabilityCalls": 0,
+          "outcome": "done",
+          "history": [
+            {
+              "role": "user",
+              "content": "task input"
+            },
+            {
+              "role": "native-assistant",
+              "content": "done"
+            }
+          ]
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:caller-role-preserved:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:caller-role-preserved",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "caller-role-preserved"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:caller-role-preserved:classic:1",
+            "event_type": "run_completed",
+            "run_id": "trace:caller-role-preserved",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 1,
+              "outcome": "done"
+            }
+          }
+        ],
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                }
+              ],
+              "iteration": 1,
+              "request": {
+                "taskId": "caller-role-preserved",
+                "input": "task input",
+                "runId": "trace:caller-role-preserved",
+                "id": "caller-role-preserved",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          },
+          {
+            "method": "human",
+            "call": {
+              "history": [
+                {
+                  "role": "user",
+                  "content": "task input"
+                },
+                {
+                  "role": "native-assistant",
+                  "content": "done"
+                }
+              ],
+              "kind": "follow_up",
+              "request": {
+                "taskId": "caller-role-preserved",
+                "input": "task input",
+                "runId": "trace:caller-role-preserved",
+                "id": "caller-role-preserved",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "carrier-{}",
+      "kind": "carrier",
+      "input": {
+        "carrier": {},
+        "request": {
+          "taskId": "carrier",
+          "input": "x",
+          "id": "carrier",
+          "successConditions": [],
+          "maxSteps": 64
+        },
+        "payload": {
+          "kind": "inherited-kind",
+          "opaque": {
+            "ref": "caller-owned"
+          },
+          "request": "cannot-shadow",
+          "signal": "cannot-shadow"
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "content": "model"
+          }
+        },
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "kind": "inherited-kind",
+              "opaque": {
+                "ref": "caller-owned"
+              },
+              "request": {
+                "taskId": "carrier",
+                "input": "x",
+                "id": "carrier",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "carrier-{\"kind\":\"model\"}",
+      "kind": "carrier",
+      "input": {
+        "carrier": {
+          "kind": "model"
+        },
+        "request": {
+          "taskId": "carrier",
+          "input": "x",
+          "id": "carrier",
+          "successConditions": [],
+          "maxSteps": 64
+        },
+        "payload": {
+          "kind": "inherited-kind",
+          "opaque": {
+            "ref": "caller-owned"
+          },
+          "request": "cannot-shadow",
+          "signal": "cannot-shadow"
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "content": "model"
+          }
+        },
+        "calls": [
+          {
+            "method": "model",
+            "call": {
+              "kind": "inherited-kind",
+              "opaque": {
+                "ref": "caller-owned"
+              },
+              "request": {
+                "taskId": "carrier",
+                "input": "x",
+                "id": "carrier",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "carrier-{\"kind\":\"tool\",\"name\":\"read\",\"args\":{\"path\":\"a\"}}",
+      "kind": "carrier",
+      "input": {
+        "carrier": {
+          "kind": "tool",
+          "name": "read",
+          "args": {
+            "path": "a"
+          }
+        },
+        "request": {
+          "taskId": "carrier",
+          "input": "x",
+          "id": "carrier",
+          "successConditions": [],
+          "maxSteps": 64
+        },
+        "payload": {
+          "kind": "inherited-kind",
+          "opaque": {
+            "ref": "caller-owned"
+          },
+          "request": "cannot-shadow",
+          "signal": "cannot-shadow"
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "ok": true
+          }
+        },
+        "calls": [
+          {
+            "method": "capability",
+            "call": {
+              "kind": "inherited-kind",
+              "opaque": {
+                "ref": "caller-owned"
+              },
+              "request": {
+                "taskId": "carrier",
+                "input": "x",
+                "id": "carrier",
+                "successConditions": [],
+                "maxSteps": 64
+              },
+              "name": "read",
+              "args": {
+                "path": "a"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "carrier-{\"kind\":\"capability\",\"name\":\"write\"}",
+      "kind": "carrier",
+      "input": {
+        "carrier": {
+          "kind": "capability",
+          "name": "write"
+        },
+        "request": {
+          "taskId": "carrier",
+          "input": "x",
+          "id": "carrier",
+          "successConditions": [],
+          "maxSteps": 64
+        },
+        "payload": {
+          "kind": "inherited-kind",
+          "opaque": {
+            "ref": "caller-owned"
+          },
+          "request": "cannot-shadow",
+          "signal": "cannot-shadow"
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "ok": true
+          }
+        },
+        "calls": [
+          {
+            "method": "capability",
+            "call": {
+              "kind": "inherited-kind",
+              "opaque": {
+                "ref": "caller-owned"
+              },
+              "request": {
+                "taskId": "carrier",
+                "input": "x",
+                "id": "carrier",
+                "successConditions": [],
+                "maxSteps": 64
+              },
+              "name": "write",
+              "args": {}
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "carrier-{\"kind\":\"human\"}",
+      "kind": "carrier",
+      "input": {
+        "carrier": {
+          "kind": "human"
+        },
+        "request": {
+          "taskId": "carrier",
+          "input": "x",
+          "id": "carrier",
+          "successConditions": [],
+          "maxSteps": 64
+        },
+        "payload": {
+          "kind": "inherited-kind",
+          "opaque": {
+            "ref": "caller-owned"
+          },
+          "request": "cannot-shadow",
+          "signal": "cannot-shadow"
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": "human"
+        },
+        "calls": [
+          {
+            "method": "human",
+            "call": {
+              "kind": "inherited-kind",
+              "opaque": {
+                "ref": "caller-owned"
+              },
+              "request": {
+                "taskId": "carrier",
+                "input": "x",
+                "id": "carrier",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "carrier-{\"kind\":\"human\",\"inputKind\":\"follow_up\"}",
+      "kind": "carrier",
+      "input": {
+        "carrier": {
+          "kind": "human",
+          "inputKind": "follow_up"
+        },
+        "request": {
+          "taskId": "carrier",
+          "input": "x",
+          "id": "carrier",
+          "successConditions": [],
+          "maxSteps": 64
+        },
+        "payload": {
+          "kind": "inherited-kind",
+          "opaque": {
+            "ref": "caller-owned"
+          },
+          "request": "cannot-shadow",
+          "signal": "cannot-shadow"
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": "human"
+        },
+        "calls": [
+          {
+            "method": "human",
+            "call": {
+              "kind": "follow_up",
+              "opaque": {
+                "ref": "caller-owned"
+              },
+              "request": {
+                "taskId": "carrier",
+                "input": "x",
+                "id": "carrier",
+                "successConditions": [],
+                "maxSteps": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "carrier-{\"kind\":\"environment\",\"input\":{\"path\":\"a\"}}",
+      "kind": "carrier",
+      "input": {
+        "carrier": {
+          "kind": "environment",
+          "input": {
+            "path": "a"
+          }
+        },
+        "request": {
+          "taskId": "carrier",
+          "input": "x",
+          "id": "carrier",
+          "successConditions": [],
+          "maxSteps": 64
+        },
+        "payload": {
+          "kind": "inherited-kind",
+          "opaque": {
+            "ref": "caller-owned"
+          },
+          "request": "cannot-shadow",
+          "signal": "cannot-shadow"
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "context": "environment"
+          }
+        },
+        "calls": [
+          {
+            "method": "context",
+            "call": {
+              "kind": "environment",
+              "opaque": {
+                "ref": "caller-owned"
+              },
+              "request": {
+                "taskId": "carrier",
+                "input": "x",
+                "id": "carrier",
+                "successConditions": [],
+                "maxSteps": 64
+              },
+              "input": {
+                "path": "a"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "carrier-{\"kind\":\"artifact\",\"input\":\"artifact:1\"}",
+      "kind": "carrier",
+      "input": {
+        "carrier": {
+          "kind": "artifact",
+          "input": "artifact:1"
+        },
+        "request": {
+          "taskId": "carrier",
+          "input": "x",
+          "id": "carrier",
+          "successConditions": [],
+          "maxSteps": 64
+        },
+        "payload": {
+          "kind": "inherited-kind",
+          "opaque": {
+            "ref": "caller-owned"
+          },
+          "request": "cannot-shadow",
+          "signal": "cannot-shadow"
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "context": "artifact"
+          }
+        },
+        "calls": [
+          {
+            "method": "context",
+            "call": {
+              "kind": "artifact",
+              "opaque": {
+                "ref": "caller-owned"
+              },
+              "request": {
+                "taskId": "carrier",
+                "input": "x",
+                "id": "carrier",
+                "successConditions": [],
+                "maxSteps": 64
+              },
+              "input": "artifact:1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "carrier-{\"kind\":\"external_evaluator\",\"input\":{\"claim\":\"x\"}}",
+      "kind": "carrier",
+      "input": {
+        "carrier": {
+          "kind": "external_evaluator",
+          "input": {
+            "claim": "x"
+          }
+        },
+        "request": {
+          "taskId": "carrier",
+          "input": "x",
+          "id": "carrier",
+          "successConditions": [],
+          "maxSteps": 64
+        },
+        "payload": {
+          "kind": "inherited-kind",
+          "opaque": {
+            "ref": "caller-owned"
+          },
+          "request": "cannot-shadow",
+          "signal": "cannot-shadow"
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "context": "external_evaluator"
+          }
+        },
+        "calls": [
+          {
+            "method": "context",
+            "call": {
+              "kind": "external_evaluator",
+              "opaque": {
+                "ref": "caller-owned"
+              },
+              "request": {
+                "taskId": "carrier",
+                "input": "x",
+                "id": "carrier",
+                "successConditions": [],
+                "maxSteps": 64
+              },
+              "input": {
+                "claim": "x"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "carrier-{\"kind\":\"internal_control\",\"input\":{\"control\":true}}",
+      "kind": "carrier",
+      "input": {
+        "carrier": {
+          "kind": "internal_control",
+          "input": {
+            "control": true
+          }
+        },
+        "request": {
+          "taskId": "carrier",
+          "input": "x",
+          "id": "carrier",
+          "successConditions": [],
+          "maxSteps": 64
+        },
+        "payload": {
+          "kind": "inherited-kind",
+          "opaque": {
+            "ref": "caller-owned"
+          },
+          "request": "cannot-shadow",
+          "signal": "cannot-shadow"
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "control": true
+          }
+        },
+        "calls": []
+      }
+    },
+    {
+      "id": "carrier-{\"kind\":\"unimplemented\"}",
+      "kind": "carrier",
+      "input": {
+        "carrier": {
+          "kind": "unimplemented"
+        },
+        "request": {
+          "taskId": "carrier",
+          "input": "x",
+          "id": "carrier",
+          "successConditions": [],
+          "maxSteps": 64
+        },
+        "payload": {
+          "kind": "inherited-kind",
+          "opaque": {
+            "ref": "caller-owned"
+          },
+          "request": "cannot-shadow",
+          "signal": "cannot-shadow"
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": false,
+          "error": "Unsupported shared carrier kind 'unimplemented'."
+        },
+        "calls": []
+      }
+    },
+    {
+      "id": "runtime-registry",
+      "kind": "registry",
+      "input": {},
+      "expected": [
+        {
+          "id": "classic",
+          "version": "0.1.0-foundation"
+        }
+      ]
+    }
+  ]
+}
