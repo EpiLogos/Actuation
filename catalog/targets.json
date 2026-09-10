@@ -1,0 +1,860 @@
+{
+  "schema": "actuation.native-catalog/v1",
+  "catalog_revision": 6,
+  "descriptors": [
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "claude-code",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Anthropic",
+      "summary": "Claude Code agent harness",
+      "aliases": [
+        "claude"
+      ],
+      "probe": {
+        "executable": {
+          "names": [
+            "claude"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.claude"
+        }
+      },
+      "facets": {
+        "skills": {
+          "path": "~/.claude/skills"
+        },
+        "plugins": {
+          "path": "~/.claude/plugins"
+        },
+        "commands": {
+          "path": "~/.claude/commands"
+        },
+        "hooks": {
+          "path": "~/.claude/hooks"
+        },
+        "settings": {
+          "path": "~/.claude/settings.json"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "codex",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "OpenAI",
+      "summary": "Codex CLI agent harness",
+      "probe": {
+        "executable": {
+          "names": [
+            "codex"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.codex"
+        }
+      },
+      "facets": {
+        "skills": {
+          "path": "~/.codex/skills"
+        },
+        "rules": {
+          "path": "~/.codex/rules"
+        },
+        "config": {
+          "path": "~/.codex/config.toml"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "gemini",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Google",
+      "summary": "Gemini CLI agent harness; antigravity ships inside its config tree",
+      "probe": {
+        "executable": {
+          "names": [
+            "gemini"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.gemini"
+        }
+      },
+      "facets": {
+        "extensions": {
+          "path": "~/.gemini/extensions"
+        },
+        "settings": {
+          "path": "~/.gemini/settings.json"
+        },
+        "agents": {
+          "path": "~/.gemini/antigravity"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "gemini-antigravity",
+      "native_kind": "harness",
+      "edition": "ide",
+      "native_owner": "Google",
+      "summary": "Antigravity agent (own-slug decision pending; detected inside the gemini config tree)",
+      "aliases": [
+        "antigravity"
+      ],
+      "probe": {
+        "config-dir": {
+          "path": "~/.gemini/antigravity"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "pi",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Mario Zechner",
+      "summary": "pi coding agent harness",
+      "probe": {
+        "executable": {
+          "names": [
+            "pi"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.pi/agent"
+        }
+      },
+      "facets": {
+        "skills": {
+          "path": "~/.pi/agent/skills"
+        },
+        "config": {
+          "path": "~/.pi/agent/settings.json"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "hermes",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Nous Research",
+      "summary": "Hermes agent harness",
+      "probe": {
+        "executable": {
+          "names": [
+            "hermes"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.hermes"
+        }
+      },
+      "facets": {
+        "skills": {
+          "path": "~/.hermes/skills"
+        },
+        "config": {
+          "path": "~/.hermes/config.yaml"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "hermes-acp",
+      "native_kind": "harness",
+      "edition": "acp-bridge",
+      "native_owner": "Nous Research",
+      "summary": "Hermes ACP bridge; shares the hermes config tree",
+      "probe": {
+        "executable": {
+          "names": [
+            "hermes-acp"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.hermes"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "grok-bot",
+      "native_kind": "harness",
+      "edition": "cli+service",
+      "native_owner": "xAI",
+      "summary": "grok-bot harness; runs as a background daemon, version probe may prompt the keychain",
+      "aliases": [
+        "gbot"
+      ],
+      "probe": {
+        "executable": {
+          "names": [
+            "grok-bot",
+            "gbot"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.grokbot"
+        },
+        "service": {
+          "kind": "daemon",
+          "name": "grok-bot"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "ollama",
+      "native_kind": "model-provider",
+      "edition": "cli+service",
+      "native_owner": "Ollama",
+      "summary": "local model runtime and provider; detected for model binding, not agency",
+      "probe": {
+        "executable": {
+          "names": [
+            "ollama"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.ollama"
+        },
+        "service": {
+          "kind": "http",
+          "default_url": "http://127.0.0.1:11434"
+        }
+      },
+      "facets": {
+        "models": {
+          "path": "~/.ollama/models",
+          "inventory": {
+            "kind": "http-json",
+            "from": "service",
+            "route": "/api/tags",
+            "collection": "models",
+            "id_field": "model",
+            "also_id_fields": [
+              "name"
+            ],
+            "detail_fields": [
+              "digest",
+              "size",
+              "modified_at"
+            ]
+          }
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05",
+          "https://github.com/ollama/ollama/blob/main/docs/api.md"
+        ],
+        "catalog_revision": 5
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "openclaw",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "OpenClaw",
+      "summary": "OpenClaw agent harness; agent config lives under ~/.openclaw",
+      "probe": {
+        "executable": {
+          "names": [
+            "openclaw"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.openclaw"
+        }
+      },
+      "facets": {
+        "agents": {
+          "path": "~/.openclaw/agents"
+        },
+        "config": {
+          "path": "~/.openclaw/openclaw.json"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "kimi",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Moonshot AI",
+      "summary": "Kimi CLI harness",
+      "probe": {
+        "executable": {
+          "names": [
+            "kimi"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.kimi"
+        }
+      },
+      "facets": {
+        "config": {
+          "path": "~/.kimi/config.toml"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "zcode",
+      "native_kind": "harness",
+      "edition": "client",
+      "native_owner": "ZCode",
+      "summary": "zcode agent harness client",
+      "probe": {
+        "config-dir": {
+          "path": "~/.zcode"
+        },
+        "env": {
+          "any_of": [
+            "ZCODE_APP_VERSION",
+            "ZCODE_ENV"
+          ]
+        }
+      },
+      "facets": {
+        "plugins": {
+          "path": "~/.zcode/cli/plugins"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 2
+      }
+    }
+  ],
+  "capabilities": [
+    {
+      "schema": "actuation.harness-capability/v1",
+      "document": "capability",
+      "harness_slug": "claude-code",
+      "summary": "Hooks dispatched from the settings hooks map; stdin JSON in, stdout JSON/plain out; PreToolUse and UserPromptSubmit can deny-and-block; Stop can force continuation; no external wake.",
+      "native_events": [
+        {
+          "event": "session-start",
+          "native_name": "SessionStart",
+          "transport": "settings-json-hooks-map",
+          "can_block": false,
+          "context_channel": "stdout-additional-context",
+          "notes": "stdout (plain or JSON additionalContext) is added to the session's opening context; matcher values source/startup/resume."
+        },
+        {
+          "event": "user-prompt-submit",
+          "native_name": "UserPromptSubmit",
+          "transport": "settings-json-hooks-map",
+          "can_block": true,
+          "context_channel": "stdout-additional-context",
+          "notes": "exit 2 blocks the prompt; stdout (plain or JSON additionalContext) is added to the turn context."
+        },
+        {
+          "event": "pre-tool-use",
+          "native_name": "PreToolUse",
+          "transport": "settings-json-hooks-map",
+          "can_block": true,
+          "context_channel": "stdout-additional-context",
+          "notes": "exit 2 denies the tool call for this invocation; JSON hookSpecificOutcome.additionalContext is the pre-tool context channel (not stdout text)."
+        },
+        {
+          "event": "post-tool-use",
+          "native_name": "PostToolUse",
+          "transport": "settings-json-hooks-map",
+          "can_block": false,
+          "context_channel": "stdout-additional-context",
+          "notes": "runs after tool success; exit 2 shows stderr to the model (advisory), it cannot undo the tool result."
+        },
+        {
+          "event": "stop",
+          "native_name": "Stop",
+          "transport": "settings-json-hooks-map",
+          "can_block": true,
+          "context_channel": "none",
+          "notes": "JSON decision block forces the model to continue instead of stopping; stdout is not injected as context."
+        },
+        {
+          "event": "session-end",
+          "native_name": "SessionEnd",
+          "transport": "settings-json-hooks-map",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "cleanup only; the session is already terminating."
+        },
+        {
+          "event": "pre-compact",
+          "native_name": "PreCompact",
+          "transport": "settings-json-hooks-map",
+          "can_block": false,
+          "context_channel": "stdout-additional-context",
+          "notes": "stdout becomes a custom instruction carried into the compacted context."
+        },
+        {
+          "event": "notification",
+          "native_name": "Notification",
+          "transport": "settings-json-hooks-map",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "outbound: fires when the harness sends a notification (permission needed, idle prompt)."
+        }
+      ],
+      "injection_channel": {
+        "kind": "stdout-additional-context",
+        "mechanism": "JSON hookSpecificOutcome.additionalContext on stdout for PreToolUse; plain stdout (or JSON additionalContext) added to context at session-start, user-prompt-submit and pre-compact; exit 2 stderr is the deny channel, never a context channel.",
+        "notes": "Pre-tool context must travel hookSpecificOutcome.additionalContext; text printed to stdout outside the JSON outcome is not the pre-tool channel."
+      },
+      "blocking_semantics": {
+        "kind": "deny-and-block",
+        "notes": "PreToolUse and UserPromptSubmit exit 2 (or JSON decision block with reason) deny the operation; Stop JSON decision block forces continuation. The dispatcher's gate phase rides exit codes and JSON decisions."
+      },
+      "wake_capability": {
+        "kind": "none",
+        "notes": "hooks execute only inside a running session; nothing declared here wakes the harness from outside. Notification is the harness asking for attention, not accepting a wake."
+      },
+      "install_seam": {
+        "config_path": "~/.claude/settings.json",
+        "format": "json",
+        "entry_shape": "hooks.<EventName>[] entries, each {matcher?, hooks: [{type: \"command\", command, timeout?}]}",
+        "ownership_marker": "hook command resolves to the AIKit dispatch executable",
+        "preserves_foreign_entries": true
+      },
+      "uninstall_seam": {
+        "config_path": "~/.claude/settings.json",
+        "format": "json",
+        "entry_shape": "hooks.<EventName>[] entries whose command matches the ownership marker are removed; entries without the marker are untouched",
+        "ownership_marker": "hook command resolves to the AIKit dispatch executable",
+        "preserves_foreign_entries": true
+      },
+      "model_dispatch": {
+        "kind": "native-provider-binding",
+        "providers": [
+          {
+            "provider_ref": "provider:anthropic",
+            "selector": {
+              "kind": "config-key",
+              "name": "model"
+            },
+            "credential": {
+              "required": true,
+              "hint": "Anthropic API key or an active subscription session"
+            },
+            "notes": "model is named by the config-key selector on the harness's own settings surface; Actuation does not enumerate Anthropic's model catalogue here."
+          }
+        ]
+      },
+      "provenance": {
+        "authored_by": "O:I capability descriptor programme (live settings/hooks observation on this machine + upstream hooks documentation, 2026-09-06)",
+        "source_refs": [
+          "survey:local-machine-2026-09-06",
+          "upstream:claude-code-hooks-reference",
+          "upstream:claude-code-settings-reference"
+        ],
+        "catalog_revision": 6
+      }
+    },
+    {
+      "schema": "actuation.harness-capability/v1",
+      "document": "capability",
+      "harness_slug": "codex",
+      "summary": "Per-project hooks.json covers session_start / pre_tool_use / post_tool_use; config.toml notify invokes an external program at turn completion; no declared context-injection channel, no deny-and-block, no harness wake.",
+      "native_events": [
+        {
+          "event": "session-start",
+          "native_name": "session_start",
+          "transport": "hooks-json-file",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "hook entry observed as .codex/hooks.json state ([hooks.state.\"<path>:session_start:0:0\"]); no context-injection behaviour is declared for it."
+        },
+        {
+          "event": "pre-tool-use",
+          "native_name": "pre_tool_use",
+          "transport": "hooks-json-file",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "observed entry shape as for session_start; no deny semantics declared."
+        },
+        {
+          "event": "post-tool-use",
+          "native_name": "post_tool_use",
+          "transport": "hooks-json-file",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "observed entry shape as for session_start."
+        },
+        {
+          "event": "notification",
+          "native_name": "notify: agent-turn-complete",
+          "transport": "toml-notify",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "config.toml notify = [<program>, ...args] invoked at turn completion; outbound only. This is the closest native boundary to stop."
+        }
+      ],
+      "injection_channel": {
+        "kind": "none",
+        "mechanism": "no context-injection channel is declared on codex-cli 0.153.0: hooks and notify are observed as invocations, not as context providers. Projections must treat injected content as unavailable rather than print to stdout and hope.",
+        "notes": "re-declare this descriptor when a codex release grows an additional-context channel."
+      },
+      "blocking_semantics": {
+        "kind": "none",
+        "notes": "no deny-and-block channel is declared; a hook cannot veto a tool call on this surface."
+      },
+      "wake_capability": {
+        "kind": "none",
+        "notes": "notify wakes the listener program at turn completion, never the harness itself. A relay sender must not pretend codex can be woken."
+      },
+      "install_seam": {
+        "config_path": ".codex/hooks.json",
+        "format": "json",
+        "entry_shape": "per-event hook command entries (session_start / pre_tool_use / post_tool_use); notify listener configured separately in config.toml",
+        "ownership_marker": "hook command resolves to the AIKit dispatch executable",
+        "preserves_foreign_entries": true
+      },
+      "uninstall_seam": {
+        "config_path": ".codex/hooks.json",
+        "format": "json",
+        "entry_shape": "entries whose command matches the ownership marker are removed; foreign entries and config.toml notify are untouched",
+        "ownership_marker": "hook command resolves to the AIKit dispatch executable",
+        "preserves_foreign_entries": true
+      },
+      "model_dispatch": {
+        "kind": "native-provider-binding",
+        "providers": [
+          {
+            "provider_ref": "provider:openai",
+            "selector": {
+              "kind": "config-key",
+              "name": "model"
+            },
+            "credential": {
+              "required": true,
+              "hint": "OpenAI API key or an active ChatGPT sign-in session"
+            },
+            "notes": "model is named by the config-key selector in config.toml; Actuation does not enumerate OpenAI's model catalogue here."
+          }
+        ]
+      },
+      "provenance": {
+        "authored_by": "O:I capability descriptor programme (codex-cli 0.153.0 observed on this machine: config.toml notify + [hooks.state] entries, 2026-09-06)",
+        "source_refs": [
+          "survey:local-machine-2026-09-06",
+          "upstream:openai-codex-cli-0.153.0",
+          "upstream:openai-codex-cli-config-reference"
+        ],
+        "catalog_revision": 6
+      }
+    },
+    {
+      "schema": "actuation.harness-capability/v1",
+      "document": "capability",
+      "harness_slug": "zcode",
+      "summary": "Seven native hook events (SessionStart, UserPromptSubmit, PreToolUse, PermissionRequest, PostToolUse, PostToolUseFailure, Stop); stdout JSON additionalContext; exit 2 denies pre-tool and permission boundaries; configuration-file hooks need hooks.enabled, plugin hooks auto-enable; no PreCompact, no Notification, no external wake.",
+      "native_events": [
+        {
+          "event": "session-start",
+          "native_name": "SessionStart",
+          "transport": "config-json-hooks-map",
+          "can_block": false,
+          "context_channel": "stdout-additional-context",
+          "notes": "matcher value is the session mode: startup, resume, clear or compact."
+        },
+        {
+          "event": "user-prompt-submit",
+          "native_name": "UserPromptSubmit",
+          "transport": "config-json-hooks-map",
+          "can_block": true,
+          "context_channel": "stdout-additional-context",
+          "notes": "matcher value is the prompt text; stdout JSON additionalContext joins the turn."
+        },
+        {
+          "event": "pre-tool-use",
+          "native_name": "PreToolUse",
+          "transport": "config-json-hooks-map",
+          "can_block": true,
+          "context_channel": "stdout-additional-context",
+          "notes": "exit 2 is a deny for this invocation; the hook may also return a permission decision of allow/ask/deny. additionalContext is injected."
+        },
+        {
+          "event": "post-tool-use",
+          "native_name": "PostToolUse",
+          "transport": "config-json-hooks-map",
+          "can_block": false,
+          "context_channel": "stdout-additional-context",
+          "notes": "runs after tool success; advisory."
+        },
+        {
+          "event": "stop",
+          "native_name": "Stop",
+          "transport": "config-json-hooks-map",
+          "can_block": true,
+          "context_channel": "none",
+          "notes": "the hook may request continuation, up to three times."
+        },
+        {
+          "event": "custom",
+          "native_name": "PermissionRequest",
+          "transport": "config-json-hooks-map",
+          "can_block": true,
+          "context_channel": "exit-code-payload",
+          "notes": "no AIKit boundary kind; exit 2 denies the permission request. Declared so consumers see the whole native surface."
+        },
+        {
+          "event": "custom",
+          "native_name": "PostToolUseFailure",
+          "transport": "config-json-hooks-map",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "no AIKit boundary kind; fires after a failed tool call."
+        }
+      ],
+      "injection_channel": {
+        "kind": "stdout-additional-context",
+        "mechanism": "hook stdout is parsed as a strict JSON schema; additionalContext is injected into the conversation. Exit codes carry the deny channel: 0 pass, 2 block, other non-zero error.",
+        "notes": "the schema is strict — any extra key fails validation, so a projection must emit exactly the admitted fields."
+      },
+      "blocking_semantics": {
+        "kind": "deny-and-block",
+        "notes": "PreToolUse and PermissionRequest accept exit-2 denies; Stop accepts bounded continuation requests."
+      },
+      "wake_capability": {
+        "kind": "none",
+        "notes": "hooks run inside a live session only; there is no Notification event and no external wake channel."
+      },
+      "install_seam": {
+        "config_path": "~/.zcode/cli/config.json",
+        "format": "json",
+        "entry_shape": "top-level hooks block: { enabled: true, events: { <Event>: [ { matcher?, hooks: [{type: \"command\", command, ...}] } ] } }; configuration-file hooks stay disabled until hooks.enabled is true",
+        "ownership_marker": "hook command resolves to the AIKit dispatch executable",
+        "preserves_foreign_entries": true
+      },
+      "uninstall_seam": {
+        "config_path": "~/.zcode/cli/config.json",
+        "format": "json",
+        "entry_shape": "entries whose command matches the ownership marker are removed and empty event keys pruned; foreign hooks and every other top-level key are untouched",
+        "ownership_marker": "hook command resolves to the AIKit dispatch executable",
+        "preserves_foreign_entries": true
+      },
+      "model_dispatch": {
+        "kind": "none",
+        "notes": "neither zcode's detection descriptor nor its shipped hook documentation evidences a model-provider binding in this repo — no service probe, no provider config key, no upstream reference naming one. Declaring a provider here would be a guess, not a reading. Re-declare when zcode's own config or plugin surface names one."
+      },
+      "provenance": {
+        "authored_by": "O:I capability descriptor programme (zcode hook grammar read from the shipped zcode-guide plugin's diagnosing-hooks documentation; config surfaces observed on this machine, 2026-09-06)",
+        "source_refs": [
+          "survey:local-machine-2026-09-06",
+          "upstream:zcode-guide-diagnosing-hooks",
+          "correction:rev1-claimed-claude-grammar-with-precompact-notification;the-shipped-event-list-says-otherwise",
+          "investigation:zcode-model-dispatch-not-evidenced-2026-09-09"
+        ],
+        "catalog_revision": 6
+      }
+    }
+  ],
+  "secret_sources": {
+    "schema": "actuation.secret-detection/v1",
+    "document": "catalog",
+    "catalog_revision": 1,
+    "descriptors": [
+      {
+        "schema": "actuation.secret-detection/v1",
+        "document": "descriptor",
+        "slug": "op-vault-security-protocol",
+        "source_kind": "op-item",
+        "ref_schemes": [
+          "op://"
+        ],
+        "probe": {
+          "vault-item": {
+            "item_ref": "op://Central/central-security"
+          }
+        },
+        "provenance": {
+          "authored_by": "central-security map T1",
+          "source_refs": [
+            "https://github.com/EpiLogos/central-security/issues/1"
+          ],
+          "catalog_revision": 1
+        }
+      },
+      {
+        "schema": "actuation.secret-detection/v1",
+        "document": "descriptor",
+        "slug": "op-service-account-token",
+        "source_kind": "env-var",
+        "ref_schemes": [
+          "env://"
+        ],
+        "probe": {
+          "env": {
+            "names": [
+              "OP_SERVICE_ACCOUNT_TOKEN"
+            ]
+          }
+        },
+        "provenance": {
+          "authored_by": "central-security map T1",
+          "source_refs": [
+            "https://github.com/EpiLogos/central-security/issues/1"
+          ],
+          "catalog_revision": 1
+        }
+      },
+      {
+        "schema": "actuation.secret-detection/v1",
+        "document": "descriptor",
+        "slug": "varlock-env-files",
+        "source_kind": "varlock-blob",
+        "ref_schemes": [
+          "varlock://"
+        ],
+        "probe": {
+          "file-pattern": {
+            "patterns": [
+              ".env",
+              ".env.local",
+              ".env.*"
+            ],
+            "roots": [
+              "~"
+            ]
+          }
+        },
+        "provenance": {
+          "authored_by": "central-security map T1",
+          "source_refs": [
+            "https://github.com/EpiLogos/central-security/issues/1"
+          ],
+          "catalog_revision": 1
+        }
+      }
+    ]
+  }
+}

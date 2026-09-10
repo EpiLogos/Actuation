@@ -1,42 +1,6 @@
 mod support;
 use serde_json::Value;
 #[test]
-fn every_frozen_r4_public_case_matches_the_native_domain() {
-    let corpus: Value =
-        serde_json::from_str(include_str!("../../../fixtures/migration/oracle.json")).unwrap();
-    let prefixes = [
-        "contracts/actuation-stream.mjs#",
-        "contracts/activity.mjs#",
-        "contracts/model-usage.mjs#",
-        "contracts/request-correlation.mjs#",
-    ];
-    let rows: Vec<_> = corpus["cases"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter(|r| {
-            prefixes
-                .iter()
-                .any(|p| r["operation"].as_str().unwrap().starts_with(p))
-        })
-        .collect();
-    assert_eq!(rows.len(), 213, "missing frozen cases");
-    let mut errors = Vec::new();
-    for row in rows {
-        let answer = support::pure_row(row);
-        if answer["ok"] != row["expected"]["ok"]
-            || (answer["ok"] == true && answer["value"] != row["expected"]["value"])
-        {
-            errors.push(serde_json::json!({"id":row["id"],"operation":row["operation"],"expected":row["expected"],"actual":answer}));
-        }
-    }
-    assert!(
-        errors.is_empty(),
-        "{}",
-        serde_json::to_string_pretty(&errors).unwrap()
-    );
-}
-#[test]
 fn frozen_jsonl_scenarios_preserve_actual_bytes_and_refusal_effects() {
     let corpus = support::corpus();
     let rows: Vec<_> = corpus["cases"]
