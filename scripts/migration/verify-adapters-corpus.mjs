@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {spawnSync} from 'node:child_process';
+import {evaluateScenario,compareScenario} from './scenarios.mjs';
+const root=new URL('../../fixtures/migration/r5/',import.meta.url);
+const raw=readFileSync(new URL('observations.json',root));
+const checksum=readFileSync(new URL('SHA256SUMS',root),'utf8').trim().split(/\s+/);
+assert.equal(checksum[1],'observations.json');assert.equal(createHash('sha256').update(raw).digest('hex'),checksum[0]);
+const corpus=JSON.parse(raw);assert.equal(corpus.schema,'actuation.adapter-extraction/v1');
+assert.equal(corpus.source_revision,'1c862c6bf58478adf6842a090214906dd2337001');
+assert.equal(corpus.cases.length,21);assert.equal(corpus.defects.length,3);
+const ledger=JSON.parse(readFileSync(new URL('../../docs/rust-refoundation/ledger.json',import.meta.url),'utf8'));
+const original=Object.fromEntries(ledger.entries.filter(e=>/^(bin\/|cli\/|contracts\/|detection\/|experiments\/)/.test(e.path)).map(e=>[e.path,e.source_blob]));
+assert.equal(Object.keys(corpus.source_blobs).length,190);
+assert.deepEqual(corpus.source_blobs,original);
+for(const row of [...corpus.cases,...corpus.defects]) compareScenario(evaluateScenario(row),row.expected);
+const rows=corpus.cases;
+const run=spawnSync('target/debug/examples/adapter-scenario-oracle',[],{encoding:'utf8',timeout:30000,maxBuffer:8*1024*1024,input:rows.map(({id,kind,input})=>JSON.stringify({id,kind,input})).join('\n')+'\n'});
+assert.equal(run.status,0,run.error?.message??run.stderr);
+const answers=run.stdout.trim().split('\n').map(JSON.parse);assert.equal(answers.length,rows.length);
+for(let i=0;i<rows.length;i++){assert.equal(answers[i].id,rows[i].id);compareScenario(answers[i].value,rows[i].expected);}
+console.log(JSON.stringify({schema:'actuation.adapter-corpus-integrity/v1',source_revision:corpus.source_revision,compatibility_cases:21,separately_asserted_defects:3,sha256:checksum[0],status:'ok',evidence_class:'D'}));

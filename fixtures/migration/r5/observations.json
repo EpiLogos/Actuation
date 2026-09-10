@@ -1,0 +1,4218 @@
+{
+  "schema": "actuation.adapter-extraction/v1",
+  "source_revision": "1c862c6bf58478adf6842a090214906dd2337001",
+  "source_blobs": {
+    "bin/actuation": "5b83bda1a14d5ab79a01f57c0b9b1ee1570d4ced",
+    "cli/actuation.mjs": "337aa9d10f60429a32689e3afcd585ae0f1e5f19",
+    "cli/actuation.test.mjs": "36934c24d08fe35dc52242e3494caa79fc0249a1",
+    "cli/agency-actualisation.test.mjs": "9dd9805e84c878b2b5c878f0f7d55433536686a2",
+    "cli/commands.mjs": "6e8d78e2f392590e20023f702a5e7f2e9ac94954",
+    "cli/development-field.test.mjs": "04991fad538eb417d6b17dde75249df8410db9a2",
+    "cli/stream-store.test.mjs": "c3011fa366baf3cad03b639616f293bd02341af2",
+    "cli/surface.mjs": "5d3cfbc064455de1ffd7fa0aab172815e7aacad9",
+    "contracts/activity-v1.schema.json": "3bebf8a5dde81a27cdad89d44593f61af2d2c3d3",
+    "contracts/activity.mjs": "8dfdd59e31146791d9296fae3676b9d6485c2bef",
+    "contracts/activity.test.mjs": "55484b85a7f0a27d3cbdcf2349cdb18d11b21ea7",
+    "contracts/actuation-stream-store.mjs": "5e63f63a8f5097f9048b68b89f85fee7ce100f0b",
+    "contracts/actuation-stream-store.test.mjs": "cb925fe2a1143db8b230ebec260f6641f118c2c3",
+    "contracts/actuation-stream-v1.schema.json": "d66cabd56d65d5f0befe8558a8f8b77f1aed639b",
+    "contracts/actuation-stream.mjs": "1406bb3bc5df4c2d0c6481731cb757b09a7e6849",
+    "contracts/actuation-stream.test.mjs": "31b8c9473a58b4a2ae6a2003f23e43f9d564ab52",
+    "contracts/agency-actualisation-v1.schema.json": "0794ae815f33e07d90a1de5b6a757f54c7c64abc",
+    "contracts/agency-actualisation.mjs": "0c9c7b9ed7d0f8d20452e5c1458fb66df1f43d47",
+    "contracts/agency-v1.schema.json": "7b6e3006b1d076f2ac9fde518bb556e40b461382",
+    "contracts/agency.mjs": "10e51693d36788991260310015d2bf9e3f5fca6b",
+    "contracts/agency.test.mjs": "2e1e8ca467196476c438d9ee67d756b4f45fe91c",
+    "contracts/epistemic-cultivation.test.mjs": "7c6535354b88760f2a3ce173f9c3b5980bf3776d",
+    "contracts/harness-capability-v1.schema.json": "50e2521bd071b9f7a57301d2e6c21b1dba8bf133",
+    "contracts/harness-capability.mjs": "bceed68bc0441981cf2080f04dd8ccaa8d829ddf",
+    "contracts/harness-capability.test.mjs": "9905ea15bef0f4b37e05591d1813f6f59c109702",
+    "contracts/harness-detection-v1.schema.json": "7f51c7a6307f225b655f5cfbed2554c15be2bac2",
+    "contracts/harness-detection.mjs": "f9274641caa6f443d2802f9a06c4b6e945351e71",
+    "contracts/harness-detection.test.mjs": "d67b413cde683a0cfc65c7916daea4fc85748752",
+    "contracts/instantiation-v1.schema.json": "5e2e8f59a3a12ac4f6bb0dcb949fded8caeb55ea",
+    "contracts/instantiation.mjs": "ff0596ea64c46a83e6802898d43e23d97baacc99",
+    "contracts/instantiation.test.mjs": "a91ccd9263a128018991d0e127f7745e796bb872",
+    "contracts/model-usage-v1.schema.json": "ca27a43210721ff3ac232dadc3326c7fe962a692",
+    "contracts/model-usage.mjs": "38547c7a25da1c94dbafbb73804cba9b712a81da",
+    "contracts/model-usage.test.mjs": "bcbad7d5e0cce66d7db0d60932af783e419460bc",
+    "contracts/realised-actuation-v1.schema.json": "e47af869673373dc01624e28b3533b04c4f7ec5d",
+    "contracts/realised-actuation.mjs": "9e4d673404ca4a3fe9e1345bf82995574fe8ba0f",
+    "contracts/realised-actuation.test.mjs": "173e4fead99009b7eb20df4a754e1b6f0a611525",
+    "contracts/request-correlation-v1.schema.json": "45d2f9d9397e02fd85ae0d2878a30b9090eb3c25",
+    "contracts/request-correlation.mjs": "c7962cdeb2fc96fd6bbf6cb29a2babb8aa087c61",
+    "contracts/request-correlation.test.mjs": "52e5cc51baa9e92b0b58bcd210e234f359e7fc07",
+    "contracts/secret-detection-v1.schema.json": "7852a05f116d8dc4cd067f9120f19a83a7bac580",
+    "contracts/secret-detection.mjs": "b7cca5d42d822988d98d28bc0f8488aba3f79607",
+    "contracts/secret-detection.test.mjs": "710610d89d904e59ab185517f4eb301e88bd95b1",
+    "detection/capabilities.test.mjs": "a8012a97a034dcea8533c5b73b1932dbdae0f636",
+    "detection/capabilities/claude-code.mjs": "af7f9f7ca73f887a65fe7f913564041be37684b4",
+    "detection/capabilities/codex.mjs": "cd91889b637badc9778309d230e066241d1b54e0",
+    "detection/capabilities/zcode.mjs": "7bda2574fc236d1924f1d92ddfab769734c3a252",
+    "detection/catalog.mjs": "a8ca6fb0fd3f359f6d555932dcd49c35127279e1",
+    "detection/catalog.test.mjs": "ca18ae5ebc92f89d02f7aec0036ee8f399f69a30",
+    "detection/detect.mjs": "bd215eab7ef819ae117a830cd883551e13bc8963",
+    "detection/detect.test.mjs": "ede599d727cfb6918ae55b322ee8d0ac6bdb7917",
+    "detection/harnesses/claude-code.mjs": "8645bfb15b5beed4614ed9b883902bb7ab7681e1",
+    "detection/harnesses/codex.mjs": "5146bd50a318aed1f2f731a49b99e2e4f934eb4f",
+    "detection/harnesses/gemini-antigravity.mjs": "5767b54a9d90fb1f0b1c6663c205901c1ddb5037",
+    "detection/harnesses/gemini.mjs": "ad8ee0a19b407fce660785c54fc961604c5678d7",
+    "detection/harnesses/grok-bot.mjs": "9cc7fc280762450c007b9523942dcce275bcc45f",
+    "detection/harnesses/hermes-acp.mjs": "9d5aeec4d328bc2f96f20b002c5424bf1e750af4",
+    "detection/harnesses/hermes.mjs": "feff3bb3bbf8d7e1a77cf468cff5386c0114d7bb",
+    "detection/harnesses/kimi.mjs": "d8afbcfe66546271d3a1f450a58ab82ef8d9cfaa",
+    "detection/harnesses/ollama.mjs": "18eccdc9d9aac3fe7a4a7255e84010798d51a03b",
+    "detection/harnesses/openclaw.mjs": "d8796fb2b51a46012a29d84bbef16f88a2f06b5d",
+    "detection/harnesses/pi.mjs": "571b907e9517d3cae214e954e1875bd5f8e36f22",
+    "detection/harnesses/zcode.mjs": "c6f6ac4d3afa917865ed6848d1f81a67443af18b",
+    "detection/probes.mjs": "fff586460973f567abb3076f120b7ae7190a92ca",
+    "detection/secret-sources.test.mjs": "4967d2de4085b12e6e254032cf6006559507dfc3",
+    "detection/secret-sources/catalog.mjs": "33a4d49160622b9bb24593189e6f48670226f778",
+    "detection/secret-sources/probes.mjs": "7c695b7ce3a7bd905873ef1b4e3ea64e2a07062e",
+    "detection/secret-sources/scan.mjs": "cc03ffea4db2d379167e2e2549b2f616fc9a6bd5",
+    "detection/self.mjs": "e66a885175ea82f195820c538a502a7087f5b252",
+    "detection/self.test.mjs": "f3c546060e987178759f193b2c331078aeeb2119",
+    "experiments/epistemic-cultivation/README.md": "00db374af11a031a2ee28fcdc71aee3e85f6e33b",
+    "experiments/epistemic-cultivation/package.json": "302367ff50a61f65f84a49079ef32c0f9fb651fe",
+    "experiments/epistemic-cultivation/records.mjs": "3c45148b68c0f42d1cda5bf8f133224ea5380742",
+    "experiments/epistemic-cultivation/store.mjs": "19e4f6368b4589be7356a66795d3a41d5f937a2b",
+    "experiments/epistemic-cultivation/test/records.test.mjs": "c8d088fdaa6ddd94537a96ae93f09a2568ce0f44",
+    "experiments/ql-runtime/LOOP-CLOSURE-CLARIFICATION.md": "a8ecd8e14f04e7500abdaaa0b8f5250fb69d49b7",
+    "experiments/ql-runtime/QL-PAIRING-SQUARES-CLARIFICATION-08-14-2026.md": "66c712ac68bda697fcec8dede94ff5f1980e9eb8",
+    "experiments/ql-runtime/TYPING-CORPUS-REVIEW-CLARIFICATION-08-14-2026.md": "850a654eb1ada42e354c4b3716063ff71d65b8c1",
+    "experiments/ql-runtime/comparison/STATUS.md": "51f2997222a457142863348ec24c835921c763c1",
+    "experiments/ql-runtime/comparison/series1/BENCHMARK-V0.1.md": "92e3bcc52371e31fa25be226db4161f5607d7e93",
+    "experiments/ql-runtime/comparison/series1/DEEPSEEK-HARNESS-MAXIMAL-REFERENCE.md": "f89793419f88e1e399cfc4f02b00dde9c1cb5212",
+    "experiments/ql-runtime/comparison/series1/README.md": "8fbac67b520c6f81eaca5266bd6b9adf142ab03d",
+    "experiments/ql-runtime/comparison/series1/candidate-boundary.mjs": "7cec3a995abcf49293dbbef04fc7729c82ce0b29",
+    "experiments/ql-runtime/comparison/series1/contract.mjs": "6f018fe627781266db09a6ecb97c68844ddc216b",
+    "experiments/ql-runtime/comparison/series1/dsh-structural.mjs": "40da5e6faa157601e1969f154fae8670f105efa5",
+    "experiments/ql-runtime/comparison/series1/dsh-ui-client.tsx": "ae5100cfa2903e3f52abfe3e9d181c79bfd153b6",
+    "experiments/ql-runtime/comparison/series1/dsh.mjs": "2f7df5bea52ea36c17615382332ce77310b29c3c",
+    "experiments/ql-runtime/comparison/series1/evidence.mjs": "84311a4b1c20ac2e8570de3bbb3c29355da86010",
+    "experiments/ql-runtime/comparison/series1/freeze.mjs": "21a8e7802c4ff548786fcc71e35dbae76125abd0",
+    "experiments/ql-runtime/comparison/series1/host.mjs": "93f449e28f5907d75c01a5d0bf4b2c2bc6cf83ba",
+    "experiments/ql-runtime/comparison/series1/policy.mjs": "88d080d329fd4e374a037b942c6eac827d505391",
+    "experiments/ql-runtime/comparison/series1/preflight.mjs": "f2051a92fedae18de1e974690209cbe8edd4ac9d",
+    "experiments/ql-runtime/comparison/series1/providers.mjs": "4aeb93f4ab5c54d5dde1bd8b157c9496e4431fd5",
+    "experiments/ql-runtime/comparison/series1/pydantic_bridge.py": "d7c64673569bfdd3c4dc1feccc3a8b3b4e57d24b",
+    "experiments/ql-runtime/comparison/series1/render-review.mjs": "f279be99c5b6d03ee925783d9599781df71777a6",
+    "experiments/ql-runtime/comparison/series1/review.mjs": "04559fbfd030f9acaad28c541bc6c5a0143341ef",
+    "experiments/ql-runtime/comparison/series1/run.mjs": "8725cb4d44e03db016b646f74b33f9bcb3633b58",
+    "experiments/ql-runtime/comparison/series1/tasks.mjs": "600304f38adcb6633be4de39e259e7a3175a8a0d",
+    "experiments/ql-runtime/deep-ql/README.md": "7f7717801b062a1d47393672d38eb83241abad78",
+    "experiments/ql-runtime/deep-ql/comparison/comparator.js": "9a7e5ef0a155b70e03151399d12ff8c9aec51bfd",
+    "experiments/ql-runtime/deep-ql/conformance/runner.js": "635a660173cf36ec6190bd0a6e32a2a2dbe16163",
+    "experiments/ql-runtime/deep-ql/conformance/schemas.js": "c0a005fedc3dc702bc68aa487ef3c7271b713a73",
+    "experiments/ql-runtime/deep-ql/convergence/dry-runs.json": "84d450710b3f3b18c17b5fc80dd698db0d508bf9",
+    "experiments/ql-runtime/deep-ql/convergence/review-runs.js": "1666e08dfd11e9c639cff6d87f9e6f25c8d2f1af",
+    "experiments/ql-runtime/deep-ql/convergence/run-product-review.mjs": "8cc81b04ed807d025ff475b8996733b236d1fba8",
+    "experiments/ql-runtime/deep-ql/convergence/run-readiness.mjs": "06fbd53cea1c9380398def102e1be5d8cde012a3",
+    "experiments/ql-runtime/deep-ql/evidence/verification.json": "5a828dc17262aa5139f5d21243609ed9761cdfc0",
+    "experiments/ql-runtime/deep-ql/extensions/registry.json": "bb911e805e5778398fb5a77bc349f43d61ad78fe",
+    "experiments/ql-runtime/deep-ql/formal/pairing-grammar.js": "0d6aa49197dd4d06646ea5a5fb094c03b10a74e4",
+    "experiments/ql-runtime/deep-ql/index.js": "beacde587a1f34edeba58e99b13600c4fffecf9e",
+    "experiments/ql-runtime/deep-ql/manifest.json": "895d354e4a59e48b3af8f03190b3c5bb07ca5753",
+    "experiments/ql-runtime/deep-ql/operator-session.js": "edd3a58b0ece50e6a6af951b6d09fdfcd26e75a6",
+    "experiments/ql-runtime/deep-ql/operators.js": "af46bc9e6c42c768d647dd81f5931d5063024634",
+    "experiments/ql-runtime/deep-ql/package.json": "ebd4f2087c56c50e64092f184398d031bb0c28d8",
+    "experiments/ql-runtime/deep-ql/render/index.js": "4ba3ad9d1e26308ae1d2d53759a3d0dcfe6a83a0",
+    "experiments/ql-runtime/deep-ql/research/README.md": "052bfa45e819e752d0b7af11ceac25c25e0e590f",
+    "experiments/ql-runtime/deep-ql/test/deep.test.js": "6257e2405a4042779ed13da78ae11a11ed675394",
+    "experiments/ql-runtime/deep-ql/test/pairing.test.js": "a4716cc691d84ce16d3e771bf38d3d8244b73431",
+    "experiments/ql-runtime/deep-ql/test/research.test.js": "2cc4dcc559802b16158c3384b707e483727b22e4",
+    "experiments/ql-runtime/deep-ql/test/series1-dsh.test.js": "0bd23ce386183274ed4ed2d7f9da297b94289113",
+    "experiments/ql-runtime/deep-ql/test/series1-review.test.js": "15bf8aec13b685b1567a0d1a7ad3f2d7c3cdb5e8",
+    "experiments/ql-runtime/deep-ql/test/series1.test.js": "de4ca351aae8b8c6d3ed3e83d42e6905bb00d9b2",
+    "experiments/ql-runtime/deep-ql/typing-corpus/README.md": "315b786639964e642c94321bab1f284f6e8159d5",
+    "experiments/ql-runtime/deep-ql/typing-corpus/corpus.js": "d53138ae6ebf98aa71f2784e906909f2c34faad5",
+    "experiments/ql-runtime/deep-ql/typing-corpus/export.mjs": "0a25aa701cd202bcb0b688be49e32d1f7c471228",
+    "experiments/ql-runtime/experiments/native/README.md": "c493a46a2755eb9e2026c54342f60e54757725e2",
+    "experiments/ql-runtime/experiments/native/classic/README.md": "eb185251728a39dbcc53bd00c0280572286b3b8e",
+    "experiments/ql-runtime/experiments/native/ql/README.md": "8b7215726d749280aba550466bd4571ee3436ad8",
+    "experiments/ql-runtime/experiments/native/ql/policy.js": "0c6389d232309ff1617b4429106122737c252d8c",
+    "experiments/ql-runtime/experiments/native/run-smoke.mjs": "5e0269b329ca0e47d48a4706c03cdf0e107b3ead",
+    "experiments/ql-runtime/experiments/native/runs/README.md": "d17170505b13c88e2c6e3a8418ed6d0ab9d53c24",
+    "experiments/ql-runtime/experiments/native/shared/README.md": "7049f74f1f6be98dcca65c3a34199f2a2595233b",
+    "experiments/ql-runtime/experiments/native/shared/host.js": "880ec59d2ae3f07cb83a0b2ee4f1c957f05bfa0b",
+    "experiments/ql-runtime/experiments/pi/README.md": "8d4d0a933c93165fe5c96eb04e52746a341ec42b",
+    "experiments/ql-runtime/experiments/pi/classic/README.md": "3b9b0aabe477aeefdda4db69a4c6f26d02597fd1",
+    "experiments/ql-runtime/experiments/pi/ql/README.md": "b6115b7e6d2f602971f92b70b6ab9abd8e428997",
+    "experiments/ql-runtime/experiments/pi/ql/policy.js": "6ccfacd6b6bee25edc3889a533c80d9ea3e4acc9",
+    "experiments/ql-runtime/experiments/pi/run-smoke.mjs": "ad35d282bb8e30fe51f77fe73d89e0d42ec2568b",
+    "experiments/ql-runtime/experiments/pi/runs/README.md": "9efa41d0545eb85755f912ab2238a914202f884c",
+    "experiments/ql-runtime/experiments/pi/shared/README.md": "bfed0e8460389bfacb029be7735191393439cb5e",
+    "experiments/ql-runtime/experiments/pi/shared/host.js": "5f8b052679cfbbfe67511d20f1559cecc3a7c3ea",
+    "experiments/ql-runtime/experiments/pydantic/README.md": "124fdfe7fd8dca8654503cb668c15d77713e0408",
+    "experiments/ql-runtime/experiments/pydantic/classic/README.md": "c70560bb17494beac79c64efeb42d4246d9e47c7",
+    "experiments/ql-runtime/experiments/pydantic/ql/README.md": "69953bf14bed6f050527e73f570f8f0a71809412",
+    "experiments/ql-runtime/experiments/pydantic/ql/policy.js": "68b31e2f4f1bc4e450b1a5fc66987b060e3279a9",
+    "experiments/ql-runtime/experiments/pydantic/run-smoke.mjs": "3a69fbdba0f5d1beba9059a927d6f8f3538f2c2c",
+    "experiments/ql-runtime/experiments/pydantic/runs/README.md": "124fdfe7fd8dca8654503cb668c15d77713e0408",
+    "experiments/ql-runtime/experiments/pydantic/shared/README.md": "e76bee2bca36a8a5a972f775f68a233456896b78",
+    "experiments/ql-runtime/experiments/pydantic/shared/host.js": "48b09f6985118fdc3ec387003ed74ef41c75bdc9",
+    "experiments/ql-runtime/foundation/FOUNDATION-BLOCKER.md": "2170d6ac12286c825887dc780b1c04e1670bef66",
+    "experiments/ql-runtime/foundation/README.md": "70e1c44b22aa20759bd9d82b5e483d5162fcde8a",
+    "experiments/ql-runtime/foundation/classic-runtime/README.md": "129a41c552898369a5528b89b7440f93b1669e4e",
+    "experiments/ql-runtime/foundation/classic-runtime/index.js": "648c84822c5452ca6b24a5beb7fdd6fa0a290e00",
+    "experiments/ql-runtime/foundation/fixtures/README.md": "0ce89d2aba75036235e8a389ace814db9cbe2bcc",
+    "experiments/ql-runtime/foundation/fixtures/foundation-cases.json": "7db8717764c678789498685363c1a57893c014a1",
+    "experiments/ql-runtime/foundation/fixtures/index.js": "52fa4d906d295a5f1f5103b9c744e22bd117cf81",
+    "experiments/ql-runtime/foundation/fixtures/run-foundation-gate.mjs": "8b4fede0702a4b4d8b38a14afc8745b8ecc28474",
+    "experiments/ql-runtime/foundation/fixtures/scripted-host.js": "bd5404ca34f52083a916a4c06467420fd05b7dd9",
+    "experiments/ql-runtime/foundation/foundation-freeze.json": "b2bd216d1aef981cd7877a078e60d8545bf26c42",
+    "experiments/ql-runtime/foundation/optics/README.md": "dd85984cfca64eddfbd3f273bf3d8ebc7ad26eca",
+    "experiments/ql-runtime/foundation/optics/index.js": "05946fe244cc4ef94fe951422208c33ee48993a2",
+    "experiments/ql-runtime/foundation/optics/run-ab.mjs": "2e4982e50cf79e61e6047416251f49a2abe437d6",
+    "experiments/ql-runtime/foundation/optics/run-manifest.schema.json": "b924de3d974f5217ddf8cd63bc577d8c206f41d1",
+    "experiments/ql-runtime/foundation/package.json": "fee36948c61f9abfb80615cbee1cd749fa94a6df",
+    "experiments/ql-runtime/foundation/ql-core-runtime/README.md": "5067b5894fcee90ec4547a437d52abd8ec3f5767",
+    "experiments/ql-runtime/foundation/ql-core-runtime/circuit.js": "780c4a3da9f510d80cd287c1b34e96066d0b63f8",
+    "experiments/ql-runtime/foundation/ql-core-runtime/index.js": "dff488ee98730b4fc9c8423f549ef89d5ab73ccd",
+    "experiments/ql-runtime/foundation/ql-core-runtime/semantics.js": "94faec8b39c570e461b4a770b18181ca04fceaa3",
+    "experiments/ql-runtime/foundation/runtime-contract/README.md": "17d9e30e7181bc95ffa36989d35d120e763e50a7",
+    "experiments/ql-runtime/foundation/runtime-contract/index.js": "f8c1ac2855ae5ec4300c4b3004f2fc1379ff4bdc",
+    "experiments/ql-runtime/foundation/test/closure-integrity.test.js": "7703ae1ef99feff1633c3ad57b44fd02bb6ec5d5",
+    "experiments/ql-runtime/foundation/test/foundation.test.js": "ca2738955882a1057b820e040b28f004fdaaae63",
+    "experiments/ql-runtime/foundation/test/published-foundation.test.js": "95a653be4fba82eb6e8dfcf1e7bb78c934bfb6f4",
+    "experiments/ql-runtime/prime/README.md": "12fe007d5154ef4b64dde83c98f9018a3f4f8404",
+    "experiments/ql-runtime/prime/conditions.mjs": "7a995256ffb7edb81a69d1f3d061d3ac979a782f",
+    "experiments/ql-runtime/prime/evidence.mjs": "18f9406e8d8b5a4eb8d87c3fdd30c4cf0fdedbf4",
+    "experiments/ql-runtime/prime/package.json": "4c6012863724a9a64d899df34e2b9b7d05f3dfa2",
+    "experiments/ql-runtime/prime/prime-rpc.mjs": "e480e72ea0dce5f426008d0c9c80f22829c80b56",
+    "experiments/ql-runtime/prime/return-contract.mjs": "1a7512dd7a7c683099ad7dd7bdbe75d994f842af",
+    "experiments/ql-runtime/prime/run.mjs": "89f681ee3c1701fe7e15da2026125b0f6afce5d3",
+    "experiments/ql-runtime/prime/skills/ql-relational/SKILL.md": "8955cfe8e18c73b0369760074bc6c34ea1bd5ae1",
+    "experiments/ql-runtime/prime/skills/ql-relational/pyproject.toml": "5cee2cb6714eb5f8e69f8dad803e4c92fc8feab7",
+    "experiments/ql-runtime/prime/skills/ql-relational/src/ql_relational/__init__.py": "5a0f0fdb933181a791cfde231a859c4ccefb87f8",
+    "experiments/ql-runtime/prime/source-lock.json": "d5b335ce7ed6583926de72419071f64967634e39",
+    "experiments/ql-runtime/prime/source-lock.mjs": "fa824f1a4b806085fb9ccdccd6d9e2bd7e0dcd60",
+    "experiments/ql-runtime/prime/tasks.mjs": "eb6c0a28c1f8343f0c226c0e9d7895fad8211efa",
+    "experiments/ql-runtime/prime/test/prime-structural.test.mjs": "a322014e7cc6658997f587d5395048d91fe32262",
+    "experiments/ql-runtime/ql-agent-development-protocol-08-13-2026.md": "274d27fc89ae9980c7fe1dc2c23f233e96165167",
+    "experiments/ql-runtime/ql-agent-development-protocol-closure-amendment-08-13-2026.md": "723ec0d242e163bbf2c67b334af99f60da69229c",
+    "experiments/ql-runtime/ql-agent-spec-08-13-2026.md": "f9d056c54caf094eb672f005ce3c8cbde4de0a5b"
+  },
+  "evidence_class": "D",
+  "cases": [
+    {
+      "id": "claude-code-observed-not-executed",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "claude-code"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/claude-code"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/claude-code\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "claude-code controlled-1"
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "claude-code",
+                "harness_ref": "harness/claude-code",
+                "native_kind": "harness",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "claude",
+                    "detail": "/specimen/claude-code"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.claude",
+                    "detail": "not found"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/claude-code",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                }
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "claude"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude"
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/claude-code"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/claude-code"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/skills"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/skills"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/plugins"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/plugins"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/commands"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/commands"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/hooks"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/hooks"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/settings.json"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/settings.json"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude-code-explicit-version",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "claude-code"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/claude-code"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/claude-code\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "claude-code controlled-1"
+            }
+          }
+        },
+        "versions": true
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "claude-code",
+                "harness_ref": "harness/claude-code",
+                "native_kind": "harness",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "claude",
+                    "detail": "/specimen/claude-code"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.claude",
+                    "detail": "not found"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/claude-code",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                },
+                "version": "claude-code controlled-1"
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "claude"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude"
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/claude-code"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/claude-code"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/skills"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/skills"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/plugins"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/plugins"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/commands"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/commands"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/hooks"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/hooks"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/settings.json"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/settings.json"
+            ]
+          },
+          {
+            "effect": "versionProbe",
+            "args": [
+              "/specimen/claude-code",
+              [
+                "--version"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude-code-version-refusal-keeps-presence",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "claude-code"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/claude-code"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/claude-code\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": false,
+              "reason": "controlled version refusal"
+            }
+          }
+        },
+        "versions": true
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "claude-code",
+                "harness_ref": "harness/claude-code",
+                "native_kind": "harness",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "claude",
+                    "detail": "/specimen/claude-code"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.claude",
+                    "detail": "not found"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/claude-code",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                }
+              }
+            ],
+            "absent": [],
+            "availability": "complete",
+            "disclosure": [
+              "claude-code: version probe failed (controlled version refusal)"
+            ]
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "claude"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude"
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/claude-code"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/claude-code"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/skills"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/skills"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/plugins"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/plugins"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/commands"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/commands"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/hooks"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/hooks"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.claude/settings.json"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.claude/settings.json"
+            ]
+          },
+          {
+            "effect": "versionProbe",
+            "args": [
+              "/specimen/claude-code",
+              [
+                "--version"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "codex-observed-not-executed",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "codex"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/codex"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/codex\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "codex controlled-1"
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "codex",
+                "harness_ref": "harness/codex",
+                "native_kind": "harness",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "codex",
+                    "detail": "/specimen/codex"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.codex",
+                    "detail": "not found"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/codex",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                }
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.codex"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "codex"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.codex"
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/codex"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/codex"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.codex/skills"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.codex/skills"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.codex/rules"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.codex/rules"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.codex/config.toml"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.codex/config.toml"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "codex-explicit-version",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "codex"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/codex"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/codex\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "codex controlled-1"
+            }
+          }
+        },
+        "versions": true
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "codex",
+                "harness_ref": "harness/codex",
+                "native_kind": "harness",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "codex",
+                    "detail": "/specimen/codex"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.codex",
+                    "detail": "not found"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/codex",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                },
+                "version": "codex controlled-1"
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.codex"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "codex"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.codex"
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/codex"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/codex"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.codex/skills"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.codex/skills"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.codex/rules"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.codex/rules"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.codex/config.toml"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.codex/config.toml"
+            ]
+          },
+          {
+            "effect": "versionProbe",
+            "args": [
+              "/specimen/codex",
+              [
+                "--version"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "codex-version-refusal-keeps-presence",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "codex"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/codex"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/codex\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": false,
+              "reason": "controlled version refusal"
+            }
+          }
+        },
+        "versions": true
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "codex",
+                "harness_ref": "harness/codex",
+                "native_kind": "harness",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "codex",
+                    "detail": "/specimen/codex"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.codex",
+                    "detail": "not found"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/codex",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                }
+              }
+            ],
+            "absent": [],
+            "availability": "complete",
+            "disclosure": [
+              "codex: version probe failed (controlled version refusal)"
+            ]
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.codex"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "codex"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.codex"
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/codex"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/codex"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.codex/skills"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.codex/skills"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.codex/rules"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.codex/rules"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.codex/config.toml"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.codex/config.toml"
+            ]
+          },
+          {
+            "effect": "versionProbe",
+            "args": [
+              "/specimen/codex",
+              [
+                "--version"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "pi-observed-not-executed",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "pi"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/pi"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/pi\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "pi controlled-1"
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "pi",
+                "harness_ref": "harness/pi",
+                "native_kind": "harness",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "pi",
+                    "detail": "/specimen/pi"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.pi/agent",
+                    "detail": "not found"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/pi",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                }
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.pi/agent"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "pi"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.pi/agent"
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/pi"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/pi"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.pi/agent/skills"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.pi/agent/skills"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.pi/agent/settings.json"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.pi/agent/settings.json"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "pi-explicit-version",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "pi"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/pi"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/pi\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "pi controlled-1"
+            }
+          }
+        },
+        "versions": true
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "pi",
+                "harness_ref": "harness/pi",
+                "native_kind": "harness",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "pi",
+                    "detail": "/specimen/pi"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.pi/agent",
+                    "detail": "not found"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/pi",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                },
+                "version": "pi controlled-1"
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.pi/agent"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "pi"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.pi/agent"
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/pi"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/pi"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.pi/agent/skills"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.pi/agent/skills"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.pi/agent/settings.json"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.pi/agent/settings.json"
+            ]
+          },
+          {
+            "effect": "versionProbe",
+            "args": [
+              "/specimen/pi",
+              [
+                "--version"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "pi-version-refusal-keeps-presence",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "pi"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/pi"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/pi\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": false,
+              "reason": "controlled version refusal"
+            }
+          }
+        },
+        "versions": true
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "pi",
+                "harness_ref": "harness/pi",
+                "native_kind": "harness",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "pi",
+                    "detail": "/specimen/pi"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.pi/agent",
+                    "detail": "not found"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/pi",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                }
+              }
+            ],
+            "absent": [],
+            "availability": "complete",
+            "disclosure": [
+              "pi: version probe failed (controlled version refusal)"
+            ]
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.pi/agent"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "pi"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.pi/agent"
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/pi"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/pi"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.pi/agent/skills"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.pi/agent/skills"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.pi/agent/settings.json"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.pi/agent/settings.json"
+            ]
+          },
+          {
+            "effect": "versionProbe",
+            "args": [
+              "/specimen/pi",
+              [
+                "--version"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "partial-body-no-invented-faculties",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "descriptors": [
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "partial",
+            "native_kind": "experimental-body",
+            "probe": {
+              "executable": {
+                "names": [
+                  "partial"
+                ]
+              }
+            },
+            "provenance": {
+              "authored_by": "R5 explicit partial specimen",
+              "catalog_revision": 1
+            }
+          }
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/partial"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/partial\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "partial controlled-1"
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "partial",
+                "harness_ref": "harness/partial",
+                "native_kind": "experimental-body",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "partial",
+                    "detail": "/specimen/partial"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/partial",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                }
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "partial"
+              ]
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/partial"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/partial"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "partial-body-unavailable",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "descriptors": [
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "partial",
+            "native_kind": "experimental-body",
+            "probe": {
+              "executable": {
+                "names": [
+                  "partial"
+                ]
+              }
+            },
+            "provenance": {
+              "authored_by": "R5 explicit partial specimen",
+              "catalog_revision": 1
+            }
+          }
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "error": "controlled permission denial"
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "partial",
+                "harness_ref": "harness/partial",
+                "native_kind": "experimental-body",
+                "state": "unavailable",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "fail",
+                    "spec": "partial",
+                    "detail": "controlled permission denial"
+                  }
+                ],
+                "unavailable_reason": "all probes failed; could not run"
+              }
+            ],
+            "absent": [],
+            "availability": "partial"
+          }
+        },
+        "calls": [
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "partial"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ollama-named-inventory-is-not-directory-count",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "ollama"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/ollama"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/ollama\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              },
+              "\"/home/oracle/.ollama\"": {
+                "exists": true,
+                "isDir": true
+              },
+              "\"/home/oracle/.ollama/models\"": {
+                "exists": true,
+                "isDir": true
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "ollama controlled-1"
+            }
+          },
+          "dirCountProbe": {
+            "value": {
+              "exists": true,
+              "count": 9
+            }
+          },
+          "serviceProbe": {
+            "value": {
+              "ok": true,
+              "detail": "http 200 from http://127.0.0.1:11434"
+            }
+          },
+          "httpJsonProbe": {
+            "value": {
+              "ok": true,
+              "body": {
+                "models": [
+                  {
+                    "model": "m:1",
+                    "name": "m:alias",
+                    "digest": "digest",
+                    "size": 31,
+                    "private": "do-not-retain"
+                  },
+                  {
+                    "model": "m:1",
+                    "name": "duplicate"
+                  },
+                  null,
+                  2,
+                  {
+                    "name": "no model"
+                  },
+                  {
+                    "model": "m:2",
+                    "name": "m:2",
+                    "size": 22,
+                    "details": {
+                      "not": "scalar"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "ollama",
+                "harness_ref": "harness/ollama",
+                "native_kind": "model-provider",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "ollama",
+                    "detail": "/specimen/ollama"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.ollama",
+                    "detail": "exists at /home/oracle/.ollama"
+                  },
+                  {
+                    "kind": "service",
+                    "result": "pass",
+                    "spec": "http",
+                    "detail": "http 200 from http://127.0.0.1:11434"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/ollama",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                },
+                "facets": [
+                  {
+                    "kind": "models",
+                    "path": "~/.ollama/models",
+                    "exists": true,
+                    "count": 9,
+                    "inventory": [
+                      {
+                        "id": "m:1",
+                        "also_known_as": [
+                          "m:alias"
+                        ],
+                        "digest": "digest",
+                        "size": 31
+                      },
+                      {
+                        "id": "m:2",
+                        "size": 22
+                      }
+                    ],
+                    "inventory_receipt": {
+                      "kind": "http-json",
+                      "source": "http://127.0.0.1:11434/api/tags",
+                      "observed_at": "2026-09-10T00:00:00.000Z",
+                      "item_count": 2
+                    }
+                  }
+                ]
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "ollama"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama"
+            ]
+          },
+          {
+            "effect": "serviceProbe",
+            "args": [
+              {
+                "kind": "http",
+                "default_url": "http://127.0.0.1:11434"
+              }
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama/models"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          },
+          {
+            "effect": "dirCountProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          },
+          {
+            "effect": "httpJsonProbe",
+            "args": [
+              "http://127.0.0.1:11434/api/tags"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ollama-inventory-unavailable",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "ollama"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/ollama"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/ollama\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              },
+              "\"/home/oracle/.ollama\"": {
+                "exists": true,
+                "isDir": true
+              },
+              "\"/home/oracle/.ollama/models\"": {
+                "exists": true,
+                "isDir": true
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "ollama controlled-1"
+            }
+          },
+          "dirCountProbe": {
+            "value": {
+              "exists": true,
+              "count": 9
+            }
+          },
+          "serviceProbe": {
+            "value": {
+              "ok": true,
+              "detail": "http 200 from http://127.0.0.1:11434"
+            }
+          },
+          "httpJsonProbe": {
+            "value": {
+              "ok": false,
+              "reason": "controlled inventory failure"
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "ollama",
+                "harness_ref": "harness/ollama",
+                "native_kind": "model-provider",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "ollama",
+                    "detail": "/specimen/ollama"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.ollama",
+                    "detail": "exists at /home/oracle/.ollama"
+                  },
+                  {
+                    "kind": "service",
+                    "result": "pass",
+                    "spec": "http",
+                    "detail": "http 200 from http://127.0.0.1:11434"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/ollama",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                },
+                "facets": [
+                  {
+                    "kind": "models",
+                    "path": "~/.ollama/models",
+                    "exists": true,
+                    "count": 9,
+                    "inventory_unavailable_reason": "inventory read from http://127.0.0.1:11434/api/tags failed: controlled inventory failure"
+                  }
+                ]
+              }
+            ],
+            "absent": [],
+            "availability": "complete",
+            "disclosure": [
+              "ollama: model inventory read failed (controlled inventory failure)"
+            ]
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "ollama"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama"
+            ]
+          },
+          {
+            "effect": "serviceProbe",
+            "args": [
+              {
+                "kind": "http",
+                "default_url": "http://127.0.0.1:11434"
+              }
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama/models"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          },
+          {
+            "effect": "dirCountProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          },
+          {
+            "effect": "httpJsonProbe",
+            "args": [
+              "http://127.0.0.1:11434/api/tags"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ollama-inventory-missing-collection",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "ollama"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/ollama"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/ollama\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              },
+              "\"/home/oracle/.ollama\"": {
+                "exists": true,
+                "isDir": true
+              },
+              "\"/home/oracle/.ollama/models\"": {
+                "exists": true,
+                "isDir": true
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "ollama controlled-1"
+            }
+          },
+          "dirCountProbe": {
+            "value": {
+              "exists": true,
+              "count": 9
+            }
+          },
+          "serviceProbe": {
+            "value": {
+              "ok": true,
+              "detail": "http 200 from http://127.0.0.1:11434"
+            }
+          },
+          "httpJsonProbe": {
+            "value": {
+              "ok": true,
+              "body": {
+                "not_models": []
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "ollama",
+                "harness_ref": "harness/ollama",
+                "native_kind": "model-provider",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "ollama",
+                    "detail": "/specimen/ollama"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.ollama",
+                    "detail": "exists at /home/oracle/.ollama"
+                  },
+                  {
+                    "kind": "service",
+                    "result": "pass",
+                    "spec": "http",
+                    "detail": "http 200 from http://127.0.0.1:11434"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/ollama",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                },
+                "facets": [
+                  {
+                    "kind": "models",
+                    "path": "~/.ollama/models",
+                    "exists": true,
+                    "count": 9,
+                    "inventory_unavailable_reason": "inventory read from http://127.0.0.1:11434/api/tags returned no \"models\" array"
+                  }
+                ]
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "ollama"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama"
+            ]
+          },
+          {
+            "effect": "serviceProbe",
+            "args": [
+              {
+                "kind": "http",
+                "default_url": "http://127.0.0.1:11434"
+              }
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama/models"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          },
+          {
+            "effect": "dirCountProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          },
+          {
+            "effect": "httpJsonProbe",
+            "args": [
+              "http://127.0.0.1:11434/api/tags"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ollama-inventory-empty-observed",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "ollama"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/ollama"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/ollama\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              },
+              "\"/home/oracle/.ollama\"": {
+                "exists": true,
+                "isDir": true
+              },
+              "\"/home/oracle/.ollama/models\"": {
+                "exists": true,
+                "isDir": true
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "ollama controlled-1"
+            }
+          },
+          "dirCountProbe": {
+            "value": {
+              "exists": true,
+              "count": 9
+            }
+          },
+          "serviceProbe": {
+            "value": {
+              "ok": true,
+              "detail": "http 200 from http://127.0.0.1:11434"
+            }
+          },
+          "httpJsonProbe": {
+            "value": {
+              "ok": true,
+              "body": {
+                "models": []
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "ollama",
+                "harness_ref": "harness/ollama",
+                "native_kind": "model-provider",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "ollama",
+                    "detail": "/specimen/ollama"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.ollama",
+                    "detail": "exists at /home/oracle/.ollama"
+                  },
+                  {
+                    "kind": "service",
+                    "result": "pass",
+                    "spec": "http",
+                    "detail": "http 200 from http://127.0.0.1:11434"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/ollama",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                },
+                "facets": [
+                  {
+                    "kind": "models",
+                    "path": "~/.ollama/models",
+                    "exists": true,
+                    "count": 9,
+                    "inventory": [],
+                    "inventory_receipt": {
+                      "kind": "http-json",
+                      "source": "http://127.0.0.1:11434/api/tags",
+                      "observed_at": "2026-09-10T00:00:00.000Z",
+                      "item_count": 0
+                    }
+                  }
+                ]
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "ollama"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama"
+            ]
+          },
+          {
+            "effect": "serviceProbe",
+            "args": [
+              {
+                "kind": "http",
+                "default_url": "http://127.0.0.1:11434"
+              }
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama/models"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          },
+          {
+            "effect": "dirCountProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          },
+          {
+            "effect": "httpJsonProbe",
+            "args": [
+              "http://127.0.0.1:11434/api/tags"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ollama-inventory-unsupported-read",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "ollama"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/ollama"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/ollama\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              },
+              "\"/home/oracle/.ollama\"": {
+                "exists": true,
+                "isDir": true
+              },
+              "\"/home/oracle/.ollama/models\"": {
+                "exists": true,
+                "isDir": true
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "ollama controlled-1"
+            }
+          },
+          "dirCountProbe": {
+            "value": {
+              "exists": true,
+              "count": 9
+            }
+          },
+          "serviceProbe": {
+            "value": {
+              "ok": true,
+              "detail": "http 200 from http://127.0.0.1:11434"
+            }
+          },
+          "httpJsonProbe": {
+            "value": {
+              "ok": true,
+              "body": {
+                "models": [
+                  {
+                    "model": "m:1",
+                    "name": "m:alias",
+                    "digest": "digest",
+                    "size": 31,
+                    "private": "do-not-retain"
+                  },
+                  {
+                    "model": "m:1",
+                    "name": "duplicate"
+                  },
+                  null,
+                  2,
+                  {
+                    "name": "no model"
+                  },
+                  {
+                    "model": "m:2",
+                    "name": "m:2",
+                    "size": 22,
+                    "details": {
+                      "not": "scalar"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "omit": [
+            "httpJsonProbe"
+          ]
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "ollama",
+                "harness_ref": "harness/ollama",
+                "native_kind": "model-provider",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "ollama",
+                    "detail": "/specimen/ollama"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.ollama",
+                    "detail": "exists at /home/oracle/.ollama"
+                  },
+                  {
+                    "kind": "service",
+                    "result": "pass",
+                    "spec": "http",
+                    "detail": "http 200 from http://127.0.0.1:11434"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/ollama",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                },
+                "facets": [
+                  {
+                    "kind": "models",
+                    "path": "~/.ollama/models",
+                    "exists": true,
+                    "count": 9,
+                    "inventory_unavailable_reason": "declared service inventory not read: no http-json probe effect available for http://127.0.0.1:11434/api/tags"
+                  }
+                ]
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "ollama"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama"
+            ]
+          },
+          {
+            "effect": "serviceProbe",
+            "args": [
+              {
+                "kind": "http",
+                "default_url": "http://127.0.0.1:11434"
+              }
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama/models"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          },
+          {
+            "effect": "dirCountProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ollama-inventory-unverified-service",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "ollama"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/ollama"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/ollama\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              },
+              "\"/home/oracle/.ollama\"": {
+                "exists": true,
+                "isDir": true
+              },
+              "\"/home/oracle/.ollama/models\"": {
+                "exists": true,
+                "isDir": true
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "ollama controlled-1"
+            }
+          },
+          "dirCountProbe": {
+            "value": {
+              "exists": true,
+              "count": 9
+            }
+          },
+          "serviceProbe": {
+            "value": {
+              "ok": true,
+              "detail": "declared, not verified"
+            }
+          },
+          "httpJsonProbe": {
+            "value": {
+              "ok": true,
+              "body": {
+                "models": [
+                  {
+                    "model": "m:1",
+                    "name": "m:alias",
+                    "digest": "digest",
+                    "size": 31,
+                    "private": "do-not-retain"
+                  },
+                  {
+                    "model": "m:1",
+                    "name": "duplicate"
+                  },
+                  null,
+                  2,
+                  {
+                    "name": "no model"
+                  },
+                  {
+                    "model": "m:2",
+                    "name": "m:2",
+                    "size": 22,
+                    "details": {
+                      "not": "scalar"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "ollama",
+                "harness_ref": "harness/ollama",
+                "native_kind": "model-provider",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "ollama",
+                    "detail": "/specimen/ollama"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.ollama",
+                    "detail": "exists at /home/oracle/.ollama"
+                  },
+                  {
+                    "kind": "service",
+                    "result": "pass",
+                    "spec": "http",
+                    "detail": "declared, not verified"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/ollama",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                },
+                "facets": [
+                  {
+                    "kind": "models",
+                    "path": "~/.ollama/models",
+                    "exists": true,
+                    "count": 9,
+                    "inventory_unavailable_reason": "declared service inventory not read: service probe did not prove a live endpoint (declared, not verified)"
+                  }
+                ]
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "ollama"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama"
+            ]
+          },
+          {
+            "effect": "serviceProbe",
+            "args": [
+              {
+                "kind": "http",
+                "default_url": "http://127.0.0.1:11434"
+              }
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama/models"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          },
+          {
+            "effect": "dirCountProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ollama-inventory-failed-service",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "ollama"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/ollama"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/ollama\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              },
+              "\"/home/oracle/.ollama\"": {
+                "exists": true,
+                "isDir": true
+              },
+              "\"/home/oracle/.ollama/models\"": {
+                "exists": true,
+                "isDir": true
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "ollama controlled-1"
+            }
+          },
+          "dirCountProbe": {
+            "value": {
+              "exists": true,
+              "count": 9
+            }
+          },
+          "serviceProbe": {
+            "value": {
+              "ok": false,
+              "reason": "controlled service mechanism failure"
+            }
+          },
+          "httpJsonProbe": {
+            "value": {
+              "ok": true,
+              "body": {
+                "models": [
+                  {
+                    "model": "m:1",
+                    "name": "m:alias",
+                    "digest": "digest",
+                    "size": 31,
+                    "private": "do-not-retain"
+                  },
+                  {
+                    "model": "m:1",
+                    "name": "duplicate"
+                  },
+                  null,
+                  2,
+                  {
+                    "name": "no model"
+                  },
+                  {
+                    "model": "m:2",
+                    "name": "m:2",
+                    "size": 22,
+                    "details": {
+                      "not": "scalar"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "ollama",
+                "harness_ref": "harness/ollama",
+                "native_kind": "model-provider",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "ollama",
+                    "detail": "/specimen/ollama"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.ollama",
+                    "detail": "exists at /home/oracle/.ollama"
+                  },
+                  {
+                    "kind": "service",
+                    "result": "fail",
+                    "spec": "http",
+                    "detail": "controlled service mechanism failure"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/ollama",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                },
+                "facets": [
+                  {
+                    "kind": "models",
+                    "path": "~/.ollama/models",
+                    "exists": true,
+                    "count": 9,
+                    "inventory_unavailable_reason": "declared service inventory not read: service probe did not prove a live endpoint (controlled service mechanism failure)"
+                  }
+                ]
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "ollama"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama"
+            ]
+          },
+          {
+            "effect": "serviceProbe",
+            "args": [
+              {
+                "kind": "http",
+                "default_url": "http://127.0.0.1:11434"
+              }
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama/models"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          },
+          {
+            "effect": "dirCountProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ollama-inventory-absent-service",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "ollama"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/ollama"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/ollama\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              },
+              "\"/home/oracle/.ollama\"": {
+                "exists": true,
+                "isDir": true
+              },
+              "\"/home/oracle/.ollama/models\"": {
+                "exists": true,
+                "isDir": true
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "ollama controlled-1"
+            }
+          },
+          "dirCountProbe": {
+            "value": {
+              "exists": true,
+              "count": 9
+            }
+          },
+          "serviceProbe": {
+            "value": {
+              "ok": true,
+              "detail": "no listener at http://127.0.0.1:11434"
+            }
+          },
+          "httpJsonProbe": {
+            "value": {
+              "ok": true,
+              "body": {
+                "models": [
+                  {
+                    "model": "m:1",
+                    "name": "m:alias",
+                    "digest": "digest",
+                    "size": 31,
+                    "private": "do-not-retain"
+                  },
+                  {
+                    "model": "m:1",
+                    "name": "duplicate"
+                  },
+                  null,
+                  2,
+                  {
+                    "name": "no model"
+                  },
+                  {
+                    "model": "m:2",
+                    "name": "m:2",
+                    "size": 22,
+                    "details": {
+                      "not": "scalar"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "ollama",
+                "harness_ref": "harness/ollama",
+                "native_kind": "model-provider",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "ollama",
+                    "detail": "/specimen/ollama"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.ollama",
+                    "detail": "exists at /home/oracle/.ollama"
+                  },
+                  {
+                    "kind": "service",
+                    "result": "pass",
+                    "spec": "http",
+                    "detail": "no listener at http://127.0.0.1:11434"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/ollama",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                },
+                "facets": [
+                  {
+                    "kind": "models",
+                    "path": "~/.ollama/models",
+                    "exists": true,
+                    "count": 9,
+                    "inventory_unavailable_reason": "declared service inventory not read: service probe did not prove a live endpoint (no listener at http://127.0.0.1:11434)"
+                  }
+                ]
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "ollama"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama"
+            ]
+          },
+          {
+            "effect": "serviceProbe",
+            "args": [
+              {
+                "kind": "http",
+                "default_url": "http://127.0.0.1:11434"
+              }
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama/models"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          },
+          {
+            "effect": "dirCountProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ollama-inventory-unsupported-service",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "slugs": [
+          "ollama"
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/ollama"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/ollama\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              },
+              "\"/home/oracle/.ollama\"": {
+                "exists": true,
+                "isDir": true
+              },
+              "\"/home/oracle/.ollama/models\"": {
+                "exists": true,
+                "isDir": true
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "ollama controlled-1"
+            }
+          },
+          "dirCountProbe": {
+            "value": {
+              "exists": true,
+              "count": 9
+            }
+          },
+          "serviceProbe": {
+            "value": {
+              "ok": true,
+              "detail": "http 200 from http://127.0.0.1:11434"
+            }
+          },
+          "httpJsonProbe": {
+            "value": {
+              "ok": true,
+              "body": {
+                "models": [
+                  {
+                    "model": "m:1",
+                    "name": "m:alias",
+                    "digest": "digest",
+                    "size": 31,
+                    "private": "do-not-retain"
+                  },
+                  {
+                    "model": "m:1",
+                    "name": "duplicate"
+                  },
+                  null,
+                  2,
+                  {
+                    "name": "no model"
+                  },
+                  {
+                    "model": "m:2",
+                    "name": "m:2",
+                    "size": 22,
+                    "details": {
+                      "not": "scalar"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "omit": [
+            "serviceProbe"
+          ]
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "ollama",
+                "harness_ref": "harness/ollama",
+                "native_kind": "model-provider",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "ollama",
+                    "detail": "/specimen/ollama"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.ollama",
+                    "detail": "exists at /home/oracle/.ollama"
+                  },
+                  {
+                    "kind": "service",
+                    "result": "pass",
+                    "spec": "http",
+                    "detail": "service probe not implemented; declared, not verified"
+                  }
+                ],
+                "receipts": {
+                  "executable": "/specimen/ollama",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mtime": 120,
+                  "size": 42
+                },
+                "facets": [
+                  {
+                    "kind": "models",
+                    "path": "~/.ollama/models",
+                    "exists": true,
+                    "count": 9,
+                    "inventory_unavailable_reason": "declared service inventory not read: service probe did not prove a live endpoint (service probe not implemented; declared, not verified)"
+                  }
+                ]
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "ollama"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama"
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/specimen/ollama"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.ollama/models"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          },
+          {
+            "effect": "dirCountProbe",
+            "args": [
+              "/home/oracle/.ollama/models"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "service-only-v1-receipt-limit",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "descriptors": [
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "service-only",
+            "native_kind": "experimental-body",
+            "probe": {
+              "service": {
+                "kind": "http",
+                "default_url": "http://127.0.0.1:11434"
+              }
+            },
+            "provenance": {
+              "authored_by": "R5 explicit partial specimen",
+              "catalog_revision": 1
+            }
+          }
+        ],
+        "effects": {
+          "serviceProbe": {
+            "value": {
+              "ok": true,
+              "detail": "http 200 from http://127.0.0.1:11434"
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": false,
+          "error": {
+            "name": "TypeError",
+            "message": "HarnessDetection.harnesses[0].probes[1].kind is not a supported probe kind"
+          }
+        },
+        "calls": [
+          {
+            "effect": "serviceProbe",
+            "args": [
+              {
+                "kind": "http",
+                "default_url": "http://127.0.0.1:11434"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "defects": [
+    {
+      "id": "absence-detail-is-not-an-executable",
+      "kind": "probe",
+      "law": "Use the actual resolved path or a config-dir receipt; never hash/stat/version the passing absence diagnostic.",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "descriptors": [
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "partial",
+            "native_kind": "experimental-body",
+            "probe": {
+              "executable": {
+                "names": [
+                  "partial"
+                ]
+              },
+              "config-dir": {
+                "path": "~/.partial"
+              }
+            },
+            "provenance": {
+              "authored_by": "R5 explicit partial specimen",
+              "catalog_revision": 1
+            }
+          }
+        ],
+        "effects": {
+          "statProbe": {
+            "value": {
+              "exists": true,
+              "isDir": true
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "bogus"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+            }
+          }
+        },
+        "versions": true
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "partial",
+                "harness_ref": "harness/partial",
+                "native_kind": "experimental-body",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "partial",
+                    "detail": "not found on PATH"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.partial",
+                    "detail": "exists at /home/oracle/.partial"
+                  }
+                ],
+                "receipts": {
+                  "executable": "not found on PATH",
+                  "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "version": "bogus"
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.partial"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "partial"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.partial"
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "not found on PATH"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "not found on PATH"
+            ]
+          },
+          {
+            "effect": "versionProbe",
+            "args": [
+              "not found on PATH",
+              [
+                "--version"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "resolved-path-is-not-a-diagnostic",
+      "kind": "probe",
+      "law": "Typed executable presence cannot be overturned by words in its actual path.",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "descriptors": [
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "partial",
+            "native_kind": "experimental-body",
+            "probe": {
+              "executable": {
+                "names": [
+                  "partial"
+                ]
+              }
+            },
+            "provenance": {
+              "authored_by": "R5 explicit partial specimen",
+              "catalog_revision": 1
+            }
+          }
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "found": true,
+              "path": "/specimen/not found but present"
+            }
+          },
+          "hashProbe": {
+            "value": {
+              "ok": true,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "statProbe": {
+            "by_argument": {
+              "\"/specimen/partial\"": {
+                "exists": true,
+                "isDir": false,
+                "size": 42,
+                "mtimeMs": 120.4
+              }
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "partial controlled-1"
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "partial",
+                "harness_ref": "harness/partial",
+                "native_kind": "experimental-body",
+                "state": "not-installed",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "partial",
+                    "detail": "/specimen/not found but present"
+                  }
+                ]
+              }
+            ],
+            "absent": [
+              "partial"
+            ],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "partial"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "marker-does-not-mask-failed-presence-probe",
+      "kind": "probe",
+      "law": "A successful identity marker is not a successful presence measurement; incomplete presence remains unavailable.",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "descriptors": [
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "partial",
+            "native_kind": "experimental-body",
+            "probe": {
+              "executable": {
+                "names": [
+                  "partial"
+                ]
+              },
+              "env": {
+                "any_of": [
+                  "PRESENT_MARKER"
+                ]
+              }
+            },
+            "provenance": {
+              "authored_by": "R5 explicit partial specimen",
+              "catalog_revision": 1
+            }
+          }
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "error": "presence mechanism denied"
+            }
+          },
+          "envProbe": {
+            "value": {
+              "ok": true,
+              "matched": {
+                "PRESENT_MARKER": "not-a-secret"
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "partial",
+                "harness_ref": "harness/partial",
+                "native_kind": "experimental-body",
+                "state": "not-installed",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "fail",
+                    "spec": "partial",
+                    "detail": "presence mechanism denied"
+                  },
+                  {
+                    "kind": "env",
+                    "result": "pass",
+                    "spec": "PRESENT_MARKER",
+                    "detail": "PRESENT_MARKER set"
+                  }
+                ]
+              }
+            ],
+            "absent": [
+              "partial"
+            ],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "partial"
+              ]
+            ]
+          },
+          {
+            "effect": "envProbe",
+            "args": [
+              [
+                "PRESENT_MARKER"
+              ]
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -112,9 +112,6 @@ fn parse_timestamp(value: &str) -> Result<OffsetDateTime> {
     Err(Error::new("expected an ISO-compatible timestamp string"))
 }
 
-pub(crate) fn present<'a>(value: &'a Value, key: &str) -> Option<&'a Value> {
-    value.get(key).filter(|v| !v.is_null())
-}
 pub(crate) fn object(value: &Value) -> Result<&JsonObject> {
     value
         .as_object()

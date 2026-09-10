@@ -25,3 +25,7 @@ node scripts/migration/verify-stream-corpus.mjs | tee "$evidence/R4-corpus-integ
 node scripts/migration/parity.mjs --phase R4 -- target/debug/examples/stream-oracle | tee "$evidence/R4-parity.json"
 node scripts/migration/scenario-parity.mjs fixtures/migration/scenarios.json store fold filename -- target/debug/examples/store-oracle | tee "$evidence/R4-scenario-parity.json"
 node scripts/migration/verify-jsonl-interop.mjs | tee "$evidence/R4-jsonl-interop.json"
+
+node scripts/migration/verify-adapters-corpus.mjs | tee "$evidence/R5-corpus-integrity.json"
+node scripts/migration/parity.mjs --phase R5 -- target/debug/examples/stream-oracle | tee "$evidence/R5-parity.json"
+node scripts/migration/scenario-parity.mjs fixtures/migration/scenarios.json catalog probe secret -- target/debug/examples/adapter-scenario-oracle | tee "$evidence/R5-scenario-parity.json"

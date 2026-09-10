@@ -1,7 +1,7 @@
 mod support;
 use serde_json::Value;
 #[test]
-fn every_frozen_r4_public_case_matches_the_native_domain() {
+fn every_frozen_generic_r4_case_matches_the_native_domain() {
     let corpus: Value =
         serde_json::from_str(include_str!("../../../fixtures/migration/oracle.json")).unwrap();
     let prefixes = [
@@ -15,12 +15,16 @@ fn every_frozen_r4_public_case_matches_the_native_domain() {
         .unwrap()
         .iter()
         .filter(|r| {
-            prefixes
-                .iter()
-                .any(|p| r["operation"].as_str().unwrap().starts_with(p))
+            !r["operation"]
+                .as_str()
+                .unwrap()
+                .starts_with("contracts/model-usage.mjs#modelUsageFrom")
+                && prefixes
+                    .iter()
+                    .any(|p| r["operation"].as_str().unwrap().starts_with(p))
         })
         .collect();
-    assert_eq!(rows.len(), 213, "missing frozen cases");
+    assert_eq!(rows.len(), 200, "missing frozen cases");
     let mut errors = Vec::new();
     for row in rows {
         let answer = support::pure_row(row);

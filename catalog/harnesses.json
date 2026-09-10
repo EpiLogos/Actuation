@@ -1,0 +1,457 @@
+{
+  "schema": "actuation.harness-detection/v1",
+  "document": "catalog",
+  "catalog_revision": 6,
+  "descriptors": [
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "claude-code",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Anthropic",
+      "summary": "Claude Code agent harness",
+      "aliases": [
+        "claude"
+      ],
+      "probe": {
+        "executable": {
+          "names": [
+            "claude"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.claude"
+        }
+      },
+      "facets": {
+        "skills": {
+          "path": "~/.claude/skills"
+        },
+        "plugins": {
+          "path": "~/.claude/plugins"
+        },
+        "commands": {
+          "path": "~/.claude/commands"
+        },
+        "hooks": {
+          "path": "~/.claude/hooks"
+        },
+        "settings": {
+          "path": "~/.claude/settings.json"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "codex",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "OpenAI",
+      "summary": "Codex CLI agent harness",
+      "probe": {
+        "executable": {
+          "names": [
+            "codex"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.codex"
+        }
+      },
+      "facets": {
+        "skills": {
+          "path": "~/.codex/skills"
+        },
+        "rules": {
+          "path": "~/.codex/rules"
+        },
+        "config": {
+          "path": "~/.codex/config.toml"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "gemini",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Google",
+      "summary": "Gemini CLI agent harness; antigravity ships inside its config tree",
+      "probe": {
+        "executable": {
+          "names": [
+            "gemini"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.gemini"
+        }
+      },
+      "facets": {
+        "extensions": {
+          "path": "~/.gemini/extensions"
+        },
+        "settings": {
+          "path": "~/.gemini/settings.json"
+        },
+        "agents": {
+          "path": "~/.gemini/antigravity"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "gemini-antigravity",
+      "native_kind": "harness",
+      "edition": "ide",
+      "native_owner": "Google",
+      "summary": "Antigravity agent (own-slug decision pending; detected inside the gemini config tree)",
+      "aliases": [
+        "antigravity"
+      ],
+      "probe": {
+        "config-dir": {
+          "path": "~/.gemini/antigravity"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "pi",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Mario Zechner",
+      "summary": "pi coding agent harness",
+      "probe": {
+        "executable": {
+          "names": [
+            "pi"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.pi/agent"
+        }
+      },
+      "facets": {
+        "skills": {
+          "path": "~/.pi/agent/skills"
+        },
+        "config": {
+          "path": "~/.pi/agent/settings.json"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "hermes",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Nous Research",
+      "summary": "Hermes agent harness",
+      "probe": {
+        "executable": {
+          "names": [
+            "hermes"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.hermes"
+        }
+      },
+      "facets": {
+        "skills": {
+          "path": "~/.hermes/skills"
+        },
+        "config": {
+          "path": "~/.hermes/config.yaml"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "hermes-acp",
+      "native_kind": "harness",
+      "edition": "acp-bridge",
+      "native_owner": "Nous Research",
+      "summary": "Hermes ACP bridge; shares the hermes config tree",
+      "probe": {
+        "executable": {
+          "names": [
+            "hermes-acp"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.hermes"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "grok-bot",
+      "native_kind": "harness",
+      "edition": "cli+service",
+      "native_owner": "xAI",
+      "summary": "grok-bot harness; runs as a background daemon, version probe may prompt the keychain",
+      "aliases": [
+        "gbot"
+      ],
+      "probe": {
+        "executable": {
+          "names": [
+            "grok-bot",
+            "gbot"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.grokbot"
+        },
+        "service": {
+          "kind": "daemon",
+          "name": "grok-bot"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "ollama",
+      "native_kind": "model-provider",
+      "edition": "cli+service",
+      "native_owner": "Ollama",
+      "summary": "local model runtime and provider; detected for model binding, not agency",
+      "probe": {
+        "executable": {
+          "names": [
+            "ollama"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.ollama"
+        },
+        "service": {
+          "kind": "http",
+          "default_url": "http://127.0.0.1:11434"
+        }
+      },
+      "facets": {
+        "models": {
+          "path": "~/.ollama/models",
+          "inventory": {
+            "kind": "http-json",
+            "from": "service",
+            "route": "/api/tags",
+            "collection": "models",
+            "id_field": "model",
+            "also_id_fields": [
+              "name"
+            ],
+            "detail_fields": [
+              "digest",
+              "size",
+              "modified_at"
+            ]
+          }
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05",
+          "https://github.com/ollama/ollama/blob/main/docs/api.md"
+        ],
+        "catalog_revision": 5
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "openclaw",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "OpenClaw",
+      "summary": "OpenClaw agent harness; agent config lives under ~/.openclaw",
+      "probe": {
+        "executable": {
+          "names": [
+            "openclaw"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.openclaw"
+        }
+      },
+      "facets": {
+        "agents": {
+          "path": "~/.openclaw/agents"
+        },
+        "config": {
+          "path": "~/.openclaw/openclaw.json"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "kimi",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Moonshot AI",
+      "summary": "Kimi CLI harness",
+      "probe": {
+        "executable": {
+          "names": [
+            "kimi"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.kimi"
+        }
+      },
+      "facets": {
+        "config": {
+          "path": "~/.kimi/config.toml"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 1
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "zcode",
+      "native_kind": "harness",
+      "edition": "client",
+      "native_owner": "ZCode",
+      "summary": "zcode agent harness client",
+      "probe": {
+        "config-dir": {
+          "path": "~/.zcode"
+        },
+        "env": {
+          "any_of": [
+            "ZCODE_APP_VERSION",
+            "ZCODE_ENV"
+          ]
+        }
+      },
+      "facets": {
+        "plugins": {
+          "path": "~/.zcode/cli/plugins"
+        }
+      },
+      "provenance": {
+        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "source_refs": [
+          "survey:local-machine-2026-09-05"
+        ],
+        "catalog_revision": 2
+      }
+    }
+  ]
+}

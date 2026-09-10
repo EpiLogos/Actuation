@@ -1,11 +1,8 @@
-//! Pure codecs for the frozen usage-record boundary. They do not invoke a
-//! provider, fill missing measurements, resolve models, or copy message text.
-//! Temporarily colocated for R4 full usage parity; R5 gives these codecs their
-//! permanent `actuation-adapters` owner beside the other target observations.
-use crate::{
-    wire::{object, present, text},
-    Count, Error, ModelUsageObservation, Result, Timestamp,
-};
+//! Source-specific usage observations. No model selection, provider execution,
+//! hidden zero filling, or message content is part of this boundary.
+use crate::wire::{object, present, text};
+use actuation_core::{Error, Result};
+use actuation_stream::{Count, ModelUsageObservation, Timestamp};
 use serde_json::{json, Value};
 
 fn native_count(value: &Value) -> Result<Value> {
