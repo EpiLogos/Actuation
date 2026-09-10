@@ -92,12 +92,6 @@ pub fn evaluate(operation: &str, args: &[Value]) -> Result<Value> {
         "contracts/model-usage.mjs#validateModelUsageObservation" => {
             admitted::<ModelUsageObservation>(first)
         }
-        "contracts/model-usage.mjs#modelUsageFromClaudeCodeTranscript" => encode(
-            usage_native::from_claude_code_transcript(&first, &options(args, 1)?)?,
-        ),
-        "contracts/model-usage.mjs#modelUsageFromCodexExecEvents" => encode(
-            usage_native::from_codex_exec_events(&first, &options(args, 1)?)?,
-        ),
         "contracts/request-correlation.mjs#validateAuthorityDecision"
         | "contracts/request-correlation.mjs#authorityDecision" => {
             admitted::<AuthorityDecision>(first)

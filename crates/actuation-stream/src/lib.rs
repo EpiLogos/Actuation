@@ -11,9 +11,6 @@ mod store;
 mod stream;
 mod usage;
 mod wire;
-// R4 proves the complete frozen usage boundary. These two pure source codecs
-// move to actuation-adapters in R5; they contain no provider execution/selection.
-pub mod usage_native;
 pub use activity::*;
 pub use actuation_core::{Error, Result};
 pub use correlation::*;

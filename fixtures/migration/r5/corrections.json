@@ -1,0 +1,306 @@
+{
+  "schema": "actuation.r5-explicit-corrections/v1",
+  "source_revision": "1c862c6bf58478adf6842a090214906dd2337001",
+  "source_blobs": {
+    "detection/detect.mjs": "bd215eab7ef819ae117a830cd883551e13bc8963",
+    "contracts/harness-detection.mjs": "f9274641caa6f443d2802f9a06c4b6e945351e71",
+    "scripts/migration/scenarios.mjs": "19bac49589fd21980ef3f0970c34a9a0a451e7dc"
+  },
+  "cases": [
+    {
+      "id": "absence-detail-is-not-an-executable",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "descriptors": [
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "configuration-only",
+            "native_kind": "harness",
+            "probe": {
+              "executable": {
+                "names": [
+                  "fixture"
+                ]
+              },
+              "config-dir": {
+                "path": "~/.fixture"
+              }
+            },
+            "provenance": {
+              "authored_by": "R5 controlled regression",
+              "catalog_revision": 1
+            }
+          }
+        ],
+        "effects": {
+          "statProbe": {
+            "value": {
+              "exists": true,
+              "isDir": true
+            }
+          },
+          "versionProbe": {
+            "value": {
+              "ok": true,
+              "version": "incorrectly-probed"
+            }
+          }
+        },
+        "versions": true
+      },
+      "correction": "Only an actual resolved executable is version-probed. Configuration-only presence retains its explicit config-dir receipt.",
+      "original": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "configuration-only",
+                "harness_ref": "harness/configuration-only",
+                "native_kind": "harness",
+                "state": "detected",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "fixture",
+                    "detail": "not found on PATH"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.fixture",
+                    "detail": "exists at /home/oracle/.fixture"
+                  }
+                ],
+                "receipts": {
+                  "executable": "not found on PATH"
+                },
+                "version": "incorrectly-probed"
+              }
+            ],
+            "absent": [],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.fixture"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "fixture"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.fixture"
+            ]
+          },
+          {
+            "effect": "hashProbe",
+            "args": [
+              "not found on PATH"
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "not found on PATH"
+            ]
+          },
+          {
+            "effect": "versionProbe",
+            "args": [
+              "not found on PATH",
+              [
+                "--version"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "marker-success-is-not-presence-observation",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "descriptors": [
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "failed-presence",
+            "native_kind": "harness",
+            "probe": {
+              "executable": {
+                "names": [
+                  "fixture"
+                ]
+              },
+              "env": {
+                "any_of": [
+                  "FIXTURE_MARKER"
+                ]
+              }
+            },
+            "provenance": {
+              "authored_by": "R5 controlled regression",
+              "catalog_revision": 1
+            }
+          }
+        ],
+        "effects": {
+          "resolveExecutable": {
+            "value": {
+              "error": "controlled presence failure"
+            }
+          },
+          "envProbe": {
+            "value": {
+              "ok": true,
+              "matched": {
+                "FIXTURE_MARKER": true
+              }
+            }
+          }
+        },
+        "versions": false
+      },
+      "correction": "A successful marker probe cannot make an incomplete presence probe prove absence. The result is unavailable.",
+      "original": {
+        "result": {
+          "ok": true,
+          "value": {
+            "schema": "actuation.harness-detection/v1",
+            "document": "detection",
+            "detection_ref": "detection:2026-09-10T00:00:00.000Z",
+            "observed_at": "2026-09-10T00:00:00.000Z",
+            "catalog_revision": 6,
+            "detector": {
+              "implementation": "actuation surface-probes",
+              "version": "0.1.0"
+            },
+            "harnesses": [
+              {
+                "slug": "failed-presence",
+                "harness_ref": "harness/failed-presence",
+                "native_kind": "harness",
+                "state": "not-installed",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "fail",
+                    "spec": "fixture",
+                    "detail": "controlled presence failure"
+                  },
+                  {
+                    "kind": "env",
+                    "result": "pass",
+                    "spec": "FIXTURE_MARKER",
+                    "detail": "FIXTURE_MARKER set"
+                  }
+                ]
+              }
+            ],
+            "absent": [
+              "failed-presence"
+            ],
+            "availability": "complete"
+          }
+        },
+        "calls": [
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "fixture"
+              ]
+            ]
+          },
+          {
+            "effect": "envProbe",
+            "args": [
+              [
+                "FIXTURE_MARKER"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "service-without-a-receipt-is-degraded",
+      "kind": "probe",
+      "input": {
+        "now": "2026-09-10T00:00:00.000Z",
+        "descriptors": [
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "endpoint-only",
+            "native_kind": "harness",
+            "probe": {
+              "service": {
+                "kind": "http",
+                "default_url": "http://127.0.0.1:1"
+              }
+            },
+            "provenance": {
+              "authored_by": "R5 controlled regression",
+              "catalog_revision": 1
+            }
+          }
+        ],
+        "effects": {
+          "serviceProbe": {
+            "value": {
+              "ok": true,
+              "detail": "http 200 from http://127.0.0.1:1"
+            }
+          }
+        },
+        "versions": false
+      },
+      "correction": "Presence without a captureable same-run receipt is disclosed unavailable, rather than emitting an invalid probe or fabricating a path.",
+      "original": {
+        "result": {
+          "ok": false,
+          "error": {
+            "name": "TypeError",
+            "message": "HarnessDetection.harnesses[0].probes[1].kind is not a supported probe kind"
+          }
+        },
+        "calls": [
+          {
+            "effect": "serviceProbe",
+            "args": [
+              {
+                "kind": "http",
+                "default_url": "http://127.0.0.1:1"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
