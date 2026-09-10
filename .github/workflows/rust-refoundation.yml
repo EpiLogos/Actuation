@@ -47,3 +47,70 @@ jobs:
           path: migration-evidence/
           if-no-files-found: error
           retention-days: 30
+
+  # Temporary R0 source-study transport for the network-isolated authoring
+  # environment. No product Rust implementation or owner mutation occurs here.
+  # Remove this job before accepting PR A; retained evidence identifies its
+  # exact inputs and is not a provider, owner-machine or human acceptance.
+  source-study:
+    if: github.event_name == 'pull_request' && github.head_ref == 'act-rust/r0-r1-oracle'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Archive pinned public owner sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p study owners
+          while read -r owner revision; do
+            git init -q "owners/$owner"
+            git -C "owners/$owner" remote add origin "https://github.com/EpiLogos/$owner.git"
+            git -C "owners/$owner" fetch --depth 1 origin "$revision"
+            test "$(git -C "owners/$owner" rev-parse FETCH_HEAD)" = "$revision"
+            git -C "owners/$owner" archive --format=tar.gz FETCH_HEAD > "study/$owner-$revision.tar.gz"
+            printf '%s %s\n' "$owner" "$revision" >> study/owner-revisions.txt
+          done <<'SOURCES'
+          O-I 7b3a9f4a652ac4992a69666e5be29524e0aef05d
+          Workcell aa2d2ba59f0ac259158eb7d2cd1cfcab1579268a
+          ai-kit 897b8f4e693b52f58d28a6f58071f9edccd38f3b
+          Factory 366a6b2bf18ba23053601f5d5eb543b79bfcfb27
+          QL-MEF 34e0f3c7b1ccfa739d5a77f98c2dbedc755d8de1
+          SOURCES
+      - name: Prepare isolated authoring tools (not product dependencies)
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustc -Vv > study/rustc.txt
+          cargo -V > study/cargo.txt
+          mkdir -p "$RUNNER_TEMP/authoring-tools/src"
+          cat > "$RUNNER_TEMP/authoring-tools/Cargo.toml" <<'MANIFEST'
+          [package]
+          name = "actuation-isolated-authoring-tools"
+          version = "0.0.0"
+          edition = "2021"
+          publish = false
+          [dependencies]
+          serde = { version = "1", features = ["derive"] }
+          serde_json = "1"
+          sha2 = "0.10"
+          toml = "0.9"
+          tempfile = "3"
+          ureq = { version = "3", features = ["json"] }
+          regex = "1"
+          MANIFEST
+          printf 'fn main() {}\n' > "$RUNNER_TEMP/authoring-tools/src/main.rs"
+          cargo vendor --manifest-path "$RUNNER_TEMP/authoring-tools/Cargo.toml" --versioned-dirs "$RUNNER_TEMP/vendor" > study/vendor-config.toml
+          cp "$RUNNER_TEMP/authoring-tools/Cargo.lock" study/authoring-tools.lock
+          tar -C "$RUNNER_TEMP" -czf study/vendor.tar.gz vendor
+          sysroot="$(rustc --print sysroot)"
+          tar --exclude='./share/doc' --exclude='./share/man' -C "$sysroot" -czf study/rust-toolchain.tar.gz .
+          (cd study && sha256sum *.tar.gz > SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: actuation-r0-source-study-${{ github.sha }}
+          path: study/
+          if-no-files-found: error
+          retention-days: 2
