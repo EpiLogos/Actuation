@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/actuation-core"]
+members = ["crates/actuation-core", "crates/actuation-runtime"]
 resolver = "2"
 
 [workspace.package]

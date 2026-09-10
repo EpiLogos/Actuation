@@ -11,6 +11,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "actuation-runtime"
+version = "0.2.0"
+dependencies = [
+ "actuation-core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"

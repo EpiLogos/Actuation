@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+const path='fixtures/migration/runtime.json';
+const [digest,source]=readFileSync('fixtures/migration/R3-SHA256SUMS','utf8').trim().split(/\s+/);
+assert.equal(source,path);
+assert.equal(createHash('sha256').update(readFileSync(path)).digest('hex'),digest,'frozen runtime extraction corpus changed');
+const corpus=JSON.parse(readFileSync(path,'utf8'));
+assert.equal(corpus.source_revision,'1c862c6bf58478adf6842a090214906dd2337001');
+assert.equal(corpus.schema,'actuation.runtime-extraction/v1');
+assert.equal(corpus.cases.length,29);
+assert.equal(new Set(corpus.cases.map(c=>c.id)).size,29);
+console.log(JSON.stringify({schema:'actuation.runtime-corpus-integrity/v1',cases:29,status:'ok',evidence_class:'D'}));
