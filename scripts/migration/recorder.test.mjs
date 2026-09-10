@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+const root = mkdtempSync(join(tmpdir(), 'actuation-recorder-'));
+process.env.ACTUATION_ORACLE_CAPTURE_DIR = root;
+const { captureCall } = await import('./capture-record.mjs');
+test('capture preserves object identity, input mutation, thrown identity and async identity', async () => {
+  const value = { nested: { ref: 'opaque' } };
+  assert.strictEqual(captureCall('test#identity', x => x, [value]), value);
+  const mutated = { field: 1 };
+  assert.strictEqual(captureCall('test#mutation', x => { x.field++; return x; }, [mutated]), mutated);
+  const error = new TypeError('original error');
+  assert.throws(() => captureCall('test#error', () => { throw error; }, [null]), candidate => candidate === error);
+  const promise = Promise.resolve('unchanged');
+  assert.strictEqual(captureCall('test#async', () => promise, [{}]), promise);
+  await promise;
+  const rows = readFileSync(join(root, `${process.pid}.jsonl`), 'utf8').trim().split('\n').map(line => JSON.parse(line));
+  assert.equal(rows.length, 3);
+  assert.deepEqual(rows[1].args, [{ field: 1 }]);
+  assert.deepEqual(rows[1].expected.value, { field: 2 });
+  assert.deepEqual(rows[2].expected, { ok: false, error: { name: 'TypeError', message: error.message } });
+  rmSync(root, { recursive: true, force: true });
+});
