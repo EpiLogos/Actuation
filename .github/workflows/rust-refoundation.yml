@@ -62,3 +62,32 @@ jobs:
           path: migration-evidence/
           if-no-files-found: error
           retention-days: 30
+
+  native-rust:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Native constitutional domain and executable parity
+        shell: bash
+        run: |
+          bash scripts/migration/verify-native.sh native-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: actuation-native-${{ runner.os }}-${{ github.sha }}
+          path: native-evidence/
+          if-no-files-found: error
+          retention-days: 30
