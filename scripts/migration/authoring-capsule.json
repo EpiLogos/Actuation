@@ -1,0 +1,14 @@
+{
+  "schema": "actuation.serial-authoring/v1",
+  "encoding": "xz+base64",
+  "basis_revision": "0ac4bbb47cc37a7ac3c1db42b88a39ffd6bb5b30",
+  "sha256": "e7eca501123740ea1b01daa76c4bc5a08628134ff2e5a0e29fe2fda9742e7de2",
+  "parts": [
+    "scripts/migration/authoring-0.txt",
+    "scripts/migration/authoring-1.txt",
+    "scripts/migration/authoring-2.txt",
+    "scripts/migration/authoring-3.txt",
+    "scripts/migration/authoring-4.txt",
+    "scripts/migration/authoring-5.txt"
+  ]
+}
