@@ -1,7 +1,1 @@
-{
-  "schema": "actuation.serial-authoring/v1",
-  "basis_revision": "05e440f4628bbc40eca30f2cabb869a76e99ddd9",
-  "sha256": "0493b08d02b61d7c27e3d5d3dbf0139c6c7f73a9d6e1c6c71fdf5a8720f2d7af",
-  "encoding": "xz+base64",
-  "parts": ["scripts/migration/authoring-0.txt", "scripts/migration/authoring-1.txt", "scripts/migration/authoring-2.txt", "scripts/migration/authoring-3.txt"]
-}
+{"schema":"actuation.serial-authoring/v1","basis_revision":"05e440f4628bbc40eca30f2cabb869a76e99ddd9","sha256":"ccc66965e29ed3d89513ec0630471ee0bac99513c058dd32c6d7a8165b03c18a","encoding":"xz+base64","parts":["scripts/migration/authoring-0.txt","scripts/migration/authoring-1.txt","scripts/migration/authoring-2.txt","scripts/migration/authoring-3.txt"]}
