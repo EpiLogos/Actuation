@@ -1,0 +1,164 @@
+{
+  "schema": "actuation.native-tranche/v1",
+  "phase": "R6",
+  "basis_revision": "0dfa401965e182198b4024fb79dc9492285cf14a",
+  "classification_law": "Per-source classifications A/B/C/D are frozen in docs/rust-refoundation/ledger.json (R6 phase: A=1, B=73, C=6, D=37). This record states the executed standing of those dispositions on this branch; it does not rewrite the frozen ledger.",
+  "native_sources": [
+    "crates/actuation-research/src/lib.rs",
+    "crates/actuation-research/src/value.rs",
+    "crates/actuation-research/src/records.rs",
+    "crates/actuation-research/src/store.rs",
+    "crates/actuation-research/src/world.rs",
+    "crates/actuation-research/src/evidence.rs",
+    "crates/actuation-research/src/tasks.rs",
+    "crates/actuation-research/src/process.rs",
+    "crates/actuation-research/src/sdk.rs",
+    "crates/actuation-research/src/execution.rs",
+    "crates/actuation-research/src/relational.rs",
+    "crates/actuation-research/src/policy.rs",
+    "crates/actuation-research/src/owner.rs",
+    "crates/actuation-research/src/faculty.rs",
+    "crates/actuation-research/src/prime.rs",
+    "crates/actuation-research/src/prime_run.rs",
+    "crates/actuation-research/src/readiness.rs",
+    "crates/actuation-research/src/comparison.rs",
+    "crates/actuation-research/src/inspection.rs",
+    "crates/actuation-research/src/application.rs",
+    "crates/actuation-research/src/bin/actuation-research.rs",
+    "crates/actuation-research/examples/research-oracle.rs"
+  ],
+  "native_data_bindings": [
+    {
+      "path": "experiments/ql-runtime/prime/conditions.json",
+      "schema": "actuation.prime-conditions/v1",
+      "source_revision": "324231df093a7c0ec07b8fef0432844214cc27ec",
+      "origin": {
+        "path": "experiments/ql-runtime/prime/conditions.mjs",
+        "blob": "7a995256ffb7edb81a69d1f3d061d3ac979a782f"
+      },
+      "consumer": "crates/actuation-research/src/prime.rs"
+    },
+    {
+      "path": "experiments/native-research/tasks.json",
+      "schema": "actuation.research-tasks/v1",
+      "source_revision": "94591372975f45f7f42f35cbabbccfaf6936355e",
+      "origin_blobs": [
+        {
+          "path": "experiments/ql-runtime/comparison/series1/tasks.mjs",
+          "blob": "600304f38adcb6633be4de39e259e7a3175a8a0d"
+        },
+        {
+          "path": "experiments/ql-runtime/prime/tasks.mjs",
+          "blob": "eb6c0a28c1f8343f0c226c0e9d7895fad8211efa"
+        }
+      ],
+      "human_review_reference": "experiments/native-research/human-review-reference.json",
+      "candidate_boundary": "crates/actuation-research/src/evidence.rs candidate_boundary()",
+      "consumer": "crates/actuation-research/src/tasks.rs"
+    },
+    {
+      "path": "experiments/native-research/prime-source-lock.json",
+      "schema": "actuation.prime-source-lock/v1",
+      "actuation_base_revision": "94591372975f45f7f42f35cbabbccfaf6936355e",
+      "prime_agent": {
+        "release": "v0.9.4",
+        "release_revision": "f771dfcedd684d1afff84ca2c6fa95c7a21efbc2",
+        "observed_main_revision": "55ade48b73f636d992855b7cab797d71dc1f6f1c"
+      },
+      "ql_mef_accepted_main_revision": "e753efc91f62b5b2af09e0a852c5063e366eccbe",
+      "harmonic_research": {
+        "revision": "42d36ed75fd9cf8a70bcbabc5dca766cc51b6811",
+        "accepted_via_revision": "781981374eaa1f02952249dcdbca1af671d1ece4",
+        "standing": "accepted-main-history-carrier",
+        "pull_request_state": "closed-unmerged"
+      },
+      "consumer": "crates/actuation-research/src/prime.rs SourceLock"
+    },
+    {
+      "path": "experiments/native-research/relational-roles.json",
+      "schema": "research responsibility map for positions 0..5",
+      "consumer": "crates/actuation-research/src/relational.rs Profile::bind"
+    },
+    {
+      "path": "experiments/ql-runtime/deep-ql/convergence/dry-runs.json",
+      "schema": "eight retained QLDR readiness scenarios",
+      "consumer": "crates/actuation-research/src/readiness.rs"
+    }
+  ],
+  "owner_bindings": {
+    "ql_formal_owner": "EpiLogos/QL-MEF",
+    "ql_mef_accepted_main_revision": "e753efc91f62b5b2af09e0a852c5063e366eccbe",
+    "owner_instrument": {
+      "path": "experiments/ql-runtime/native-owner-instrument/",
+      "pinned_revisions": [
+        "ql-core",
+        "ql-mef",
+        "ql-cli",
+        "ql-wiki"
+      ],
+      "pinned_revision": "e753efc91f62b5b2af09e0a852c5063e366eccbe",
+      "native_consumer": "crates/actuation-research/src/owner.rs OwnerInstrument (binary digest bound, reply-correlated)"
+    },
+    "duplicate_formal_algebra_in_actuation": false
+  },
+  "consumed_native_contracts_by_experiment": {
+    "experiments/epistemic-cultivation/": {
+      "consumes": [
+        "crates/actuation-research records/store/world/value (schema actuation.epistemic-record/v0; eight record kinds; six access kinds; provenance attribution law)"
+      ],
+      "executed_standing": "generic record/store/access/provenance mechanics now executable natively; JS remains the served oracle until the R7 cutover"
+    },
+    "experiments/ql-runtime/foundation/ and experiments/ql-runtime/deep-ql/": {
+      "consumes": [
+        "actuation-runtime (ClassicRuntime, LoopRequest, LoopEvent, StreamRuntimeObserver)",
+        "actuation-core (ExternalRef, Error/Result)",
+        "crates/actuation-research execution/relational/policy/readiness (shared Classic/Direct/Deep lifecycle; eight native QLDR readiness scenarios)"
+      ],
+      "executed_standing": "generic loop/runtime/stream behaviour native since R3-R5; research orchestration native in actuation-research; convergence dry-runs executed natively"
+    },
+    "experiments/ql-runtime/prime/": {
+      "consumes": [
+        "crates/actuation-research prime/prime_run/process (bounded JSONL RPC over an explicitly supplied native Prime body)",
+        "crates/actuation-research faculty (native Actuation faculty over the pinned QL owner; Python transports calls only)",
+        "actuation-runtime StreamRuntimeObserver via actuation-stream JsonlStreamStore"
+      ],
+      "executed_standing": "first-class Prime research executable natively; live campaign still requires a configured provider and is not claimed"
+    },
+    "experiments/ql-runtime/comparison/series1/": {
+      "consumes": [
+        "crates/actuation-research comparison (held constants, deterministic masking, Pass A/B review rendering, serial trial executor)",
+        "crates/actuation-research inspection (read-only ql-series1-dsh-inspection/0.1 projection)",
+        "crates/actuation-research sdk (persistent shared SDK transport for Pi/Pydantic/DSH specimen bodies)"
+      ],
+      "executed_standing": "comparison mechanics native; DSH/Pi/Pydantic hosts remain specimen-native class-C bridges with explicit boundaries"
+    }
+  },
+  "executable_test_bindings": {
+    "crate_tests": "cargo test -p actuation-research — 82 tests: validation law (records/store/world/value), digest/redaction, source-lock classification over the exact fixture, DSH inspection projection, frozen task setup/verify including real Node specimen verification, bounded process and scripted-JSONL RPC transports, SDK projection/normalisation, comparison law, relational limits/profile, end-to-end Classic and Direct runs over a scripted formal owner, and all eight native readiness scenarios",
+    "workspace_tests": "cargo test --workspace — 150 passed, 0 failed",
+    "ci_gates": {
+      "workflow": "rust-refoundation.yml (verify-native.sh)",
+      "run": "https://github.com/EpiLogos/Actuation/actions/runs/34654916739",
+      "operating_systems": [
+        "ubuntu-latest",
+        "macos-15"
+      ],
+      "steps": [
+        "cargo fmt --all -- --check",
+        "cargo clippy --locked --workspace --all-targets -- -D warnings",
+        "cargo test --locked --workspace",
+        "R2-R5 frozen parity oracles (unchanged, green)"
+      ]
+    },
+    "js_oracle_gates": "migration job still runs the Node-native research suites (foundation, deep-ql, prime, epistemic-cultivation) as migration oracles; green on the same commit"
+  },
+  "evidence_class": "D",
+  "not_claimed": [
+    "provider evidence (no live model/provider was exercised)",
+    "owner-machine evidence (no owner-machine acceptance run)",
+    "human acceptance",
+    "R7-R9 (CLI, packaging, owner cutover, release)",
+    "live Prime P0/P2/P3/P4/P5 campaign",
+    "replacement or deletion of any served Node source (stays until the R7 cutover law)"
+  ]
+}
