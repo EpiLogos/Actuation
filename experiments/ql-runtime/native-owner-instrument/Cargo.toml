@@ -11,6 +11,8 @@ publish = false
 [dependencies]
 ql-core = { git = "https://github.com/EpiLogos/QL-MEF", rev = "e753efc91f62b5b2af09e0a852c5063e366eccbe" }
 ql-mef = { git = "https://github.com/EpiLogos/QL-MEF", rev = "e753efc91f62b5b2af09e0a852c5063e366eccbe" }
+ql-cli = { git = "https://github.com/EpiLogos/QL-MEF", rev = "e753efc91f62b5b2af09e0a852c5063e366eccbe" }
+ql-wiki = { git = "https://github.com/EpiLogos/QL-MEF", rev = "e753efc91f62b5b2af09e0a852c5063e366eccbe" }
 serde_json = "1"
 
 [lints.rust]
