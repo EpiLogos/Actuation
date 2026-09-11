@@ -38,4 +38,3 @@ jobs:
       # contract identifier and `actuation <command>` the Skills name must
       # exist in the repository and the served surface.
       - run: bash scripts/verify-native-skills.sh
-      - run: npm test

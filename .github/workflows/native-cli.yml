@@ -1,5 +1,9 @@
 name: Native CLI
 
+# The one pull-request gate for Actuation (branch-required). `npm test`
+# discovers every native suite; the contract schemas are parsed here, so the
+# per-contract workflows that only re-ran `npm test` are gone.
+
 on:
   # This check is branch-required, so it must report on every pull request.
   # Push builds remain path-scoped below to avoid redundant mainline work.
@@ -38,6 +42,11 @@ jobs:
       # (it referenced contracts/model-bearing.test.mjs after the rename).
       - run: npm test
       - run: node --test ProjectCentral/tests/register.integrity.mjs
+      - name: Every contract schema parses
+        run: |
+          for schema in contracts/*.schema.json; do
+            node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' "$schema"
+          done
       - name: Self-certification - the served binary certifies this build
         run: |
           node bin/actuation capabilities --json > capabilities.json

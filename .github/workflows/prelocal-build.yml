@@ -49,9 +49,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      # npm test globs every native suite; a hardcoded file list here rots
-      # (it referenced contracts/model-bearing.test.mjs after the rename).
-      - run: npm test
       - name: Verify the npm package in a clean directory
         shell: bash
         run: |
