@@ -5615,7 +5615,8 @@
             "instantiation": "actuation.instantiation/v1",
             "model_bearing_legacy": "actuation.model-bearing/v1",
             "harness_detection": "actuation.harness-detection/v1",
-            "harness_capability": "actuation.harness-capability/v1"
+            "harness_capability": "actuation.harness-capability/v1",
+            "system_disclosure": "oi.product-settings-disclosure/v2"
           },
           "commands": [
             "capabilities",
@@ -5637,6 +5638,7 @@
             "harness.detect",
             "harness.self",
             "harness.capability",
+            "system.read",
             "verify"
           ],
           "revision": "$REVISION"
@@ -5666,7 +5668,8 @@
           "instantiation": "actuation.instantiation/v1",
           "model_bearing_legacy": "actuation.model-bearing/v1",
           "harness_detection": "actuation.harness-detection/v1",
-          "harness_capability": "actuation.harness-capability/v1"
+          "harness_capability": "actuation.harness-capability/v1",
+          "system_disclosure": "oi.product-settings-disclosure/v2"
         },
         "stderr": ""
       }

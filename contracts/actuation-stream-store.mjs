@@ -133,7 +133,7 @@ export function foldStreamFile(raw) {
   return validateActuationStream(stream);
 }
 
-function loadStreamFile(path) {
+export function loadStreamFile(path) {
   if (!existsSync(path)) return null;
   return foldStreamFile(readFileSync(path, "utf8"));
 }

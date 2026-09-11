@@ -22,6 +22,7 @@ import {
 import { validateActivity } from "../contracts/activity.mjs";
 import { modelUsageFromClaudeCodeTranscript, modelUsageFromCodexExecEvents, validateModelUsageObservation } from "../contracts/model-usage.mjs";
 import { instantiationReceipt, attachDetectionEvidence } from "../contracts/instantiation.mjs";
+import { buildSystemDisclosure } from "../contracts/system-disclosure.mjs";
 import { harnessCatalog as harnessCatalogDocument } from "../contracts/harness-detection.mjs";
 import { runDetection } from "../detection/detect.mjs";
 import { resolveSelf } from "../detection/self.mjs";
@@ -145,6 +146,11 @@ function humanUsageRecord(value) {
 function humanInstantiation(value) {
   const relation = value.model_relation;
   return `Instantiation receipt ${value.actuation_ref}\nAgency: ${value.agency_ref}\nHarness: ${value.harness_ref ?? "unattributed"}\nModel: ${relation.model_ref}\nPlacement: ${relation.material?.placement ?? "unspecified"}\nInference surface: ${relation.inference_surface.contract_ref}`;
+}
+
+function humanSystem(value) {
+  const settingCount = value.sections.reduce((total, section) => total + section.settings.length, 0);
+  return `Actuation settings disclosure (${value.schema})\nProduct: ${value.product_id}  Revision: ${value.contract_revision}\nAvailability: ${value.availability.state}\nSections: ${value.sections.length}  Settings: ${settingCount}  Actions: ${value.actions.length}  Obligations: ${value.obligations.length}\nDigest: ${value.owner.reading_digest}`;
 }
 
 function humanCatalog(value) {
@@ -335,6 +341,13 @@ export const COMMANDS = Object.freeze([
         (value) => `Capability catalog (r${value.catalog_revision}, ${value.capabilities.length} declared)\n${value.capabilities.map((c) => `  ${c.harness_slug.padEnd(20)} events: ${c.native_events.length}  blocking: ${c.blocking_semantics.kind.padEnd(15)} wake: ${c.wake_capability.kind}`).join("\n")}`,
       );
     },
+  },
+  {
+    name: "system.read",
+    route: ["system"],
+    usage: "actuation system [--json]",
+    input: false,
+    run: ({ json }) => output(buildSystemDisclosure(), json, humanSystem),
   },
   {
     name: "verify",
