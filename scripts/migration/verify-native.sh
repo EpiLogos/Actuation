@@ -28,3 +28,4 @@ node scripts/migration/verify-jsonl-interop.mjs | tee "$evidence/R4-jsonl-intero
 node scripts/migration/verify-adapter-corpus.mjs | tee "$evidence/R5-corpus-integrity.json"
 node scripts/migration/parity.mjs --phase R5 -- target/debug/examples/adapter-oracle | tee "$evidence/R5-parity.json"
 node scripts/migration/scenario-parity.mjs fixtures/migration/scenarios.json catalog probe secret -- target/debug/examples/observation-oracle | tee "$evidence/R5-scenario-parity.json"
+node scripts/migration/parity.mjs --phase R6 -- target/debug/examples/research-oracle | tee "$evidence/R6-parity.json"

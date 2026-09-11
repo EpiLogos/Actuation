@@ -147,7 +147,8 @@
         "cargo fmt --all -- --check",
         "cargo clippy --locked --workspace --all-targets -- -D warnings",
         "cargo test --locked --workspace",
-        "R2-R5 frozen parity oracles (unchanged, green)"
+        "R2-R5 frozen parity oracles (unchanged, green)",
+        "R6 frozen pure parity: 44 cases over research-oracle (parity.mjs --phase R6)"
       ]
     },
     "js_oracle_gates": "migration job still runs the Node-native research suites (foundation, deep-ql, prime, epistemic-cultivation) as migration oracles; green on the same commit"
@@ -160,5 +161,11 @@
     "R7-R9 (CLI, packaging, owner cutover, release)",
     "live Prime P0/P2/P3/P4/P5 campaign",
     "replacement or deletion of any served Node source (stays until the R7 cutover law)"
-  ]
+  ],
+  "temporary_authoring_workflows_removed": [
+    ".github/workflows/r6-authoring-toolchain.yml",
+    ".github/workflows/r6-owner-basis.yml",
+    ".github/workflows/r6-owner-instrument.yml"
+  ],
+  "temporary_authoring_workflows_removal_note": "Removed at R6 acceptance per the PR commitment; the owner instrument source stays at experiments/ql-runtime/native-owner-instrument/ with its exact QL-MEF pin recorded in owner_bindings."
 }
