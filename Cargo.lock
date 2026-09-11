@@ -27,6 +27,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "actuation-research"
+version = "0.2.0"
+dependencies = [
+ "actuation-core",
+ "actuation-runtime",
+ "actuation-stream",
+ "libc",
+ "regex",
+ "rustix",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+]
+
+[[package]]
 name = "actuation-runtime"
 version = "0.2.0"
 dependencies = [

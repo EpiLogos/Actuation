@@ -1,0 +1,57 @@
+{
+  "schema": "actuation.prime-conditions/v1",
+  "source_revision": "324231df093a7c0ec07b8fef0432844214cc27ec",
+  "origins": [
+    {
+      "path": "experiments/ql-runtime/prime/conditions.mjs",
+      "blob": "7a995256ffb7edb81a69d1f3d061d3ac979a782f"
+    }
+  ],
+  "conditions": {
+    "prime-native": {
+      "code": "P0",
+      "relational": false,
+      "maxDepth": 1,
+      "returnContract": false,
+      "recursive": false,
+      "continual": false,
+      "description": "Prime RLM control: native recursive harness without QL/MEF faculty."
+    },
+    "prime-relational": {
+      "code": "P2",
+      "relational": true,
+      "maxDepth": 1,
+      "returnContract": false,
+      "recursive": true,
+      "continual": false,
+      "description": "Root and inherited child Agencies can use the QL/MEF/Wiki relational faculty."
+    },
+    "prime-relational-return": {
+      "code": "P3",
+      "relational": true,
+      "maxDepth": 1,
+      "returnContract": true,
+      "recursive": true,
+      "continual": false,
+      "description": "Relational faculty plus explicit structured returned-difference/reconstitution evidence."
+    },
+    "prime-recursive-field": {
+      "code": "P4",
+      "relational": true,
+      "maxDepth": 2,
+      "returnContract": true,
+      "recursive": true,
+      "continual": false,
+      "description": "Recursive relational Agency: child loci may differentiate further when the live Prime runtime admits it."
+    },
+    "prime-continual": {
+      "code": "P5",
+      "relational": true,
+      "maxDepth": 2,
+      "returnContract": true,
+      "recursive": true,
+      "continual": true,
+      "description": "Recursive relational Agency followed by one explicit evidence-backed Continual Harness refinement."
+    }
+  }
+}

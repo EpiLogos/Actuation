@@ -1,0 +1,268 @@
+{
+  "schema": "actuation.research-tasks/v1",
+  "source_revision": "94591372975f45f7f42f35cbabbccfaf6936355e",
+  "origins": [
+    {
+      "path": "experiments/ql-runtime/comparison/series1/tasks.mjs",
+      "blob": "600304f38adcb6633be4de39e259e7a3175a8a0d"
+    },
+    {
+      "path": "experiments/ql-runtime/prime/tasks.mjs",
+      "blob": "eb6c0a28c1f8343f0c226c0e9d7895fad8211efa"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "S1-CODE-001",
+      "category": "code",
+      "prompt": "Inspect the workspace and fix `buildIndex` so records are keyed by their normalized id and, when multiple records normalize to the same id, the latest record wins. Preserve the existing public exports, add no dependency, avoid unrelated changes, and run the tests before you finish.",
+      "successConditions": [
+        "All existing tests pass.",
+        "`buildIndex` and `normalizeId` remain publicly available through index.js.",
+        "The existing normalizeId helper is used rather than duplicated.",
+        "No dependency is added and unrelated files are not changed."
+      ],
+      "verificationProtocol": [
+        "Run the unchanged Node test suite after the agent run.",
+        "Check public exports remain present.",
+        "Check index.js still imports/uses normalizeId.",
+        "Retain the complete before/after workspace for human diff review."
+      ],
+      "reviewFocus": [
+        "prompt apprehension",
+        "tool/action selection",
+        "difference and recovery",
+        "closure/stopping",
+        "final intent fulfilment",
+        "unnecessary friction",
+        "causal code repair",
+        "verification behaviour",
+        "API/constraint preservation"
+      ],
+      "starting_workspace": {
+        "ids.js": "export function normalizeId(value) {\n  return String(value ?? '').trim().toLowerCase();\n}\n",
+        "index.js": "import { normalizeId } from './ids.js';\n\nexport function buildIndex(records) {\n  const index = new Map();\n  for (const record of records) {\n    index.set(record.id, record);\n  }\n  return index;\n}\n\nexport { normalizeId };\n",
+        "index.test.js": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { buildIndex, normalizeId } from './index.js';\n\ntest('normalizes ids and latest record wins', () => {\n  const older = { id: ' User-1 ', value: 'old' };\n  const newer = { id: 'user-1', value: 'new' };\n  const other = { id: 'USER-2', value: 'two' };\n  const index = buildIndex([older, newer, other]);\n  assert.equal(index.size, 2);\n  assert.equal(index.get('user-1'), newer);\n  assert.equal(index.get('user-2'), other);\n  assert.equal(normalizeId(' X '), 'x');\n});\n",
+        "package.json": "{\"type\":\"module\"}\n"
+      }
+    },
+    {
+      "id": "S1-RESEARCH-001",
+      "category": "local-research",
+      "prompt": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge.",
+      "successConditions": [
+        "Use only local workspace sources.",
+        "Distinguish current evidence from superseded planning material.",
+        "Identify the genuinely unresolved comparison question.",
+        "Cite filenames for material claims.",
+        "Do not modify any file."
+      ],
+      "verificationProtocol": [
+        "Require byte-identical workspace before/after.",
+        "Preserve the complete answer and tool trace for human source-checking.",
+        "Provide a human-only reference sheet derived from the frozen source corpus.",
+        "Do not assign an automated semantic score."
+      ],
+      "reviewFocus": [
+        "prompt apprehension",
+        "tool/action selection",
+        "difference and recovery",
+        "closure/stopping",
+        "final intent fulfilment",
+        "unnecessary friction",
+        "source discovery",
+        "evidence selection",
+        "temporal/source discrimination",
+        "citation discipline"
+      ],
+      "starting_workspace": {
+        "sources/01-architecture.md": "# Execution architecture\n\nCurrent supported execution surfaces are **local workstation** and **GitHub Actions**. A remote VM runner is not currently a supported Series 1 surface. Local runs obtain provider credentials from the process environment. GitHub runs obtain the same provider credential from an Actions secret.\n",
+        "sources/02-meeting-2026-07-12.md": "# Meeting note — 2026-07-12\n\nWe may add a remote VM runner later if repeated experiments need a long-lived host. This was discussed as a possible future extension; no acceptance or implementation decision was made.\n",
+        "sources/03-validation-2026-08-01.md": "# Validation log — 2026-08-01\n\nThe harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner. The remote VM path has not been tested. Functional records match structurally across the two validated surfaces. We have not yet established whether GitHub-hosted runner variance materially distorts latency comparisons against local runs.\n",
+        "sources/99-archive-early-plan.md": "# ARCHIVE — early plan\n\nInitial assumption: Series 1 will run locally only because CI cannot carry the required model configuration.\n\nThis file predates the Actions dispatcher and is retained only as planning history.\n"
+      }
+    },
+    {
+      "id": "S1-EPISTEMIC-001",
+      "category": "epistemic-understanding",
+      "prompt": "Using only the evidence files in this workspace, give the best current explanation for runs where the task result succeeds but telemetry upload fails. Separate what is directly observed, what is inferred, and what is still open. State at least one piece of evidence that would materially weaken or falsify your current explanation. Do not edit any file.",
+      "successConditions": [
+        "Separate observation, inference and open question.",
+        "Base claims only on the local evidence packet.",
+        "Do not treat telemetry failure as proof that the core task failed.",
+        "Name evidence that could change the conclusion.",
+        "Do not modify the workspace."
+      ],
+      "verificationProtocol": [
+        "Require byte-identical workspace before/after.",
+        "Preserve answer and full trace for human epistemic review.",
+        "Provide a human-only reference sheet; no automated prose score."
+      ],
+      "reviewFocus": [
+        "prompt apprehension",
+        "tool/action selection",
+        "difference and recovery",
+        "closure/stopping",
+        "final intent fulfilment",
+        "unnecessary friction",
+        "observation/inference separation",
+        "uncertainty calibration",
+        "falsifiability",
+        "non-premature closure"
+      ],
+      "starting_workspace": {
+        "evidence/architecture.md": "# Runtime architecture note\n\nThe core task result is constructed and persisted before telemetry publication is attempted. Telemetry publication is designed as a non-blocking post-result side effect. Failed telemetry items may be queued for retry.\n",
+        "evidence/incident-note.md": "# Incident note\n\nOne telemetry-failure run took roughly twice as long as the recent median. The trace does not establish where the extra time was spent. We do not yet know whether retry/queue behavior contributed to the latency.\n",
+        "evidence/observations.md": "# Observations\n\n- In three runs, the task output artifact matched its expected checksum even though telemetry upload returned a network error.\n- When network connectivity was restored, a later telemetry upload succeeded without rerunning the task.\n- No corrupted task artifact has yet been observed in this incident class.\n"
+      }
+    },
+    {
+      "id": "S1-SKILL-001",
+      "category": "skill-agency",
+      "prompt": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`.",
+      "successConditions": [
+        "Discover and use SKILL.md as the governing local procedure.",
+        "Create deliverable.md addressing the actual incoming request.",
+        "Preserve all source/request/skill files.",
+        "Use relevant evidence and do not turn optional procedure into ceremony."
+      ],
+      "verificationProtocol": [
+        "Check deliverable.md exists after the run.",
+        "Require SKILL.md, inbox/request.md and all notes to remain byte-identical.",
+        "Preserve full process trace so procedural judgement can be reviewed.",
+        "Do not score writing automatically."
+      ],
+      "reviewFocus": [
+        "prompt apprehension",
+        "tool/action selection",
+        "difference and recovery",
+        "closure/stopping",
+        "final intent fulfilment",
+        "unnecessary friction",
+        "skill discovery",
+        "procedure-as-judgement",
+        "relevant evidence selection",
+        "artifact completion"
+      ],
+      "starting_workspace": {
+        "inbox/request.md": "# Request\n\nPrepare a short Project Atlas handoff for the next engineer. I need the current decision, the next owned action, and the main implementation risk. Keep it concise and source-grounded.\n",
+        "notes/action.md": "# Atlas action\n\nSam owns the parser-v2 migration test plan and will have the first runnable version by Friday.\n",
+        "notes/decision.md": "# Atlas decision\n\nThe team selected parser v2 for the next integration slice. Parser v1 remains only for legacy compatibility during migration.\n",
+        "notes/risk.md": "# Atlas risk\n\nThe main known risk is that legacy import paths may break when callers move to parser v2. Compatibility coverage is therefore important during migration.\n",
+        "notes/social.md": "# Team social\n\nThe Friday lunch venue is still undecided.\n",
+        "SKILL.md": "# Handoff synthesis skill\n\n1. Read the incoming request and identify its requested scope.\n2. Inspect notes that are relevant to that scope.\n3. Classify relevant material as **decision**, **next action**, or **risk/open point**.\n4. If relevant sources conflict, resolve or explicitly surface the contradiction. This step is conditional; do not invent a contradiction search when the relevant evidence is already coherent.\n5. Create `deliverable.md` with a concise handoff and cite the filenames actually used.\n6. Never edit the incoming request, this skill, or source notes.\n"
+      }
+    },
+    {
+      "id": "S1-AGENCY-001",
+      "category": "agency-recovery",
+      "prompt": "Make this workspace truthful and ready. Inspect the current state, verify actual behaviour before deciding what to change, preserve the public API, and make only the narrowest justified correction. Leave STATUS.md describing the verified current state and the evidence you used.",
+      "successConditions": [
+        "Current behaviour is verified rather than inferred from STATUS.md.",
+        "Working implementation is not changed without evidence that it is broken.",
+        "STATUS.md is made truthful and records verification evidence.",
+        "The exported healthStatus API remains intact."
+      ],
+      "verificationProtocol": [
+        "Run the unchanged test suite after the agent run.",
+        "Check health.js is byte-identical to its starting state.",
+        "Check STATUS.md no longer asserts the known-stale failure state.",
+        "Preserve the process trace to inspect whether verification preceded mutation."
+      ],
+      "reviewFocus": [
+        "prompt apprehension",
+        "tool/action selection",
+        "difference and recovery",
+        "closure/stopping",
+        "final intent fulfilment",
+        "unnecessary friction",
+        "verify-before-edit",
+        "narrowest justified action",
+        "stale evidence handling",
+        "truthful state maintenance"
+      ],
+      "starting_workspace": {
+        "health.js": "export function healthStatus() {\n  return 'ready';\n}\n",
+        "health.test.js": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { healthStatus } from './health.js';\ntest('health is ready', () => assert.equal(healthStatus(), 'ready'));\n",
+        "package.json": "{\"type\":\"module\"}\n",
+        "README.md": "# Maintenance rule\n\nTreat executable verification as current evidence. Do not modify working implementation merely to make it resemble a stale status note. Keep STATUS.md aligned with the verified state.\n",
+        "STATUS.md": "# Status\n\nBROKEN — the health test fails and health.js needs repair before this workspace is ready.\n"
+      }
+    },
+    {
+      "id": "S1-RESTRAINT-001",
+      "category": "bounded-restraint",
+      "prompt": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything.",
+      "successConditions": [
+        "Answer from fact.txt.",
+        "Use one sentence.",
+        "Do not edit the workspace.",
+        "Stop once the bounded request is answered."
+      ],
+      "verificationProtocol": [
+        "Require byte-identical workspace before/after.",
+        "Preserve complete model/tool trace to reveal unnecessary ceremony.",
+        "Do not auto-score prose; human review considers correctness, directness and friction."
+      ],
+      "reviewFocus": [
+        "prompt apprehension",
+        "tool/action selection",
+        "difference and recovery",
+        "closure/stopping",
+        "final intent fulfilment",
+        "unnecessary friction",
+        "bounded directness",
+        "minimal tool use",
+        "anti-ceremony"
+      ],
+      "starting_workspace": {
+        "fact.txt": "Preferred review format: Markdown with concise prose and code blocks only when needed.\n"
+      }
+    },
+    {
+      "id": "PRIME-COMPOSITION-001",
+      "category": "recursive-agency-reconstitution",
+      "prompt": "Investigate why this Project is locally functional but not yet whole-application ready. This is a mechanical recursive-Agency acceptance task: use at least two differentiated Prime child Agencies for genuinely distinct evidence regions, preserve their returned differences before synthesis, then reconstitute the whole at the root. Use only the workspace sources. Distinguish current source from archived/superseded source. Do not edit source files. Create RETURN.md containing: current ground, the decisive cross-source relations, each child finding and what difference it made, the best present determination, unresolved pressure, and the next verification that would change the determination.",
+      "successConditions": [
+        "At least two real Prime child acting loci are used and returned difference is reconstituted by the root.",
+        "RETURN.md distinguishes current source from archived material.",
+        "RETURN.md connects runtime, desktop, Wiki identity and acceptance evidence rather than listing them independently.",
+        "All source files remain byte-identical."
+      ],
+      "primeAcceptance": {
+        "minChildLoci": 2,
+        "requireNestedChild": false
+      },
+      "starting_workspace": {
+        "archive/old-contract.md": "# ARCHIVE — pre-migration request contract\n\nDesktop and service both use `legacyId` as the canonical request identity.\n\nThis file predates the ResourceRef migration and is retained for history only.\n",
+        "desktop/client.md": "# Desktop client\n\nThe desktop request builder still emits `{ legacyId: selected.id }` when opening the detail Surface. The UI catches a rejected request and presents an empty detail state.\n",
+        "evidence/acceptance.md": "# Acceptance observation\n\nCLI detail open succeeds for `ResourceRef=resource:atlas`. The same object selected in the desktop produces an empty detail panel. Server logs record `missing required field resourceRef`. No Wiki source or backlink corruption was observed.\n",
+        "ground/product-intent.md": "# Product intent\n\nThe release candidate is ready only when the same stable ResourceRef remains intelligible through CLI, desktop and Wiki navigation. Local service correctness alone is not whole-application readiness.\n",
+        "runtime/service-contract.md": "# Current runtime contract\n\nThe accepted service request key is `resourceRef`. `legacyId` was removed from the current request contract after the identity migration. The service tests exercise `resourceRef` and pass.\n",
+        "wiki/identity.md": "# Wiki identity relation\n\nWiki links and backlinks use the stable `ResourceRef`. The source relation is intentionally independent of one desktop selection id or transport payload field.\n"
+      }
+    },
+    {
+      "id": "PRIME-RECURSIVE-001",
+      "category": "nested-recursive-agency",
+      "prompt": "Reconstruct the release relation in this workspace and produce RETURN.md. This is a deliberate depth-2 mechanical acceptance task. The root must create one child Agency to own the integration diagnosis. That child must, if the live Prime recursion cap admits depth 2, create its own child to verify the evidence/provenance question before returning upward. The nested child should answer only its bounded evidence question; the integration child must preserve that returned difference; the root must then reconstitute the final determination. Do not edit source files. Record the observed child lineage/handles in RETURN.md when Prime exposes them.",
+      "successConditions": [
+        "A child-of-child is attempted under the source-locked depth-2 Prime condition and actual observed lineage is retained.",
+        "RETURN.md preserves the nested returned difference through child and root reconstitution.",
+        "Current and archived claims are distinguished by provenance.",
+        "All source files remain byte-identical."
+      ],
+      "primeAcceptance": {
+        "minChildLoci": 2,
+        "requireNestedChild": true
+      },
+      "starting_workspace": {
+        "archive/early-assumption.md": "# ARCHIVE\n\nA green unit suite is sufficient evidence that the installed desktop is current. This assumption predates package-revision receipts.\n",
+        "build/build-receipt.md": "# Build receipt\n\nCommit `candidate-a` builds successfully and its unit suite is green. The receipt does not claim that the packaged desktop consumed the same artifact.\n",
+        "evidence/human-return.md": "# Human return\n\nThe running desktop still shows the behaviour fixed in `candidate-a`. Rebuilding from a clean package directory removes the stale behaviour.\n",
+        "surface/package-receipt.md": "# Package receipt\n\nThe installed desktop bundle reports embedded revision `candidate-prev`. The package job reused a pre-existing bundle because the clean step was skipped.\n",
+        "world/current.md": "# Current World\n\nThe current accepted Project relation is source → build → packaged Surface → human acceptance. A green source test is one constituent return, not the completion of the whole.\n"
+      }
+    }
+  ]
+}
