@@ -2,14 +2,14 @@
  * model output and owns the experiment. No QL algebra or comparison is here. */
 import fs from 'node:fs';
 import path from 'node:path';
-import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import readline from 'node:readline';
-const require = createRequire(import.meta.url);
 export const PACKAGE = '@earendil-works/pi-ai';
 export const VERSION = '0.84.1';
 function installedVersion() {
-  let dir = path.dirname(require.resolve(`${PACKAGE}/providers/all`));
+  // The pinned package exposes import conditions, not CommonJS require conditions.
+  // Resolve exactly the ESM entry that preflight imports; do not bypass exports.
+  let dir = path.dirname(fileURLToPath(import.meta.resolve(`${PACKAGE}/providers/all`)));
   for (let n = 0; n < 8; n++, dir = path.dirname(dir)) {
     const p = path.join(dir, 'package.json');
     if (fs.existsSync(p)) {

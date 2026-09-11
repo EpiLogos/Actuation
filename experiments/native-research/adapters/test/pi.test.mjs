@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { PiBody, VERSION } from '../pi.mjs';
+import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import { PiBody, PACKAGE, VERSION } from '../pi.mjs';
 
 // Real pinned package loading/catalog/auth; only the provider completion below
 // is controlled. This is SDK ABI evidence, not a live DeepSeek experiment.
@@ -40,4 +43,39 @@ test('Pi native catalogue and ordered completion/error ABI', async () => {
     if (previous === undefined) delete process.env.DEEPSEEK_API_KEY;
     else process.env.DEEPSEEK_API_KEY = previous;
   }
+});
+
+test('Pi import-only package supports standalone JSONL preflight without credentials', () => {
+  // This is the exact conditional-export mismatch reproduced in CI before the fix.
+  assert.throws(() => createRequire(import.meta.url).resolve(`${PACKAGE}/providers/all`),
+    { code: 'ERR_PACKAGE_PATH_NOT_EXPORTED' });
+  assert.match(import.meta.resolve(`${PACKAGE}/providers/all`), /^file:/);
+  const env = { ...process.env };
+  delete env.DEEPSEEK_API_KEY;
+  const frames = [
+    { type: 'preflight', id: 'pi-preflight', configuration: {
+      provider: 'deepseek', model: 'deepseek-v4-flash'
+    } },
+    { type: 'finalize', id: 'pi-finalize' }
+  ];
+  const child = spawnSync(process.execPath,
+    [fileURLToPath(new URL('../pi.mjs', import.meta.url))], {
+      input: frames.map(v => JSON.stringify(v)).join('\n') + '\n',
+      encoding: 'utf8', env, timeout: 30_000, maxBuffer: 1024 * 1024
+    });
+  assert.ifError(child.error);
+  assert.equal(child.status, 0, child.stderr);
+  const responses = child.stdout.trim().split('\n').map(line => JSON.parse(line));
+  assert.equal(responses.length, frames.length);
+  for (let i = 0; i < frames.length; i++) {
+    assert.equal(responses[i].type, 'response');
+    assert.equal(responses[i].id, frames[i].id);
+    assert.equal(responses[i].command, frames[i].type);
+    assert.equal(responses[i].success, true, responses[i].error);
+  }
+  assert.equal(responses[0].data.package_version, VERSION);
+  assert.equal(responses[0].data.credential_available, false);
+  assert.equal(responses[0].data.provider_request_executed, false);
+  assert.deepEqual(responses[1].data.model_calls, []);
+  assert.equal(responses[1].data.provider_evidence, 'not-assessed');
 });
