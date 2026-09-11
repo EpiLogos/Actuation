@@ -74,13 +74,19 @@ test("the Actuation NOW horizon represents every reconciled live owner carrier",
   assert.deepEqual(
     live.map(({ id, status }) => ({ id, status })),
     [
-      { id: "actuation-wayfinder-programme-2026-09-09", status: "active" },
-      { id: "branch-hygiene-report-remains-scheduler-owned-2026-09-09", status: "waiting" },
-      { id: "epistemic-cultivation-research-ground-and-record-2026-09-09", status: "active" },
-      { id: "prime-physical-relational-campaign-awaits-a-2026-09-09", status: "waiting" },
-      { id: "public-determination-and-agency-actualisation-operation-2026-09-09", status: "active" },
-      { id: "reinspect-codex-stop-event-capability-evidence-2026-09-09", status: "active" },
-      { id: "supply-actuation-intent-and-grant-integration-handoff-2026-09-09", status: "active" },
+      // Floor advanced at the 2026-09-11 day close: every pre-close carrier
+      // was lawfully carried with lineage stamped, and the R6 publication
+      // returned two bounded items (the crate publication and its
+      // independent verification). Statuses move only through a day close.
+      { id: "actuation-wayfinder-programme-2026-09-09", status: "carried" },
+      { id: "branch-hygiene-report-remains-scheduler-owned-2026-09-09", status: "carried" },
+      { id: "epistemic-cultivation-research-ground-and-record-2026-09-09", status: "carried" },
+      { id: "prime-physical-relational-campaign-awaits-a-2026-09-09", status: "carried" },
+      { id: "public-determination-and-agency-actualisation-operation-2026-09-09", status: "carried" },
+      { id: "r6-head-0dfa401-independently-verified-and-2026-09-11", status: "active" },
+      { id: "r6-native-research-crate-published-tested-2026-09-11", status: "carried" },
+      { id: "reinspect-codex-stop-event-capability-evidence-2026-09-09", status: "carried" },
+      { id: "supply-actuation-intent-and-grant-integration-handoff-2026-09-09", status: "carried" },
     ],
   );
 
