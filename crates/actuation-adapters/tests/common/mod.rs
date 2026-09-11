@@ -124,7 +124,9 @@ mod tests {
             .unwrap();
         let writer = thread::spawn(move || {
             thread::sleep(Duration::from_millis(20));
-            client.write_all(b"GET /api/tags HTTP/1.1\r\nHost: fixture\r\n").unwrap();
+            client
+                .write_all(b"GET /api/tags HTTP/1.1\r\nHost: fixture\r\n")
+                .unwrap();
             thread::sleep(Duration::from_millis(20));
             client.write_all(b"\r\n").unwrap();
         });
