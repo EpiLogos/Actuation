@@ -1,0 +1,116 @@
+name: Native research SDK boundaries
+on:
+  pull_request:
+    paths:
+      - 'experiments/native-research/adapters/**'
+      - '.github/workflows/research-sdk.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'experiments/native-research/adapters/**'
+      - '.github/workflows/research-sdk.yml'
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  native-sdk:
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [pi, pydantic, dsh]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+      - uses: actions/setup-python@v5
+        if: matrix.sdk == 'pydantic'
+        with:
+          python-version: '3.12'
+      - name: Exact source and evidence scope
+        shell: bash
+        run: |
+          mkdir -p sdk-evidence
+          git rev-parse HEAD > sdk-evidence/actuation-revision.txt
+          printf '%s\n' 'D: native SDK ABI, controlled responses, no provider/P/M/H claim' > sdk-evidence/standing.txt
+      - name: Install pinned Pi package
+        if: matrix.sdk == 'pi'
+        working-directory: experiments/native-research/adapters
+        run: npm install --ignore-scripts --no-save --no-package-lock @earendil-works/pi-ai@0.84.1
+      - uses: actions/checkout@v4
+        if: matrix.sdk == 'pydantic'
+        with:
+          repository: pydantic/pydantic-ai
+          ref: 00db3a4b391eb9a46f3d6e704070bcf725121f75
+          path: .sdk/pydantic-ai
+          persist-credentials: false
+      - name: Install source-pinned Pydantic ABI
+        if: matrix.sdk == 'pydantic'
+        run: |
+          test "$(git -C .sdk/pydantic-ai rev-parse HEAD)" = 00db3a4b391eb9a46f3d6e704070bcf725121f75
+          python -m pip install -e '.sdk/pydantic-ai/pydantic_graph'
+          python -m pip install -e '.sdk/pydantic-ai/pydantic_ai_slim[openai]'
+      - uses: actions/checkout@v4
+        if: matrix.sdk == 'dsh'
+        with:
+          repository: deepseek-ai/deepseek-harness
+          ref: 47f943859bef60e4160492346772ded9b24f765a
+          path: .sdk/deepseek-harness
+          persist-credentials: false
+      - name: Build source-pinned DSH host packages
+        if: matrix.sdk == 'dsh'
+        working-directory: .sdk/deepseek-harness
+        env:
+          COREPACK_ENABLE_PROJECT_SPEC: '0'
+        run: |
+          test "$(git rev-parse HEAD)" = 47f943859bef60e4160492346772ded9b24f765a
+          npm install --global pnpm@10.15.1
+          pnpm install --frozen-lockfile
+          pnpm run build:lib:host
+      - name: Resolve actual DSH workspace packages
+        if: matrix.sdk == 'dsh'
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs'), path = require('node:path');
+          const root = path.resolve('.sdk/deepseek-harness');
+          const target = path.resolve('experiments/native-research/adapters/node_modules');
+          let count = 0;
+          function visit(dir) {
+            for (const e of fs.readdirSync(dir, {withFileTypes: true})) {
+              if (e.name === 'node_modules' || e.name === '.git') continue;
+              const p = path.join(dir, e.name);
+              if (e.isDirectory()) { visit(p); continue; }
+              if (!e.isFile() || e.name !== 'package.json') continue;
+              const m = JSON.parse(fs.readFileSync(p, 'utf8'));
+              if (!m.name) continue;
+              const out = path.join(target, m.name);
+              fs.mkdirSync(path.dirname(out), {recursive: true});
+              fs.symlinkSync(path.dirname(p), out, 'dir'); count++;
+            }
+          }
+          for (const d of ['packages', 'vendor', 'apps']) visit(path.join(root, d));
+          if (!count) throw Error('No pinned DSH packages resolved');
+          console.log(`Resolved ${count} source-pinned packages`);
+          NODE
+      - name: Execute actual SDK with controlled model responses
+        shell: bash
+        run: |
+          set -euo pipefail
+          case '${{ matrix.sdk }}' in
+            pi) node --test experiments/native-research/adapters/test/pi.test.mjs 2>&1 | tee sdk-evidence/test.log ;;
+            pydantic) python experiments/native-research/adapters/test/pydantic_test.py 2>&1 | tee sdk-evidence/test.log ;;
+            dsh) node --test experiments/native-research/adapters/test/dsh.test.mjs 2>&1 | tee sdk-evidence/test.log ;;
+          esac
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-research-sdk-${{ matrix.sdk }}-${{ github.sha }}
+          path: sdk-evidence/
+          if-no-files-found: error
+          retention-days: 30

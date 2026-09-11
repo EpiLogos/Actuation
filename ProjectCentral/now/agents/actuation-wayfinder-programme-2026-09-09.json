@@ -7,9 +7,12 @@
   "recorded_at_unix_seconds": 1788914157,
   "subject": "Actuation Wayfinder programme remains live",
   "result": "Live issue #1 remains the owning whole-programme carrier. Accepted main has landed the root Agency, native Skills, ActuationStream, realised loop, Activity, native CLI, and model-usage slices through closed issues #4, #9, #15, #16, #19, #21, and #39. Still live are the Prime research child #26, the public determination/actualisation operation, provider and material empirical research, epistemic cultivation, suite integration, and physical conformance. Next condition: reconcile the Wayfinder checklist against accepted main and retain bounded children for each genuinely open front.",
-  "status": "active",
+  "status": "carried",
   "evidence_refs": [
     "https://github.com/EpiLogos/Actuation/issues/1",
     "https://github.com/EpiLogos/Actuation/commit/1e57f24fce09892e79ce50873395e7385cdef425"
+  ],
+  "carried_from_days": [
+    "2026-09-11"
   ]
 }

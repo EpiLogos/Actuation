@@ -7,7 +7,7 @@
   "recorded_at_unix_seconds": 1788945257,
   "subject": "Epistemic cultivation research ground and record floor",
   "result": "Issue #45 owns recovery of the canonical epistemic-cultivation and model-bearing research specifications from closed unmerged PR #3 into current main, plus the smallest experiment-local provider-neutral access and provenance record floor. Implementation is active in an isolated worktree. Next condition: review the selective reconciliation against current contracts, prove persisted-record and adversarial provenance behaviour, reconcile product ground, and land only through full CI without claiming empirical model-interior findings.",
-  "status": "active",
+  "status": "carried",
   "source_refs": [
     "docs/EPISTEMIC-CULTIVATION-AND-MODEL-INTERIOR-RESEARCH.md",
     "experiments/epistemic-cultivation"
@@ -15,5 +15,8 @@
   "evidence_refs": [
     "https://github.com/EpiLogos/Actuation/issues/45",
     "https://github.com/EpiLogos/Actuation/pull/3"
+  ],
+  "carried_from_days": [
+    "2026-09-11"
   ]
 }

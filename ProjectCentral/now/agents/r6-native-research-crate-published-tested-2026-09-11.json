@@ -1,0 +1,19 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "r6-native-research-crate-published-tested-2026-09-11",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "zcode-r6-continuation",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1789166392,
+  "subject": "R6 native research crate published tested on PR #67",
+  "result": "PR #67 (act-rust/r6-research-refoundation) now carries commit 0dfa401965e1 on top of the last verified published commit 324231d. The prior session degraded under tool-output failures and left nine empty 0-byte flow files dated 2026-09-11 in ProjectCentral/now/flows (0119, 0316, 0422, 0516, 1955, 1956, 2142, 2143, 2245); those husks are confirmed empty and removed by this session, and their content never existed. This session reconstructed the verified staged tree a10907ec locally byte-exact (git write-tree matched), found exactly one integration fault (prime.rs expected experiments/ql-runtime/prime/conditions.json which did not exist; the conditions catalogue lived only in conditions.mjs), and fixed it with a provenance-stamped JSON twin plus an envelope unwrap in prime::conditions. Added accompanying tests across every crate module including end-to-end Classic and Direct runs with a scripted formal owner and all eight native readiness scenarios with real Node verification. Verified: cargo test --workspace 150 passed (82 in actuation-research), cargo fmt clean, cargo clippy clean, full workspace builds. A PR comment records the same standing. Remaining before review readiness: legacy consumer disposition, Linux and macOS candidate gates, provider evidence, owner-machine evidence, human acceptance — none of these are assessed and the draft must not merge. Next condition: remove the temporary authoring-basis workflows at final acceptance and obtain provider, owner-machine and human acceptance evidence before review readiness; the draft must not merge until then.",
+  "status": "carried",
+  "evidence_refs": [
+    "https://github.com/EpiLogos/Actuation/pull/67",
+    "https://github.com/EpiLogos/Actuation/pull/67#issuecomment-5641438482",
+    "https://github.com/EpiLogos/Actuation/commit/0dfa401965e1"
+  ],
+  "carried_from_days": [
+    "2026-09-11"
+  ]
+}

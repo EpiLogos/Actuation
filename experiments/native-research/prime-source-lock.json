@@ -1,0 +1,29 @@
+{
+  "schema": "actuation.prime-source-lock/v1",
+  "actuation": {
+    "repository": "EpiLogos/Actuation",
+    "base_revision": "94591372975f45f7f42f35cbabbccfaf6936355e"
+  },
+  "prime_agent": {
+    "repository": "PrimeIntellect-ai/prime-agent",
+    "release": "v0.9.4",
+    "release_revision": "f771dfcedd684d1afff84ca2c6fa95c7a21efbc2",
+    "observed_main_revision": "55ade48b73f636d992855b7cab797d71dc1f6f1c",
+    "observed_at": "2026-09-09T09:04:24Z"
+  },
+  "ql_mef": {
+    "repository": "EpiLogos/QL-MEF",
+    "accepted_main_revision": "e753efc91f62b5b2af09e0a852c5063e366eccbe",
+    "harmonic_research": {
+      "issue": 31,
+      "pull_request": 81,
+      "revision": "42d36ed75fd9cf8a70bcbabc5dca766cc51b6811",
+      "pull_request_state": "closed-unmerged",
+      "accepted_via_revision": "781981374eaa1f02952249dcdbca1af671d1ece4",
+      "standing": "accepted-main-history-carrier"
+    },
+    "native_consumer": "experiments/ql-runtime/native-owner-instrument/Cargo.toml",
+    "observation_basis": "Retained R6 owner basis; revalidated by exact consumer revision and executable digest.",
+    "claims_latest_main": false
+  }
+}

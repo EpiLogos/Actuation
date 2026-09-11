@@ -7,12 +7,15 @@
   "recorded_at_unix_seconds": 1788914158,
   "subject": "Supply the Actuation intent and grant integration handoff",
   "result": "The carried O:I owner-domain checkpoint says Factory integration remains unavailable pending canonical discovery and an Actuation intent/grant handoff. The dependency belongs here insofar as Actuation must state the determination, authority bounds, lineage, and Return relation; Factory remains owner of developmental discovery and Commission. Next condition: recover the exact consumer contract from the O:I checkpoint and Factory carrier, then return the smallest Actuation-owned intent/grant evidence without absorbing Factory or Central semantics.",
-  "status": "active",
+  "status": "carried",
   "source_refs": [
     "Work/O-I/ProjectCentral/now/agents/ownerdomain-integration-checkpoint-f84bd61-2026-09-08.json"
   ],
   "evidence_refs": [
     "https://github.com/EpiLogos/Actuation/issues/1",
     "central:source:project:project%3Ao-i:ProjectCentral/now/agents/ownerdomain-integration-checkpoint-f84bd61-2026-09-08.json"
+  ],
+  "carried_from_days": [
+    "2026-09-11"
   ]
 }
