@@ -557,7 +557,9 @@ mod tests {
 
     #[test]
     fn rpc_client_stops_on_exit_without_a_correlated_response() {
-        let (_dir, s) = responder("#!/bin/sh\nexit 0\n");
+        // The responder consumes the request and exits without replying, so the
+        // transport ends deterministically before any correlated response.
+        let (_dir, s) = responder("#!/bin/sh\nread -r request\nexit 0\n");
         let mut client = RpcClient::start(s).unwrap();
         let err = client
             .request(
