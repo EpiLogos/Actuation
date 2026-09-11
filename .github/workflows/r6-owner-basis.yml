@@ -19,7 +19,7 @@ jobs:
           cd "$RUNNER_TEMP"
           git clone https://github.com/EpiLogos/QL-MEF.git ql-owner
           cd ql-owner
-          git checkout --detach d658b3478e42d96b947a5781f5468edf1886e511
+          git checkout --detach e753efc91f62b5b2af09e0a852c5063e366eccbe
           git rev-parse HEAD > "$RUNNER_TEMP/r6-ql-owner/revision.txt"
           git rev-parse HEAD^{tree} > "$RUNNER_TEMP/r6-ql-owner/tree.txt"
           git bundle create "$RUNNER_TEMP/r6-ql-owner/source.bundle" HEAD
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: actuation-r6-ql-owner-d658b347
+          name: actuation-r6-ql-owner-e753efc9
           path: ${{ runner.temp }}/r6-ql-owner/
           if-no-files-found: error
           retention-days: 30
