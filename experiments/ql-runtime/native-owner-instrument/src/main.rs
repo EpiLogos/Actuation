@@ -21,6 +21,8 @@ const OPERATIONS: &[&str] = &[
     "cross",
     "kernel",
     "harmonic-snapshot",
+    "cli",
+    "wiki-refraction",
 ];
 type Result<T> = std::result::Result<T, String>;
 fn number(v: &Value, key: &str) -> Result<u8> {
@@ -66,10 +68,48 @@ fn cross(c: CanonicalCrossPass) -> Value {
     };
     json!({"operator_ref":c.operator_ref(),"derivation_ref":c.derivation_ref(),"coordinates":coords})
 }
+// Keep the historical faculty's public owner operations, not a shell or a
+// second QL dispatcher. The owner parses and executes each admitted operation.
+fn owner_cli(v: &Value) -> Result<Value> {
+    let args = v["arguments"]
+        .as_array()
+        .ok_or("arguments requires an array")?
+        .iter()
+        .map(|a| {
+            a.as_str()
+                .map(str::to_owned)
+                .ok_or_else(|| "arguments requires strings".to_owned())
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let parts = args.iter().map(String::as_str).collect::<Vec<_>>();
+    let admitted = matches!(
+        parts.as_slice(),
+        ["capabilities"]
+            | ["mef", "lenses"]
+            | ["context-frame", "list"]
+            | ["kernel", "apply", _, _]
+            | ["vak", "locate", _]
+            | ["service", "negotiate", _]
+    );
+    if !admitted {
+        return Err("operation is not part of the research faculty's owner surface".into());
+    }
+    let mut args = args;
+    args.push("--json".into());
+    let text = ql_cli::execute_cli(&args).map_err(|e| e.to_string())?;
+    serde_json::from_str(&text).map_err(|_| "owner operation did not return structured JSON".into())
+}
 fn invoke(v: &Value) -> Result<Value> {
     let operation = v["operation"].as_str().ok_or("operation is required")?;
     let result=match operation {
         "capabilities"=>json!({"operations":OPERATIONS,"formal_owner":"EpiLogos/QL-MEF","evidence_standing":"D","provider_evidence":false}),
+        "cli"=>owner_cli(v)?,
+        "wiki-refraction"=>{
+            let request: ql_wiki::WikiRefractionRequest = serde_json::from_value(v["request"].clone()).map_err(|e|e.to_string())?;
+            let provider = ql_wiki::RegistryDisclosureProvider::new();
+            let response = ql_wiki::WikiRefractionEngine::new(Some(&provider)).refract(&request).map_err(|e|e.to_string())?;
+            serde_json::to_value(response).map_err(|e|e.to_string())?
+        },
         "vocabulary"=>{
             // Enumerate through the owner's validated constructor, not a second
             // privately maintained list of valid positions or class algebra.
@@ -145,6 +185,28 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn legacy_faculty_reads_are_native_owner_calls() {
+        for args in [
+            json!(["capabilities"]),
+            json!(["mef", "lenses"]),
+            json!(["context-frame", "list"]),
+            json!(["service", "negotiate", "refract"]),
+            json!([
+                "kernel",
+                "apply",
+                "conjugate-address",
+                "qladdr:sixfold@1/direct/P2/d0"
+            ]),
+        ] {
+            let result = invoke(&json!({"operation":"cli","arguments":args})).unwrap();
+            assert_eq!(result["owner_revision"], OWNER_REVISION);
+            assert!(!result["result"].is_null());
+        }
+        assert!(invoke(&json!({"operation":"cli","arguments":["verify"]})).is_err());
+        assert!(invoke(&json!({"operation":"cli","arguments":["kernel", "apply", "conjugate-address", "not-an-address"]})).is_err());
+        assert!(invoke(&json!({"operation":"wiki-refraction","request":{}})).is_err());
+    }
     #[test]
     fn vocabulary_comes_from_owner() {
         let r = invoke(&json!({"operation":"vocabulary"})).unwrap();
