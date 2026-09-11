@@ -1,5 +1,10 @@
 name: Rust refoundation
 
+# Unique obligations only: the frozen compatibility oracle and the native
+# Rust parity gate. `npm test`, `actuation verify`, the Skills check and the
+# research suites already run in native-cli.yml, native-skills.yml and
+# ql-experiments.yml; they are not repeated here.
+
 on:
   pull_request:
   push:
@@ -19,34 +24,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Preserve exact source basis
+      - name: Record exact source basis
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p migration-evidence
           git rev-parse HEAD > migration-evidence/source-commit.txt
-          git ls-tree -r HEAD > migration-evidence/source-tree.txt
-          git archive --format=tar.gz HEAD > migration-evidence/source.tar.gz
-          git bundle create migration-evidence/source.bundle HEAD
-          sha256sum migration-evidence/source.tar.gz migration-evidence/source.bundle > migration-evidence/SHA256SUMS
-      - name: Existing native product and Skills
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm test | tee migration-evidence/node-native-tests.log
-          node bin/actuation verify --json | tee migration-evidence/node-verify.json
-          bash scripts/verify-native-skills.sh | tee migration-evidence/native-skills.log
-      - name: Research programmes remain active
-        shell: bash
-        run: |
-          set -euo pipefail
-          node --test experiments/ql-runtime/foundation/test/*.test.js experiments/ql-runtime/deep-ql/test/*.test.js experiments/ql-runtime/prime/test/*.test.mjs experiments/epistemic-cultivation/test/*.test.mjs | tee migration-evidence/research-tests.log
-          python3 -m py_compile experiments/ql-runtime/prime/skills/ql-relational/src/ql_relational/__init__.py experiments/ql-runtime/comparison/series1/pydantic_bridge.py
       - name: Enforce frozen compatibility oracle (never recapture in a passing gate)
         shell: bash
         run: |
