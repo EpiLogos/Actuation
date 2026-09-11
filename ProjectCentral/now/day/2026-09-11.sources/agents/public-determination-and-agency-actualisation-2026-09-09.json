@@ -1,0 +1,17 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "public-determination-and-agency-actualisation-2026-09-09",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "codex-actuation-now-reconciliation",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1788956940,
+  "subject": "Public determination and Agency actualisation operation",
+  "result": "Resolved on accepted Actuation main 7d5f421fd2f06892d2bd82cdf905afb18e20ef8e. PR #47 landed the public authority-gated agency actualise operation and ten native behavioural cases; exact-main publication then exposed a missing packaged operator Skill. PR #48 repaired both npm and component publication, added clean-package verification on every pull request, and exact-main Native CLI, Native Skills, product-ground, component build/serve, and attestation all passed. Issue #44 is closed. This resolution does not imply materialisation, recognition, or source mutation beyond the operation receipt.",
+  "status": "resolved",
+  "evidence_refs": [
+    "https://github.com/EpiLogos/Actuation/issues/44",
+    "https://github.com/EpiLogos/Actuation/pull/47",
+    "https://github.com/EpiLogos/Actuation/pull/48",
+    "https://github.com/EpiLogos/Actuation/commit/7d5f421fd2f06892d2bd82cdf905afb18e20ef8e"
+  ]
+}

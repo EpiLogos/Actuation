@@ -7,11 +7,8 @@
   "recorded_at_unix_seconds": 1788914158,
   "subject": "Branch hygiene report remains scheduler-owned",
   "result": "Issue #37 is open as the automation-owned branch hygiene carrier. Its live report currently names only protected main and no branch requiring intervention. It is waiting on the next scheduled inspection; no product implementation work or clean branch deletion is inferred from the open issue alone.",
-  "status": "carried",
+  "status": "waiting",
   "evidence_refs": [
     "https://github.com/EpiLogos/Actuation/issues/37"
-  ],
-  "carried_from_days": [
-    "2026-09-11"
   ]
 }

@@ -7,15 +7,12 @@
   "recorded_at_unix_seconds": 1788914157,
   "subject": "Public determination and Agency actualisation operation",
   "result": "The pre-#97 Wayfinder requirement is still open. Current product ground exposes Agency reading and library-level determination validation, but records that no public create or configuration command is established. Next condition: inspect current application and Action state, then either prove an existing public operation against the ten required cases or open and implement the smallest Actuation-native child that binds an existing Agent or actualises a bounded new Agency without manufacturing authority.",
-  "status": "carried",
+  "status": "active",
   "source_refs": [
     "ProjectCentral/user/capability-matrix.json",
     "contracts/agency.mjs"
   ],
   "evidence_refs": [
     "https://github.com/EpiLogos/Actuation/issues/1#issuecomment-5513870208"
-  ],
-  "carried_from_days": [
-    "2026-09-11"
   ]
 }

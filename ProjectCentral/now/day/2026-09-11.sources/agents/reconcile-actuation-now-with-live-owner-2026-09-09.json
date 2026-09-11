@@ -1,0 +1,23 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "reconcile-actuation-now-with-live-owner-2026-09-09",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "codex-actuation-now-reconciliation",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1788914399,
+  "subject": "Reconcile Actuation NOW with live owner state",
+  "result": "Inspected the live owner state before claiming completion, withdrew the empty-register completion claim, and reconciled the Actuation horizon into five active product or integration carriers plus one waiting scheduler-owned carrier. The full ownership-floor test now fails if those live carriers disappear or lose status, provenance, evidence, or a named next condition. This bounded reconciliation is resolved through PR #43; the Actuation Wayfinder programme itself remains active.",
+  "status": "resolved",
+  "source_refs": [
+    "ProjectCentral/now/agents",
+    "ProjectCentral/tests/register.integrity.mjs",
+    "Control/agents/governance/engineering/agent-operations.md"
+  ],
+  "evidence_refs": [
+    "https://github.com/EpiLogos/Actuation/issues/1",
+    "https://github.com/EpiLogos/Actuation/pull/43"
+  ],
+  "preserve_refs": [
+    "https://github.com/EpiLogos/Actuation/pull/43"
+  ]
+}

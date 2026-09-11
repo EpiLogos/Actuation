@@ -7,15 +7,12 @@
   "recorded_at_unix_seconds": 1788914158,
   "subject": "Reinspect Codex stop-event capability evidence",
   "result": "A carried root NOW return names an unapplied Actuation-owned Codex stop-event descriptor correction. Current main still describes codex-cli 0.153.0 and treats notify at turn completion as the closest native boundary to stop. That historical observation is not promoted into a current fact. Next condition: inspect the installed Codex provider surface and authoritative current documentation, then update the descriptor and catalog revision only if real evidence establishes a distinct stop event.",
-  "status": "carried",
+  "status": "active",
   "source_refs": [
     "detection/capabilities/codex.mjs",
     "Control/agents/now/agents/wiki-continuity-programme-harnessadapter-2026-09-07.json"
   ],
   "evidence_refs": [
     "central:source:control:root:Control/agents/now/agents/wiki-continuity-programme-harnessadapter-2026-09-07.json"
-  ],
-  "carried_from_days": [
-    "2026-09-11"
   ]
 }

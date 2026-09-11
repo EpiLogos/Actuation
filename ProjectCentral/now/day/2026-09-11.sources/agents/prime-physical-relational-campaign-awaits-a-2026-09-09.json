@@ -7,7 +7,7 @@
   "recorded_at_unix_seconds": 1788945257,
   "subject": "Prime physical relational campaign awaits a configured provider",
   "result": "PR #46 landed the re-inspected Prime and QL source/structural tranche on exact main 9f93bf77add7e740c65de49ccd9be3cad3629d35, including deterministic accepted-main QL evidence and experiment-integrity fixes. The physical P0/P2/P3/P4/P5 campaign remains unavailable because Prime Agent is not installed, no Prime auth/config exists, and QL_PRIME_PROVIDER and QL_PRIME_MODEL are unset. Waiting condition: a real configured Prime provider/model surface on the owner machine; then execute the bounded five-condition campaign and retain provider-native evidence without repurposing unrelated credentials.",
-  "status": "carried",
+  "status": "waiting",
   "source_refs": [
     "experiments/ql-runtime/prime"
   ],
@@ -17,8 +17,5 @@
   ],
   "preserve_refs": [
     "https://github.com/EpiLogos/Actuation/pull/46"
-  ],
-  "carried_from_days": [
-    "2026-09-11"
   ]
 }
