@@ -161,6 +161,7 @@ actuation harness catalog [--json]
 actuation harness detect [--only <slugs>] [--versions] [--json]
 actuation harness self [--json]
 actuation harness capability [<slug>] [--json]
+actuation system [--json]
 actuation verify [--json]
 ```
 

@@ -139,27 +139,27 @@ function validateReturn(input) {
   refArray(returned.artifact_refs, "Return.artifact_refs", { optional: true });
   refArray(returned.claim_refs, "Return.claim_refs", { optional: true });
   refArray(returned.evidence_refs, "Return.evidence_refs", { optional: true });
-  const provenance = record(returned.provenance, "Return.provenance");
-  refArray(provenance.agency_lineage_refs, "Return.provenance.agency_lineage_refs", { nonEmpty: true });
-  refArray(provenance.agent_refs, "Return.provenance.agent_refs", { optional: true });
-  refArray(provenance.world_binding_refs, "Return.provenance.world_binding_refs", { optional: true });
-  refArray(provenance.authority_decision_refs, "Return.provenance.authority_decision_refs", { optional: true });
-  refArray(provenance.authority_refs, "Return.provenance.authority_refs", { optional: true });
-  refArray(provenance.bounds_refs, "Return.provenance.bounds_refs", { optional: true });
-  refArray(provenance.activity_refs, "Return.provenance.activity_refs", { optional: true });
-  refArray(provenance.actuation_refs, "Return.provenance.actuation_refs", { optional: true });
-  refArray(provenance.result_refs, "Return.provenance.result_refs", { optional: true });
-  refArray(provenance.request_refs, "Return.provenance.request_refs", { optional: true });
-  refArray(provenance.agent_session_refs, "Return.provenance.agent_session_refs", { optional: true });
-  refArray(provenance.action_refs, "Return.provenance.action_refs", { optional: true });
-  refArray(provenance.invocation_refs, "Return.provenance.invocation_refs", { optional: true });
-  refArray(provenance.plan_refs, "Return.provenance.plan_refs", { optional: true });
-  refArray(provenance.journey_refs, "Return.provenance.journey_refs", { optional: true });
-  refArray(provenance.run_refs, "Return.provenance.run_refs", { optional: true });
-  refArray(provenance.provider_refs, "Return.provenance.provider_refs", { optional: true });
-  refArray(provenance.harness_refs, "Return.provenance.harness_refs", { optional: true });
-  refArray(provenance.material_refs, "Return.provenance.material_refs", { optional: true });
-  refArray(provenance.external_source_refs, "Return.provenance.external_source_refs", { optional: true });
+  const provenance2 = record(returned.provenance, "Return.provenance");
+  refArray(provenance2.agency_lineage_refs, "Return.provenance.agency_lineage_refs", { nonEmpty: true });
+  refArray(provenance2.agent_refs, "Return.provenance.agent_refs", { optional: true });
+  refArray(provenance2.world_binding_refs, "Return.provenance.world_binding_refs", { optional: true });
+  refArray(provenance2.authority_decision_refs, "Return.provenance.authority_decision_refs", { optional: true });
+  refArray(provenance2.authority_refs, "Return.provenance.authority_refs", { optional: true });
+  refArray(provenance2.bounds_refs, "Return.provenance.bounds_refs", { optional: true });
+  refArray(provenance2.activity_refs, "Return.provenance.activity_refs", { optional: true });
+  refArray(provenance2.actuation_refs, "Return.provenance.actuation_refs", { optional: true });
+  refArray(provenance2.result_refs, "Return.provenance.result_refs", { optional: true });
+  refArray(provenance2.request_refs, "Return.provenance.request_refs", { optional: true });
+  refArray(provenance2.agent_session_refs, "Return.provenance.agent_session_refs", { optional: true });
+  refArray(provenance2.action_refs, "Return.provenance.action_refs", { optional: true });
+  refArray(provenance2.invocation_refs, "Return.provenance.invocation_refs", { optional: true });
+  refArray(provenance2.plan_refs, "Return.provenance.plan_refs", { optional: true });
+  refArray(provenance2.journey_refs, "Return.provenance.journey_refs", { optional: true });
+  refArray(provenance2.run_refs, "Return.provenance.run_refs", { optional: true });
+  refArray(provenance2.provider_refs, "Return.provenance.provider_refs", { optional: true });
+  refArray(provenance2.harness_refs, "Return.provenance.harness_refs", { optional: true });
+  refArray(provenance2.material_refs, "Return.provenance.material_refs", { optional: true });
+  refArray(provenance2.external_source_refs, "Return.provenance.external_source_refs", { optional: true });
   if (typeof returned.received !== "boolean") throw new TypeError("Return.received must be boolean");
   if (!RECOGNITION_STATES.has(returned.recognition_state)) {
     throw new TypeError("Return.recognition_state must be pending, recognised or rejected");
@@ -380,10 +380,10 @@ function actualiseAgency(input) {
   } else if (differentiated.return_relation_ref !== returnRef) {
     throw new TypeError("WorldBinding must exactly preserve the Determination Return relation");
   }
-  const provenance = object(request.provenance, "AgencyActualisationRequest.provenance");
-  onlyKeys(provenance, /* @__PURE__ */ new Set(["source_refs", "context_refs"]), "AgencyActualisationRequest.provenance");
-  const sourceRefs = refs(provenance.source_refs, "AgencyActualisationRequest.provenance.source_refs", { nonEmpty: true });
-  const contextRefs = refs(provenance.context_refs, "AgencyActualisationRequest.provenance.context_refs", { optional: true });
+  const provenance2 = object(request.provenance, "AgencyActualisationRequest.provenance");
+  onlyKeys(provenance2, /* @__PURE__ */ new Set(["source_refs", "context_refs"]), "AgencyActualisationRequest.provenance");
+  const sourceRefs = refs(provenance2.source_refs, "AgencyActualisationRequest.provenance.source_refs", { nonEmpty: true });
+  const contextRefs = refs(provenance2.context_refs, "AgencyActualisationRequest.provenance.context_refs", { optional: true });
   return {
     schema: AGENCY_ACTUALISATION_VERSION,
     receipt_ref: `${request.request_ref}:receipt`,
@@ -550,12 +550,12 @@ function validateModelUsageObservation(input) {
   if (!OUTCOMES.has(outcome.state)) throw new TypeError("ModelUsageObservation.outcome.state is unsupported");
   standing(outcome.standing, "ModelUsageObservation.outcome.standing");
   text(outcome.reason, "ModelUsageObservation.outcome.reason", { optional: true });
-  const provenance = object2(observation.provenance, "ModelUsageObservation.provenance");
-  for (const key of ["reporter_ref", "native_event_ref", "native_schema"]) text(provenance[key], `ModelUsageObservation.provenance.${key}`);
-  text(provenance.native_request_ref, "ModelUsageObservation.provenance.native_request_ref", { optional: true });
-  timestamp(provenance.observed_at, "ModelUsageObservation.provenance.observed_at");
-  refs2(provenance.raw_evidence_refs, "ModelUsageObservation.provenance.raw_evidence_refs");
-  if (provenance.raw_evidence_refs.length === 0) throw new TypeError("ModelUsageObservation.provenance.raw_evidence_refs must retain at least one reconstructable native evidence ref");
+  const provenance2 = object2(observation.provenance, "ModelUsageObservation.provenance");
+  for (const key of ["reporter_ref", "native_event_ref", "native_schema"]) text(provenance2[key], `ModelUsageObservation.provenance.${key}`);
+  text(provenance2.native_request_ref, "ModelUsageObservation.provenance.native_request_ref", { optional: true });
+  timestamp(provenance2.observed_at, "ModelUsageObservation.provenance.observed_at");
+  refs2(provenance2.raw_evidence_refs, "ModelUsageObservation.provenance.raw_evidence_refs");
+  if (provenance2.raw_evidence_refs.length === 0) throw new TypeError("ModelUsageObservation.provenance.raw_evidence_refs must retain at least one reconstructable native evidence ref");
   if (observation.provider_facts != null) {
     object2(observation.provider_facts, "ModelUsageObservation.provider_facts");
     for (const [key, value] of Object.entries(observation.provider_facts)) {
@@ -1155,11 +1155,11 @@ function validateHarnessDescriptor(input) {
       }
     }
   }
-  const provenance = record2(descriptor.provenance, "HarnessDescriptor.provenance");
-  ref5(provenance.authored_by, "HarnessDescriptor.provenance.authored_by");
-  stringArray(provenance.source_refs, "HarnessDescriptor.provenance.source_refs", { optional: true });
-  ref5(provenance.accepted_by, "HarnessDescriptor.provenance.accepted_by", { optional: true });
-  if (provenance.catalog_revision == null || !Number.isInteger(provenance.catalog_revision)) {
+  const provenance2 = record2(descriptor.provenance, "HarnessDescriptor.provenance");
+  ref5(provenance2.authored_by, "HarnessDescriptor.provenance.authored_by");
+  stringArray(provenance2.source_refs, "HarnessDescriptor.provenance.source_refs", { optional: true });
+  ref5(provenance2.accepted_by, "HarnessDescriptor.provenance.accepted_by", { optional: true });
+  if (provenance2.catalog_revision == null || !Number.isInteger(provenance2.catalog_revision)) {
     throw new TypeError("HarnessDescriptor.provenance.catalog_revision must be an integer");
   }
   return descriptor;
@@ -1531,10 +1531,10 @@ function validateHarnessCapability(input) {
   if (capability.model_dispatch != null) {
     validateModelDispatch(capability.model_dispatch, "HarnessCapability.model_dispatch");
   }
-  const provenance = record3(capability.provenance, "HarnessCapability.provenance");
-  ref6(provenance.authored_by, "provenance.authored_by");
-  stringArray2(provenance.source_refs, "provenance.source_refs");
-  if (!Array.isArray(provenance.source_refs) || provenance.source_refs.length === 0) {
+  const provenance2 = record3(capability.provenance, "HarnessCapability.provenance");
+  ref6(provenance2.authored_by, "provenance.authored_by");
+  stringArray2(provenance2.source_refs, "provenance.source_refs");
+  if (!Array.isArray(provenance2.source_refs) || provenance2.source_refs.length === 0) {
     throw new TypeError("provenance.source_refs must cite at least one source");
   }
   return capability;
@@ -1806,6 +1806,10 @@ function realisedActuationReadModel(input) {
   };
 }
 
+// contracts/system-disclosure-version.mjs
+var SYSTEM_DISCLOSURE_VERSION = "oi.product-settings-disclosure/v2";
+var SYSTEM_DISCLOSURE_CONTRACT_REVISION = "wave-5/system.1";
+
 // cli/surface.mjs
 var ACTUATION_CLI_VERSION = "0.2.0";
 var ACTUATION_CLI_CONTRACT = "actuation.cli/v1";
@@ -1824,14 +1828,15 @@ var ACTUATION_CLI_SURFACE = Object.freeze({
     instantiation: ACTUATION_INSTANTIATION_VERSION,
     model_bearing_legacy: LEGACY_MODEL_BEARING_SCHEMA,
     harness_detection: HARNESS_DETECTION_VERSION,
-    harness_capability: HARNESS_CAPABILITY_VERSION
+    harness_capability: HARNESS_CAPABILITY_VERSION,
+    system_disclosure: SYSTEM_DISCLOSURE_VERSION
   })
 });
 
 // cli/commands.mjs
-import { readFileSync as readFileSync3, readdirSync as readdirSync2, appendFileSync as appendFileSync2 } from "node:fs";
+import { readFileSync as readFileSync3, readdirSync as readdirSync3, appendFileSync as appendFileSync2 } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, join as join3, resolve as resolve2 } from "node:path";
+import { dirname, join as join4, resolve as resolve2 } from "node:path";
 import { spawnSync as spawnSync2 } from "node:child_process";
 
 // contracts/actuation-stream-store.mjs
@@ -2772,8 +2777,8 @@ function atomicRewrite(path, stream) {
 `, { encoding: "utf8" });
   renameSync(temporary, path);
 }
-function openDurableStream({ root, stream_ref, actuation_ref, agency_ref, agent_session_ref, world_binding_ref, provenance, started_at } = {}) {
-  const identity = { stream_ref, actuation_ref, agency_ref, agent_session_ref, world_binding_ref, provenance };
+function openDurableStream({ root, stream_ref, actuation_ref, agency_ref, agent_session_ref, world_binding_ref, provenance: provenance2, started_at } = {}) {
+  const identity = { stream_ref, actuation_ref, agency_ref, agent_session_ref, world_binding_ref, provenance: provenance2 };
   for (const key of ["stream_ref", "actuation_ref", "agency_ref", "agent_session_ref"]) {
     if (typeof identity[key] !== "string" || identity[key].trim() === "") {
       throw new TypeError(`opening a durable ActuationStream requires a non-empty ${key}`);
@@ -2916,6 +2921,11 @@ function recordModelUsageObservation({ root, stream_ref, identity, observation, 
 `, { encoding: "utf8" });
   return { stream_ref, event: structuredClone(appended.events.at(-1)), cursor: { ...appended.cursor }, lifecycle: { ...appended.lifecycle }, deduplicated: false };
 }
+
+// contracts/system-disclosure.mjs
+import { createHash as createHash2 } from "node:crypto";
+import { existsSync as existsSync2, readdirSync as readdirSync2 } from "node:fs";
+import { join as join3 } from "node:path";
 
 // detection/probes.mjs
 import { execFileSync, spawnSync } from "node:child_process";
@@ -3317,6 +3327,460 @@ function resolveSelf({
   });
 }
 
+// contracts/system-disclosure.mjs
+var PRODUCT_ID = "actuation";
+var OWNER_REF = "actuation:cli";
+var READING_COMMAND = ["actuation", "system", "--json"];
+var PATH = Object.freeze({
+  surface: "cli/surface.mjs",
+  commands: "cli/commands.mjs",
+  system: "contracts/system-disclosure.mjs",
+  agency: "contracts/agency.mjs",
+  agencyActualisation: "contracts/agency-actualisation.mjs",
+  catalog: "detection/catalog.mjs",
+  detect: "detection/detect.mjs",
+  self: "detection/self.mjs",
+  streamStore: "contracts/actuation-stream-store.mjs"
+});
+var NO_AUTHORITY = Object.freeze({ requires: [], granted_by: "actuation:cli", evidence_ref: null });
+var NO_EXPLAIN = Object.freeze({ ref: null, command: null });
+var NO_HISTORY = Object.freeze({ ref: null, command: null });
+function provenance(ownerRef, path, observedAtMs) {
+  return { owner_ref: ownerRef, path, observed_at_unix_ms: observedAtMs };
+}
+function axis(value, prov) {
+  return { value, provenance: prov };
+}
+function stagedAxis(prov, { stageState = "none", stageRef = null } = {}) {
+  return {
+    value: null,
+    provenance: prov,
+    stage_ref: stageRef,
+    stage_state: stageState
+  };
+}
+function expectedEffect({ summary = null, ref: ref9 = null } = {}) {
+  return {
+    summary: summary ?? "No stage prepared; this setting is declared code, not applied configuration.",
+    ref: ref9
+  };
+}
+function drift(state, between = ["declared", "effective"], remediationActionRef = null) {
+  return { state, between, remediation_action_ref: remediationActionRef };
+}
+function canonicalReadingBody(descriptor) {
+  const body = structuredClone(descriptor);
+  const zeroClock = (node) => {
+    if (Array.isArray(node)) {
+      node.forEach(zeroClock);
+      return;
+    }
+    if (node && typeof node === "object") {
+      for (const key of Object.keys(node)) {
+        if (key.endsWith("_unix_ms")) node[key] = 0;
+        else zeroClock(node[key]);
+      }
+    }
+  };
+  zeroClock(body);
+  body.owner.reading_digest = null;
+  return body;
+}
+function deriveAvailability(detection) {
+  if (detection.availability === "complete") {
+    return { state: "available", reason: null };
+  }
+  return {
+    state: "degraded",
+    reason: "harness detection is partial: at least one probe failed (see degradations)"
+  };
+}
+function deriveDegradations(detection) {
+  return detection.harnesses.filter((entry) => entry.state === "unavailable").map((entry) => ({
+    subject_ref: entry.harness_ref,
+    state: "unavailable",
+    reason: entry.unavailable_reason ?? "all probes failed; could not run",
+    native_error: null
+  }));
+}
+function defaultStreamStoreState() {
+  const root = streamStoreRoot({});
+  const state = { root, exists: false, in_use: false, open_streams: 0, closed_streams: 0 };
+  let exists;
+  try {
+    exists = existsSync2(root);
+  } catch {
+    state.exists = null;
+    state.reason = "default stream store root is not observable on this machine";
+    return state;
+  }
+  state.exists = exists;
+  if (!exists) return state;
+  let names;
+  try {
+    names = readdirSync2(root).filter((name) => name.endsWith(".jsonl"));
+  } catch (error) {
+    state.in_use = null;
+    state.reason = `default stream store root exists but is not readable: ${error.message}`;
+    return state;
+  }
+  const undetermined = [];
+  let open = 0;
+  let closed = 0;
+  for (const name of names) {
+    try {
+      const stream = loadStreamFile(join3(root, name));
+      if (stream == null) {
+        undetermined.push({ file: name, reason: "stream file vanished during the scan" });
+        continue;
+      }
+      if (stream.lifecycle.state === "open") open += 1;
+      else closed += 1;
+    } catch (error) {
+      undetermined.push({ file: name, reason: error.message });
+    }
+  }
+  state.open_streams = open;
+  state.closed_streams = closed;
+  state.in_use = open > 0;
+  if (undetermined.length > 0) {
+    state.undetermined_streams = undetermined.length;
+    state.reason = `${undetermined.length} stream(s) lifecycle undetermined; counted as neither open nor closed: ${undetermined.map((entry) => `${entry.file} (${entry.reason})`).join("; ")}`;
+  }
+  return state;
+}
+function contractSetting(key, title, kind, declaredValue, declaredPath, observedAtMs) {
+  const declared = axis(structuredClone(declaredValue), provenance(OWNER_REF, declaredPath, observedAtMs));
+  const effective = axis(structuredClone(declaredValue), provenance("actuation:cli:capabilities", PATH.surface, observedAtMs));
+  const active = axis(null, provenance("actuation:cli:system", PATH.system, observedAtMs));
+  return {
+    key,
+    title,
+    kind,
+    axes: {
+      declared,
+      effective,
+      active,
+      staged: stagedAxis(provenance(OWNER_REF, declaredPath, observedAtMs)),
+      expected_effect: expectedEffect()
+    },
+    mutable: false,
+    native_path: "actuation (read-only projection; no mutation disclosed)",
+    bootstrap: false,
+    drift: drift("none")
+  };
+}
+function vocabularySetting(key, title, declaredValue, declaredPath, observedAtMs) {
+  const declared = axis(structuredClone(declaredValue), provenance(OWNER_REF, declaredPath, observedAtMs));
+  const effective = axis(structuredClone(declaredValue), provenance("actuation:cli:agency", PATH.agency, observedAtMs));
+  const active = axis([], provenance("actuation:cli:system", PATH.system, observedAtMs));
+  return {
+    key,
+    title,
+    kind: "table",
+    axes: {
+      declared,
+      effective,
+      active,
+      staged: stagedAxis(provenance(OWNER_REF, declaredPath, observedAtMs)),
+      expected_effect: expectedEffect()
+    },
+    mutable: false,
+    native_path: "actuation (read-only projection; no mutation disclosed)",
+    bootstrap: false,
+    drift: drift("none")
+  };
+}
+function action({
+  actionRef,
+  title,
+  args = [],
+  availability,
+  unavailableReason = null,
+  subjectKinds = [],
+  authority = NO_AUTHORITY,
+  exposure = { ui: false, agent: false, headless: true },
+  explain = NO_EXPLAIN,
+  history = NO_HISTORY
+}) {
+  return {
+    action_ref: actionRef,
+    title,
+    args,
+    availability,
+    unavailable_reason: unavailableReason,
+    subject_kinds: subjectKinds,
+    authority,
+    exposure,
+    explain,
+    history
+  };
+}
+var HEADLESS = Object.freeze({ ui: false, agent: true, headless: true });
+var NATIVE_ONLY = Object.freeze({ ui: false, agent: false, headless: true });
+function canonicalActions() {
+  const read = (actionRef, title, args, subjectKinds) => action({
+    actionRef,
+    title,
+    args,
+    availability: "disclosed",
+    subjectKinds,
+    authority: NO_AUTHORITY,
+    exposure: HEADLESS
+  });
+  return [
+    read("capabilities", "Read the CLI surface and native contract versions", [], ["actuation.cli"]),
+    read("contract.list", "List native contract versions", [], ["actuation.contract"]),
+    read("harness.catalog", "Declare the harness detection catalog", [], ["actuation.harness"]),
+    read("harness.detect", "Prove harness presence live on this machine", [], ["actuation.harness"]),
+    read("harness.self", "Identify the harness this process runs inside", [], ["actuation.harness"]),
+    read("verify", "Run the native verification gate (test suites)", [], ["actuation.verification"]),
+    read("agency.read", "Project an Agency read model", [{ name: "document", kind: "json" }], ["actuation.agency"]),
+    read("realised.read", "Project a realised-actuation read model", [{ name: "document", kind: "json" }], ["actuation.realised"]),
+    read("stream.read", "Project an ActuationStream read model", [{ name: "document", kind: "json" }], ["actuation.stream"]),
+    read("activity.read", "Validate and project an Activity read model", [{ name: "document", kind: "json" }], ["actuation.activity"]),
+    read("instantiation.read", "Validate an instantiation receipt", [{ name: "document", kind: "json" }], ["actuation.instantiation"]),
+    action({
+      actionRef: "agency.actualise",
+      title: "Actualise a determination as a semantic relation",
+      args: [{ name: "document", kind: "json" }],
+      availability: "unavailable",
+      unavailableReason: "Native CLI operation; Actuation discloses no O:I intent/invoke seam this wave and performs no materialisation (receipt effect: materialisation not-performed).",
+      subjectKinds: ["actuation.agency", "actuation.determination"],
+      authority: {
+        requires: ["metagency-grant:determine-agency", "metagency-grant:actualise-agency (derivation only)"],
+        granted_by: "the governing Agency's exact MetagencyGrant (authority is never derived from caller identity or surface position)",
+        evidence_ref: "contracts/agency-actualisation.mjs"
+      },
+      exposure: NATIVE_ONLY
+    }),
+    action({
+      actionRef: "stream.durable",
+      title: "Durable stream open/record/replay/close",
+      args: [{ name: "store", kind: "path" }, { name: "document", kind: "json" }],
+      availability: "unavailable",
+      unavailableReason: "Native CLI operation; no intent/invoke seam disclosed. Store is caller-supplied (--store <dir>); there is no product-owned live stream registry.",
+      subjectKinds: ["actuation.stream"],
+      authority: NO_AUTHORITY,
+      exposure: NATIVE_ONLY
+    }),
+    action({
+      actionRef: "instantiation.record",
+      title: "Append a bound instantiation receipt (JSONL)",
+      args: [{ name: "document", kind: "json" }, { name: "out", kind: "path" }],
+      availability: "unavailable",
+      unavailableReason: "Native CLI operation; no intent/invoke seam disclosed. Writes caller-supplied JSONL only.",
+      subjectKinds: ["actuation.instantiation"],
+      authority: NO_AUTHORITY,
+      exposure: NATIVE_ONLY
+    }),
+    action({
+      actionRef: "stream.usage",
+      title: "Record a model-usage observation into a durable stream",
+      args: [{ name: "adapter", kind: "string" }, { name: "document", kind: "json" }],
+      availability: "unavailable",
+      unavailableReason: "Native CLI operation; no intent/invoke seam disclosed.",
+      subjectKinds: ["actuation.model-usage"],
+      authority: NO_AUTHORITY,
+      exposure: NATIVE_ONLY
+    }),
+    action({
+      actionRef: "ecology.read",
+      title: "Read the live actor ecology (instantiated/realised actuations)",
+      args: [],
+      availability: "missing_native_obligation",
+      subjectKinds: ["actuation.ecology"],
+      authority: NO_AUTHORITY,
+      exposure: { ui: false, agent: false, headless: false }
+    }),
+    action({
+      actionRef: "attach",
+      title: "Attach an observer to a live actor/session",
+      args: [{ name: "actor_ref", kind: "string" }],
+      availability: "missing_native_obligation",
+      subjectKinds: ["actuation.ecology"],
+      authority: NO_AUTHORITY,
+      exposure: { ui: false, agent: false, headless: false }
+    })
+  ];
+}
+function buildSystemDisclosure({ now = /* @__PURE__ */ new Date() } = {}) {
+  const observedAtMs = now.getTime();
+  const detection = runDetection({ descriptors: harnessDescriptors() });
+  const self = resolveSelf({ descriptors: harnessDescriptors() });
+  const descriptors = harnessDescriptors();
+  const declaredCount = descriptors.length;
+  const detectedCount = detection.harnesses.filter((entry) => entry.state === "detected").length;
+  const sections = [
+    {
+      id: "agency",
+      title: "Agent / Agency / WorldBinding",
+      settings: [
+        contractSetting("agency.contract", "Agency contract", "scalar", AGENCY_CONTRACT_VERSION, "contracts/agency.mjs", observedAtMs),
+        vocabularySetting("agency.determination.kinds", "Determination kinds", ["self-differentiation", "delegation", "derivation", "federation"], "contracts/agency.mjs", observedAtMs),
+        vocabularySetting(
+          "agency.world_binding.constraints",
+          "WorldBinding constraint categories",
+          ["human_authored_refs", "security_policy_refs", "evidence_refs", "external_reality_refs"],
+          "contracts/agency.mjs",
+          observedAtMs
+        )
+      ]
+    },
+    {
+      id: "authority",
+      title: "Authority / Metagency",
+      settings: [
+        vocabularySetting("authority.metagency.operations", "Metagency operations", ["determine-agency", "configure-agency", "actualise-agency", "reintegrate-return"], "contracts/agency.mjs", observedAtMs),
+        contractSetting("authority.derivation.rule", "Derivation authority requirement", "scalar", "Derivation requires explicit actualise-agency authority and an explicitly actualised Agent identity", "contracts/agency-actualisation.mjs", observedAtMs),
+        contractSetting("authority.federation.rule", "Federation authority rule", "scalar", "Federation cannot silently carry determining authority; use an explicit delegation", "contracts/agency.mjs", observedAtMs)
+      ]
+    },
+    {
+      id: "availability",
+      title: "Actual actuation availability",
+      settings: [
+        {
+          key: "availability.contracts",
+          title: "Native contract surface",
+          kind: "table",
+          axes: {
+            declared: axis(structuredClone(ACTUATION_CLI_SURFACE.native_contracts), provenance(OWNER_REF, PATH.surface, observedAtMs)),
+            effective: axis(structuredClone(ACTUATION_CLI_SURFACE.native_contracts), provenance("actuation:cli:capabilities", PATH.surface, observedAtMs)),
+            active: axis(structuredClone(ACTUATION_CLI_SURFACE.native_contracts), provenance("actuation:cli:system", PATH.system, observedAtMs)),
+            staged: stagedAxis(provenance(OWNER_REF, "cli/surface.mjs", observedAtMs)),
+            expected_effect: expectedEffect()
+          },
+          mutable: false,
+          native_path: "actuation (read-only projection; no mutation disclosed)",
+          bootstrap: false,
+          drift: drift("none")
+        },
+        {
+          key: "availability.harness.catalog",
+          title: "Harness detection catalog vs live detection",
+          kind: "table",
+          axes: {
+            declared: axis(
+              { catalog_revision: CATALOG_REVISION, descriptor_count: declaredCount, slugs: descriptors.map((d) => d.slug) },
+              provenance("actuation:harness:catalog", PATH.catalog, observedAtMs)
+            ),
+            effective: axis(
+              {
+                states: Object.fromEntries(detection.harnesses.map((entry) => [entry.slug, entry.state])),
+                detected: detection.harnesses.filter((e) => e.state === "detected").map((e) => e.slug),
+                unavailable: detection.harnesses.filter((e) => e.state === "unavailable").map((e) => e.slug),
+                not_installed: detection.harnesses.filter((e) => e.state === "not-installed").map((e) => e.slug)
+              },
+              provenance("actuation:harness:detect", PATH.detect, observedAtMs)
+            ),
+            active: axis(
+              { running_in: self.resolved ? { slug: self.resolved.slug, harness_ref: self.resolved.harness_ref } : null, ambiguity: self.ambiguity },
+              provenance("actuation:harness:self", PATH.self, observedAtMs)
+            ),
+            staged: stagedAxis(provenance("actuation:harness:catalog", PATH.catalog, observedAtMs)),
+            expected_effect: expectedEffect()
+          },
+          mutable: false,
+          native_path: "actuation harness detect (no mutation disclosed)",
+          bootstrap: false,
+          drift: drift(
+            detectedCount === declaredCount ? "none" : "diverged",
+            ["declared", "effective"],
+            null
+          )
+        },
+        {
+          key: "availability.verification",
+          title: "Verification gate",
+          kind: "presence",
+          axes: {
+            declared: axis({ present: true, command: ["actuation", "verify", "--json"] }, provenance(OWNER_REF, "cli/commands.mjs", observedAtMs)),
+            effective: axis({ present: true, command: ["actuation", "verify", "--json"] }, provenance("actuation:cli:capabilities", PATH.commands, observedAtMs)),
+            active: axis({ running: false, last_run: null }, provenance("actuation:cli:system", PATH.system, observedAtMs)),
+            staged: stagedAxis(provenance(OWNER_REF, "cli/commands.mjs", observedAtMs)),
+            expected_effect: expectedEffect()
+          },
+          mutable: false,
+          native_path: "actuation verify",
+          bootstrap: false,
+          drift: drift("none")
+        }
+      ]
+    },
+    {
+      id: "activity",
+      title: "Activity / ActuationStream",
+      settings: [
+        contractSetting("activity.contract", "Activity contract", "scalar", ACTIVITY_VERSION, "contracts/activity.mjs", observedAtMs),
+        contractSetting("stream.contract", "ActuationStream contract", "scalar", ACTUATION_STREAM_VERSION, "contracts/actuation-stream.mjs", observedAtMs),
+        {
+          key: "stream.durable_store",
+          title: "Durable stream store",
+          kind: "presence",
+          axes: {
+            declared: axis(
+              { default_root: ACTUATION_STREAM_STORE_DEFAULT_ROOT },
+              provenance(OWNER_REF, PATH.streamStore, observedAtMs)
+            ),
+            effective: axis(
+              { root: streamStoreRoot({}) },
+              provenance("actuation:cli:capabilities", PATH.streamStore, observedAtMs)
+            ),
+            active: axis(
+              defaultStreamStoreState(),
+              provenance("actuation:cli:system", PATH.system, observedAtMs)
+            ),
+            staged: stagedAxis(provenance(OWNER_REF, PATH.streamStore, observedAtMs)),
+            expected_effect: expectedEffect()
+          },
+          mutable: false,
+          native_path: "actuation stream open --store <dir>",
+          bootstrap: false,
+          drift: drift("none")
+        }
+      ]
+    },
+    {
+      id: "return",
+      title: "Return",
+      settings: [
+        contractSetting("return.contract", "Return contract", "scalar", AGENCY_CONTRACT_VERSION, "contracts/agency.mjs", observedAtMs),
+        vocabularySetting("return.modes", "Return policy modes", ["required", "optional", "autonomous-termination"], "contracts/agency.mjs", observedAtMs)
+      ]
+    }
+  ];
+  const obligations = [
+    "ecology.read \u2014 no product-owned live registry of instantiated/realised actuations; receipts are caller-supplied documents, not a live ledger.",
+    "attach \u2014 no native operation binds an observer to a live actor/session.",
+    "Actuation discloses no kernel intent/invoke engagement seam; mutating operations (agency actualise, stream lifecycle, instantiation record, stream usage) are native CLI only and are not mountable through the O:I System surface this wave.",
+    "Factory<->Actuation discovery/intent/authority seam \u2014 NOT owned by either track; returned for the serialized owner decision (do not invent). Actuation's actualise/realised receipts deliberately perform no Factory recognition and no source mutation; who owns the materialisation hand-off is undecided."
+  ];
+  const descriptor = {
+    schema: SYSTEM_DISCLOSURE_VERSION,
+    product_id: PRODUCT_ID,
+    contract_revision: SYSTEM_DISCLOSURE_CONTRACT_REVISION,
+    disclosed_at_unix_ms: observedAtMs,
+    owner: {
+      owner_id: PRODUCT_ID,
+      owner_ref: OWNER_REF,
+      owner_version: ACTUATION_CLI_VERSION,
+      reading_command: [...READING_COMMAND],
+      reading_digest: null,
+      reading_digest_covers: "whole descriptor, every *_unix_ms field zeroed, owner.reading_digest null",
+      observed_at_unix_ms: observedAtMs
+    },
+    about: "Actuation is the constitution and management of technological agency: it validates and projects Agent/Agency/WorldBinding, determination, bounds, authority and Return contracts, and proves harness presence live on this machine. It performs no agency materialisation and discloses no O:I engagement seam; mutating operations are native CLI only.",
+    sections,
+    actions: canonicalActions(),
+    availability: deriveAvailability(detection),
+    degradations: deriveDegradations(detection),
+    obligations
+  };
+  descriptor.owner.reading_digest = createHash2("sha256").update(JSON.stringify(canonicalReadingBody(descriptor))).digest("hex");
+  return descriptor;
+}
+
 // cli/commands.mjs
 var REPO_ROOT = resolve2(dirname(fileURLToPath(import.meta.url)), "..");
 var TEST_DIRS = ["contracts", "detection", "cli"];
@@ -3357,7 +3821,7 @@ function gitRevision() {
 function discoverTestFiles() {
   const files = [];
   for (const dir of TEST_DIRS) {
-    for (const name of readdirSync2(join3(REPO_ROOT, dir)).sort()) {
+    for (const name of readdirSync3(join4(REPO_ROOT, dir)).sort()) {
       if (name.endsWith(".test.mjs")) files.push(`${dir}/${name}`);
     }
   }
@@ -3446,6 +3910,14 @@ Harness: ${value.harness_ref ?? "unattributed"}
 Model: ${relation.model_ref}
 Placement: ${relation.material?.placement ?? "unspecified"}
 Inference surface: ${relation.inference_surface.contract_ref}`;
+}
+function humanSystem(value) {
+  const settingCount = value.sections.reduce((total, section) => total + section.settings.length, 0);
+  return `Actuation settings disclosure (${value.schema})
+Product: ${value.product_id}  Revision: ${value.contract_revision}
+Availability: ${value.availability.state}
+Sections: ${value.sections.length}  Settings: ${settingCount}  Actions: ${value.actions.length}  Obligations: ${value.obligations.length}
+Digest: ${value.owner.reading_digest}`;
 }
 function humanCatalog(value) {
   const lines = value.descriptors.map((descriptor) => {
@@ -3635,6 +4107,13 @@ var COMMANDS = Object.freeze([
 ${value.capabilities.map((c) => `  ${c.harness_slug.padEnd(20)} events: ${c.native_events.length}  blocking: ${c.blocking_semantics.kind.padEnd(15)} wake: ${c.wake_capability.kind}`).join("\n")}`
       );
     }
+  },
+  {
+    name: "system.read",
+    route: ["system"],
+    usage: "actuation system [--json]",
+    input: false,
+    run: ({ json }) => output(buildSystemDisclosure(), json, humanSystem)
   },
   {
     name: "verify",

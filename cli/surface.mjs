@@ -11,6 +11,7 @@ import { HARNESS_CAPABILITY_VERSION } from "../contracts/harness-capability.mjs"
 import { ACTUATION_INSTANTIATION_VERSION, LEGACY_MODEL_BEARING_SCHEMA } from "../contracts/instantiation.mjs";
 import { REALISED_ACTUATION_VERSION } from "../contracts/realised-actuation.mjs";
 import { MODEL_USAGE_VERSION } from "../contracts/model-usage.mjs";
+import { SYSTEM_DISCLOSURE_VERSION } from "../contracts/system-disclosure-version.mjs";
 
 export const ACTUATION_CLI_VERSION = "0.2.0";
 export const ACTUATION_CLI_CONTRACT = "actuation.cli/v1";
@@ -31,5 +32,6 @@ export const ACTUATION_CLI_SURFACE = Object.freeze({
     model_bearing_legacy: LEGACY_MODEL_BEARING_SCHEMA,
     harness_detection: HARNESS_DETECTION_VERSION,
     harness_capability: HARNESS_CAPABILITY_VERSION,
+    system_disclosure: SYSTEM_DISCLOSURE_VERSION,
   }),
 });
