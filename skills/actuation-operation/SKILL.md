@@ -13,8 +13,8 @@ Use this Skill when an authorised actor needs to inspect or request Actuation op
 - Native owner: `EpiLogos/Actuation`
 - Authoritative source: this `SKILL.md`; projections are copies, never source
 - Contract version: `actuation.agency/v1`
-- Public contract: `contracts/agency.mjs` and `contracts/agency-v1.schema.json`
-- Verification: `npm test` (discovers every native suite; never a transcribed file list) plus `bash scripts/verify-native-skills.sh`
+- Public contract: `crates/actuation-core/src/agency.rs` (native `actuation.agency/v1` types) and `schemas/actuation.v0.schema.json`
+- Verification: `cargo test --workspace` (runs every native suite) and `actuation verify --json` (the served binary certifies itself), plus `bash scripts/verify-native-skills.sh`
 - Risk class: authority-sensitive; inspection is not mutation
 
 ## Invariants
@@ -40,15 +40,15 @@ Obtain references to the relevant Agent, Agency, world, scope and purpose; the c
 
 ## Procedure
 
-1. **Inspect the binding.** Validate it with `validateWorldBinding`. Read `agent_ref`, `agency_ref`, `world_ref`, `scope_ref`, bounds, authority refs and constraints. Do not rewrite the Agent as the Agency: Agency is the situated determination of an Agent for an act.
-2. **Establish root position only from reality.** If a `RootScope` is available, validate it and use `isRootAgency`. A false result means non-root for that scope. Absence of a `RootScope` means root is not established.
-3. **Explain metagency rather than assuming it.** Validate each `MetagencyGrant` with `validateMetagencyGrant`. The only portable metagency operations in v1 are `determine-agency`, `configure-agency`, `actualise-agency`, and `reintegrate-return`. Report only operations backed by grants for this Agency and binding.
-4. **Form a determination through the public contract.** Use `validateDetermination` for `self-differentiation`, `delegation`, `derivation` or `federation`. Preserve non-empty bounds and the declared return policy. Federation does not silently carry determining authority; use explicit delegation when authority is actually granted.
-5. **Check recursive lineage.** Before an Agency determines another Agency, use `validateDeterminationLineage`. Downward determination is valid only when the parent determination permits determination within bounds.
-6. **Request actualisation through the authority-bearing application surface.** A validated `Determination` describes a legal relation; it does not itself execute or authorise native Actions. Submit the complete request through `actuation agency actualise [file|-] [--json]`. The operation requires the exact governing and differentiated `WorldBinding` records, an explicit matching `MetagencyGrant`, determination lineage, bounded Agent-identity evidence and Return relation. This Skill targets that operation but cannot manufacture authority: source visibility, available Skills or Capabilities, communication, AgentSet membership and Factory Journey participation do not replace the grant.
-7. **Receive attributable difference.** Validate each `Return` with `validateReturn`. Preserve determination, agency lineage, difference, artifact, Claim, Evidence and material/external provenance refs.
+1. **Inspect the binding.** Admit it through the native `WorldBinding` type in `crates/actuation-core/src/agency.rs` (or read it through `actuation agency`). Read `agent_ref`, `agency_ref`, `world_ref`, `scope_ref`, bounds, authority refs and constraints. Do not rewrite the Agent as the Agency: Agency is the situated determination of an Agent for an act.
+2. **Establish root position only from reality.** If a `RootScope` is available, admit it and use `WorldBinding::is_root_for`. A false result means non-root for that scope. Absence of a `RootScope` means root is not established.
+3. **Explain metagency rather than assuming it.** Admit each `MetagencyGrant` through the native type. The only portable metagency operations in v1 are `determine-agency`, `configure-agency`, `actualise-agency`, and `reintegrate-return`. Report only operations backed by grants for this Agency and binding.
+4. **Form a determination through the public contract.** Admit a `Determination` for `self-differentiation`, `delegation`, `derivation` or `federation`. Preserve non-empty bounds and the declared return policy. Federation does not silently carry determining authority; use explicit delegation when authority is actually granted.
+5. **Check recursive lineage.** Before an Agency determines another Agency, admit the `DeterminationLineage`. Downward determination is valid only when the parent determination permits determination within bounds.
+6. **Request actualisation through the authority-bearing application surface.** A validated `Determination` describes a legal relation; it does not itself execute or authorise native Actions. Submit the complete request through `actuation agency actualise [file|-] [--json]`, which admits it via `ActualisationRequest::admit` in `crates/actuation-runtime/src/actualisation.rs`. The operation requires the exact governing and differentiated `WorldBinding` records, an explicit matching `MetagencyGrant`, determination lineage, bounded Agent-identity evidence and Return relation. This Skill targets that operation but cannot manufacture authority: source visibility, available Skills or Capabilities, communication, AgentSet membership and Factory Journey participation do not replace the grant.
+7. **Receive attributable difference.** Admit each `Return` through the native type. Preserve determination, agency lineage, difference, artifact, Claim, Evidence and material/external provenance refs.
 8. **Recognise before mutation.** A Return may be pending, recognised or rejected. World mutation may be `applied` only for an explicitly recognised Return. Do not convert repeated success, benchmark fitness or agent preference into recognition.
-9. **Use the read model for explanation.** `agencyReadModel` is the stable inspection view for root position, metagency grants, determination relations, Returns and constraints. Present missing or withheld authority as missing; never invent health or permission.
+9. **Use the read model for explanation.** `agency_reading` (served as `actuation agency`) is the stable inspection view for root position, metagency grants, determination relations, Returns and constraints. Present missing or withheld authority as missing; never invent health or permission.
 
 ## Outputs
 
