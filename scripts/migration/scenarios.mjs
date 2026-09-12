@@ -5,13 +5,18 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import * as store from '../../contracts/actuation-stream-store.mjs';
-import { runDetection } from '../../detection/detect.mjs';
-import { resolveSelf } from '../../detection/self.mjs';
-import { harnessDescriptors, capabilityDescriptors, CATALOG_REVISION } from '../../detection/catalog.mjs';
-import { scanSecretSources } from '../../detection/secret-sources/scan.mjs';
-import { secretSourceCatalog } from '../../detection/secret-sources/catalog.mjs';
+// The served product sources were retired at the R7 cutover; the MJS
+// evaluation below is kept for historical corpus tooling only and loads the
+// retired modules lazily, so the native gates never touch them.
 const repo = fileURLToPath(new URL('../../', import.meta.url));
+const retired = async () => ({
+  store: await import(new URL('../../contracts/actuation-stream-store.mjs', import.meta.url)),
+  runDetection: (await import(new URL('../../detection/detect.mjs', import.meta.url))).runDetection,
+  resolveSelf: (await import(new URL('../../detection/self.mjs', import.meta.url))).resolveSelf,
+  catalog: await import(new URL('../../detection/catalog.mjs', import.meta.url)),
+  secretScan: (await import(new URL('../../detection/secret-sources/scan.mjs', import.meta.url))).scanSecretSources,
+  secretCatalog: (await import(new URL('../../detection/secret-sources/catalog.mjs', import.meta.url))).secretSourceCatalog,
+});
 const clone = value => JSON.parse(JSON.stringify(value));
 export function caught(call) {
   try { return { ok: true, value: clone(call()) }; }
@@ -40,13 +45,14 @@ function fakeEffects(spec, calls) {
   for (const name of spec.omit ?? []) delete effects[name];
   return effects;
 }
-export function evaluateScenario(scenario, cli = [process.execPath, join(repo, 'bin/actuation')]) {
-  if (scenario.kind === 'catalog') return { revision: CATALOG_REVISION, harnesses: harnessDescriptors(), capabilities: capabilityDescriptors(), secret_sources: secretSourceCatalog() };
+export async function evaluateScenario(scenario, cli = [process.execPath, join(repo, 'bin/actuation')]) {
+  const { store, runDetection, resolveSelf, catalog, secretScan, secretCatalog } = await retired();
+  if (scenario.kind === 'catalog') return { revision: catalog.CATALOG_REVISION, harnesses: catalog.harnessDescriptors(), capabilities: catalog.capabilityDescriptors(), secret_sources: secretCatalog() };
   if (scenario.kind === 'probe') {
     const { input } = scenario;
     const calls = [];
     const effects = fakeEffects(input.effects ?? {}, calls);
-    const descriptors = input.descriptors ?? harnessDescriptors().filter(d => !input.slugs || input.slugs.includes(d.slug));
+    const descriptors = input.descriptors ?? catalog.harnessDescriptors().filter(d => !input.slugs || input.slugs.includes(d.slug));
     const result = caught(() => input.mode === 'self'
       ? resolveSelf({ descriptors, effects, env: {}, now: new Date(input.now) })
       : runDetection({ descriptors, effects, now: new Date(input.now), probeVersions: input.versions ?? false }));
@@ -54,7 +60,7 @@ export function evaluateScenario(scenario, cli = [process.execPath, join(repo, '
   }
   if (scenario.kind === 'secret') {
     const calls = [];
-    const value = scanSecretSources({ roots: ['/oracle/project'], effects: fakeEffects(scenario.input.effects ?? {}, calls) });
+    const value = secretScan({ roots: ['/oracle/project'], effects: fakeEffects(scenario.input.effects ?? {}, calls) });
     value.scan_ref = 'secret-scan:$CLOCK'; value.observed_at = '$CLOCK';
     return { value, calls };
   }

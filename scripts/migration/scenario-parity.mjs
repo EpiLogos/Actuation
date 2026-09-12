@@ -18,7 +18,7 @@ if (delimiter >= 0) {
     input: rows.map(({ id, kind, input }) => JSON.stringify({ id, kind, input })).join('\n') + '\n' });
   assert.equal(run.status, 0, run.error?.message ?? run.stderr);
   actual = run.stdout.trim().split('\n').map(line => JSON.parse(line));
-} else actual = rows.map(row => ({ id: row.id, value: evaluateScenario(row) }));
+} else actual = await Promise.all(rows.map(async row => ({ id: row.id, value: await evaluateScenario(row) })));
 assert.equal(actual.length, rows.length, 'scenario results must be total and ordered');
 let failed = 0;
 for (let index = 0; index < rows.length; index++) {

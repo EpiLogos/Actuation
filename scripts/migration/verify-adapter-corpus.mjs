@@ -13,9 +13,12 @@ assert.ok(catalog.capabilities.length >= 1);
 const corrections=JSON.parse(readFileSync('fixtures/migration/r5/corrections.json','utf8'));
 assert.equal(corrections.schema,'actuation.r5-explicit-corrections/v1');
 assert.equal(corrections.cases.length,3);
-for(const [path,expected] of Object.entries(corrections.source_blobs)){
- const bytes=readFileSync(path);assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'),expected,`regression source changed: ${path}`);
-}
+// corrections.source_blobs pinned the served MJS regression sources by sha1;
+// those sources retired at the R7 cutover and their executable law is now
+// asserted natively (crates/actuation-adapters tests, r5 explicit
+// corrections). The frozen corrections document itself stays sha256-pinned
+// via fixtures/migration/r5/SHA256SUMS below.
+assert.equal(Object.keys(corrections.source_blobs).length,3);
 for(const row of corrections.cases){assert.ok(row.correction);}
 for(const line of readFileSync('fixtures/migration/r5/SHA256SUMS','utf8').trim().split('\n')){
  const [expected,path]=line.split(/\s+/);assert.equal(createHash('sha256').update(readFileSync(path)).digest('hex'),expected);
