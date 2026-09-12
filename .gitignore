@@ -18,3 +18,8 @@ node_modules/
 
 # Native Rust build output
 /target/
+
+# Agent register tool state (machine-local)
+.central/
+# Native gate evidence receipts (regenerated per run)
+native-evidence/
