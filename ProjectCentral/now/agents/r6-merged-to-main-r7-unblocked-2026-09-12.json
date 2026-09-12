@@ -1,0 +1,16 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "r6-merged-to-main-r7-unblocked-2026-09-12",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "zcode-r6-continuation",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1789169483,
+  "subject": "R6 merged to main; R7 unblocked",
+  "result": "PR #67 is merged: main is at 1a21db9c2230 (squash, linear history preserved). Final gate evidence on the merged line: all 44 frozen R6 pure parity cases pass natively and are wired into verify-native.sh as the R6 phase; native-rust is green on ubuntu-latest and macos-15; the three temporary authoring-basis workflows (r6-authoring-toolchain, r6-owner-basis, r6-owner-instrument) are removed as committed while the owner instrument source stays pinned at experiments/ql-runtime/native-owner-instrument on QL-MEF e753efc. A Linux-only flake in a scripted RPC responder test was fixed deterministically before merge (responder consumes the request, then exits). Executed dispositions live at docs/rust-refoundation/R6-DISPOSITION.json and R6-RESEARCH.md; the programme carrier issue #58 carries the completion record. Honest remainder: provider evidence, owner-machine evidence, human acceptance and the live Prime campaign remain unclaimed and need a configured provider/model on the owner machine. The merged capabilities descriptor still lists the four acceptance_pending items; reconciling that string belongs to the R7 cutover, not a post-merge hot patch. Next condition: R7 (native Rust CLI, packaging and owner cutover) may now branch from accepted main 1a21db9 per issue 58 flow law; the physical Prime campaign waits on the configured provider surface.",
+  "status": "active",
+  "evidence_refs": [
+    "https://github.com/EpiLogos/Actuation/pull/67",
+    "https://github.com/EpiLogos/Actuation/commit/1a21db9c2230",
+    "https://github.com/EpiLogos/Actuation/issues/58#issuecomment-5641818155"
+  ]
+}

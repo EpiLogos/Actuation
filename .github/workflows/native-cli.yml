@@ -1,8 +1,10 @@
 name: Native CLI
 
-# The one pull-request gate for Actuation (branch-required). `npm test`
-# discovers every native suite; the contract schemas are parsed here, so the
-# per-contract workflows that only re-ran `npm test` are gone.
+# The one pull-request gate for Actuation (branch-required). The served product
+# is the native Rust executable; `cargo test --workspace` runs every native
+# suite and `actuation verify --json` exercises the shipped binary itself. The
+# product requires no Node runtime. macOS coverage rides the native-rust matrix
+# in rust-refoundation.yml, which runs the same verification script.
 
 on:
   # This check is branch-required, so it must report on every pull request.
@@ -12,17 +14,15 @@ on:
     branches:
       - main
     paths:
-      - "bin/actuation"
-      - "cli/**"
-      - "contracts/**"
-      - "detection/**"
-      - "package.json"
+      - "crates/**"
+      - "catalog/**"
+      - "schemas/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "scripts/migration/**"
       - "README.md"
       - ".oi/product.json"
       - "ProjectCentral/**"
-      - "docs/EPISTEMIC-CULTIVATION-AND-MODEL-INTERIOR-RESEARCH.md"
-      - "docs/MODEL-BEARING-AGENCY-RESEARCH-AND-MATERIALISATION.md"
-      - "experiments/epistemic-cultivation/**"
       - ".github/workflows/native-cli.yml"
 
 concurrency:
@@ -32,42 +32,60 @@ concurrency:
 jobs:
   native-cli:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: 22
-      # npm test globs every native suite; a hardcoded file list here rots
-      # (it referenced contracts/model-bearing.test.mjs after the rename).
-      - run: npm test
-      - run: node --test ProjectCentral/tests/register.integrity.mjs
-      - name: Every contract schema parses
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Native suites and frozen parity oracles
+        run: bash scripts/migration/verify-native.sh native-evidence
+      - name: R7 gate - the served executable answers the product surface
         run: |
-          for schema in contracts/*.schema.json; do
-            node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' "$schema"
-          done
+          set -euo pipefail
+          actuation="target/release/actuation"
+          "$actuation" --version
+          "$actuation" help > /dev/null
+          "$actuation" capabilities --json > /dev/null
+          "$actuation" contract list --json > /dev/null
+          "$actuation" harness catalog --json > /dev/null
+          "$actuation" system --json > /dev/null
+          echo '{"binding":{"schema":"actuation.agency/v1","binding_ref":"world-binding:ci","agent_ref":"agent:ci","agency_ref":"agency:ci","world_ref":"world:ci","scope_ref":"scope:ci"}}' | "$actuation" agency - --json > /dev/null
+          "$actuation" verify --json
       - name: Self-certification - the served binary certifies this build
         run: |
-          node bin/actuation capabilities --json > capabilities.json
-          node <<'NODE'
-          const assert = require("node:assert/strict");
-          const caps = require("./capabilities.json");
-          const pkg = require("./package.json");
-          assert.equal(caps.version, pkg.version, "served version must equal package.json");
-          assert.equal(caps.revision, process.env.GITHUB_SHA, "served revision must be the build sha");
-          assert.ok(caps.commands.length >= 1, "capabilities must declare the command surface");
-          console.log(`self-certified actuation ${caps.version} @ ${caps.revision.slice(0, 12)} (${caps.commands.length} commands)`);
-          NODE
-      - name: Packaging parity - product manifest tracks the package version
+          set -euo pipefail
+          target/release/actuation capabilities --json > capabilities.json
+          workspace_version="$(cargo metadata --no-deps --format-version 1 | python3 -c 'import json,sys; print([p for p in json.load(sys.stdin)["packages"] if p["name"]=="actuation-cli"][0]["version"])')"
+          python3 - <<PY
+          import json, os
+          caps = json.load(open("capabilities.json"))
+          assert caps["version"] == "$workspace_version", "served version must equal the workspace version"
+          assert caps["revision"] == os.environ["GITHUB_SHA"], "served revision must be the build sha"
+          assert len(caps["commands"]) >= 1, "capabilities must declare the command surface"
+          print(f"self-certified actuation {caps['version']} @ {caps['revision'][:12]} ({len(caps['commands'])} commands)")
+          PY
+      - name: Packaging parity - product manifest tracks the workspace version
         run: |
-          node <<'NODE'
-          const assert = require("node:assert/strict");
-          const product = require("./.oi/product.json");
-          const pkg = require("./package.json");
-          assert.equal(product.version, pkg.version, ".oi/product.json version must equal package.json");
-          console.log(`packaging parity: .oi/product.json ${product.version} == package.json ${pkg.version}`);
-          NODE
-      - run: ./bin/actuation --version
-      - run: ./bin/actuation capabilities --json
-      - run: ./bin/actuation verify --json
+          set -euo pipefail
+          workspace_version="$(cargo metadata --no-deps --format-version 1 | python3 -c 'import json,sys; print([p for p in json.load(sys.stdin)["packages"] if p["name"]=="actuation-cli"][0]["version"])')"
+          python3 - <<PY
+          import json
+          product = json.load(open(".oi/product.json"))
+          assert product["version"] == "$workspace_version", ".oi/product.json version must equal the workspace version"
+          print(f"packaging parity: .oi/product.json {product['version']} == workspace {product['version']}")
+          PY
+      - name: Every public schema parses
+        run: |
+          for schema in schemas/*.json; do
+            python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$schema"
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: actuation-native-cli-${{ github.sha }}
+          path: native-evidence/
+          if-no-files-found: error
+          retention-days: 30
