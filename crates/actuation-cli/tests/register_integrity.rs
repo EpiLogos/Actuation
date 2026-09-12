@@ -212,8 +212,18 @@ fn the_actuation_now_horizon_represents_every_reconciled_live_owner_carrier() {
                 "public-determination-and-agency-actualisation-operation-2026-09-09".to_owned(),
                 "carried".to_owned()
             ),
+            // 2026-09-12: the R6 session returned its disposition record and
+            // the main-merge unblock; R7 started from that unblocked main.
+            (
+                "r6-dispositions-recorded-and-branch-gates-2026-09-12".to_owned(),
+                "active".to_owned()
+            ),
             (
                 "r6-head-0dfa401-independently-verified-and-2026-09-11".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "r6-merged-to-main-r7-unblocked-2026-09-12".to_owned(),
                 "active".to_owned()
             ),
             (
