@@ -188,7 +188,9 @@ fn the_actuation_now_horizon_represents_every_reconciled_live_owner_carrier() {
     // Floor closed at the 2026-09-12 day close: every live carrier —
     // including the R7 cutover return (PR #69 merged, main at bf53997) —
     // moved to carried with its day lineage stamped. Statuses move only
-    // through a day close.
+    // through a day close. The one active carrier is the R8/R9 harmonisation
+    // session return (PR #71 merged, main at d78d345); its continuation is
+    // the consumer PR merges and the R10 physical return.
     assert_eq!(
         live,
         [
@@ -203,6 +205,10 @@ fn the_actuation_now_horizon_represents_every_reconciled_live_owner_carrier() {
             (
                 "epistemic-cultivation-research-ground-and-record-2026-09-09".to_owned(),
                 "carried".to_owned()
+            ),
+            (
+                "pr-h-r8r9-harmonisation-and-prelocal-2026-09-12".to_owned(),
+                "active".to_owned()
             ),
             (
                 "prime-physical-relational-campaign-awaits-a-2026-09-09".to_owned(),
