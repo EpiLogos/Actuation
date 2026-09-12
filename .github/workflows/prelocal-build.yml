@@ -4,13 +4,11 @@ on:
   pull_request:
     paths:
       - '.oi/product.json'
-      - 'bin/actuation'
-      - 'cli/**'
-      - 'contracts/**'
-      - 'detection/**'
-      - 'schemas/**'
+      - 'crates/**'
+      - 'catalog/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - 'skills/**'
-      - 'package.json'
       - 'README.md'
       - 'docs/EPISTEMIC-CULTIVATION-AND-MODEL-INTERIOR-RESEARCH.md'
       - 'docs/MODEL-BEARING-AGENCY-RESEARCH-AND-MATERIALISATION.md'
@@ -20,13 +18,11 @@ on:
     branches: [main]
     paths:
       - '.oi/product.json'
-      - 'bin/actuation'
-      - 'cli/**'
-      - 'contracts/**'
-      - 'detection/**'
-      - 'schemas/**'
+      - 'crates/**'
+      - 'catalog/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - 'skills/**'
-      - 'package.json'
       - 'README.md'
       - 'docs/EPISTEMIC-CULTIVATION-AND-MODEL-INTERIOR-RESEARCH.md'
       - 'docs/MODEL-BEARING-AGENCY-RESEARCH-AND-MATERIALISATION.md'
@@ -43,28 +39,38 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Verify the npm package in a clean directory
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build the release executable
+        run: cargo build --release --locked -p actuation-cli
+      - name: Serve the packaged artifact in a clean directory and verify it
+        # Completeness, not just correctness: the served binary must run and
+        # certify itself from a bare directory — no repository, no Node, no
+        # source checkout — because that is how it is installed.
         shell: bash
         run: |
           set -euo pipefail
-          pack_dir="$(mktemp -d)"
-          serve_dir="$(mktemp -d)"
-          archive="$(npm pack --pack-destination "$pack_dir" --silent)"
-          tar -C "$serve_dir" -xzf "$pack_dir/$archive"
-          test "$(node "$serve_dir/package/bin/actuation" --version)" = "actuation $(node -p "require('./package.json').version")"
-          node "$serve_dir/package/bin/actuation" verify
+          version="$(cargo metadata --no-deps --format-version 1 | python3 -c 'import json,sys; print([p for p in json.load(sys.stdin)["packages"] if p["name"]=="actuation-cli"][0]["version"])')"
+          serve="$(mktemp -d)"
+          cp target/release/actuation "$serve/"
+          test "$("$serve/actuation" --version)" = "actuation $version"
+          "$serve/actuation" verify --json
 
   artifact:
     if: github.event_name == 'push'
     needs: verify
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            platform: macos-arm64
+          - os: ubuntu-22.04
+            platform: linux-x86_64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     permissions:
       contents: read
       id-token: write
@@ -72,40 +78,43 @@ jobs:
       artifact-metadata: write
     steps:
       - uses: actions/checkout@v4
-      - name: Package exact-main Actuation component
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build the release executable for ${{ matrix.platform }}
+        run: cargo build --release --locked -p actuation-cli
+      - name: Package the platform artifact
         shell: bash
         run: |
           set -euo pipefail
           short_sha="${GITHUB_SHA::12}"
-          version="$(node -p "require('./package.json').version")"
-          name="actuation-${version}-${short_sha}-component"
-          mkdir -p "dist/$name/experiments"
-          cp -R bin cli contracts detection schemas skills docs .oi "dist/$name/"
-          cp -R experiments/epistemic-cultivation "dist/$name/experiments/"
-          cp package.json README.md "dist/$name/"
+          version="$(cargo metadata --no-deps --format-version 1 | python3 -c 'import json,sys; print([p for p in json.load(sys.stdin)["packages"] if p["name"]=="actuation-cli"][0]["version"])')"
+          name="actuation-${version}-${short_sha}-${{ matrix.platform }}"
+          mkdir -p "dist/$name"
+          cp target/release/actuation "dist/$name/actuation"
           printf '%s\n' "$GITHUB_SHA" > "dist/$name/source-commit.txt"
           tar -C dist -czf "dist/$name.tar.gz" "$name"
-          shasum -a 256 "dist/$name.tar.gz" > "dist/$name.tar.gz.sha256"
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum "dist/$name.tar.gz" > "dist/$name.tar.gz.sha256"
+          else
+            shasum -a 256 "dist/$name.tar.gz" > "dist/$name.tar.gz.sha256"
+          fi
       - name: Serve the packaged artifact in a clean directory and verify it
-        # Completeness, not just correctness: the published tarball must
-        # actually serve — its binary runs and its own verify discovers and
-        # passes every suite — not merely the repository that built it.
         shell: bash
         run: |
           set -euo pipefail
-          version="$(node -p "require('./package.json').version")"
-          name="actuation-${version}-${GITHUB_SHA::12}-component"
+          short_sha="${GITHUB_SHA::12}"
+          version="$(cargo metadata --no-deps --format-version 1 | python3 -c 'import json,sys; print([p for p in json.load(sys.stdin)["packages"] if p["name"]=="actuation-cli"][0]["version"])')"
+          name="actuation-${version}-${short_sha}-${{ matrix.platform }}"
           serve="$(mktemp -d)"
           tar -C "$serve" -xzf "dist/$name.tar.gz"
           test "$(cat "$serve/$name/source-commit.txt")" = "$GITHUB_SHA"
-          test "$(node "$serve/$name/bin/actuation" --version)" = "actuation $version"
-          node "$serve/$name/bin/actuation" verify
+          test "$("$serve/$name/actuation" --version)" = "actuation $version"
+          "$serve/$name/actuation" verify --json
       - uses: actions/attest@v4
         with:
           subject-path: dist/*.tar.gz
       - uses: actions/upload-artifact@v4
         with:
-          name: actuation-component-${{ github.sha }}
+          name: actuation-${{ matrix.platform }}-${{ github.sha }}
           path: |
             dist/*.tar.gz
             dist/*.sha256

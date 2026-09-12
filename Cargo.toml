@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/actuation-core", "crates/actuation-runtime", "crates/actuation-stream", "crates/actuation-adapters", "crates/actuation-research"]
+members = ["crates/actuation-core", "crates/actuation-runtime", "crates/actuation-stream", "crates/actuation-adapters", "crates/actuation-research", "crates/actuation-cli"]
 resolver = "2"
 
 [workspace.package]
@@ -17,4 +17,5 @@ unsafe_code = "forbid"
 
 [profile.release]
 lto = "thin"
-strip = "debuginfo"
+codegen-units = 1
+strip = "symbols"

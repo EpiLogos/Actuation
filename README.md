@@ -135,11 +135,13 @@ The tuple is useful because it makes the relation inspectable. It is not the rea
 
 ## Install and use
 
-The CLI runs from a checkout (`node bin/actuation harness detect`) or
-installable via `npm link` (or `npm install -g .`) from this repository
-(private, unregistered). `actuation capabilities --json` reports the full
-command surface, contract versions and the git revision the binary was
-served from.
+Actuation is a native Rust executable. Build it from a checkout with
+`cargo build --release --locked -p actuation-cli` (the binary lands at
+`target/release/actuation`), or take the released platform artifact
+(`macos-arm64`, `linux-x86_64`) from the GitHub releases, which carry
+sha256 checksums and artifact attestations. The product requires no Node
+runtime. `actuation capabilities --json` reports the full command surface,
+contract versions and the git revision the binary was served from.
 
 ```text
 actuation capabilities [--json]
@@ -166,8 +168,9 @@ actuation verify [--json]
 ```
 
 The command surface, help text and capabilities listing are all derived from
-one command table (`cli/commands.mjs`); parity is enforced by the test suite,
-so the CLI cannot lie about itself. `harness catalog` declares what can be
+one Rust-owned command table (`crates/actuation-cli/src/dispatch.rs`); parity
+is enforced by the crate tests and the frozen command-surface scenarios, so
+the CLI cannot lie about itself. `harness catalog` declares what can be
 detected, `harness detect` proves it live on this machine, and `--versions`
 enriches receipts by executing detected binaries with their declared
 `version_args` (opt-in: some version probes are slow or prompt the
@@ -213,7 +216,8 @@ Current research also studies model-bearing agency and epistemic cultivation. Th
 - [`docs/MODEL-BEARING-AGENCY-RESEARCH-AND-MATERIALISATION.md`](docs/MODEL-BEARING-AGENCY-RESEARCH-AND-MATERIALISATION.md) — model-bearing agency and materialisation research ground.
 - [`schemas/actuation.v0.schema.json`](schemas/actuation.v0.schema.json) — language-neutral experimental `AgenticComposition` contract.
 - [`docs/QL-RUNTIME-MIGRATION.md`](docs/QL-RUNTIME-MIGRATION.md) — provenance and acceptance rules for the migrated QL runtime experiments.
-- [`detection/`](detection/) — the harness catalog and detection engine: `actuation harness detect` proves which operative bodies exist on this machine (`actuation.harness-detection/v1`).
+- [`catalog/targets.json`](catalog/targets.json) — the versioned harness catalog bundled into the executable; `actuation harness detect` proves which operative bodies exist on this machine (`actuation.harness-detection/v1`).
+- [`crates/`](crates/) — the native Rust workspace: `actuation-core` (constitutional semantics), `actuation-runtime` (the acting relation), `actuation-stream` (actuality and durable streams), `actuation-adapters` (boundary observation, instantiation, usage), `actuation-research` (first-class research) and `actuation-cli` (the served executable).
 - [`experiments/ql-runtime/`](experiments/ql-runtime/) — pinned proving body.
 - [`experiments/epistemic-cultivation/`](experiments/epistemic-cultivation/) — validated experiment-local records and persistence for the epistemic programme.
 

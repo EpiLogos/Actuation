@@ -1,0 +1,16 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "r6-dispositions-recorded-and-branch-gates-2026-09-12",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "zcode-r6-continuation",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1789167732,
+  "subject": "R6 dispositions recorded and branch gates restored green",
+  "result": "Executed R6 dispositions are now recorded in-repo on act-rust/r6-research-refoundation: docs/rust-refoundation/R6-DISPOSITION.json (machine record: A/B/C/D class standings per the frozen ledger, per-experiment consumed native contracts, QL-MEF owner pin e753efc, conditions/tasks/source-lock data-binding provenance) and R6-RESEARCH.md (executed verification narrative), committed at c40e91e. The native-cli gate red on c40e91e was the ProjectCentral ownership-floor test frozen at the pre-close horizon; reconciled lawfully at 11d1a18 by advancing the floor to the closed 2026-09-11 state (carried carriers plus the two R6 returns), completing both R6 returns with the mandatory Next condition marker, and adding the evidence refs the independent verification return already named. register.integrity.mjs passes 2/2; all eleven PR checks are green on 11d1a18 including native-rust on ubuntu-latest and macos-15. PR #67 body now points at the executed records. Note for the record: the honest workspace Rust test count at 0dfa401 is 173 as the independent verifier measured; an earlier 150 figure came from truncated output. Next condition: remove the temporary authoring-basis workflows at final acceptance and obtain provider, owner-machine and human acceptance evidence before review readiness; the draft must not merge and R7-R9 stay blocked until then.",
+  "status": "active",
+  "evidence_refs": [
+    "https://github.com/EpiLogos/Actuation/pull/67",
+    "https://github.com/EpiLogos/Actuation/commit/c40e91e",
+    "https://github.com/EpiLogos/Actuation/commit/11d1a18"
+  ]
+}

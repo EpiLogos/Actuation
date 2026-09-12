@@ -5,20 +5,20 @@ on:
     paths:
       - "skills/**"
       - "scripts/verify-native-skills.sh"
-      - "bin/actuation"
-      - "cli/**"
-      - "contracts/**"
-      - "package.json"
+      - "crates/**"
+      - "catalog/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
       - ".github/workflows/native-skills.yml"
   push:
     branches: [main]
     paths:
       - "skills/**"
       - "scripts/verify-native-skills.sh"
-      - "bin/actuation"
-      - "cli/**"
-      - "contracts/**"
-      - "package.json"
+      - "crates/**"
+      - "catalog/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
       - ".github/workflows/native-skills.yml"
 
 concurrency:
@@ -28,13 +28,11 @@ concurrency:
 jobs:
   conformance:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
+      - uses: dtolnay/rust-toolchain@stable
       # verify-native-skills.sh checks structure AND truth: every path,
       # contract identifier and `actuation <command>` the Skills name must
-      # exist in the repository and the served surface.
+      # exist in the repository and in the served executable.
       - run: bash scripts/verify-native-skills.sh
