@@ -84,7 +84,7 @@ fn secrets(spec: &ProcessSpec) -> Vec<String> {
         .collect()
 }
 pub fn capabilities() -> Value {
-    json!({"schema":"actuation.research-capabilities/v1","version":env!("CARGO_PKG_VERSION"),"operations":OPERATIONS,"tasks":Task::ids(),"prime_conditions":prime::conditions(),"formal_owner":"EpiLogos/QL-MEF","ql_owner_required_for_generic_research":false,"node_required_for_generic_research":false,"specimen_runtime_requirements":{"selected_javascript_tasks":"explicit Node executable","prime":"explicit admitted native Prime executable","python_fixture":"tests only"},"model_body_protocols":["one-shot-json","sdk-jsonl"],"acceptance_pending":["owner-machine acceptance against the O:I development field (the physical return tranche; O:I source contract merged at d7d4090 and ai-kit CAW native builds merged at dfb18a7)"],"evidence_claims":{"provider":"not-assessed","owner_machine":false,"human_acceptance":false}})
+    json!({"schema":"actuation.research-capabilities/v1","version":env!("CARGO_PKG_VERSION"),"operations":OPERATIONS,"tasks":Task::ids(),"prime_conditions":prime::conditions(),"formal_owner":"EpiLogos/QL-MEF","ql_owner_required_for_generic_research":false,"node_required_for_generic_research":false,"specimen_runtime_requirements":{"selected_javascript_tasks":"explicit Node executable","prime":"explicit admitted native Prime executable","python_fixture":"tests only"},"model_body_protocols":["one-shot-json","sdk-jsonl"],"acceptance_pending":["human acceptance — the owner walk over the served product and research surfaces (machine receipts complete: R10 physical return and the 2026-09-12 owner-machine finish-up; see docs/rust-refoundation/R10-OWNER-MACHINE.md and O-I#213 S7)","live-provider QL research evidence — deep-runtime/series1-live unexercised"],"evidence_claims":{"provider":"not-assessed","owner_machine":true,"human_acceptance":false}})
 }
 pub fn invoke(v: &Value) -> Result<Value> {
     let op = text(v, "operation")?;
@@ -301,6 +301,7 @@ mod tests {
             json!("P0")
         );
         assert_eq!(caps["evidence_claims"]["provider"], json!("not-assessed"));
+        assert_eq!(caps["evidence_claims"]["owner_machine"], json!(true));
         assert_eq!(caps["evidence_claims"]["human_acceptance"], json!(false));
     }
 
