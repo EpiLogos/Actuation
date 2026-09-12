@@ -188,9 +188,12 @@ fn the_actuation_now_horizon_represents_every_reconciled_live_owner_carrier() {
     // Floor closed at the 2026-09-12 day close: every live carrier —
     // including the R7 cutover return (PR #69 merged, main at bf53997) —
     // moved to carried with its day lineage stamped. Statuses move only
-    // through a day close. The one active carrier is the R8/R9 harmonisation
-    // session return (PR #71 merged, main at d78d345); its continuation is
-    // the consumer PR merges and the R10 physical return.
+    // through a day close, and 2026-09-12 is already closed, so the two
+    // live carriers stay active until the next boundary: the R8/R9
+    // harmonisation return (its continuation has executed) and the Wayfinder
+    // #58 closure return (main at 70e9006), whose named continuation is the
+    // owner's human walk (H), the claude-code auth refresh and the
+    // desktop-flow/install-law integration decision.
     assert_eq!(
         live,
         [
@@ -245,6 +248,10 @@ fn the_actuation_now_horizon_represents_every_reconciled_live_owner_carrier() {
             (
                 "supply-actuation-intent-and-grant-integration-handoff-2026-09-09".to_owned(),
                 "carried".to_owned()
+            ),
+            (
+                "wayfinder-58-closed-native-rust-product-2026-09-12".to_owned(),
+                "active".to_owned()
             ),
         ],
         "the live NOW horizon must be exactly the reconciled carrier set"

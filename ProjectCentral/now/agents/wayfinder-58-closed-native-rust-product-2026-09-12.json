@@ -1,0 +1,17 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "wayfinder-58-closed-native-rust-product-2026-09-12",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "zcode-r10-wayfinder-close",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1789210892,
+  "subject": "Wayfinder #58 closed; native Rust product released, installed and physically proven on the owner machine",
+  "result": "Closed the Actuation Rust refoundation Wayfinder end to end. Stage A: merged the tranche (#71 R8+R9, #72 register repair including the frozen NOW-horizon advance, ai-kit#300, O-I#245). Stage B: the ai-kit caw_task_dispatch material-phase red was NOT the Actuation binary identity — the PR rewrite had reordered workflow steps so AIKIT_CAW_WORKCELL_BIN was clobbered from the full workcell CLI to workcell-write-boundary (which has no status surface); fixed and green on merged ai-kit main; corrected diagnosis posted. Stage C: O-I#252 rewrote the joined Development Field witness to drive the served binary end to end (conformance green in CI, #246 closed); owner decisions recorded: requestCorrelationReadModel section dropped (no served equivalent), empty-build bin/ source-package path kept (generic guarded support, not Node debris). Stage D: O-I#254 recut all actuation pins to 90041d5 and recollated the capability catalogue (only actuation records moved). Stage E: release actuation-v0.2.0 cut at 90041d5 (sha256 + attestations verified, clean-directory serve proof); dangling npm-link launchers removed; release artifact installed at ~/.local/share/oi/installs/actuation/actuation-v0.2.0 and registered; oi actuation verify 15/15 with no Node and no repository; S7 physical paths executed — direct actuation through the owner-configured codex harness with a real model turn (S7_DIRECT_ACTUATION_OK, output digest preserved), factory-correlated grammar with recognition pending / mutation not-applied, relocation continuity with honest degradation, durable stream persistence with torn-tail refusal. R10 record merged (#76); S7 receipt posted to O-I#213. Stage F: #1 Wayfinder current-state section added; #58 closed with full receipts. Machine findings for the owner: (1) desktop flow placeholders collide with the oi dev install clean-worktree law (integration decision needed); (2) claude-code OAuth session expired; (3) whole six-product active suite receipt still unmaterialised. Next condition: the owner walks the installed suite and records human EX (H), refreshes claude-code auth, and decides the desktop-flow/install-law integration; the research programmes continue under Wayfinder #1 sections E-G. Evidence: PRs #73,#74,#75,#76 (Actuation), #252,#254 (O-I), actuation-v0.2.0 release, docs/rust-refoundation/R10-OWNER-MACHINE.md at 70e9006.",
+  "status": "active",
+  "evidence_refs": [
+    "https://github.com/EpiLogos/Actuation/pull/76",
+    "https://github.com/EpiLogos/Actuation/releases/tag/actuation-v0.2.0",
+    "https://github.com/EpiLogos/O-I/issues/213#issuecomment-5645431546",
+    "https://github.com/EpiLogos/Actuation/commit/70e9006375daf46034fdfe5d847ccef08e52e2a8"
+  ]
+}
