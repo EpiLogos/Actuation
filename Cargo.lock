@@ -19,6 +19,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "actuation-cli"
+version = "0.2.0"
+dependencies = [
+ "actuation-adapters",
+ "actuation-core",
+ "actuation-runtime",
+ "actuation-stream",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+]
+
+[[package]]
 name = "actuation-core"
 version = "0.2.0"
 dependencies = [
