@@ -16,7 +16,7 @@ AIKit
   Context · Skills/Methods · capabilities · models · harness binding · session · Surfaces · native projection
 ```
 
-The public portable seam is `actuation.realised/v1`, implemented by `contracts/realised-actuation.mjs` and `contracts/realised-actuation-v1.schema.json`.
+The public portable seam is `actuation.realised/v1`, implemented natively in `crates/actuation-runtime/src/realised.rs`, with the frozen wire oracle in `fixtures/migration/` preserving the public contract.
 
 ## What the receipt means
 

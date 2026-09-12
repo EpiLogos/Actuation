@@ -28,19 +28,20 @@ Accordingly:
 ## Harness detection (detection-first ground)
 
 Actuation owns WHAT operative bodies exist here and what they mean. The
-catalog (`detection/`) declares the harnesses this product can detect — one
-descriptor module per harness, mostly data (probe spec, adaptation facets,
-provenance) — and `actuation harness detect` proves them live into
-`actuation.harness-detection/v1` records. The law of that contract:
+catalog (`catalog/targets.json`, loaded natively by
+`crates/actuation-adapters::NativeCatalog`) declares the harnesses this
+product can detect — one descriptor entry per harness, mostly data (probe
+spec, adaptation facets, provenance) — and `actuation harness detect` proves
+them live into `actuation.harness-detection/v1` records. The law of that
+contract:
 
 - a harness is **detected** only when a probe proved presence, with receipts captured in the same run;
 - **unavailable** always carries a reason and is never silently read as absence;
 - **not-installed** requires probe evidence of absence — "could not run" never collapses into "ran and found nothing".
 
-Adding a harness is one descriptor module plus one import in
-`detection/catalog.mjs` and a `CATALOG_REVISION` bump: a small mechanical
-step that an LLM can perform against an upstream release, with the contract
-tests as the gate.
+Adding a harness is one descriptor entry in `catalog/targets.json` plus a
+`catalog_revision` bump: a small mechanical step that can be performed
+against an upstream release, with the contract tests as the gate.
 
 ## Why a maximal target matters
 

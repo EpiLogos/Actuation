@@ -2,7 +2,7 @@
 
 **Status:** canonical product-understanding surface  
 **Architecture status:** accepted `main` after the portable Root Agency / Return convergence  
-**Sources:** `ACTUATION-CONSTITUTION.md`, `ACTUATION-RELATION.md`, `WORLD-BOUND-ROOT-AGENCY.md`, `contracts/agency-v1.schema.json`, `contracts/agency.mjs`, and their conformance tests.
+**Sources:** `ACTUATION-CONSTITUTION.md`, `ACTUATION-RELATION.md`, `WORLD-BOUND-ROOT-AGENCY.md`, the native constitutional core (`crates/actuation-core`), and its frozen wire-oracle conformance evidence (`fixtures/migration/oracle.json`).
 
 Actuation exists because purposeful agency is incomplete if determination only travels downward. Differentiated agency is valuable precisely because it can encounter a reality the governing position did not already contain and return attributable difference.
 
@@ -72,9 +72,8 @@ flowchart TB
     RET["Return<br/>difference · artifacts · claims · evidence · provenance"]
     STATE["received · recognition_state · world_mutation_state"]
 
-    SCHEMA["contracts/agency-v1.schema.json"]
-    JS["contracts/agency.mjs<br/>portable executable validator"]
-    TEST["contracts/agency.test.mjs<br/>conformance evidence"]
+    CORE["crates/actuation-core<br/>native constitutional core"]
+    ORACLE["fixtures/migration/oracle.json<br/>frozen wire-oracle conformance evidence"]
 
     CALL -->|"binds agency to an operative world"| WB
     WB -->|"authorises a scoped determination"| DET
@@ -82,10 +81,9 @@ flowchart TB
     LOC -->|"return attributable difference"| RET
     RET -->|"keeps reception, recognition and mutation distinct"| STATE
 
-    SCHEMA -->|"language-neutral envelope"| JS
-    JS -->|"enforces the same relation"| DET
-    JS -->|"validates Return invariants"| RET
-    TEST -->|"proves recursion, federation and recognition-before-mutation"| JS
+    CORE -->|"enforces the same relation"| DET
+    CORE -->|"validates Return invariants"| RET
+    ORACLE -->|"proves recursion, federation and recognition-before-mutation"| CORE
 ```
 
 The accepted implementation is intentionally portable and material-neutral. AIKit may later resolve a body/session/Surface and Workcell may materialise processes and services, but neither transport nor body identity changes the Actuation relation by itself.

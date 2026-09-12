@@ -1,0 +1,168 @@
+{
+  "schema": "actuation.native-tranche/v1",
+  "phase": "R8+R9",
+  "basis_revision": "4af495f6509bb0dd779112a225d71a9df8145b6e",
+  "classification_law": "Per-source classifications are frozen in docs/rust-refoundation/ledger.json (phase R7–R9: 19 harmonise-build-tooling, 16 preserve-and-harmonise; phase R9: 20 preserve-source-reconcile-projections). This record states the executed standing of those dispositions on this branch; it does not rewrite the frozen ledger.",
+  "consumer_seam_classification": {
+    "law": "issue #58 R8 six-way classification from reinspected accepted mains (ai-kit 586b85e, Workcell e4e40a9, Factory f12b36c, O:I 11e9790)",
+    "oi": {
+      "stale_node_or_package_assumption": [
+        "surfaces.json actuation source_install (build [], bin/actuation, package.json manifest)",
+        "suite/manifest.json actuation dev contract (npm test)",
+        ".github/workflows/continuous-work-proving.yml (binds bin/actuation; setup-node)",
+        "docs/CONTINUOUS-WORK-PROVING.md (launcher binding)"
+      ],
+      "genuine_owner_native_change": [
+        "scripts/development-field-ci.py: runs the owner-declared .oi/product.json build.command before verify.source_command; drops the removed node register.integrity.mjs step",
+        "suite/native-protocol.json + suite/mainline.json: actuation revision re-pinned",
+        "tests/development-field/cut.json + tests/continuous-work/sources/lock.json: actuation cut advanced",
+        "cli/tests/development_field_source_package.rs: fixture restaged around a built artifact"
+      ],
+      "already_compatible": [
+        "cli/src/current_main_install.rs (follows the catalogue)",
+        ".github/workflows/cross-product.yml factory-proving (source-only fixture oracle at a pinned cut; not required)"
+      ],
+      "owner_change_ref": "EpiLogos/O-I#245",
+      "suite_standing_at_open": "cargo test --locked --manifest-path cli/Cargo.toml: 151 passed / 0 failed"
+    },
+    "ai_kit": {
+      "stale_node_or_package_assumption": [
+        ".github/workflows/caw-native-delivery.yml (asserts bin/actuation; pre-R7 pin)",
+        ".github/workflows/cross-product.yml (PATHs the launcher dir; pre-R7 pin)",
+        "docs/implementation/CAW-NATIVE-DELIVERY.md"
+      ],
+      "already_compatible": [
+        "crates/aikit-adapters actuation_* crates (wire/CLI seam through a Runner abstraction)",
+        "crates/aikit-cli CAW test suites (consume AIKIT_CAW_ACTUATION_BIN as a binary path)"
+      ],
+      "owner_change_ref": "EpiLogos/ai-kit#300"
+    },
+    "workcell": {
+      "classification": "already compatible; intakes `actuation harness detect --json`; failed detection is disclosed unavailability; no change required",
+      "note": "instance_scan.rs keeps a doc-comment naming the retired detection/harnesses/*.mjs module paths (cosmetic, owner-side)"
+    },
+    "factory": {
+      "classification": "already compatible; contract-level correlation only (owner namespaces, schemas, fixtures); no process invocation of actuation"
+    },
+    "public_rust_type_consumers": "none exist; the stable language-neutral owner operation remains the boundary, per the R8 law"
+  },
+  "cross_product_invariants_native_proofs": {
+    "run_ref_not_actuation_ref_not_session_ref": "crates/actuation-core/src/refs.rs nominal newtypes + crates/actuation-core/tests/constitutional.rs direct composition asserts run_ref/journey_ref/agent_session_ref/provider_ref/caller_ref absent",
+    "session_ref_not_harness_process_provider": "same nominal law + crates/actuation-adapters/tests/observation_native.rs identity-fabrication refusals",
+    "workcell_material_ref_not_agent_identity": "crates/actuation-adapters/tests/receipt_admission.rs target_or_material_replacement_does_not_change_enduring_correlations",
+    "direct_agency_zero_fabricated_ancestry": "constitutional.rs + crates/actuation-stream/tests/actuality.rs direct_actuality_retains_its_world_actor_and_trace_without_factory_ancestry",
+    "external_harness_zero_fabricated_ancestry": "actuality.rs non_action_event_is_activity_and_factory_refs_remain_supplied_correlations + observation_native.rs optional_self_markers_are_names_and_ambiguity_never_picks_an_identity",
+    "factory_correlation_to_same_activity_return": "actuality.rs factory refs remain supplied correlations on events",
+    "relocation_preserves_identity": "refs.rs AgencyIdentity::is_continuation_of (a new body is not an input to identity) + receipt_admission.rs material replacement",
+    "model_choice_aikit_duty": "survey: crates/aikit-adapters/src/actuation_model_routes.rs lives in ai-kit",
+    "observed_actuation_duty": "crates/actuation-adapters observation/usage + crates/actuation-stream usage occurrences"
+  },
+  "javascript_retirement": {
+    "tracked_js_before": 90,
+    "removed_here": {
+      "count": 9,
+      "paths": {
+        "scripts/bundle.mjs": "012e11331861",
+        "scripts/entry.mjs": "c6b1ff6ae341",
+        "scripts/migration/verify-jsonl-interop.mjs": "ae4aef0b02a3",
+        "scripts/migration/capture-scenarios.mjs": "88f658e900d5",
+        "scripts/migration/capture.mjs": "f9a138954ac2",
+        "scripts/migration/capture-loader.mjs": "331807239581",
+        "scripts/migration/capture-register.mjs": "226d405614b1",
+        "scripts/migration/capture-runtime.mjs": "4c7734df5f32",
+        "scripts/migration/extra-cases.mjs": "e190bf8ac577"
+      },
+      "digest_note": "short blob hashes at the pre-removal HEAD; full blobs live in git history",
+      "reason": "generic product tooling for the retired Node body: the single-file bundler, the ended interop gate, and the capture orchestrators whose subject no longer exists"
+    },
+    "retained": {
+      "frozen_corpus_verification_tooling": 11,
+      "specimen_native_research": 70,
+      "law": "every remaining JS file is generated/build tooling executed by the native gate, or specimen-native research with its own native boundaries"
+    },
+    "recorder_law_retained": [
+      "scripts/migration/capture-record.mjs",
+      "scripts/migration/check-recorder.mjs"
+    ],
+    "local_residue": "git-ignored node_modules/ of the removed package.json deleted from the working copy (not a repo change)"
+  },
+  "docs_reconciliation": [
+    "docs/HARNESS-CAPABILITY.md",
+    "docs/HARNESS-REFERENCE.md",
+    "docs/ACTUATION-STREAM.md",
+    "docs/REALISED-ACTUATION-LOOP.md",
+    "docs/WORLD-BOUND-ROOT-AGENCY.md",
+    "docs/VISUAL-PRODUCT-UNDERSTANDING.md",
+    ".github/workflows/product-ground.yml (builds the served product for native discovery; setup-node dropped)"
+  ],
+  "capability_matrix_serial_refresh": {
+    "path": "serialized reconcile tool plan/apply only; change_ref 'actuation:#58 PR H (R8+R9 harmonisation)'; q0-q5 reviewed",
+    "changes": [
+      "capability code_refs/test_refs resolve to native sources",
+      "maintenance.code_basis re-digested against current files",
+      "discovery argv ./target/release/actuation capabilities --json",
+      "runtime_paths crates/** catalog/** schemas/** fixtures/**",
+      "CLI observation rows record the native release-binary discovery (21 commands, 11 contracts)",
+      "account prose and command-table link name the native artifact"
+    ],
+    "final_check": {
+      "errors": 0,
+      "discovered_commands": 21,
+      "mapped_commands": 21,
+      "exposure_gaps": 0
+    },
+    "human_acceptance_inferred": false
+  },
+  "s7_receipt": {
+    "basis_revision": "4af495f6509bb0dd779112a225d71a9df8145b6e",
+    "artifact": {
+      "kind": "cli",
+      "entry": "target/release/actuation",
+      "platforms": [
+        "macos-arm64",
+        "linux-x86_64"
+      ],
+      "build": [
+        "cargo",
+        "build",
+        "--release",
+        "--locked",
+        "-p",
+        "actuation-cli"
+      ],
+      "release_law": "github-releases; actuation-v tags; sha256 checksums; github-artifact-attestation",
+      "declared_by": ".oi/product.json (mirrored by O:I surfaces.json via O-I#245)"
+    },
+    "store": {
+      "shape": "append-only JSONL, one file per stream",
+      "owner": "crates/actuation-stream/src/store.rs",
+      "portable_contract": "actuation.stream/v1",
+      "frozen_wire_oracle": {
+        "path": "fixtures/migration/r4",
+        "manifest_sha256": "121598f41376f72e5b565b0f0d9899bccdf458b42d97bfae272b5a86d2f6510d",
+        "readers": [
+          "cargo tests",
+          "shipped binary verify suite"
+        ]
+      }
+    },
+    "contracts": {
+      "cli": "actuation.cli/v1",
+      "served_native_contracts": 11,
+      "public_schema_parse": "schemas/*.json in the native-cli gate"
+    }
+  },
+  "executed_verification": {
+    "native_gate": "bash scripts/migration/verify-native.sh green on this tree: fmt; clippy --locked --workspace --all-targets -- -D warnings; cargo test --locked --workspace; frozen parity R2 119, R3 44, R4 213, R5 179, R6 44; corpus integrity R3 29; effect/scenario parity lines; 33/33 cli command-surface scenarios; release-profile verify",
+    "oi_pr_branch": "cargo test --locked --manifest-path cli/Cargo.toml 151/0; verify-mainline-snapshot.py PASS",
+    "aikit_pr_branch": "workflow YAML validated; caw_native_delivery passes against the served binary; caw_task_dispatch material phase fails with a workcell control-connection refusal (diagnosis and local control experiment on the PR) — open R8 item"
+  },
+  "not_claimed": [
+    "provider evidence (no live model/provider was exercised)",
+    "owner-machine evidence and physical acceptance (R10 under O:I Development Field S7)",
+    "human acceptance of this tranche or of the refreshed capability-matrix account",
+    "merge standing of O-I#245 and ai-kit#300 (stated at open; re-read from the repositories)",
+    "disposition of O:I's now-unreachable empty-build source-package code path (O-I owner decision, raised in #245)",
+    "ai-kit#300 caw_task_dispatch material-phase conformance against the served binary (open R8 item, documented on the PR)"
+  ]
+}

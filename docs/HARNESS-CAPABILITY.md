@@ -59,9 +59,12 @@ capability
 
 ## Catalog alignment
 
-Capability descriptors live in `detection/capabilities/<slug>.mjs`, aligned
-slug-for-slug with `detection/harnesses/<slug>.mjs`, and are validated against
-the detection catalog by `detection/capabilities.test.mjs`. Declared today:
+Capability descriptors live in `catalog/targets.json` (`schema
+actuation.native-catalog/v1`, loaded natively by
+`crates/actuation-adapters::NativeCatalog::bundled()`), aligned slug-for-slug
+with the harness descriptors in the same document and validated by the
+adapters crate's tests and the shipped binary's `verify` suite. Declared
+today:
 `claude-code` (8 events, deny-and-block, additional-context channel),
 `codex` (4 events, no injection channel, no wake), `zcode` (seven native
 events — no PreCompact, no Notification — deny-and-block, additional-context

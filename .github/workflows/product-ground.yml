@@ -24,9 +24,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - uses: actions/setup-node@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2.9.2
         with:
-          node-version: '22'
+          workspaces: |
+            . -> target
+      - name: Build the served product for discovery
+        run: cargo build --locked --release -p actuation-cli
       - name: Check source, matrix, seed and native CLI maintenance
         id: check
         continue-on-error: true
