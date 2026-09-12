@@ -1,6 +1,6 @@
 # World-bound Agency, positional Root Agency and Return
 
-This document accompanies `contracts/agency.mjs` and `contracts/agency-v1.schema.json`. The executable contract is normative where prose and code differ.
+This document accompanies the native constitutional core (`crates/actuation-core`), whose frozen wire oracle (`fixtures/migration/oracle.json`) preserves the public agency contract. The executable contract is normative where prose and code differ.
 
 ## Constitutional relation
 

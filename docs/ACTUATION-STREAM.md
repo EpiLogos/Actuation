@@ -63,18 +63,18 @@ A `return` event must correlate an explicit `return_ref`. Return therefore remai
 
 ## Portable read / replay / subscribe seam
 
-`contracts/actuation-stream.mjs` supplies:
+The native stream crate (`crates/actuation-stream`) supplies:
 
 - validation of Stream identity, lifecycle, ordering and event attribution;
-- `actuationStreamReadModel(..., { afterSequence, limit })` for cursor-based read/replay;
+- cursor-based read/replay read models (`afterSequence`/`limit`);
 - immutable append/close helpers;
-- `ActuationStreamJournal` as a small executable reference for append/read/replay/subscribe behaviour.
+- `ActuationStreamJournal` (src/journal.rs) as a small executable reference for append/read/replay/subscribe behaviour.
 
-The Journal is a conformance/reference body, not a requirement that every runtime store its Stream in JavaScript memory. A Workcell service, harness adapter, gateway or other provider may implement persistence/subscription differently while preserving the portable contract.
+The Journal is a conformance/reference body, not a requirement that every runtime store its Stream in one process' memory. A Workcell service, harness adapter, gateway or other provider may implement persistence/subscription differently while preserving the portable contract.
 
 ## Durable store (first-party)
 
-Occurrence recording (harness boundaries landing as `harness-event` events) needs a durable store. The first-party decision, implemented in `contracts/actuation-stream-store.mjs`:
+Occurrence recording (harness boundaries landing as `harness-event` events) needs a durable store. The first-party decision, implemented in `crates/actuation-stream/src/store.rs`:
 
 - **One append-only JSONL file per stream** under a store root (default `~/.actuation/streams`; override with `--store` or `ACTUATION_STREAM_STORE`). Line 1 is the stream header (identities, lifecycle); every following line is exactly one committed event. The filename is the percent-encoded `stream_ref` — reversible, collision-free, and unable to traverse.
 - **The portable contract is the only law.** Loading folds header + event lines and must validate as an `ActuationStream` with an exact contiguous cursor; an event line that violates the contract (gap, duplicate, malformed JSON) refuses the load and names the file position. A torn tail is never silently dropped.

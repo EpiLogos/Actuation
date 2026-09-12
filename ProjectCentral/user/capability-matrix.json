@@ -197,8 +197,7 @@
   "maintenance": {
     "cli": {
       "argv": [
-        "node",
-        "./bin/actuation",
+        "./target/release/actuation",
         "capabilities",
         "--json"
       ],
@@ -209,15 +208,15 @@
       "id_field": null
     },
     "runtime_paths": [
-      "bin/**",
-      "cli/**",
-      "contracts/**",
-      "detection/**",
-      "schemas/**"
+      "crates/**",
+      "catalog/**",
+      "schemas/**",
+      "fixtures/**"
     ],
     "runtime_excludes": [
       "**/*.test.*",
-      "**/tests/**"
+      "**/tests/**",
+      "target/**"
     ]
   }
 }
