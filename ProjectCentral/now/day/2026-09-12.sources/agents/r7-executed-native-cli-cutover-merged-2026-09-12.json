@@ -1,0 +1,15 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "r7-executed-native-cli-cutover-merged-2026-09-12",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "zcode-r7-cutover",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1789175440,
+  "subject": "R7 executed: native CLI cutover merged to main",
+  "result": "PR #69 is merged: main is at bf539972fabd (squash). The served product is now crates/actuation-cli — one Rust command descriptor table driving help/capabilities/dispatch/tests, served as target/release/actuation. actuation verify --json runs a compiled-in deterministic 15-check suite over the shipped binary (embedded R4 frozen wire store included); the product requires no Node runtime. Cutover law was executed in commit order: all 33 frozen cli scenarios green from the Rust binary, full native gate green with the MJS still present, then package.json + bin/actuation + cli/ + contracts/ + detection/ removed (74 files) and the gate re-run green. Gates: native-cli (branch-required name preserved) is the Rust product gate; native-rust runs ubuntu+macos; migration job keeps recorder + corpus integrity; r5 corrections and register.integrity and the README command law are native tests now. Packaging: .oi/product.json entry target/release/actuation, platforms macos-arm64 + linux-x86_64; prelocal-build produces sha256-checksummed, attested artifacts with a clean-directory serve proof. Research capabilities() acceptance_pending reconciled to the R8/R9 horizon. Record: docs/rust-refoundation/R7-CUTOVER.md. Honest remainder: provider evidence, owner-machine evidence, human acceptance remain unclaimed; R8 consumer harmonisation and R9 JavaScript retirement follow per issue 58. Next condition: R8 may branch from accepted main bf53997; the artifact job on main publishes the first native release artifacts.",
+  "status": "active",
+  "evidence_refs": [
+    "https://github.com/EpiLogos/Actuation/pull/69",
+    "https://github.com/EpiLogos/Actuation/commit/bf539972fabd7dfc4515b1a51a4391a01b1c72f3"
+  ]
+}
