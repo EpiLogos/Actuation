@@ -137,8 +137,10 @@ the physical return demanded by issue #58 and fed into EpiLogos/O-I#213
   green in CI at this main), the frozen specimen-native oracles replay
   through the native gate's R6 line (44 parity cases; full native gate green
   on this machine before every Actuation PR today), and the research
-  capabilities disclosure names the remaining acceptance horizon as
-  owner-machine only (this record).
+  capabilities disclosure named the remaining acceptance horizon as
+  owner-machine only (this record answers it: the disclosure was
+  reconciled to executed owner-machine standing on 2026-09-12, leaving
+  human acceptance and live-provider research open).
 - The live-provider QL experiments (deep-runtime/series1-live) were not
   exercised; their standing is unchanged and explicitly not claimed here.
 
