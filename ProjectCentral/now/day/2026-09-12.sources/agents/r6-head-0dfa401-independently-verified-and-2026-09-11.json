@@ -7,13 +7,10 @@
   "recorded_at_unix_seconds": 1789166933,
   "subject": "R6 head 0dfa401 independently verified and PR #67 reconciled",
   "result": "Independent verification session for commit 0dfa401965e1 on act-rust/r6-research-refoundation (PR #67). Correction: the prior return and commit message report cargo test --workspace 150 passed; that number came from a session with unreadable tool results and is not evidence. Measured at this head: 173 workspace Rust tests passed, 0 failed (82 in crates/actuation-research); cargo fmt --check and cargo clippy --workspace --all-targets clean; 219 root package Node tests passed; Pi adapter 2/2 with pinned @earendil-works/pi-ai@0.84.1 installed per research-sdk.yml; Prime structural gate 9/9. All six CI workflows succeeded on 0dfa401 including the Native research SDK boundaries matrix (pi, pydantic, dsh). Source dispositions closed: tree 19767f67 is an earlier staged snapshot fully contained in the published state; a1dad9c58 exists in no object store or remote ref and needs no disposition; staged candidate tree a10907ec is fully contained in 0dfa401 with 0 files dropped; conditions.json origins blob verified equal to git hash-object of conditions.mjs; the planned actuation-r6-current-checkpoint.zip never materialized on disk, recovery used the intact working tree. PR #67 body updated to published-crate standing and a verified reconciliation comment posted (issuecomment-5641502081). Still open before review readiness: temporary authoring-basis workflow removal, provider evidence, owner-machine evidence, human acceptance; draft must not merge and R7-R9 stay blocked. Next condition: remove the temporary authoring-basis workflows and obtain provider, owner-machine and human evidence; the draft must not merge and R7-R9 stay blocked until then.",
-  "status": "carried",
+  "status": "active",
   "evidence_refs": [
     "https://github.com/EpiLogos/Actuation/pull/67",
     "https://github.com/EpiLogos/Actuation/pull/67#issuecomment-5641502081",
     "https://github.com/EpiLogos/Actuation/commit/0dfa401965e1"
-  ],
-  "carried_from_days": [
-    "2026-09-12"
   ]
 }
