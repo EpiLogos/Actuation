@@ -217,7 +217,7 @@ Current research also studies model-bearing agency and epistemic cultivation. Th
 - [`schemas/actuation.v0.schema.json`](schemas/actuation.v0.schema.json) — language-neutral experimental `AgenticComposition` contract.
 - [`docs/QL-RUNTIME-MIGRATION.md`](docs/QL-RUNTIME-MIGRATION.md) — provenance and acceptance rules for the migrated QL runtime experiments.
 - [`catalog/targets.json`](catalog/targets.json) — the versioned harness catalog bundled into the executable; `actuation harness detect` proves which operative bodies exist on this machine (`actuation.harness-detection/v1`).
-- [`crates/`](crates/) — the native Rust workspace: `actuation-core` (constitutional semantics), `actuation-runtime` (the acting relation), `actuation-stream` (actuality and durable streams), `actuation-adapters` (boundary observation, instantiation, usage), `actuation-research` (first-class research) and `actuation-cli` (the served executable).
+- [`crates/`](crates/) — the native Rust workspace: `actuation-core` (constitutional semantics), `actuation-runtime` (the acting relation), `actuation-stream` (actuality and durable streams), `actuation-adapters` (boundary observation, instantiation, usage), `actuation-research` (first-class research), `actuation-cli` (the served executable) and `actuation-gateway` (the first-party Agency Gateway encounter plane; see its [README](crates/actuation-gateway/README.md)).
 - [`experiments/ql-runtime/`](experiments/ql-runtime/) — pinned proving body.
 - [`experiments/epistemic-cultivation/`](experiments/epistemic-cultivation/) — validated experiment-local records and persistence for the epistemic programme.
 
