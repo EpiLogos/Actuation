@@ -4,7 +4,7 @@ const SECRET_KEY = /(api[_-]?key|authorization|credential|password|secret|access
 const REDACTED = '[REDACTED]';
 
 function configuredSecrets() {
-  return [process.env.DEEPSEEK_API_KEY]
+  return [process.env.ZAI_API_KEY, process.env.QL_SERIES1_API_KEY, process.env.DEEPSEEK_API_KEY]
     .filter((value) => typeof value === 'string' && value.length > 0);
 }
 

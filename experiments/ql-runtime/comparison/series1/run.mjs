@@ -241,7 +241,7 @@ async function main() {
   const config = args();
   if (!Number.isInteger(config.repetitions) || config.repetitions < 1) throw new Error('--repetitions must be a positive integer.');
   if (!Number.isInteger(config.maxSteps) || config.maxSteps < 1) throw new Error('--max-steps must be a positive integer.');
-  if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is required for live Series 1 runs.');
+  if (!process.env.ZAI_API_KEY && !process.env.QL_SERIES1_API_KEY) throw new Error('ZAI_API_KEY is required for live Series 1 runs.');
   const task = getTask(config.task);
   const model = canonicalModel();
   const freeze = await buildBenchmarkFreeze();
@@ -264,7 +264,7 @@ async function main() {
     review_contract_revision: freeze.review_contract_revision,
     provider_mode: 'live',
     fixture_provider: false,
-    credential_contract: 'DEEPSEEK_API_KEY',
+    credential_contract: 'ZAI_API_KEY',
     host: records[0].host,
     model,
     conditions: CONDITIONS,

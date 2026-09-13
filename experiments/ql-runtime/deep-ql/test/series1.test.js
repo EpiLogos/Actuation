@@ -20,7 +20,8 @@ import {
   parseJsonObject,
   SERIES1_PROVIDER,
   SERIES1_DEFAULT_MODEL,
-  DEEPSEEK_BASE_URL
+  SERIES1_BASE_URL,
+  SERIES1_CREDENTIAL_ENV
 } from '../../comparison/series1/providers.mjs';
 import { SERIES1_TASKS, setupTask, verifyTask } from '../../comparison/series1/tasks.mjs';
 
@@ -39,10 +40,11 @@ test('Series 1 refuses fixture-shaped evidence and requires human-review contrac
   }), /not evidence eligible/);
 });
 
-test('Series 1 uses provider-native DeepSeek candidate defaults', () => {
-  assert.equal(SERIES1_PROVIDER, 'deepseek');
-  assert.equal(SERIES1_DEFAULT_MODEL, 'deepseek-v4-flash');
-  assert.equal(DEEPSEEK_BASE_URL, 'https://api.deepseek.com');
+test('Series 1 uses provider-native ZAI candidate defaults (2026-09-13 amendment)', () => {
+  assert.equal(SERIES1_PROVIDER, 'zai');
+  assert.equal(SERIES1_DEFAULT_MODEL, 'glm-5.3-flash');
+  assert.equal(SERIES1_BASE_URL, 'https://api.z.ai/api/coding/paas/v4');
+  assert.equal(SERIES1_CREDENTIAL_ENV, 'ZAI_API_KEY');
   assert.equal(DETERMINATION, 'pending-human-review');
 });
 
@@ -317,4 +319,83 @@ test('QL controller carrier decisions are accepted in both documented and flat s
     refusing.nextAct({ circuit, request, host: scripted({ carrier: 'teleport' }) }),
     /unsupported carrier 'teleport'/
   );
+});
+
+test('closure-request carriers are preserved and routed to the determination path', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  const circuit = { id: 'run_t:c0', depth: 0, face: 'direct', activePosition: { id: 'P4' }, residues: [], trajectory: [] };
+  const request = {
+    input: 'bounded task',
+    successConditions: ['done'],
+    capabilities: [{ id: 'read_file', args: {} }],
+    maxSteps: 16
+  };
+  const scripted = (control) => ({ mode: 'direct', async callModel() { return { control }; } });
+
+  const policy = createModelDrivenQLPolicy({ mode: 'direct' });
+  const act = await policy.nextAct({
+    circuit,
+    request,
+    host: scripted({ intent: 'close the bounded request', carrier: { kind: 'internal_control', name: 'close', args: { reason: 'already achieved' } } })
+  });
+  assert.equal(act.carrier.name, 'close');
+  assert.equal(act.metadata.closure_request, true);
+
+  const interpretation = await policy.interpret({ circuit, difference: { operation_success: true }, act, request });
+  assert.equal(interpretation.destination, 'P5');
+  assert.equal(interpretation.witness.structural_facts.closure_request, true);
+  assert.deepEqual(interpretation.residueDelta, {});
+});
+
+test('next-act control payload discloses the execution budget', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  const seen = [];
+  const policy = createModelDrivenQLPolicy({ mode: 'direct' });
+  await policy.nextAct({
+    circuit: { id: 'run_t:c0', depth: 0, face: 'direct', activePosition: { id: 'P0' }, residues: [], trajectory: [] },
+    request: { input: 'x', successConditions: [], capabilities: [], maxSteps: 16 },
+    host: {
+      mode: 'direct',
+      async callModel(request2) {
+        seen.push(JSON.parse(request2.series1Control.prompt));
+        return { control: { carrier: 'model' } };
+      }
+    }
+  });
+  assert.deepEqual(seen[0].budget, { max_steps: 16, steps_used: 0 });
+});
+
+test('determination synthesis falls back to the returned answer and refuses to close on empty synthesis', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  const circuit = { id: 'run_t:c0', depth: 0, face: 'direct', activePosition: { id: 'P5' }, residues: [], trajectory: [] };
+  const scripted = (control) => ({ mode: 'direct', async callModel() { return { control }; } });
+  const request = { input: 'x', successConditions: ['done'], taskId: 'T', __series1Host: null };
+
+  const answered = createModelDrivenQLPolicy({ mode: 'direct' });
+  request.__series1Host = scripted({ requested_outcome: 'close', answer: 'The preferred review format is Markdown.' });
+  const good = await answered.proposeDetermination({ circuit, request });
+  assert.equal(good.synthesis, 'The preferred review format is Markdown.');
+  assert.equal(good.requested_outcome, 'close');
+  assert.deepEqual(good.unresolved_refs, []);
+
+  const empty = createModelDrivenQLPolicy({ mode: 'direct' });
+  let calls = 0;
+  request.__series1Host = {
+    mode: 'direct',
+    async callModel() { calls += 1; return { control: { requested_outcome: 'close' } }; }
+  };
+  const gated = await empty.proposeDetermination({ circuit, request });
+  assert.equal(calls, 2, 'empty synthesis should trigger exactly one re-ask');
+  assert.equal(gated.requested_outcome, 'reopen');
+  assert.ok(gated.unresolved_refs.includes('determination-synthesis-empty'));
+
+  const reopening = createModelDrivenQLPolicy({ mode: 'direct' });
+  let reopenCalls = 0;
+  request.__series1Host = {
+    mode: 'direct',
+    async callModel() { reopenCalls += 1; return { control: { requested_outcome: 'reopen', unresolved_refs: ['open'] } }; }
+  };
+  const reopened = await reopening.proposeDetermination({ circuit, request });
+  assert.equal(reopenCalls, 1, 'reopen requests must not be re-asked');
+  assert.equal(reopened.requested_outcome, 'reopen');
 });

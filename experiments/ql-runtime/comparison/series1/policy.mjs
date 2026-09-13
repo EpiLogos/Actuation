@@ -39,18 +39,30 @@ function asPosition(value, fallback) {
 // form controller models naturally return ({carrier: 'capability',
 // capability: 'read_file', args}). Shape leniency only: an unknown carrier
 // kind still fails closed rather than degrading to an ordinary tool loop.
+// internal_control carriers keep their name: it carries the controller's
+// closure-request semantics instead of being discarded.
 function asCarrier(value, capabilities, decision = {}) {
   const raw = value ?? { kind: 'model' };
   const carrier = typeof raw === 'string'
     ? { kind: raw, name: decision.capability ?? decision.name ?? decision.tool, input: decision.input, args: decision.args }
     : { kind: raw.kind, name: raw.name ?? raw.capability ?? raw.tool, input: raw.input, args: raw.args };
   if (carrier.kind === 'model') return { kind: 'model' };
-  if (carrier.kind === 'internal_control') return { kind: 'internal_control', input: clone(carrier.input ?? null) };
+  if (carrier.kind === 'internal_control') {
+    return { kind: 'internal_control', name: carrier.name ?? null, input: clone(carrier.input ?? carrier.args ?? null) };
+  }
   if (carrier.kind === 'capability' || carrier.kind === 'tool') {
     if (!capabilities.includes(carrier.name)) throw new Error(`QL controller selected unavailable capability '${carrier.name}'.`);
     return { kind: 'capability', name: carrier.name, args: clone(carrier.args ?? {}) };
   }
   throw new Error(`QL controller selected unsupported carrier '${carrier.kind}'.`);
+}
+
+const CLOSURE_CONTROL_NAMES = new Set(['close', 'stop', 'finalize', 'finish', 'complete', 'end', 'propose_closure']);
+
+export function isClosureControlCarrier(carrier) {
+  return carrier?.kind === 'internal_control'
+    && typeof carrier.name === 'string'
+    && CLOSURE_CONTROL_NAMES.has(carrier.name.trim().toLowerCase());
 }
 
 async function control(host, purpose, system, payload) {
@@ -204,11 +216,13 @@ export function createModelDrivenQLPolicy({ mode = 'direct', operatorRunId = 'se
     async nextAct({ circuit, request, host }) {
       const capabilities = (request.capabilities ?? []).map((entry) => typeof entry === 'string' ? entry : entry.id).filter(Boolean);
       const active = circuit.activePosition.id;
+      const stepsUsed = (circuit.trajectory ?? []).length;
+      const budget = { max_steps: request.maxSteps ?? null, steps_used: stepsUsed };
       const decision = await control(
         host,
         'ql-next-act',
-        `You are controlling a QL-native agent recurrence. Positions are responsibilities, not chronological stages: ${JSON.stringify(POSITION_GUIDE)}. Choose the next exterior act appropriate to the currently active position. Return exactly one JSON object of the form {"intent": string, "carrier": {"kind": "model"|"capability"|"internal_control", "name": <capability id, required when kind is "capability">, "args": object}, "claimed_relation": string|null, "rationale": string}. In deep mode, only at P4, you may add "deep_operator": "depth" when a genuinely local whole warrants independent treatment. Do not force a six-step path and do not use depth ceremonially.`,
-        { mode, task: request.input, success_conditions: request.successConditions, capabilities, circuit: compactCircuit(circuit) }
+        `You are controlling a QL-native agent recurrence. Positions are responsibilities, not chronological stages: ${JSON.stringify(POSITION_GUIDE)}. Choose the next exterior act appropriate to the currently active position. Return exactly one JSON object of the form {"intent": string, "carrier": {"kind": "model"|"capability"|"internal_control", "name": <capability id, required when kind is "capability">, "args": object}, "claimed_relation": string|null, "rationale": string}. The "internal_control" kind is only a closure request: use {"kind": "internal_control", "name": "close", "args": {"reason": string}} when the realisable intent is already achieved and no exterior act remains — do not repeat equivalent acts. In deep mode, only at P4, you may add "deep_operator": "depth" when a genuinely local whole warrants independent treatment. Do not force a six-step path and do not use depth ceremonially.`,
+        { mode, task: request.input, success_conditions: request.successConditions, capabilities, circuit: compactCircuit(circuit), budget }
       );
 
       if (mode === 'deep' && active === 'P4' && decision.deep_operator === 'depth' && !state.depthUsedFor.has(circuit.id)) {
@@ -222,13 +236,19 @@ export function createModelDrivenQLPolicy({ mode = 'direct', operatorRunId = 'se
         };
       }
 
+      const carrier = asCarrier(decision.carrier, capabilities, decision);
+      const closureRequest = isClosureControlCarrier(carrier);
       return {
         intent: decision.intent ?? `Advance the ${active} responsibility for the initiating intent.`,
-        carrier: asCarrier(decision.carrier, capabilities, decision),
+        carrier,
         inputResidueRefs: Array.isArray(decision.input_residue_refs) ? decision.input_residue_refs : [],
         claimedPosition: active,
         claimedRelation: decision.claimed_relation ?? null,
-        metadata: { controller_rationale: decision.rationale ?? null }
+        metadata: {
+          controller_rationale: decision.rationale ?? null,
+          budget,
+          ...(closureRequest ? { closure_request: true } : {})
+        }
       };
     },
 
@@ -240,6 +260,24 @@ export function createModelDrivenQLPolicy({ mode = 'direct', operatorRunId = 'se
     },
 
     async interpret({ circuit, difference, act, request }) {
+      if (act.metadata?.closure_request) {
+        // The controller already stated the realisable intent is achieved.
+        // Route straight to determination: the closure request itself is the
+        // returned difference to interpret, and only the P5 propose/evaluate
+        // path may establish positive closure.
+        return {
+          destination: 'P5',
+          rationale: act.metadata.controller_rationale ?? 'Controller requested closure; routing to determination.',
+          residueDelta: {},
+          witness: {
+            claimed_position: 'P5',
+            observed_position: 'P5',
+            ambiguity: null,
+            structural_facts: { closure_request: true, carrier: clone(act.carrier), operation_success: difference.operation_success }
+          }
+        };
+      }
+
       if (act.metadata?.deep_operator === 'depth') {
         return {
           destination: 'P4',
@@ -287,23 +325,41 @@ export function createModelDrivenQLPolicy({ mode = 'direct', operatorRunId = 'se
     },
 
     async proposeDetermination({ circuit, request }) {
-      const decision = await control(
-        request.__series1Host,
-        'ql-propose-determination',
-        `The active responsibility is P5: candidate determination. Synthesize what is actually realised relative to the initiating intent and success conditions. requested_outcome must be close or reopen${mode === 'deep' ? ' or conjugate' : ''}. Use conjugate only when an independent inverse/critical fresh-context review is warranted; it is not mandatory.`,
-        { mode, task: request.input, success_conditions: request.successConditions, circuit: compactCircuit(circuit) }
-      );
+      const systemBase = `The active responsibility is P5: candidate determination. Synthesize what is actually realised relative to the initiating intent and success conditions. Return exactly one JSON object of the form {"synthesis": string (the realised outcome in plain text; never empty), "requested_outcome": "close"|"reopen"${mode === 'deep' ? '| "conjugate"' : ''}, "claimed_adequacy": "adequate"|"partial"|"inadequate"|"unknown", "claimed_subject": string, "evidence_refs": string[], "unresolved_refs": string[]}. Use conjugate only when an independent inverse/critical fresh-context review is warranted; it is not mandatory.`;
+      const payload = { mode, task: request.input, success_conditions: request.successConditions, circuit: compactCircuit(circuit) };
+
+      let decision = null;
+      let synthesis = '';
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        decision = await control(
+          request.__series1Host,
+          'ql-propose-determination',
+          attempt === 0
+            ? systemBase
+            : `${systemBase} Your previous response carried no synthesis text; "synthesis" is required.`,
+          payload
+        );
+        synthesis = decision.synthesis ?? decision.answer ?? decision.content ?? '';
+        if (String(synthesis).trim() || decision.requested_outcome === 'reopen') break;
+      }
+
       const allowed = mode === 'deep' ? ['close', 'reopen', 'conjugate'] : ['close', 'reopen'];
       const requested = allowed.includes(decision.requested_outcome) ? decision.requested_outcome : 'reopen';
+      const emptySynthesis = !String(synthesis).trim();
+      // Closure is a positive determination: it may not be requested on an
+      // empty synthesis. The model-requested reopen path stays intact.
+      const gated = emptySynthesis && requested !== 'reopen' ? 'reopen' : requested;
       return {
-        synthesis: decision.synthesis ?? '',
+        synthesis,
         claimed_adequacy: decision.claimed_adequacy ?? 'unknown',
         claimed_subject: decision.claimed_subject ?? request.taskId,
         claimed_state: decision.claimed_state ?? null,
         evidence_refs: Array.isArray(decision.evidence_refs) ? decision.evidence_refs : [],
         evaluation_refs: (circuit.residues ?? []).filter((entry) => entry.kind === 'evaluation' && !entry.invalidated).map((entry) => entry.id),
-        unresolved_refs: Array.isArray(decision.unresolved_refs) ? decision.unresolved_refs : [],
-        requested_outcome: requested
+        unresolved_refs: emptySynthesis && requested !== 'reopen'
+          ? ['determination-synthesis-empty']
+          : (Array.isArray(decision.unresolved_refs) ? decision.unresolved_refs : []),
+        requested_outcome: gated
       };
     },
 
@@ -329,7 +385,9 @@ export function createModelDrivenQLPolicy({ mode = 'direct', operatorRunId = 'se
       );
       const status = verdict.status === 'close' ? 'close' : 'reopen';
       if (status === 'close') {
-        return { status: 'close', task_success: String(verdict.task_success ?? 'true'), rationale: verdict.rationale ?? null };
+        // Default honestly: an evaluator that does not return task_success has
+        // not asserted success.
+        return { status: 'close', task_success: String(verdict.task_success ?? 'unknown'), rationale: verdict.rationale ?? null };
       }
       const destination = asPosition(verdict.destination, 'P4');
       return {
