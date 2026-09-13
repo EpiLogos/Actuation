@@ -268,6 +268,15 @@ async function main() {
     host: records[0].host,
     model,
     conditions: CONDITIONS,
+    conformance: {
+      classic: 'ordinary tool loop control (no QL semantics)',
+      // Conjugacy law: P/P' are directional views on the same #0-#5 field.
+      // ql-direct walks the outward (P) face only and is therefore a partial
+      // lane; ql-deep carries the return (P') face — conjugate and depth at
+      // the lemniscate point — and is the conformance condition.
+      ql_direct: 'partial-QL lane (outward face only)',
+      ql_deep: 'full QL lane (outward + return faces)'
+    },
     held_constant: held,
     determination: DETERMINATION,
     task: { id: task.id, category: task.category, revision: freeze.tasks[task.id].task_revision },

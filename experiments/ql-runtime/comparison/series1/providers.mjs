@@ -82,7 +82,7 @@ export class NativeOpenAICompatibleProvider {
     ];
     let messages = baseMessages;
     const failedAttempts = [];
-    const totals = { input_tokens: 0, output_tokens: 0, total_tokens: 0 };
+    const totals = { input_tokens: 0, output_tokens: 0, total_tokens: 0, cached_input_tokens: 0 };
     // A malformed turn is a host-protocol event, not a model verdict: re-ask
     // with the failure made explicit rather than failing the run. Applied
     // uniformly to every condition and recorded in the returned result.
@@ -105,6 +105,7 @@ export class NativeOpenAICompatibleProvider {
       totals.input_tokens += body?.usage?.prompt_tokens ?? 0;
       totals.output_tokens += body?.usage?.completion_tokens ?? 0;
       totals.total_tokens += body?.usage?.total_tokens ?? 0;
+      totals.cached_input_tokens += body?.usage?.prompt_tokens_details?.cached_tokens ?? 0;
       let result;
       try {
         result = modeResult(text, mode);
@@ -126,7 +127,8 @@ export class NativeOpenAICompatibleProvider {
       result.usage = {
         input_tokens: totals.input_tokens,
         output_tokens: totals.output_tokens,
-        total_tokens: totals.total_tokens
+        total_tokens: totals.total_tokens,
+        cached_input_tokens: totals.cached_input_tokens
       };
       result.raw = {
         finish_reason: body?.choices?.[0]?.finish_reason ?? null,

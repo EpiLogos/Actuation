@@ -362,7 +362,10 @@ test('next-act control payload discloses the execution budget', async () => {
       }
     }
   });
-  assert.deepEqual(seen[0].budget, { max_steps: 16, steps_used: 0 });
+  assert.equal(seen[0].budget.max_steps, 16);
+  assert.equal(seen[0].budget.steps_used, 0);
+  assert.equal(seen[0].budget.allowance.active_position, 'P0');
+  assert.ok(seen[0].stipulations, 'stipulations must ride the control payload');
 });
 
 test('determination synthesis falls back to the returned answer and refuses to close on empty synthesis', async () => {
@@ -417,7 +420,7 @@ test('native transport repairs malformed turns by re-asking, retaining the faile
     const result = await provider.complete({ prompt: 'do the task' });
     assert.equal(result.content, 'done');
     assert.equal(result.repairs, 1);
-    assert.deepEqual(result.usage, { input_tokens: 40, output_tokens: 9, total_tokens: 49 });
+    assert.deepEqual(result.usage, { input_tokens: 40, output_tokens: 9, total_tokens: 49, cached_input_tokens: 0 });
     assert.equal(result.raw.failed_attempts.length, 1);
     assert.deepEqual(bodies[1], ['system', 'user', 'assistant', 'user'], 'repair turn must carry the failed response back');
   } finally {
@@ -462,4 +465,61 @@ test('QL control turns run under the Relational Logos system prompt', async () =
   });
   assert.ok(seenSystem.startsWith('# Relational Logos'), 'control turns must carry the QL relational protocol as the standing system text');
   assert.ok(seenSystem.includes('Return exactly one JSON object'), 'turn-specific schema instruction composed on top');
+});
+
+test('per-position allowance refusal fires as a typed closure request without a model call', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  const circuit = { id: 'run_t:c0', depth: 0, face: 'direct', activePosition: { id: 'P1' }, residues: [], trajectory: [] };
+  const request = { input: 'x', successConditions: ['done'], capabilities: [], maxSteps: 16 };
+  let calls = 0;
+  const host = {
+    mode: 'direct',
+    async callModel() { calls += 1; return { control: { carrier: 'model' } }; }
+  };
+  const policy = createModelDrivenQLPolicy({ mode: 'direct', allowanceSchedule: { P1: 2 } });
+  const acts = [];
+  for (let i = 0; i < 6; i += 1) acts.push(await policy.nextAct({ circuit, request, host }));
+  assert.equal(calls, 4, 'two scheduled acts + two grace acts; refusals skip the model');
+  assert.equal(acts[0].metadata.allowance_refusal, undefined);
+  assert.equal(acts[2].metadata.allowance_refusal.position, 'P1');
+  assert.equal(acts[2].metadata.closure_request, true);
+  assert.equal(acts[2].metadata.allowance_refusal.consumed, 2);
+  assert.equal(acts[2].metadata.allowance_refusal.grace_extension, 2, 'first refusal grants the recorded grace extension');
+  assert.equal(acts[5].metadata.allowance_refusal.consumed, 4, 'post-grace refusal reports full consumption');
+  assert.equal(acts[5].metadata.allowance_refusal.grace_extension, 0);
+  const routed = await policy.interpret({ circuit, difference: { operation_success: true }, act: acts[2], request });
+  assert.equal(routed.destination, 'P5');
+  assert.equal(routed.witness.structural_facts.allowance_refusal.position, 'P1');
+});
+
+test('task conditions classify into typed goal and exclusion stipulations', async () => {
+  const { classifyStipulations } = await import('../../comparison/series1/policy.mjs');
+  const bindings = classifyStipulations([
+    'Deliver a one-page note answering all four questions.',
+    'Do not modify any file.',
+    'Never import outside knowledge.'
+  ]);
+  assert.deepEqual(bindings.map((b) => b.kind), ['goal', 'exclusion', 'exclusion']);
+  assert.equal(bindings[1].id, 'S2');
+});
+
+test('a violated exclusion stipulation forces the closure to record failure', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  const policy = createModelDrivenQLPolicy({ mode: 'direct' });
+  const request = {
+    input: 'x',
+    successConditions: ['Answer the questions.', 'Do not modify any file.'],
+    taskId: 'T',
+    __series1Host: {
+      mode: 'direct',
+      async callModel() {
+        return { control: { status: 'close', task_success: true, stipulation_verdicts: [{ id: 'S1', verdict: 'met' }, { id: 'S2', verdict: 'violated', evidence: 'wrote research-note.md' }] } };
+      }
+    }
+  };
+  const verdict = await policy.evaluateClosure({ circuit: {}, determination: {}, frame: {}, evaluations: [], request });
+  assert.equal(verdict.status, 'close');
+  assert.equal(verdict.task_success, 'false');
+  assert.ok(verdict.rationale.includes('S2'));
+  assert.equal(verdict.stipulation_verdicts.length, 2);
 });
