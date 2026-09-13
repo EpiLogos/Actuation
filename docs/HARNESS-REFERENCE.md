@@ -9,7 +9,7 @@ Actuation owns generic semantics for Agent, situated Agency, Actuation, AgenticC
 
 Actuation therefore maintains a **maximal reference harness**: a deliberately demanding real harness composition used to expose missing scope, lifecycle, identity, session, persistence, model-routing, observation, delegation, cancellation, and composition requirements in the generic contracts.
 
-The current maximal reference harness is the pinned public **DeepSeek Harness (DSH)** source used by the QL Runtime proving body. Its exact experimental integration and evidence boundary are specified in [`../experiments/ql-runtime/comparison/series1/DEEPSEEK-HARNESS-MAXIMAL-REFERENCE.md`](../experiments/ql-runtime/comparison/series1/DEEPSEEK-HARNESS-MAXIMAL-REFERENCE.md).
+The current maximal reference harness is the pinned public **DeepSeek Harness (DSH)** source; since the R11 JavaScript retirement its guarantee is carried by recorded-fixture conformance (see `docs/rust-refoundation/R11-JS-RETIREMENT.md`). Its exact experimental integration and evidence boundary are specified in [`../experiments/ql-runtime/comparison/series1/DEEPSEEK-HARNESS-MAXIMAL-REFERENCE.md`](../experiments/ql-runtime/comparison/series1/DEEPSEEK-HARNESS-MAXIMAL-REFERENCE.md).
 
 ## Constitutional rule
 
