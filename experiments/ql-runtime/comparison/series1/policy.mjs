@@ -1,5 +1,6 @@
 import { DeepQLOperatorSession } from '../../deep-ql/operator-session.js';
 import { buildDModulationFrame } from '../../deep-ql/formal/pairing-grammar.js';
+import { QL_RELATIONAL_SYSTEM } from './ql-relational-system-prompt.mjs';
 
 const POSITIONS = ['P0', 'P1', 'P2', 'P3', 'P4', 'P5'];
 const RESIDUE_KIND = { P0: 'frame', P1: 'material', P2: 'effect', P3: 'form', P4: 'evaluation', P5: 'determination' };
@@ -31,14 +32,55 @@ function compactCircuit(circuit) {
   };
 }
 
+// Conjugacy law (owner, 2026-09-13): P and P' are not distinct circuits but
+// directional views on the same psychoid #0-#5 — the outward walk and the
+// return reading of one field. A model looking back from P5 toward ground is
+// therefore already operating in the conjugate direction; in deep mode that
+// backward reading is part of determination, not a ceremonial extra operator.
+const CONJUGATE_DIRECTION_LAW = 'Positions P0..P5 are directional views on one field. The outward reading (P) runs ground toward determination; the return reading (P-prime) is the same positions seen looking back from a later position toward ground. Looking back from a determination toward the frame is already conjugate operation, not a different circuit.';
+
+// Typed stipulations: task conditions become frame-carried constraint
+// bindings (the FullVakBinding pattern — a readable scope does not authorise
+// an action). Exclusion conditions forbid the entire class of action,
+// including creating new artifacts; this is stated to the model and enforced
+// at the closure gate.
+export function classifyStipulations(conditions) {
+  return (conditions ?? []).map((text, index) => ({
+    id: `S${index + 1}`,
+    text: String(text),
+    kind: /^(do not|never|don't|avoid|without)\b/i.test(String(text).trim()) ? 'exclusion' : 'goal'
+  }));
+}
+
+// Per-position allowance schedule (owner direction, 2026-09-13): measure is
+// staged per position on the kernel's shape — declared with the frame,
+// consumed by acts, restated at every control turn, and refused with a typed
+// event on overrun (never a silent stop). Acts are the loop-native currency;
+// token consumption per position is metered and reported in the manifest.
+export const DEFAULT_ALLOWANCE_SCHEDULE = Object.freeze({
+  P0: 2, P1: 6, P2: 5, P3: 4, P4: 4, P5: 3
+});
+const GRACE_ALLOWANCE = 2;
+
 function asPosition(value, fallback) {
   return POSITIONS.includes(value) ? value : fallback;
 }
 
-function asCarrier(value, capabilities) {
-  const carrier = value ?? { kind: 'model' };
+// Accept both the documented object form ({kind, name, args}) and the flat
+// form controller models naturally return ({carrier: 'capability',
+// capability: 'read_file', args}). Shape leniency only: an unknown carrier
+// kind still fails closed rather than degrading to an ordinary tool loop.
+// internal_control carriers keep their name: it carries the controller's
+// closure-request semantics instead of being discarded.
+function asCarrier(value, capabilities, decision = {}) {
+  const raw = value ?? { kind: 'model' };
+  const carrier = typeof raw === 'string'
+    ? { kind: raw, name: decision.capability ?? decision.name ?? decision.tool, input: decision.input, args: decision.args }
+    : { kind: raw.kind, name: raw.name ?? raw.capability ?? raw.tool, input: raw.input, args: raw.args };
   if (carrier.kind === 'model') return { kind: 'model' };
-  if (carrier.kind === 'internal_control') return { kind: 'internal_control', input: clone(carrier.input ?? null) };
+  if (carrier.kind === 'internal_control') {
+    return { kind: 'internal_control', name: carrier.name ?? null, input: clone(carrier.input ?? carrier.args ?? null) };
+  }
   if (carrier.kind === 'capability' || carrier.kind === 'tool') {
     if (!capabilities.includes(carrier.name)) throw new Error(`QL controller selected unavailable capability '${carrier.name}'.`);
     return { kind: 'capability', name: carrier.name, args: clone(carrier.args ?? {}) };
@@ -46,11 +88,21 @@ function asCarrier(value, capabilities) {
   throw new Error(`QL controller selected unsupported carrier '${carrier.kind}'.`);
 }
 
+const CLOSURE_CONTROL_NAMES = new Set(['close', 'stop', 'finalize', 'finish', 'complete', 'end', 'propose_closure']);
+
+export function isClosureControlCarrier(carrier) {
+  return carrier?.kind === 'internal_control'
+    && typeof carrier.name === 'string'
+    && CLOSURE_CONTROL_NAMES.has(carrier.name.trim().toLowerCase());
+}
+
 async function control(host, purpose, system, payload) {
   const response = await host.callModel({
     series1Control: {
       purpose,
-      system: `${system}\nReturn exactly one JSON object and no prose outside it.`,
+      // Parity: every QL control turn runs under the QL agent's standing
+      // relational protocol, with the turn-specific instruction composed on top.
+      system: `${QL_RELATIONAL_SYSTEM}\n\n---\n\n${system}\nReturn exactly one JSON object and no prose outside it.`,
       prompt: JSON.stringify(payload, null, 2)
     }
   });
@@ -186,10 +238,31 @@ async function runConjugate({ host, circuit, determination, request, session }) 
   return delta;
 }
 
-export function createModelDrivenQLPolicy({ mode = 'direct', operatorRunId = 'series1:operators' } = {}) {
+export function createModelDrivenQLPolicy({
+  mode = 'direct',
+  operatorRunId = 'series1:operators',
+  allowanceSchedule = DEFAULT_ALLOWANCE_SCHEDULE
+} = {}) {
   if (!['direct', 'deep'].includes(mode)) throw new TypeError(`Unknown QL policy mode '${mode}'.`);
   const session = new DeepQLOperatorSession({ runId: operatorRunId });
-  const state = { depthUsedFor: new Set(), operatorEvents: session };
+  const state = {
+    depthUsedFor: new Set(),
+    operatorEvents: session,
+    actsByPosition: new Map(),
+    graceUsed: new Set()
+  };
+
+  // Allowance is per-position and frame-carried: consumed by acts at the
+  // active position, restated in every control payload, refused with a typed
+  // event on overrun (one recorded grace extension per position), and closed
+  // by routing to determination rather than by a silent stop.
+  const allowanceFor = (position) => {
+    const scheduled = allowanceSchedule[position] ?? 8;
+    const consumed = state.actsByPosition.get(position) ?? 0;
+    const graceUsed = state.graceUsed.has(position);
+    const limit = graceUsed ? scheduled + GRACE_ALLOWANCE : scheduled;
+    return { scheduled, consumed, limit, exhausted: consumed >= limit, grace_extension: GRACE_ALLOWANCE, grace_pending: consumed >= limit && !graceUsed };
+  };
 
   return {
     mode,
@@ -197,11 +270,46 @@ export function createModelDrivenQLPolicy({ mode = 'direct', operatorRunId = 'se
     async nextAct({ circuit, request, host }) {
       const capabilities = (request.capabilities ?? []).map((entry) => typeof entry === 'string' ? entry : entry.id).filter(Boolean);
       const active = circuit.activePosition.id;
+      const stepsUsed = (circuit.trajectory ?? []).length;
+      const stipulations = classifyStipulations(request.successConditions);
+      const allowance = allowanceFor(active);
+
+      if (allowance.exhausted) {
+        // Typed refusal: no model call, a recorded overrun event, and the
+        // loop moves to determination through the closure-request path. The
+        // first refusal at a position grants a one-time recorded grace
+        // extension before the post-grace limit binds.
+        if (allowance.grace_pending) state.graceUsed.add(active);
+        return {
+          intent: `Allowance at ${active} exhausted (${allowance.consumed}/${allowance.limit}); routed to determination by the allowance schedule.`,
+          carrier: { kind: 'internal_control', name: 'close', input: null },
+          inputResidueRefs: [],
+          claimedPosition: active,
+          claimedRelation: null,
+          metadata: {
+            controller_rationale: 'Typed allowance refusal: the position budget is spent; determination must decide whether the realisable intent is achieved.',
+            closure_request: true,
+            allowance_refusal: { position: active, consumed: allowance.consumed, scheduled: allowance.scheduled, grace_extension: allowance.grace_pending ? GRACE_ALLOWANCE : 0 }
+          }
+        };
+      }
+
+      state.actsByPosition.set(active, allowance.consumed + 1);
+      const budget = {
+        max_steps: request.maxSteps ?? null,
+        steps_used: stepsUsed,
+        allowance: {
+          schedule: allowanceSchedule,
+          consumed: Object.fromEntries(state.actsByPosition),
+          active_position: active,
+          position_limit: allowance.limit
+        }
+      };
       const decision = await control(
         host,
         'ql-next-act',
-        `You are controlling a QL-native agent recurrence. Positions are responsibilities, not chronological stages: ${JSON.stringify(POSITION_GUIDE)}. Choose the next exterior act appropriate to the currently active position. Available carriers: model, capability, internal_control. In deep mode, only at P4, you may request deep_operator='depth' when a genuinely local whole warrants independent treatment. Do not force a six-step path and do not use depth ceremonially.`,
-        { mode, task: request.input, success_conditions: request.successConditions, capabilities, circuit: compactCircuit(circuit) }
+        `You are controlling a QL-native agent recurrence. Positions are responsibilities, not chronological stages: ${JSON.stringify(POSITION_GUIDE)}. ${CONJUGATE_DIRECTION_LAW} Choose the next exterior act appropriate to the currently active position. Return exactly one JSON object of the form {"intent": string, "carrier": {"kind": "model"|"capability"|"internal_control", "name": <capability id, required when kind is "capability">, "args": object}, "claimed_relation": string|null, "rationale": string}. The "internal_control" kind is only a closure request: use {"kind": "internal_control", "name": "close", "args": {"reason": string}} when the realisable intent is already achieved and no exterior act remains — do not repeat equivalent acts. Stipulations of kind "exclusion" forbid the entire class of action including creating new artifacts: check the carrier choice against every exclusion stipulation before returning. In deep mode, only at P4, you may add "deep_operator": "depth" when a genuinely local whole — a sub-question whose independent resolution would materially change the evaluation, resolvable without the parent's transcript — warrants independent treatment at the lemniscate point; depth at #4 is the nesting entry, not a ceremony. Do not force a six-step path.`,
+        { mode, task: request.input, stipulations, success_conditions: request.successConditions, capabilities, circuit: compactCircuit(circuit), budget }
       );
 
       if (mode === 'deep' && active === 'P4' && decision.deep_operator === 'depth' && !state.depthUsedFor.has(circuit.id)) {
@@ -215,13 +323,19 @@ export function createModelDrivenQLPolicy({ mode = 'direct', operatorRunId = 'se
         };
       }
 
+      const carrier = asCarrier(decision.carrier, capabilities, decision);
+      const closureRequest = isClosureControlCarrier(carrier);
       return {
         intent: decision.intent ?? `Advance the ${active} responsibility for the initiating intent.`,
-        carrier: asCarrier(decision.carrier, capabilities),
+        carrier,
         inputResidueRefs: Array.isArray(decision.input_residue_refs) ? decision.input_residue_refs : [],
         claimedPosition: active,
         claimedRelation: decision.claimed_relation ?? null,
-        metadata: { controller_rationale: decision.rationale ?? null }
+        metadata: {
+          controller_rationale: decision.rationale ?? null,
+          budget,
+          ...(closureRequest ? { closure_request: true } : {})
+        }
       };
     },
 
@@ -233,6 +347,29 @@ export function createModelDrivenQLPolicy({ mode = 'direct', operatorRunId = 'se
     },
 
     async interpret({ circuit, difference, act, request }) {
+      if (act.metadata?.closure_request) {
+        // The controller already stated the realisable intent is achieved
+        // (or the allowance schedule refused further acts). Route straight to
+        // determination: only the P5 propose/evaluate path may establish
+        // positive closure.
+        return {
+          destination: 'P5',
+          rationale: act.metadata.controller_rationale ?? 'Controller requested closure; routing to determination.',
+          residueDelta: {},
+          witness: {
+            claimed_position: 'P5',
+            observed_position: 'P5',
+            ambiguity: null,
+            structural_facts: {
+              closure_request: true,
+              ...(act.metadata.allowance_refusal ? { allowance_refusal: act.metadata.allowance_refusal } : {}),
+              carrier: clone(act.carrier),
+              operation_success: difference.operation_success
+            }
+          }
+        };
+      }
+
       if (act.metadata?.deep_operator === 'depth') {
         return {
           destination: 'P4',
@@ -252,7 +389,7 @@ export function createModelDrivenQLPolicy({ mode = 'direct', operatorRunId = 'se
       const decision = await control(
         request.__series1Host,
         'ql-interpret-return',
-        `Interpret the returned difference for the current QL whole. The carrier does NOT determine semantic destination. Choose exactly one destination P0..P5 and explain why. P0=ground/frame, P1=material/evidence, P2=effect/transformation, P3=form/implementation, P4=evaluation/context, P5=candidate determination. Preserve genuine failure or ambiguity rather than pretending success.`,
+        `Interpret the returned difference for the current QL whole. The carrier does NOT determine semantic destination. Worked examples: a successful read of unprocessed evidence belongs at P1 even if the act claimed otherwise; a delivered realisation of the intent belongs at P5; a partial tool result still in use belongs at P2; a model or pattern worth keeping belongs at P3; a whole-relative check belongs at P4. Return exactly one JSON object of the form {"destination": "P0"|"P1"|"P2"|"P3"|"P4"|"P5", "semantic_summary": string, "claimed_position": "P0".."P5"|null, "ambiguity": string|null, "rationale": string}. Choose exactly one destination and explain why. Preserve genuine failure or ambiguity rather than pretending success.`,
         { task: request.input, success_conditions: request.successConditions, circuit: compactCircuit(circuit), act, difference }
       );
       const destination = asPosition(decision.destination, circuit.activePosition.id);
@@ -280,23 +417,41 @@ export function createModelDrivenQLPolicy({ mode = 'direct', operatorRunId = 'se
     },
 
     async proposeDetermination({ circuit, request }) {
-      const decision = await control(
-        request.__series1Host,
-        'ql-propose-determination',
-        `The active responsibility is P5: candidate determination. Synthesize what is actually realised relative to the initiating intent and success conditions. requested_outcome must be close or reopen${mode === 'deep' ? ' or conjugate' : ''}. Use conjugate only when an independent inverse/critical fresh-context review is warranted; it is not mandatory.`,
-        { mode, task: request.input, success_conditions: request.successConditions, circuit: compactCircuit(circuit) }
-      );
+      const systemBase = `The active responsibility is P5: candidate determination. ${CONJUGATE_DIRECTION_LAW} Synthesize what is actually realised relative to the initiating intent and success conditions; reading back from this determination toward the frame is the return direction of the same field. Return exactly one JSON object of the form {"synthesis": string (the realised outcome in plain text; never empty), "requested_outcome": "close"|"reopen"${mode === 'deep' ? '| "conjugate"' : ''}, "claimed_adequacy": "adequate"|"partial"|"inadequate"|"unknown", "claimed_subject": string, "evidence_refs": string[], "unresolved_refs": string[]}. Use conjugate only when the backward reading genuinely warrants an independent fresh-context check of the determination; it is not mandatory.`;
+      const payload = { mode, task: request.input, stipulations: classifyStipulations(request.successConditions), success_conditions: request.successConditions, circuit: compactCircuit(circuit) };
+
+      let decision = null;
+      let synthesis = '';
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        decision = await control(
+          request.__series1Host,
+          'ql-propose-determination',
+          attempt === 0
+            ? systemBase
+            : `${systemBase} Your previous response carried no synthesis text; "synthesis" is required.`,
+          payload
+        );
+        synthesis = decision.synthesis ?? decision.answer ?? decision.content ?? '';
+        if (String(synthesis).trim() || decision.requested_outcome === 'reopen') break;
+      }
+
       const allowed = mode === 'deep' ? ['close', 'reopen', 'conjugate'] : ['close', 'reopen'];
       const requested = allowed.includes(decision.requested_outcome) ? decision.requested_outcome : 'reopen';
+      const emptySynthesis = !String(synthesis).trim();
+      // Closure is a positive determination: it may not be requested on an
+      // empty synthesis. The model-requested reopen path stays intact.
+      const gated = emptySynthesis && requested !== 'reopen' ? 'reopen' : requested;
       return {
-        synthesis: decision.synthesis ?? '',
+        synthesis,
         claimed_adequacy: decision.claimed_adequacy ?? 'unknown',
         claimed_subject: decision.claimed_subject ?? request.taskId,
         claimed_state: decision.claimed_state ?? null,
         evidence_refs: Array.isArray(decision.evidence_refs) ? decision.evidence_refs : [],
         evaluation_refs: (circuit.residues ?? []).filter((entry) => entry.kind === 'evaluation' && !entry.invalidated).map((entry) => entry.id),
-        unresolved_refs: Array.isArray(decision.unresolved_refs) ? decision.unresolved_refs : [],
-        requested_outcome: requested
+        unresolved_refs: emptySynthesis && requested !== 'reopen'
+          ? ['determination-synthesis-empty']
+          : (Array.isArray(decision.unresolved_refs) ? decision.unresolved_refs : []),
+        requested_outcome: gated
       };
     },
 
@@ -317,19 +472,34 @@ export function createModelDrivenQLPolicy({ mode = 'direct', operatorRunId = 'se
       const verdict = await control(
         request.__series1Host,
         'ql-evaluate-closure',
-        `Evaluate positive QL closure. Do not equate no pending tool call with task completion. Compare initiating Frame/P0, whole-relative Evaluation/P4, and candidate Determination/P5. Return status close|reopen. On reopen choose destination P0..P4 and preserve the semantic reason.`,
-        { task: request.input, success_conditions: request.successConditions, frame, evaluations, determination, circuit: compactCircuit(circuit) }
+        `Evaluate positive QL closure. Do not equate no pending tool call with task completion. Compare initiating Frame/P0, whole-relative Evaluation/P4, and candidate Determination/P5 — the return direction reads these back from the determination toward the ground${mode === 'deep' ? '; in deep mode this backward reading is conjugate operation' : ''}. Every stipulation must receive an explicit verdict. Return exactly one JSON object: {"status": "close"|"reopen", "destination": "P0".."P4" (on reopen), "task_success": true|false|unknown, "stipulation_verdicts": [{"id": string, "verdict": "met"|"violated"|"untestable", "evidence": string}], "rationale": string}. Exclusion stipulations forbid the entire class of action including creating new artifacts.`,
+        { task: request.input, stipulations: classifyStipulations(request.successConditions), success_conditions: request.successConditions, frame, evaluations, determination, circuit: compactCircuit(circuit) }
       );
       const status = verdict.status === 'close' ? 'close' : 'reopen';
+      const stipulationVerdicts = Array.isArray(verdict.stipulation_verdicts) ? verdict.stipulation_verdicts : [];
+      const violatedExclusions = classifyStipulations(request.successConditions)
+        .filter((binding) => binding.kind === 'exclusion')
+        .filter((binding) => stipulationVerdicts.some((entry) => entry.id === binding.id && entry.verdict === 'violated'));
       if (status === 'close') {
-        return { status: 'close', task_success: String(verdict.task_success ?? 'true'), rationale: verdict.rationale ?? null };
+        // A violated exclusion forbids positive success: the determination may
+        // close, but it closes as failed and the violation stays on the record.
+        const violatedIds = violatedExclusions.map((binding) => binding.id).join(', ');
+        return {
+          status: 'close',
+          task_success: violatedExclusions.length ? 'false' : String(verdict.task_success ?? 'unknown'),
+          rationale: violatedExclusions.length
+            ? `${verdict.rationale ? `${verdict.rationale} ` : ''}Exclusion stipulations violated: ${violatedIds}.`
+            : (verdict.rationale ?? null),
+          stipulation_verdicts: stipulationVerdicts
+        };
       }
       const destination = asPosition(verdict.destination, 'P4');
       return {
         status: 'reopen',
         destination: destination === 'P5' ? 'P4' : destination,
-        task_success: String(verdict.task_success ?? 'false'),
-        rationale: verdict.rationale ?? null
+        task_success: violatedExclusions.length ? 'false' : String(verdict.task_success ?? 'false'),
+        rationale: verdict.rationale ?? null,
+        stipulation_verdicts: stipulationVerdicts
       };
     },
 

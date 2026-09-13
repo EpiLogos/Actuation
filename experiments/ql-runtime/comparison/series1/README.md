@@ -39,12 +39,12 @@ Primary comparison is within-host. The same benchmark is then repeated through a
 Series 1 currently stipulates:
 
 ```text
-provider   deepseek
-candidate  deepseek-v4-flash
-credential DEEPSEEK_API_KEY
+provider   zai
+candidate  glm-5.3-flash
+credential ZAI_API_KEY
 ```
 
-`DEEPSEEK_API_KEY` is auto-discovered from the local environment. GitHub Actions uses the same name as a repository Actions secret. There is no experiment-specific API-key alias and no fixture fallback.
+Amended 2026-09-13, see `GLM-STIPULATION-AMENDMENT-09-13-2026.md`: all hosts compare on one candidate model. The v0.1 exploratory record (deepseek / deepseek-v4-flash) remains retained evidence. `ZAI_API_KEY` is auto-discovered from the local environment. GitHub Actions uses the same name as a repository Actions secret. There is no experiment-specific API-key alias and no fixture fallback.
 
 ## Benchmark v0.1
 
@@ -61,7 +61,7 @@ Each task has a frozen prompt, frozen starting workspace and frozen objective ve
 
 ## Running locally
 
-With `DEEPSEEK_API_KEY` already exported, run fail-closed preflight and then a benchmark task, for example:
+With `ZAI_API_KEY` already exported, run fail-closed preflight and then a benchmark task, for example:
 
 ```text
 node preflight.mjs --live --host native --task S1-CODE-001
@@ -73,10 +73,10 @@ Repeat the exact task through Pi and Pydantic AI after their pinned dependencies
 
 ## Running in GitHub Actions
 
-The default branch exposes manual workflow **QL Series 1 Live**. It accepts a host (`all` by default), a task (`all` by default), repetitions (`1` for initial human review), a common max-step budget, and the candidate model (`deepseek-v4-flash`).
+The default branch exposes manual workflow **QL Series 1 Live**. It accepts a host (`all` by default), a task (`all` by default), repetitions (`1` for initial human review), a common max-step budget, and the candidate model (`glm-5.3-flash`).
 
 A full `all × all × 1` exploratory dispatch runs the six frozen tasks through all three host paths; inside each host/task it runs Classic, Direct QL and Deep QL from fresh identical workspaces. The workflow uploads both machine-readable JSON and human-readable Markdown review bundles.
 
-GitHub cannot inherit credentials from a developer shell, so the repository needs the Actions secret `DEEPSEEK_API_KEY`.
+GitHub cannot inherit credentials from a developer shell, so the repository needs the Actions secret `ZAI_API_KEY`.
 
 No live run has occurred merely because this harness exists.

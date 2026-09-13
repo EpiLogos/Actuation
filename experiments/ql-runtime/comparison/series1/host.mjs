@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { LIVE_RESPONSE_SYSTEM } from './providers.mjs';
+import { QL_RELATIONAL_SYSTEM } from './ql-relational-system-prompt.mjs';
 import { DSH_UPSTREAM_REVISION, DSH_PACKAGE_VERSION } from './dsh.mjs';
 
 const clone = (value) => value === undefined ? undefined : structuredClone(value);
@@ -136,7 +137,7 @@ export class LiveRuntimeHost {
     } else if (payload.history) {
       prompt = historyPrompt(payload.history, payload.request, capabilities);
     } else if (payload.qlAct) {
-      system = `${LIVE_RESPONSE_SYSTEM}\nFor this QL act, perform only the stated intent. A model-carried QL act cannot itself execute a capability; capability acts are selected by the controller. Return no capability call unless explicitly requested for observation only.`;
+      system = `${QL_RELATIONAL_SYSTEM}\n\n---\n\nFor this QL act, perform only the stated intent within the relational protocol above. A model-carried QL act cannot itself execute a capability; capability acts are selected by the controller. Return no capability call unless explicitly requested for observation only.`;
       prompt = JSON.stringify({
         task: payload.request?.input,
         success_conditions: payload.request?.successConditions,
@@ -164,6 +165,8 @@ export class LiveRuntimeHost {
         content: result.content ?? '',
         capabilityCalls: clone(result.capabilityCalls ?? []),
         control: clone(result.control ?? null),
+        reasoning: typeof result.reasoning === 'string' ? result.reasoning : null,
+        repairs: result.repairs ?? 0,
         usage: clone(result.usage ?? null),
         raw: clone(result.raw ?? null)
       }
