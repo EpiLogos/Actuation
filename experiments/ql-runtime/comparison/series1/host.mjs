@@ -155,7 +155,27 @@ export class LiveRuntimeHost {
       mode,
       input: { system, prompt }
     });
-    const result = await this.provider.complete({ system, prompt, signal: payload.signal, mode });
+    let result = await this.provider.complete({ system, prompt, signal: payload.signal, mode });
+    // A model-carried QL act that returns an empty envelope with no
+    // capability call produced no difference to interpret. Observed as a
+    // glm-5.3-flash anomaly under concurrent load (round 3, RESTRAINT): the
+    // act is re-asked once, visibly, before the empty return is accepted as
+    // the difference the interpreter must judge.
+    if (payload.qlAct) {
+      const empty = !(result.control && Object.keys(result.control).length)
+        && !(result.capabilityCalls ?? []).length
+        && !String(result.content ?? '').trim();
+      if (empty) {
+        const retry = await this.provider.complete({
+          system: `${system}\n\nYour previous response was an empty object. Perform the stated intent now and return exactly one JSON object with non-empty "content".`,
+          prompt,
+          signal: payload.signal,
+          mode
+        });
+        retry.raw = { ...(retry.raw ?? {}), empty_content_retry: true };
+        result = retry;
+      }
+    }
     this.absorbUsage(result.usage);
     this.emit('model_returned', {
       provider: this.provider.id,

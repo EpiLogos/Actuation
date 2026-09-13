@@ -36,7 +36,8 @@ function args() {
     host: read('host', process.env.QL_SERIES1_HOST ?? 'native'),
     task: read('task', process.env.QL_SERIES1_TASK ?? 'S1-CODE-001'),
     repetitions: Number(read('repetitions', process.env.QL_SERIES1_REPETITIONS ?? '1')),
-    maxSteps: Number(read('max-steps', process.env.QL_SERIES1_MAX_STEPS ?? '16'))
+    maxSteps: Number(read('max-steps', process.env.QL_SERIES1_MAX_STEPS ?? '16')),
+    conditions: read('conditions', process.env.QL_SERIES1_CONDITIONS ?? 'all')
   };
 }
 
@@ -70,13 +71,27 @@ function runtimeDescriptor(condition) {
   throw new Error(`Unknown condition '${condition}'.`);
 }
 
-function createRuntime(condition, runId) {
+// Allowance schedules are task-shape aware: research-shaped work is naturally
+// material-heavy (round 3 consumed the P1 allowance exactly on both RESEARCH
+// runs), so the material position is scaled for that family. The shape is
+// declared with the frame, like every other stipulation.
+const ALLOWANCE_SCHEDULES = Object.freeze({
+  default: Object.freeze({ P0: 2, P1: 6, P2: 5, P3: 4, P4: 4, P5: 3 }),
+  'local-research': Object.freeze({ P0: 2, P1: 10, P2: 5, P3: 4, P4: 4, P5: 3 })
+});
+
+function scheduleForTask(task) {
+  return ALLOWANCE_SCHEDULES[task?.category] ?? ALLOWANCE_SCHEDULES.default;
+}
+
+function createRuntime(condition, runId, task) {
   if (condition === 'classic') return { runtime: new ClassicRuntime(), policy: null };
+  const schedule = scheduleForTask(task);
   if (condition === 'ql-direct') {
-    const policy = createModelDrivenQLPolicy({ mode: 'direct', operatorRunId: `${runId}:operators` });
+    const policy = createModelDrivenQLPolicy({ mode: 'direct', operatorRunId: `${runId}:operators`, allowanceSchedule: schedule });
     return { runtime: new QLDirectCoreRuntime({ policy }), policy };
   }
-  const policy = createModelDrivenQLPolicy({ mode: 'deep', operatorRunId: `${runId}:operators` });
+  const policy = createModelDrivenQLPolicy({ mode: 'deep', operatorRunId: `${runId}:operators`, allowanceSchedule: schedule });
   return { runtime: new DEEP_CLASS({ policy }), policy };
 }
 
@@ -137,7 +152,7 @@ async function runCondition({ hostId, task, condition, repetition, model, maxSte
       startState: { digest: startStateDigest }
     });
     const expectedRunId = runIdForManifest(manifest);
-    const { runtime, policy } = createRuntime(condition, expectedRunId);
+    const { runtime, policy } = createRuntime(condition, expectedRunId, task);
     const request = bindSeries1Host(baseRequest, host);
     const started = performance.now();
     const record = await executeRun({ runtime, host, request, manifest });
@@ -247,8 +262,15 @@ async function main() {
   const freeze = await buildBenchmarkFreeze();
   const records = [];
 
+  const requestedConditions = config.conditions === 'all'
+    ? CONDITIONS
+    : config.conditions.split(',').map((entry) => entry.trim()).filter(Boolean);
+  for (const condition of requestedConditions) {
+    if (!CONDITIONS.includes(condition)) throw new Error(`Unknown condition '${condition}'.`);
+  }
   for (let repetition = 0; repetition < config.repetitions; repetition += 1) {
     for (const condition of rotation(repetition)) {
+      if (!requestedConditions.includes(condition)) continue;
       records.push(await runCondition({ hostId: config.host, task, condition, repetition, model, maxSteps: config.maxSteps, freeze }));
     }
   }

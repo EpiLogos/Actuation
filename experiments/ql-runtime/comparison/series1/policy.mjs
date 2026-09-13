@@ -417,7 +417,7 @@ export function createModelDrivenQLPolicy({
     },
 
     async proposeDetermination({ circuit, request }) {
-      const systemBase = `The active responsibility is P5: candidate determination. ${CONJUGATE_DIRECTION_LAW} Synthesize what is actually realised relative to the initiating intent and success conditions; reading back from this determination toward the frame is the return direction of the same field. Return exactly one JSON object of the form {"synthesis": string (the realised outcome in plain text; never empty), "requested_outcome": "close"|"reopen"${mode === 'deep' ? '| "conjugate"' : ''}, "claimed_adequacy": "adequate"|"partial"|"inadequate"|"unknown", "claimed_subject": string, "evidence_refs": string[], "unresolved_refs": string[]}. Use conjugate only when the backward reading genuinely warrants an independent fresh-context check of the determination; it is not mandatory.`;
+      const systemBase = `The active responsibility is P5: candidate determination. ${CONJUGATE_DIRECTION_LAW} Synthesize what is actually realised relative to the initiating intent and success conditions; reading back from this determination toward the frame is the return direction of the same field. Return exactly one JSON object of the form {"synthesis": string (the realised outcome in plain text; never empty), "requested_outcome": "close"|"reopen", "claimed_adequacy": "adequate"|"partial"|"inadequate"|"unknown", "claimed_subject": string, "evidence_refs": string[], "unresolved_refs": string[]}. ${mode === 'deep' ? ' The backward reading of this determination through the conjugate direction is performed at closure as part of the lane; you need not request it.' : ''}`;
       const payload = { mode, task: request.input, stipulations: classifyStipulations(request.successConditions), success_conditions: request.successConditions, circuit: compactCircuit(circuit) };
 
       let decision = null;
@@ -456,17 +456,25 @@ export function createModelDrivenQLPolicy({
     },
 
     async evaluateClosure({ circuit, determination, frame, evaluations, request }) {
-      if (mode === 'deep' && determination.requested_outcome === 'conjugate') {
+      let conjugateFace = 'not_applicable';
+      if (mode === 'deep') {
+        // Conjugacy law (owner): a model looking back from P5 operates
+        // naturally in conjugate mode. In the deep lane the return direction
+        // therefore executes on every closure evaluation — a fresh-context
+        // backward reading of the determination through the same positions —
+        // not as an optional operator the controller must think to request.
         const delta = await runConjugate({ host: request.__series1Host, circuit, determination, request, session });
         if (delta.status === 'reopen') {
           return {
             status: 'reopen',
             destination: delta.target_position,
             task_success: 'false',
-            rationale: `Fresh conjugate review reopened the direct determination: ${delta.analysis_ref ?? delta.discrepancy_type ?? 'discrepancy'}`,
-            retained_delta_preview: delta
+            rationale: `The conjugate return reading reopened the determination: ${delta.analysis_ref ?? delta.discrepancy_type ?? 'discrepancy'}`,
+            retained_delta_preview: delta,
+            conjugate: 'reopened'
           };
         }
+        conjugateFace = 'stable';
       }
 
       const verdict = await control(
@@ -490,7 +498,8 @@ export function createModelDrivenQLPolicy({
           rationale: violatedExclusions.length
             ? `${verdict.rationale ? `${verdict.rationale} ` : ''}Exclusion stipulations violated: ${violatedIds}.`
             : (verdict.rationale ?? null),
-          stipulation_verdicts: stipulationVerdicts
+          stipulation_verdicts: stipulationVerdicts,
+          conjugate: conjugateFace
         };
       }
       const destination = asPosition(verdict.destination, 'P4');
@@ -499,7 +508,8 @@ export function createModelDrivenQLPolicy({
         destination: destination === 'P5' ? 'P4' : destination,
         task_success: violatedExclusions.length ? 'false' : String(verdict.task_success ?? 'false'),
         rationale: verdict.rationale ?? null,
-        stipulation_verdicts: stipulationVerdicts
+        stipulation_verdicts: stipulationVerdicts,
+        conjugate: conjugateFace
       };
     },
 
