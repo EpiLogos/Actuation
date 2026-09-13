@@ -399,3 +399,67 @@ test('determination synthesis falls back to the returned answer and refuses to c
   assert.equal(reopenCalls, 1, 'reopen requests must not be re-asked');
   assert.equal(reopened.requested_outcome, 'reopen');
 });
+
+test('native transport repairs malformed turns by re-asking, retaining the failed attempts', async () => {
+  const { NativeOpenAICompatibleProvider } = await import('../../comparison/series1/providers.mjs');
+  const provider = new NativeOpenAICompatibleProvider({ baseUrl: 'https://stub.invalid', apiKey: 'test-key', model: 'stub-model' });
+  const realFetch = globalThis.fetch;
+  const bodies = [];
+  globalThis.fetch = async (_url, options) => {
+    const sent = JSON.parse(options.body);
+    bodies.push(sent.messages.map((m) => m.role));
+    if (bodies.length === 1) {
+      return { ok: true, json: async () => ({ choices: [{ message: { content: 'I will read the governing procedure first, then write the deliverable.' }, finish_reason: 'stop' }], usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 } }) };
+    }
+    return { ok: true, json: async () => ({ choices: [{ message: { content: '{"content":"done","capabilityCalls":[]}' }, finish_reason: 'stop' }], usage: { prompt_tokens: 30, completion_tokens: 4, total_tokens: 34 } }) };
+  };
+  try {
+    const result = await provider.complete({ prompt: 'do the task' });
+    assert.equal(result.content, 'done');
+    assert.equal(result.repairs, 1);
+    assert.deepEqual(result.usage, { input_tokens: 40, output_tokens: 9, total_tokens: 49 });
+    assert.equal(result.raw.failed_attempts.length, 1);
+    assert.deepEqual(bodies[1], ['system', 'user', 'assistant', 'user'], 'repair turn must carry the failed response back');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test('native transport repairs control-mode turns and still fails closed after the repair budget', async () => {
+  const { NativeOpenAICompatibleProvider } = await import('../../comparison/series1/providers.mjs');
+  const provider = new NativeOpenAICompatibleProvider({ baseUrl: 'https://stub.invalid', apiKey: 'test-key', model: 'stub-model' });
+  const realFetch = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls += 1;
+    return { ok: true, json: async () => ({ choices: [{ message: { content: 'still not json' }, finish_reason: 'stop' }], usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 } }) };
+  };
+  try {
+    await assert.rejects(
+      provider.complete({ mode: 'control', prompt: 'decide' }),
+      /did not return a JSON object/
+    );
+    assert.equal(calls, 3, 'initial turn plus two repairs');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test('QL control turns run under the Relational Logos system prompt', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  const policy = createModelDrivenQLPolicy({ mode: 'direct' });
+  let seenSystem = null;
+  await policy.nextAct({
+    circuit: { id: 'run_t:c0', depth: 0, face: 'direct', activePosition: { id: 'P0' }, residues: [], trajectory: [] },
+    request: { input: 'x', successConditions: [], capabilities: [], maxSteps: 16 },
+    host: {
+      mode: 'direct',
+      async callModel(request2) {
+        seenSystem = request2.series1Control.system;
+        return { control: { carrier: 'model' } };
+      }
+    }
+  });
+  assert.ok(seenSystem.startsWith('# Relational Logos'), 'control turns must carry the QL relational protocol as the standing system text');
+  assert.ok(seenSystem.includes('Return exactly one JSON object'), 'turn-specific schema instruction composed on top');
+});

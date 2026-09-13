@@ -76,38 +76,66 @@ export class NativeOpenAICompatibleProvider {
 
   async complete({ system = LIVE_RESPONSE_SYSTEM, prompt, temperature = 0, signal, mode = 'turn' } = {}) {
     this.assertReady();
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', authorization: `Bearer ${this.apiKey}` },
-      body: JSON.stringify({
+    const baseMessages = [
+      { role: 'system', content: system },
+      { role: 'user', content: prompt }
+    ];
+    let messages = baseMessages;
+    const failedAttempts = [];
+    const totals = { input_tokens: 0, output_tokens: 0, total_tokens: 0 };
+    // A malformed turn is a host-protocol event, not a model verdict: re-ask
+    // with the failure made explicit rather than failing the run. Applied
+    // uniformly to every condition and recorded in the returned result.
+    const MAX_REPAIRS = 2;
+    for (let attempt = 0; ; attempt += 1) {
+      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${this.apiKey}` },
+        body: JSON.stringify({
+          model: this.model,
+          temperature,
+          messages
+        }),
+        signal
+      });
+      if (!response.ok) throw new Error(`Native Series 1 HTTP ${response.status}: ${await response.text()}`);
+      const body = await response.json();
+      const message = body?.choices?.[0]?.message;
+      const text = message?.content ?? '';
+      totals.input_tokens += body?.usage?.prompt_tokens ?? 0;
+      totals.output_tokens += body?.usage?.completion_tokens ?? 0;
+      totals.total_tokens += body?.usage?.total_tokens ?? 0;
+      let result;
+      try {
+        result = modeResult(text, mode);
+      } catch (error) {
+        failedAttempts.push(text);
+        if (attempt >= MAX_REPAIRS || signal?.aborted) throw error;
+        messages = [
+          ...baseMessages,
+          { role: 'assistant', content: text },
+          { role: 'user', content: 'Your previous response was not a single valid JSON object. Return exactly one JSON object and no prose outside it. If you need to reason, do it silently and return only the JSON object.' }
+        ];
+        continue;
+      }
+      // Retain the reasoning stream when the provider surfaces one; the
+      // evidence contract requires full model output, and reasoning tokens
+      // dominate cost.
+      result.reasoning = typeof message?.reasoning_content === 'string' ? message.reasoning_content : null;
+      result.repairs = attempt;
+      result.usage = {
+        input_tokens: totals.input_tokens,
+        output_tokens: totals.output_tokens,
+        total_tokens: totals.total_tokens
+      };
+      result.raw = {
+        finish_reason: body?.choices?.[0]?.finish_reason ?? null,
+        provider: SERIES1_PROVIDER,
         model: this.model,
-        temperature,
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: prompt }
-        ]
-      }),
-      signal
-    });
-    if (!response.ok) throw new Error(`Native Series 1 HTTP ${response.status}: ${await response.text()}`);
-    const body = await response.json();
-    const message = body?.choices?.[0]?.message;
-    const text = message?.content ?? '';
-    const result = modeResult(text, mode);
-    // Retain the reasoning stream when the provider surfaces one; the evidence
-    // contract requires full model output, and reasoning tokens dominate cost.
-    result.reasoning = typeof message?.reasoning_content === 'string' ? message.reasoning_content : null;
-    result.usage = {
-      input_tokens: body?.usage?.prompt_tokens ?? 0,
-      output_tokens: body?.usage?.completion_tokens ?? 0,
-      total_tokens: body?.usage?.total_tokens ?? 0
-    };
-    result.raw = {
-      finish_reason: body?.choices?.[0]?.finish_reason ?? null,
-      provider: SERIES1_PROVIDER,
-      model: this.model
-    };
-    return result;
+        ...(failedAttempts.length ? { failed_attempts: failedAttempts } : {})
+      };
+      return result;
+    }
   }
 }
 

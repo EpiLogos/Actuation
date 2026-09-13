@@ -1,5 +1,6 @@
 import { DeepQLOperatorSession } from '../../deep-ql/operator-session.js';
 import { buildDModulationFrame } from '../../deep-ql/formal/pairing-grammar.js';
+import { QL_RELATIONAL_SYSTEM } from './ql-relational-system-prompt.mjs';
 
 const POSITIONS = ['P0', 'P1', 'P2', 'P3', 'P4', 'P5'];
 const RESIDUE_KIND = { P0: 'frame', P1: 'material', P2: 'effect', P3: 'form', P4: 'evaluation', P5: 'determination' };
@@ -69,7 +70,9 @@ async function control(host, purpose, system, payload) {
   const response = await host.callModel({
     series1Control: {
       purpose,
-      system: `${system}\nReturn exactly one JSON object and no prose outside it.`,
+      // Parity: every QL control turn runs under the QL agent's standing
+      // relational protocol, with the turn-specific instruction composed on top.
+      system: `${QL_RELATIONAL_SYSTEM}\n\n---\n\n${system}\nReturn exactly one JSON object and no prose outside it.`,
       prompt: JSON.stringify(payload, null, 2)
     }
   });
