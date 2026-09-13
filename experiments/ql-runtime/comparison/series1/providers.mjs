@@ -2,8 +2,13 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { DshSeries1Provider } from './dsh.mjs';
 
-export const SERIES1_PROVIDER = 'deepseek';
-export const SERIES1_DEFAULT_MODEL = 'deepseek-v4-flash';
+// Stipulation amended 2026-09-13 (GLM-STIPULATION-AMENDMENT-09-13-2026.md):
+// all hosts compare on one candidate model. The v0.1 exploratory record
+// (deepseek / deepseek-v4-flash / DEEPSEEK_API_KEY) remains retained evidence.
+export const SERIES1_PROVIDER = 'zai';
+export const SERIES1_DEFAULT_MODEL = 'glm-5.3-flash';
+export const SERIES1_BASE_URL = 'https://api.z.ai/api/coding/paas/v4';
+export const SERIES1_CREDENTIAL_ENV = 'ZAI_API_KEY';
 export const DEEPSEEK_BASE_URL = 'https://api.deepseek.com';
 
 export function series1ModelId() {
@@ -48,57 +53,91 @@ Return exactly one JSON object and no prose outside it:
 Use capabilityCalls only when exterior work is needed. If no capability is needed, return an empty array.`;
 
 /**
- * Minimal native Series 1 transport. It intentionally speaks DeepSeek's
+ * Minimal native Series 1 transport. It speaks the stipulated provider's
  * documented OpenAI-compatible ChatCompletions surface directly rather than
- * pretending DeepSeek is an OpenAI credential/configuration domain.
+ * pretending the candidate is an OpenAI credential/configuration domain.
  */
 export class NativeOpenAICompatibleProvider {
   constructor({
-    baseUrl = process.env.QL_SERIES1_BASE_URL ?? DEEPSEEK_BASE_URL,
-    apiKey = process.env.DEEPSEEK_API_KEY,
+    baseUrl = process.env.QL_SERIES1_BASE_URL ?? SERIES1_BASE_URL,
+    apiKey = process.env.QL_SERIES1_API_KEY ?? process.env[SERIES1_CREDENTIAL_ENV],
     model = series1ModelId()
   } = {}) {
-    this.id = 'native-deepseek-openai-compatible';
+    this.id = 'native-zai-openai-compatible';
     this.baseUrl = baseUrl.replace(/\/$/, '');
     this.apiKey = apiKey;
     this.model = model;
   }
 
   assertReady() {
-    if (!this.apiKey) throw new Error('DEEPSEEK_API_KEY is required for live Native runs.');
-    if (!this.model) throw new Error('A concrete DeepSeek model id is required for live Native runs.');
+    if (!this.apiKey) throw new Error(`${SERIES1_CREDENTIAL_ENV} is required for live Native runs.`);
+    if (!this.model) throw new Error('A concrete Series 1 candidate model id is required for live Native runs.');
   }
 
   async complete({ system = LIVE_RESPONSE_SYSTEM, prompt, temperature = 0, signal, mode = 'turn' } = {}) {
     this.assertReady();
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', authorization: `Bearer ${this.apiKey}` },
-      body: JSON.stringify({
+    const baseMessages = [
+      { role: 'system', content: system },
+      { role: 'user', content: prompt }
+    ];
+    let messages = baseMessages;
+    const failedAttempts = [];
+    const totals = { input_tokens: 0, output_tokens: 0, total_tokens: 0, cached_input_tokens: 0 };
+    // A malformed turn is a host-protocol event, not a model verdict: re-ask
+    // with the failure made explicit rather than failing the run. Applied
+    // uniformly to every condition and recorded in the returned result.
+    const MAX_REPAIRS = 2;
+    for (let attempt = 0; ; attempt += 1) {
+      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${this.apiKey}` },
+        body: JSON.stringify({
+          model: this.model,
+          temperature,
+          messages
+        }),
+        signal
+      });
+      if (!response.ok) throw new Error(`Native Series 1 HTTP ${response.status}: ${await response.text()}`);
+      const body = await response.json();
+      const message = body?.choices?.[0]?.message;
+      const text = message?.content ?? '';
+      totals.input_tokens += body?.usage?.prompt_tokens ?? 0;
+      totals.output_tokens += body?.usage?.completion_tokens ?? 0;
+      totals.total_tokens += body?.usage?.total_tokens ?? 0;
+      totals.cached_input_tokens += body?.usage?.prompt_tokens_details?.cached_tokens ?? 0;
+      let result;
+      try {
+        result = modeResult(text, mode);
+      } catch (error) {
+        failedAttempts.push(text);
+        if (attempt >= MAX_REPAIRS || signal?.aborted) throw error;
+        messages = [
+          ...baseMessages,
+          { role: 'assistant', content: text },
+          { role: 'user', content: 'Your previous response was not a single valid JSON object. Return exactly one JSON object and no prose outside it. If you need to reason, do it silently and return only the JSON object.' }
+        ];
+        continue;
+      }
+      // Retain the reasoning stream when the provider surfaces one; the
+      // evidence contract requires full model output, and reasoning tokens
+      // dominate cost.
+      result.reasoning = typeof message?.reasoning_content === 'string' ? message.reasoning_content : null;
+      result.repairs = attempt;
+      result.usage = {
+        input_tokens: totals.input_tokens,
+        output_tokens: totals.output_tokens,
+        total_tokens: totals.total_tokens,
+        cached_input_tokens: totals.cached_input_tokens
+      };
+      result.raw = {
+        finish_reason: body?.choices?.[0]?.finish_reason ?? null,
+        provider: SERIES1_PROVIDER,
         model: this.model,
-        temperature,
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: prompt }
-        ]
-      }),
-      signal
-    });
-    if (!response.ok) throw new Error(`Native DeepSeek HTTP ${response.status}: ${await response.text()}`);
-    const body = await response.json();
-    const text = body?.choices?.[0]?.message?.content ?? '';
-    const result = modeResult(text, mode);
-    result.usage = {
-      input_tokens: body?.usage?.prompt_tokens ?? 0,
-      output_tokens: body?.usage?.completion_tokens ?? 0,
-      total_tokens: body?.usage?.total_tokens ?? 0
-    };
-    result.raw = {
-      finish_reason: body?.choices?.[0]?.finish_reason ?? null,
-      provider: SERIES1_PROVIDER,
-      model: this.model
-    };
-    return result;
+        ...(failedAttempts.length ? { failed_attempts: failedAttempts } : {})
+      };
+      return result;
+    }
   }
 }
 
@@ -125,7 +164,7 @@ export class PiAIProvider {
   async assertReady() {
     await this.#load();
     if (this.provider !== SERIES1_PROVIDER) {
-      throw new Error(`Series 1 is currently stipulated to DeepSeek; Pi provider was '${this.provider}'.`);
+      throw new Error(`Series 1 is currently stipulated to '${SERIES1_PROVIDER}'; Pi provider was '${this.provider}'.`);
     }
     const model = this.models.getModel(this.provider, this.model);
     if (!model) throw new Error(`Pi model '${this.provider}:${this.model}' is not present in the pinned Pi catalog.`);

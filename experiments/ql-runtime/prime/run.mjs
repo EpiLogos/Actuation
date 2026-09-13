@@ -109,6 +109,19 @@ async function main() {
   let client = null;
   try {
     await setupTask(task, workspace);
+
+    // Prime v0.9.4 enables automatic refinement by default. The experiment owns
+    // refinement explicitly, so project-local settings suppress ambient passes;
+    // P5 invokes exactly one recorded RPC refinement below. This is harness
+    // configuration, not agent activity: it is written before the baseline
+    // snapshot so the workspace-preservation verifier measures only the model.
+    await fs.mkdir(path.join(workspace, '.prime', 'agent'), { recursive: true });
+    await fs.writeFile(
+      path.join(workspace, '.prime', 'agent', 'settings.json'),
+      `${JSON.stringify({ autoRefine: { enabled: false } }, null, 2)}\n`,
+      'utf8'
+    );
+
     const before = await snapshot(workspace);
     const skillPaths = condition.relational ? [path.join(HERE, 'skills', 'ql-relational')] : [];
     const env = {
@@ -119,16 +132,6 @@ async function main() {
       RLM_MAX_DEPTH: String(condition.maxDepth),
       DO_NOT_TRACK: '1'
     };
-
-    // Prime v0.9.4 enables automatic refinement by default. The experiment owns
-    // refinement explicitly, so project-local settings suppress ambient passes;
-    // P5 invokes exactly one recorded RPC refinement below.
-    await fs.mkdir(path.join(workspace, '.prime', 'agent'), { recursive: true });
-    await fs.writeFile(
-      path.join(workspace, '.prime', 'agent', 'settings.json'),
-      `${JSON.stringify({ autoRefine: { enabled: false } }, null, 2)}\n`,
-      'utf8'
-    );
 
     client = new PrimeRpcClient({
       cwd: workspace,

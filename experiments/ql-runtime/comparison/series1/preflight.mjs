@@ -27,7 +27,7 @@ function checkConfiguration() {
     errors.push(`Series 1 is currently stipulated to provider '${SERIES1_PROVIDER}', not '${provider}'`);
   }
   if (!model) errors.push('A concrete Series 1 candidate model is required');
-  if (!process.env.DEEPSEEK_API_KEY) errors.push('DEEPSEEK_API_KEY is missing');
+  if (!process.env.ZAI_API_KEY && !process.env.QL_SERIES1_API_KEY) errors.push('ZAI_API_KEY is missing');
   return { provider, model, errors };
 }
 
@@ -57,7 +57,7 @@ async function main() {
     selected_task: task ?? 'all',
     provider: config.provider,
     model: config.model,
-    credential_contract: 'DEEPSEEK_API_KEY',
+    credential_contract: 'ZAI_API_KEY',
     determination_protocol: 'human-review-first; automated/scalar evals deferred',
     freeze: {
       reproducible: reproducibility.valid,

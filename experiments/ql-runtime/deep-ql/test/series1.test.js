@@ -20,7 +20,8 @@ import {
   parseJsonObject,
   SERIES1_PROVIDER,
   SERIES1_DEFAULT_MODEL,
-  DEEPSEEK_BASE_URL
+  SERIES1_BASE_URL,
+  SERIES1_CREDENTIAL_ENV
 } from '../../comparison/series1/providers.mjs';
 import { SERIES1_TASKS, setupTask, verifyTask } from '../../comparison/series1/tasks.mjs';
 
@@ -39,10 +40,11 @@ test('Series 1 refuses fixture-shaped evidence and requires human-review contrac
   }), /not evidence eligible/);
 });
 
-test('Series 1 uses provider-native DeepSeek candidate defaults', () => {
-  assert.equal(SERIES1_PROVIDER, 'deepseek');
-  assert.equal(SERIES1_DEFAULT_MODEL, 'deepseek-v4-flash');
-  assert.equal(DEEPSEEK_BASE_URL, 'https://api.deepseek.com');
+test('Series 1 uses provider-native ZAI candidate defaults (2026-09-13 amendment)', () => {
+  assert.equal(SERIES1_PROVIDER, 'zai');
+  assert.equal(SERIES1_DEFAULT_MODEL, 'glm-5.3-flash');
+  assert.equal(SERIES1_BASE_URL, 'https://api.z.ai/api/coding/paas/v4');
+  assert.equal(SERIES1_CREDENTIAL_ENV, 'ZAI_API_KEY');
   assert.equal(DETERMINATION, 'pending-human-review');
 });
 
@@ -260,4 +262,264 @@ test('benchmark/task/workspace/verifier fingerprints are reproducible across ind
     assert.ok(first.tasks[task.id].starting_workspace_files.length > 0, task.id);
     assert.ok(first.tasks[task.id].verification_protocol_digest, task.id);
   }
+});
+
+test('QL controller carrier decisions are accepted in both documented and flat shapes', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+
+  const circuit = {
+    id: 'run_test:c0',
+    depth: 0,
+    face: 'direct',
+    activePosition: { id: 'P0' },
+    residues: [],
+    trajectory: []
+  };
+  const request = {
+    input: 'According to `fact.txt`, what is the preferred review format?',
+    successConditions: ['Answer from fact.txt.'],
+    capabilities: [{ id: 'read_file', args: { path: 'required relative file path' } }]
+  };
+  const scripted = (control) => ({ mode: 'direct', async callModel() { return { control }; } });
+
+  const flat = createModelDrivenQLPolicy({ mode: 'direct' });
+  const flatAct = await flat.nextAct({
+    circuit,
+    request,
+    host: scripted({ carrier: 'capability', capability: 'read_file', args: { path: 'fact.txt' } })
+  });
+  assert.deepEqual(flatAct.carrier, { kind: 'capability', name: 'read_file', args: { path: 'fact.txt' } });
+
+  const documented = createModelDrivenQLPolicy({ mode: 'direct' });
+  const documentedAct = await documented.nextAct({
+    circuit,
+    request,
+    host: scripted({ carrier: { kind: 'capability', name: 'read_file', args: { path: 'fact.txt' } } })
+  });
+  assert.deepEqual(documentedAct.carrier, { kind: 'capability', name: 'read_file', args: { path: 'fact.txt' } });
+
+  const modelCarrier = createModelDrivenQLPolicy({ mode: 'direct' });
+  const modelAct = await modelCarrier.nextAct({
+    circuit,
+    request,
+    host: scripted({ carrier: 'model' })
+  });
+  assert.deepEqual(modelAct.carrier, { kind: 'model' });
+
+  const nullCarrier = createModelDrivenQLPolicy({ mode: 'direct' });
+  const nullAct = await nullCarrier.nextAct({
+    circuit,
+    request,
+    host: scripted({ intent: 'answer directly' })
+  });
+  assert.deepEqual(nullAct.carrier, { kind: 'model' });
+
+  const refusing = createModelDrivenQLPolicy({ mode: 'direct' });
+  await assert.rejects(
+    refusing.nextAct({ circuit, request, host: scripted({ carrier: 'teleport' }) }),
+    /unsupported carrier 'teleport'/
+  );
+});
+
+test('closure-request carriers are preserved and routed to the determination path', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  const circuit = { id: 'run_t:c0', depth: 0, face: 'direct', activePosition: { id: 'P4' }, residues: [], trajectory: [] };
+  const request = {
+    input: 'bounded task',
+    successConditions: ['done'],
+    capabilities: [{ id: 'read_file', args: {} }],
+    maxSteps: 16
+  };
+  const scripted = (control) => ({ mode: 'direct', async callModel() { return { control }; } });
+
+  const policy = createModelDrivenQLPolicy({ mode: 'direct' });
+  const act = await policy.nextAct({
+    circuit,
+    request,
+    host: scripted({ intent: 'close the bounded request', carrier: { kind: 'internal_control', name: 'close', args: { reason: 'already achieved' } } })
+  });
+  assert.equal(act.carrier.name, 'close');
+  assert.equal(act.metadata.closure_request, true);
+
+  const interpretation = await policy.interpret({ circuit, difference: { operation_success: true }, act, request });
+  assert.equal(interpretation.destination, 'P5');
+  assert.equal(interpretation.witness.structural_facts.closure_request, true);
+  assert.deepEqual(interpretation.residueDelta, {});
+});
+
+test('next-act control payload discloses the execution budget', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  const seen = [];
+  const policy = createModelDrivenQLPolicy({ mode: 'direct' });
+  await policy.nextAct({
+    circuit: { id: 'run_t:c0', depth: 0, face: 'direct', activePosition: { id: 'P0' }, residues: [], trajectory: [] },
+    request: { input: 'x', successConditions: [], capabilities: [], maxSteps: 16 },
+    host: {
+      mode: 'direct',
+      async callModel(request2) {
+        seen.push(JSON.parse(request2.series1Control.prompt));
+        return { control: { carrier: 'model' } };
+      }
+    }
+  });
+  assert.equal(seen[0].budget.max_steps, 16);
+  assert.equal(seen[0].budget.steps_used, 0);
+  assert.equal(seen[0].budget.allowance.active_position, 'P0');
+  assert.ok(seen[0].stipulations, 'stipulations must ride the control payload');
+});
+
+test('determination synthesis falls back to the returned answer and refuses to close on empty synthesis', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  const circuit = { id: 'run_t:c0', depth: 0, face: 'direct', activePosition: { id: 'P5' }, residues: [], trajectory: [] };
+  const scripted = (control) => ({ mode: 'direct', async callModel() { return { control }; } });
+  const request = { input: 'x', successConditions: ['done'], taskId: 'T', __series1Host: null };
+
+  const answered = createModelDrivenQLPolicy({ mode: 'direct' });
+  request.__series1Host = scripted({ requested_outcome: 'close', answer: 'The preferred review format is Markdown.' });
+  const good = await answered.proposeDetermination({ circuit, request });
+  assert.equal(good.synthesis, 'The preferred review format is Markdown.');
+  assert.equal(good.requested_outcome, 'close');
+  assert.deepEqual(good.unresolved_refs, []);
+
+  const empty = createModelDrivenQLPolicy({ mode: 'direct' });
+  let calls = 0;
+  request.__series1Host = {
+    mode: 'direct',
+    async callModel() { calls += 1; return { control: { requested_outcome: 'close' } }; }
+  };
+  const gated = await empty.proposeDetermination({ circuit, request });
+  assert.equal(calls, 2, 'empty synthesis should trigger exactly one re-ask');
+  assert.equal(gated.requested_outcome, 'reopen');
+  assert.ok(gated.unresolved_refs.includes('determination-synthesis-empty'));
+
+  const reopening = createModelDrivenQLPolicy({ mode: 'direct' });
+  let reopenCalls = 0;
+  request.__series1Host = {
+    mode: 'direct',
+    async callModel() { reopenCalls += 1; return { control: { requested_outcome: 'reopen', unresolved_refs: ['open'] } }; }
+  };
+  const reopened = await reopening.proposeDetermination({ circuit, request });
+  assert.equal(reopenCalls, 1, 'reopen requests must not be re-asked');
+  assert.equal(reopened.requested_outcome, 'reopen');
+});
+
+test('native transport repairs malformed turns by re-asking, retaining the failed attempts', async () => {
+  const { NativeOpenAICompatibleProvider } = await import('../../comparison/series1/providers.mjs');
+  const provider = new NativeOpenAICompatibleProvider({ baseUrl: 'https://stub.invalid', apiKey: 'test-key', model: 'stub-model' });
+  const realFetch = globalThis.fetch;
+  const bodies = [];
+  globalThis.fetch = async (_url, options) => {
+    const sent = JSON.parse(options.body);
+    bodies.push(sent.messages.map((m) => m.role));
+    if (bodies.length === 1) {
+      return { ok: true, json: async () => ({ choices: [{ message: { content: 'I will read the governing procedure first, then write the deliverable.' }, finish_reason: 'stop' }], usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 } }) };
+    }
+    return { ok: true, json: async () => ({ choices: [{ message: { content: '{"content":"done","capabilityCalls":[]}' }, finish_reason: 'stop' }], usage: { prompt_tokens: 30, completion_tokens: 4, total_tokens: 34 } }) };
+  };
+  try {
+    const result = await provider.complete({ prompt: 'do the task' });
+    assert.equal(result.content, 'done');
+    assert.equal(result.repairs, 1);
+    assert.deepEqual(result.usage, { input_tokens: 40, output_tokens: 9, total_tokens: 49, cached_input_tokens: 0 });
+    assert.equal(result.raw.failed_attempts.length, 1);
+    assert.deepEqual(bodies[1], ['system', 'user', 'assistant', 'user'], 'repair turn must carry the failed response back');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test('native transport repairs control-mode turns and still fails closed after the repair budget', async () => {
+  const { NativeOpenAICompatibleProvider } = await import('../../comparison/series1/providers.mjs');
+  const provider = new NativeOpenAICompatibleProvider({ baseUrl: 'https://stub.invalid', apiKey: 'test-key', model: 'stub-model' });
+  const realFetch = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls += 1;
+    return { ok: true, json: async () => ({ choices: [{ message: { content: 'still not json' }, finish_reason: 'stop' }], usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 } }) };
+  };
+  try {
+    await assert.rejects(
+      provider.complete({ mode: 'control', prompt: 'decide' }),
+      /did not return a JSON object/
+    );
+    assert.equal(calls, 3, 'initial turn plus two repairs');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test('QL control turns run under the Relational Logos system prompt', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  const policy = createModelDrivenQLPolicy({ mode: 'direct' });
+  let seenSystem = null;
+  await policy.nextAct({
+    circuit: { id: 'run_t:c0', depth: 0, face: 'direct', activePosition: { id: 'P0' }, residues: [], trajectory: [] },
+    request: { input: 'x', successConditions: [], capabilities: [], maxSteps: 16 },
+    host: {
+      mode: 'direct',
+      async callModel(request2) {
+        seenSystem = request2.series1Control.system;
+        return { control: { carrier: 'model' } };
+      }
+    }
+  });
+  assert.ok(seenSystem.startsWith('# Relational Logos'), 'control turns must carry the QL relational protocol as the standing system text');
+  assert.ok(seenSystem.includes('Return exactly one JSON object'), 'turn-specific schema instruction composed on top');
+});
+
+test('per-position allowance refusal fires as a typed closure request without a model call', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  const circuit = { id: 'run_t:c0', depth: 0, face: 'direct', activePosition: { id: 'P1' }, residues: [], trajectory: [] };
+  const request = { input: 'x', successConditions: ['done'], capabilities: [], maxSteps: 16 };
+  let calls = 0;
+  const host = {
+    mode: 'direct',
+    async callModel() { calls += 1; return { control: { carrier: 'model' } }; }
+  };
+  const policy = createModelDrivenQLPolicy({ mode: 'direct', allowanceSchedule: { P1: 2 } });
+  const acts = [];
+  for (let i = 0; i < 6; i += 1) acts.push(await policy.nextAct({ circuit, request, host }));
+  assert.equal(calls, 4, 'two scheduled acts + two grace acts; refusals skip the model');
+  assert.equal(acts[0].metadata.allowance_refusal, undefined);
+  assert.equal(acts[2].metadata.allowance_refusal.position, 'P1');
+  assert.equal(acts[2].metadata.closure_request, true);
+  assert.equal(acts[2].metadata.allowance_refusal.consumed, 2);
+  assert.equal(acts[2].metadata.allowance_refusal.grace_extension, 2, 'first refusal grants the recorded grace extension');
+  assert.equal(acts[5].metadata.allowance_refusal.consumed, 4, 'post-grace refusal reports full consumption');
+  assert.equal(acts[5].metadata.allowance_refusal.grace_extension, 0);
+  const routed = await policy.interpret({ circuit, difference: { operation_success: true }, act: acts[2], request });
+  assert.equal(routed.destination, 'P5');
+  assert.equal(routed.witness.structural_facts.allowance_refusal.position, 'P1');
+});
+
+test('task conditions classify into typed goal and exclusion stipulations', async () => {
+  const { classifyStipulations } = await import('../../comparison/series1/policy.mjs');
+  const bindings = classifyStipulations([
+    'Deliver a one-page note answering all four questions.',
+    'Do not modify any file.',
+    'Never import outside knowledge.'
+  ]);
+  assert.deepEqual(bindings.map((b) => b.kind), ['goal', 'exclusion', 'exclusion']);
+  assert.equal(bindings[1].id, 'S2');
+});
+
+test('a violated exclusion stipulation forces the closure to record failure', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  const policy = createModelDrivenQLPolicy({ mode: 'direct' });
+  const request = {
+    input: 'x',
+    successConditions: ['Answer the questions.', 'Do not modify any file.'],
+    taskId: 'T',
+    __series1Host: {
+      mode: 'direct',
+      async callModel() {
+        return { control: { status: 'close', task_success: true, stipulation_verdicts: [{ id: 'S1', verdict: 'met' }, { id: 'S2', verdict: 'violated', evidence: 'wrote research-note.md' }] } };
+      }
+    }
+  };
+  const verdict = await policy.evaluateClosure({ circuit: {}, determination: {}, frame: {}, evaluations: [], request });
+  assert.equal(verdict.status, 'close');
+  assert.equal(verdict.task_success, 'false');
+  assert.ok(verdict.rationale.includes('S2'));
+  assert.equal(verdict.stipulation_verdicts.length, 2);
 });
