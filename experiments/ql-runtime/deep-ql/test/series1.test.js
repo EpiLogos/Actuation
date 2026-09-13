@@ -261,3 +261,60 @@ test('benchmark/task/workspace/verifier fingerprints are reproducible across ind
     assert.ok(first.tasks[task.id].verification_protocol_digest, task.id);
   }
 });
+
+test('QL controller carrier decisions are accepted in both documented and flat shapes', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+
+  const circuit = {
+    id: 'run_test:c0',
+    depth: 0,
+    face: 'direct',
+    activePosition: { id: 'P0' },
+    residues: [],
+    trajectory: []
+  };
+  const request = {
+    input: 'According to `fact.txt`, what is the preferred review format?',
+    successConditions: ['Answer from fact.txt.'],
+    capabilities: [{ id: 'read_file', args: { path: 'required relative file path' } }]
+  };
+  const scripted = (control) => ({ mode: 'direct', async callModel() { return { control }; } });
+
+  const flat = createModelDrivenQLPolicy({ mode: 'direct' });
+  const flatAct = await flat.nextAct({
+    circuit,
+    request,
+    host: scripted({ carrier: 'capability', capability: 'read_file', args: { path: 'fact.txt' } })
+  });
+  assert.deepEqual(flatAct.carrier, { kind: 'capability', name: 'read_file', args: { path: 'fact.txt' } });
+
+  const documented = createModelDrivenQLPolicy({ mode: 'direct' });
+  const documentedAct = await documented.nextAct({
+    circuit,
+    request,
+    host: scripted({ carrier: { kind: 'capability', name: 'read_file', args: { path: 'fact.txt' } } })
+  });
+  assert.deepEqual(documentedAct.carrier, { kind: 'capability', name: 'read_file', args: { path: 'fact.txt' } });
+
+  const modelCarrier = createModelDrivenQLPolicy({ mode: 'direct' });
+  const modelAct = await modelCarrier.nextAct({
+    circuit,
+    request,
+    host: scripted({ carrier: 'model' })
+  });
+  assert.deepEqual(modelAct.carrier, { kind: 'model' });
+
+  const nullCarrier = createModelDrivenQLPolicy({ mode: 'direct' });
+  const nullAct = await nullCarrier.nextAct({
+    circuit,
+    request,
+    host: scripted({ intent: 'answer directly' })
+  });
+  assert.deepEqual(nullAct.carrier, { kind: 'model' });
+
+  const refusing = createModelDrivenQLPolicy({ mode: 'direct' });
+  await assert.rejects(
+    refusing.nextAct({ circuit, request, host: scripted({ carrier: 'teleport' }) }),
+    /unsupported carrier 'teleport'/
+  );
+});

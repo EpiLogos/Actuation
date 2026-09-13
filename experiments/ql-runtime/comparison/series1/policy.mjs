@@ -35,8 +35,15 @@ function asPosition(value, fallback) {
   return POSITIONS.includes(value) ? value : fallback;
 }
 
-function asCarrier(value, capabilities) {
-  const carrier = value ?? { kind: 'model' };
+// Accept both the documented object form ({kind, name, args}) and the flat
+// form controller models naturally return ({carrier: 'capability',
+// capability: 'read_file', args}). Shape leniency only: an unknown carrier
+// kind still fails closed rather than degrading to an ordinary tool loop.
+function asCarrier(value, capabilities, decision = {}) {
+  const raw = value ?? { kind: 'model' };
+  const carrier = typeof raw === 'string'
+    ? { kind: raw, name: decision.capability ?? decision.name ?? decision.tool, input: decision.input, args: decision.args }
+    : { kind: raw.kind, name: raw.name ?? raw.capability ?? raw.tool, input: raw.input, args: raw.args };
   if (carrier.kind === 'model') return { kind: 'model' };
   if (carrier.kind === 'internal_control') return { kind: 'internal_control', input: clone(carrier.input ?? null) };
   if (carrier.kind === 'capability' || carrier.kind === 'tool') {
@@ -200,7 +207,7 @@ export function createModelDrivenQLPolicy({ mode = 'direct', operatorRunId = 'se
       const decision = await control(
         host,
         'ql-next-act',
-        `You are controlling a QL-native agent recurrence. Positions are responsibilities, not chronological stages: ${JSON.stringify(POSITION_GUIDE)}. Choose the next exterior act appropriate to the currently active position. Available carriers: model, capability, internal_control. In deep mode, only at P4, you may request deep_operator='depth' when a genuinely local whole warrants independent treatment. Do not force a six-step path and do not use depth ceremonially.`,
+        `You are controlling a QL-native agent recurrence. Positions are responsibilities, not chronological stages: ${JSON.stringify(POSITION_GUIDE)}. Choose the next exterior act appropriate to the currently active position. Return exactly one JSON object of the form {"intent": string, "carrier": {"kind": "model"|"capability"|"internal_control", "name": <capability id, required when kind is "capability">, "args": object}, "claimed_relation": string|null, "rationale": string}. In deep mode, only at P4, you may add "deep_operator": "depth" when a genuinely local whole warrants independent treatment. Do not force a six-step path and do not use depth ceremonially.`,
         { mode, task: request.input, success_conditions: request.successConditions, capabilities, circuit: compactCircuit(circuit) }
       );
 
@@ -217,7 +224,7 @@ export function createModelDrivenQLPolicy({ mode = 'direct', operatorRunId = 'se
 
       return {
         intent: decision.intent ?? `Advance the ${active} responsibility for the initiating intent.`,
-        carrier: asCarrier(decision.carrier, capabilities),
+        carrier: asCarrier(decision.carrier, capabilities, decision),
         inputResidueRefs: Array.isArray(decision.input_residue_refs) ? decision.input_residue_refs : [],
         claimedPosition: active,
         claimedRelation: decision.claimed_relation ?? null,
