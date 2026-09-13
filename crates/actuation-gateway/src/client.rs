@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::{
     io::BufReader,
-    os::unix::net::{UnixStream, SocketAddr},
+    os::unix::net::{SocketAddr, UnixStream},
     path::Path,
 };
 
@@ -44,8 +44,9 @@ impl GatewayClient {
     pub fn connect(socket: &Path, token: Option<&str>, subject: &str) -> Result<Self> {
         let addr = SocketAddr::from_pathname(socket)
             .map_err(|e| Error::new(format!("invalid gateway socket path: {e}")))?;
-        let stream = UnixStream::connect_addr(&addr)
-            .map_err(|e| Error::new(format!("cannot reach gateway at {}: {e}", socket.display())))?;
+        let stream = UnixStream::connect_addr(&addr).map_err(|e| {
+            Error::new(format!("cannot reach gateway at {}: {e}", socket.display()))
+        })?;
         stream
             .set_read_timeout(Some(std::time::Duration::from_secs(130)))
             .map_err(|e| Error::new(e.to_string()))?;

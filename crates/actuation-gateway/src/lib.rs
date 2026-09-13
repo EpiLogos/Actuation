@@ -30,10 +30,8 @@ pub use mapping::{
     mint_return_ref, InvokeRequest, PostRequest, SendRequest, POSTABLE_KINDS,
 };
 pub use policy::{AttachGrant, GatewayPolicy, GrantRole, InvocationMode, InvokeGrant};
-pub use server::{
-    start, Binding, Gateway, GatewayConfig, GatewayHandle,
-};
+pub use server::{start, Binding, Gateway, GatewayConfig, GatewayHandle};
 pub use wire::{
-    decode_frame, encode_frame, error_frame, denied_frame, ok_frame, read_frame, write_frame,
+    decode_frame, denied_frame, encode_frame, error_frame, ok_frame, read_frame, write_frame,
     HelloFrame, Reply, GATEWAY_CONTRACT, GATEWAY_IDENTITY, POLICY_SCHEMA,
 };

@@ -180,7 +180,7 @@ impl Gateway {
                     && request
                         .target_agent_session_ref
                         .as_ref()
-                        .map_or(true, |session| &binding.agent_session_ref == session)
+                        .is_none_or(|session| &binding.agent_session_ref == session)
             })
             .cloned()
             .collect();
@@ -197,8 +197,7 @@ impl Gateway {
         let deadline = Instant::now() + timeout;
         loop {
             let stream = self.store.load(stream_ref)?;
-            if let Some(found) =
-                mapping::find_return(stream.fields().events.as_slice(), return_ref)
+            if let Some(found) = mapping::find_return(stream.fields().events.as_slice(), return_ref)
             {
                 return Ok(Some(found.clone()));
             }
@@ -511,7 +510,10 @@ impl Gateway {
                 Ok(frame) => self.handle_attach(binding, subject, frame),
                 Err(error) => Reply::Error(error.to_string()),
             },
-            "send" => match (binding.as_ref(), serde_json::from_value::<SendRequest>(frame)) {
+            "send" => match (
+                binding.as_ref(),
+                serde_json::from_value::<SendRequest>(frame),
+            ) {
                 (Some(bound), Ok(request)) => {
                     match self.append_mapped(&bound.grant.stream_ref, |sequence| {
                         mapping::human_message(
@@ -521,16 +523,17 @@ impl Gateway {
                             request,
                         )
                     }) {
-                        Ok((_, receipt)) => {
-                            Reply::Ok(receipt.as_object().expect("object").clone())
-                        }
+                        Ok((_, receipt)) => Reply::Ok(receipt.as_object().expect("object").clone()),
                         Err(error) => Reply::Error(error.to_string()),
                     }
                 }
                 (None, _) => Reply::Denied("attach before sending".into()),
                 (Some(_), Err(error)) => Reply::Error(error.to_string()),
             },
-            "post" => match (binding.as_ref(), serde_json::from_value::<PostRequest>(frame)) {
+            "post" => match (
+                binding.as_ref(),
+                serde_json::from_value::<PostRequest>(frame),
+            ) {
                 (Some(bound), Ok(request)) => {
                     match self.append_mapped(&bound.grant.stream_ref, |sequence| {
                         mapping::agent_event(
@@ -540,9 +543,7 @@ impl Gateway {
                             request,
                         )
                     }) {
-                        Ok((_, receipt)) => {
-                            Reply::Ok(receipt.as_object().expect("object").clone())
-                        }
+                        Ok((_, receipt)) => Reply::Ok(receipt.as_object().expect("object").clone()),
                         Err(error) => Reply::Error(error.to_string()),
                     }
                 }
@@ -560,10 +561,7 @@ impl Gateway {
                             },
                         ) {
                             Ok(page) => Reply::Ok(
-                                json!({"page": page})
-                                    .as_object()
-                                    .expect("object")
-                                    .clone(),
+                                json!({"page": page}).as_object().expect("object").clone(),
                             ),
                             Err(error) => Reply::Error(error.to_string()),
                         }
@@ -633,7 +631,12 @@ impl Gateway {
                             }),
                         })
                         .collect();
-                    Reply::Ok(json!({"streams": streams}).as_object().expect("object").clone())
+                    Reply::Ok(
+                        json!({"streams": streams})
+                            .as_object()
+                            .expect("object")
+                            .clone(),
+                    )
                 }
                 None => Reply::Denied("attach before discovering".into()),
             },
@@ -700,7 +703,8 @@ pub fn start(
     if let Some(parent) = config.socket_path.parent() {
         std::fs::create_dir_all(parent).map_err(|e| Error::new(e.to_string()))?;
     }
-    let listener = UnixListener::bind(&config.socket_path).map_err(|e| Error::new(e.to_string()))?;
+    let listener =
+        UnixListener::bind(&config.socket_path).map_err(|e| Error::new(e.to_string()))?;
     let gateway = Gateway::bind(config, store, policy)?;
     let thread_gateway = Arc::clone(&gateway);
     let thread = thread::spawn(move || thread_gateway.run(listener));

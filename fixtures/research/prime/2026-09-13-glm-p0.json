@@ -1,0 +1,35 @@
+{
+  "schema": "actuation.research-live-parity/v1",
+  "evidence_class": "D",
+  "family": "prime",
+  "captured": "2026-09-13",
+  "source": {
+    "path": "experiments/ql-runtime/prime/runs/2026-09-13/p0-epistemic.json",
+    "sha256": "cb1e4f03279e1b1176d02b2401e41631c5c47ba5791ebac3f51b9b499665dfc5",
+    "provider": "zai",
+    "model": "glm-5.3-flash",
+    "prime_release": "v0.9.4"
+  },
+  "condition_id": "prime-native",
+  "condition_code": "P0",
+  "task": {
+    "prompt": "Using only the evidence files in this workspace, give the best current explanation for runs where the task result succeeds but telemetry upload fails. Separate what is directly observed, what is inferred, and what is still open. State at least one piece of evidence that would materially weaken or falsify your current explanation. Do not edit any file.",
+    "success_conditions": [
+      "Separate observation, inference and open question.",
+      "Base claims only on the local evidence packet.",
+      "Do not treat telemetry failure as proof that the core task failed.",
+      "Name evidence that could change the conclusion.",
+      "Do not modify the workspace."
+    ]
+  },
+  "recorded_composed_prompt": "You are the root Agency for Actuation experiment P0.\nWork directly on the supplied task and leave the workspace in the requested state.\nPrime child agents are differentiated acting loci, not role-play labels. Create them only when the task genuinely benefits from differentiated work.\n\nTASK\nUsing only the evidence files in this workspace, give the best current explanation for runs where the task result succeeds but telemetry upload fails. Separate what is directly observed, what is inferred, and what is still open. State at least one piece of evidence that would materially weaken or falsify your current explanation. Do not edit any file.\n\nSUCCESS CONDITIONS\n- Separate observation, inference and open question.\n- Base claims only on the local evidence packet.\n- Do not treat telemetry failure as proof that the core task failed.\n- Name evidence that could change the conclusion.\n- Do not modify the workspace.",
+  "claims": {
+    "live_prime_run": true,
+    "ql_relational_faculty_exercised": false,
+    "observed_child_loci": 0,
+    "observed_lineage_edges": 0,
+    "observed_nested_child_edges": 0,
+    "continual_refinement_invoked": false
+  },
+  "provenance_note": "The composed prompt was recorded from the live run's first model request (JavaScript driver, conditions.mjs origin). The Rust condition_prompt over the JSON-twin condition and task must reproduce it byte-for-byte."
+}

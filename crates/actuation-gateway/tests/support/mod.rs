@@ -2,9 +2,7 @@
 //! a scripted resident worker agent for the integration tests.
 
 use actuation_core::{ActuationRef, AgencyRef, AgentSessionRef, Error, Result, StreamRef};
-use actuation_gateway::{
-    AttachSpec, GatewayClient, GatewayConfig, GatewayHandle, GatewayPolicy,
-};
+use actuation_gateway::{AttachSpec, GatewayClient, GatewayConfig, GatewayHandle, GatewayPolicy};
 use actuation_stream::JsonlStreamStore;
 use serde_json::{json, Value};
 use std::{

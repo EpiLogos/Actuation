@@ -45,19 +45,19 @@ fn gateway_vertical_challenge_return_invocation_and_refusal() {
         .expect("worker agent attaches before the challenge is sent");
 
     // 1. A wrong token is refused at the door.
-    let intruder = GatewayClient::connect(
-        field.socket_path(),
-        Some("wrong-token"),
-        "connector:cli",
-    )
-    .err()
-    .expect("an unauthenticated connection must not be served");
+    let intruder =
+        GatewayClient::connect(field.socket_path(), Some("wrong-token"), "connector:cli")
+            .err()
+            .expect("an unauthenticated connection must not be served");
     assert!(intruder.to_string().contains("denied"), "{intruder}");
 
     // 2. An ungranted subject is refused attach.
-    let mut ungranted =
-        GatewayClient::connect(field.socket_path(), Some(support::TOKEN), "connector:unknown")
-            .unwrap();
+    let mut ungranted = GatewayClient::connect(
+        field.socket_path(),
+        Some(support::TOKEN),
+        "connector:unknown",
+    )
+    .unwrap();
     let reply = ungranted
         .call_raw(support::attach_frame(&field.worker_attach()))
         .unwrap();
@@ -65,11 +65,8 @@ fn gateway_vertical_challenge_return_invocation_and_refusal() {
 
     // 3. Challenge in through the local CLI connector seam.
     let mut connector_client =
-        GatewayClient::connect(field.socket_path(), Some(support::TOKEN), "connector:cli")
-            .unwrap();
-    let attach_reply = connector_client
-        .attach(field.worker_attach())
-        .unwrap();
+        GatewayClient::connect(field.socket_path(), Some(support::TOKEN), "connector:cli").unwrap();
+    let attach_reply = connector_client.attach(field.worker_attach()).unwrap();
     assert_eq!(attach_reply["role"], "connector");
     assert_eq!(attach_reply["participant_ref"], "participant:alice");
     assert_eq!(attach_reply["agent_session_ref"], "session:worker-1");
@@ -100,7 +97,9 @@ fn gateway_vertical_challenge_return_invocation_and_refusal() {
     assert_eq!(challenge["metadata"]["conversation"], "cli-session-7");
 
     // 4. The worker's attributable tool evidence and Return come back out.
-    let returned = connector.await_return(last_sequence(&receipt), 15_000).unwrap();
+    let returned = connector
+        .await_return(last_sequence(&receipt), 15_000)
+        .unwrap();
     assert_eq!(returned["kind"], "return");
     assert_eq!(returned["content"], "echo: What is the difference?");
     assert_eq!(actor_field(&returned, "/actor/agency_ref"), "agency:worker");
@@ -110,8 +109,7 @@ fn gateway_vertical_challenge_return_invocation_and_refusal() {
     // 5. Co-internal invocation: the controller Agency delegates to the worker
     //    Agency through the gateway and receives the correlated Return.
     let mut controller =
-        GatewayClient::connect(field.socket_path(), Some(support::TOKEN), "agent:ctl-1")
-            .unwrap();
+        GatewayClient::connect(field.socket_path(), Some(support::TOKEN), "agent:ctl-1").unwrap();
     let attach = controller.attach(field.controller_attach()).unwrap();
     assert_eq!(attach["role"], "agent");
     let invocation = controller
@@ -130,7 +128,10 @@ fn gateway_vertical_challenge_return_invocation_and_refusal() {
     // The controller is the actor in the worker's stream; the stream's own
     // governing Agency identity is untouched by the gateway.
     assert_eq!(actor_field(delegation, "/actor/agency_ref"), "agency:ctl");
-    assert_eq!(invocation["delegation_receipt"]["stream_ref"], "stream:worker");
+    assert_eq!(
+        invocation["delegation_receipt"]["stream_ref"],
+        "stream:worker"
+    );
     assert_eq!(delegation["return_ref"], "return:ctl-77");
     assert_eq!(delegation["metadata"]["target_agency_ref"], "agency:worker");
     let invoked_return = &invocation["return_event"];
@@ -170,18 +171,18 @@ fn gateway_vertical_challenge_return_invocation_and_refusal() {
         .load(&StreamRef::new("stream:worker").unwrap())
         .unwrap();
     assert!(worker_stream.fields().events.iter().all(|event| {
-        !event
-            .fields()
-            .metadata
-            .value()
-            .is_some_and(|metadata| metadata.get("invocation_ref")
-                == Some(&Value::String("invocation:bad-1".into())))
+        !event.fields().metadata.value().is_some_and(|metadata| {
+            metadata.get("invocation_ref") == Some(&Value::String("invocation:bad-1".into()))
+        })
     }));
 
     // 8. The durable stream folds under the portable contract: contiguous
     //    sequence, every event attributed, both Returns correlated.
     let events = worker_stream.fields().events.as_slice();
-    let kinds: Vec<String> = events.iter().map(|event| format!("{:?}", event.fields().kind)).collect();
+    let kinds: Vec<String> = events
+        .iter()
+        .map(|event| format!("{:?}", event.fields().kind))
+        .collect();
     assert_eq!(
         kinds,
         vec![
@@ -212,7 +213,11 @@ fn gateway_vertical_challenge_return_invocation_and_refusal() {
     // Return it correlates share the controller's explicit ref.
     assert_eq!(
         return_refs,
-        vec![challenge_return_ref.as_str(), "return:ctl-77", "return:ctl-77"]
+        vec![
+            challenge_return_ref.as_str(),
+            "return:ctl-77",
+            "return:ctl-77"
+        ]
     );
     // The tool evidence is real: the tool-result names its evidence source.
     let tool_results: Vec<_> = events
@@ -226,7 +231,14 @@ fn gateway_vertical_challenge_return_invocation_and_refusal() {
             Some(&vec![ExternalRef::new("tool:echo-agent").unwrap()])
         );
         assert_eq!(
-            result.fields().actor.value().unwrap().fields().agency_ref.value(),
+            result
+                .fields()
+                .actor
+                .value()
+                .unwrap()
+                .fields()
+                .agency_ref
+                .value(),
             Some(&AgencyRef::new("agency:worker").unwrap())
         );
     }
@@ -236,7 +248,10 @@ fn gateway_vertical_challenge_return_invocation_and_refusal() {
         .load(&StreamRef::new("stream:ctl").unwrap())
         .unwrap();
     assert_eq!(ctl_stream.fields().events.len(), 1, "only the refusal");
-    assert_eq!(ctl_stream.fields().events[0].fields().kind, EventKind::Refusal);
+    assert_eq!(
+        ctl_stream.fields().events[0].fields().kind,
+        EventKind::Refusal
+    );
 
     worker.join().expect("worker agent finishes cleanly");
 }
@@ -247,8 +262,7 @@ fn gateway_vertical_challenge_return_invocation_and_refusal() {
 fn invocation_without_a_live_resident_session_is_refused_and_retained() {
     let field = support::Field::start();
     let mut controller =
-        GatewayClient::connect(field.socket_path(), Some(support::TOKEN), "agent:ctl-1")
-            .unwrap();
+        GatewayClient::connect(field.socket_path(), Some(support::TOKEN), "agent:ctl-1").unwrap();
     controller.attach(field.controller_attach()).unwrap();
     let refused = controller
         .invoke_raw(serde_json::json!({
@@ -314,21 +328,21 @@ fn replay_after_reattach_returns_the_same_canonical_events() {
         .recv()
         .expect("worker agent attaches before the challenge is sent");
     let mut connector_client =
-        GatewayClient::connect(field.socket_path(), Some(support::TOKEN), "connector:cli")
-            .unwrap();
+        GatewayClient::connect(field.socket_path(), Some(support::TOKEN), "connector:cli").unwrap();
     connector_client.attach(field.worker_attach()).unwrap();
     let receipt = connector_client
         .send("second challenge", Some("cli-session-7"), None)
         .unwrap();
     let returned = {
         let mut connector = LocalConnector::new(connector_client, "cli-session-7");
-        connector.await_return(last_sequence(&receipt), 15_000).unwrap()
+        connector
+            .await_return(last_sequence(&receipt), 15_000)
+            .unwrap()
     };
     assert_eq!(returned["content"], "echo: second challenge");
 
     let mut again =
-        GatewayClient::connect(field.socket_path(), Some(support::TOKEN), "connector:cli")
-            .unwrap();
+        GatewayClient::connect(field.socket_path(), Some(support::TOKEN), "connector:cli").unwrap();
     again.attach(field.worker_attach()).unwrap();
     let page = again.replay(0, None).unwrap();
     let events = page["page"]["events"].as_array().unwrap();
@@ -351,10 +365,7 @@ fn replay_after_reattach_returns_the_same_canonical_events() {
         .load(&StreamRef::new("stream:worker").unwrap())
         .unwrap();
     assert_eq!(from_disk.fields().events.len(), 4);
-    assert_eq!(
-        from_disk.fields().cursor.fields().next_sequence.get(),
-        5
-    );
+    assert_eq!(from_disk.fields().cursor.fields().next_sequence.get(), 5);
 
     worker.join().expect("worker agent finishes cleanly");
 }

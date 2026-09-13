@@ -88,13 +88,15 @@ impl GatewayPolicy {
 
     pub fn attach_grant(&self, subject: &str, stream_ref: &StreamRef) -> Option<&AttachGrant> {
         self.attach
-        .iter()
-        .find(|grant| grant.subject == subject && &grant.stream_ref == stream_ref)
+            .iter()
+            .find(|grant| grant.subject == subject && &grant.stream_ref == stream_ref)
     }
 
     pub fn agent_grant(&self, subject: &str, stream_ref: &StreamRef) -> Result<&AttachGrant> {
         let grant = self.attach_grant(subject, stream_ref).ok_or_else(|| {
-            Error::new(format!("subject {subject} is not granted attach on {stream_ref}"))
+            Error::new(format!(
+                "subject {subject} is not granted attach on {stream_ref}"
+            ))
         })?;
         if grant.role != GrantRole::Agent {
             return Err(Error::new(format!(
@@ -161,7 +163,9 @@ mod tests {
         let one = StreamRef::new("stream:one").unwrap();
         assert!(policy.attach_grant("connector:cli", &one).is_some());
         assert!(policy.attach_grant("connector:other", &one).is_none());
-        assert!(policy.attach_grant("connector:cli", &StreamRef::new("stream:two").unwrap()).is_none());
+        assert!(policy
+            .attach_grant("connector:cli", &StreamRef::new("stream:two").unwrap())
+            .is_none());
         // An exact delegation grant does not widen to other modes or agencies.
         policy
             .invocation(

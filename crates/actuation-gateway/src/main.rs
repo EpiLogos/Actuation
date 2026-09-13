@@ -13,12 +13,7 @@ use actuation_gateway::{
 };
 use actuation_stream::JsonlStreamStore;
 use serde_json::{json, Value};
-use std::{
-    collections::HashMap,
-    path::PathBuf,
-    thread,
-    time::Duration,
-};
+use std::{collections::HashMap, path::PathBuf, thread, time::Duration};
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -65,9 +60,10 @@ impl Flags {
         Ok(Self(map))
     }
     fn require(&self, name: &str) -> Result<String> {
-        self.0.get(name).cloned().ok_or_else(|| {
-            actuation_core::Error::new(format!("missing required flag --{name}"))
-        })
+        self.0
+            .get(name)
+            .cloned()
+            .ok_or_else(|| actuation_core::Error::new(format!("missing required flag --{name}")))
     }
     fn opt(&self, name: &str) -> Option<String> {
         self.0.get(name).cloned()
@@ -88,9 +84,9 @@ fn token_from(flags: &Flags) -> Result<Option<String>> {
         return Ok(Some(token));
     }
     if let Some(name) = flags.opt("token-env") {
-        return std::env::var(&name)
-            .map(Some)
-            .map_err(|_| actuation_core::Error::new(format!("environment variable {name} is unset")));
+        return std::env::var(&name).map(Some).map_err(|_| {
+            actuation_core::Error::new(format!("environment variable {name} is unset"))
+        });
     }
     Ok(std::env::var("ACTUATION_GATEWAY_TOKEN").ok())
 }
@@ -183,7 +179,11 @@ fn serve(flags: &Flags) -> Result<()> {
     );
     // The service runs until its supervisor (or operator) stops the process.
     loop {
-        if handle.gateway.shutdown.load(std::sync::atomic::Ordering::SeqCst) {
+        if handle
+            .gateway
+            .shutdown
+            .load(std::sync::atomic::Ordering::SeqCst)
+        {
             break;
         }
         thread::sleep(Duration::from_secs(1));
@@ -267,8 +267,7 @@ fn agent(flags: &Flags) -> Result<()> {
                 .map(str::to_string)
                 .map(Ok::<String, actuation_core::Error>)
                 .unwrap_or_else(|| {
-                    actuation_gateway::mint_return_ref()
-                        .map(|reference| reference.into_string())
+                    actuation_gateway::mint_return_ref().map(|reference| reference.into_string())
                 })?;
             let returned = client.post(json!({
                 "kind":"return",
@@ -312,7 +311,8 @@ fn invoke(flags: &Flags) -> Result<()> {
     });
     let reply = client.invoke_raw(request)?;
     line(&json!({"stage":"invoke","reply":reply}));
-    if reply.get("ok") == Some(&Value::Bool(true)) && reply.get("denied") != Some(&Value::Bool(true))
+    if reply.get("ok") == Some(&Value::Bool(true))
+        && reply.get("denied") != Some(&Value::Bool(true))
     {
         Ok(())
     } else {

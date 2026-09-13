@@ -129,7 +129,8 @@ mod tests {
 
     #[test]
     fn frames_roundtrip_as_single_json_objects_per_line() {
-        let frame = serde_json::json!({"op":"hello","protocol":GATEWAY_CONTRACT,"subject":"connector:cli"});
+        let frame =
+            serde_json::json!({"op":"hello","protocol":GATEWAY_CONTRACT,"subject":"connector:cli"});
         let mut writer: Vec<u8> = Vec::new();
         write_frame(&mut writer, &frame).unwrap();
         assert_eq!(

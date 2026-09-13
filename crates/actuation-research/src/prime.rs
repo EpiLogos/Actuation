@@ -140,7 +140,7 @@ mod tests {
         include_str!("../../../experiments/native-research/prime-source-lock.json");
 
     #[test]
-    fn condition_catalogue_matches_the_frozen_javascript_source() {
+    fn condition_catalogue_is_the_pinned_source_of_the_prime_conditions() {
         let conditions = conditions();
         let expected = [
             ("prime-native", "P0", false, 1, false, false, false),
@@ -149,7 +149,6 @@ mod tests {
             ("prime-recursive-field", "P4", true, 2, true, true, false),
             ("prime-continual", "P5", true, 2, true, true, true),
         ];
-        let mjs = include_str!("../../../experiments/ql-runtime/prime/conditions.mjs");
         for (id, code, relational, max_depth, return_contract, recursive, continual) in expected {
             let c = get_condition(id).expect("catalogued condition");
             assert_eq!(c["code"], json!(code), "{id}");
@@ -158,18 +157,41 @@ mod tests {
             assert_eq!(c["returnContract"], json!(return_contract), "{id}");
             assert_eq!(c["recursive"], json!(recursive), "{id}");
             assert_eq!(c["continual"], json!(continual), "{id}");
-            // Every condition name in the frozen JavaScript source is present.
-            assert!(
-                mjs.contains(&format!("'{id}'")),
-                "{id} missing from mjs source"
-            );
         }
         assert_eq!(
             conditions.as_object().unwrap().len(),
             expected.len(),
-            "catalogue must not carry conditions the JavaScript source does not"
+            "catalogue must not carry conditions the declared source does not"
         );
         assert!(get_condition("prime-absent").is_err());
+        // Since the JavaScript retirement (R11) the JSON twin is the declared
+        // source of the conditions family. Its provenance envelope and its
+        // content are pinned here so any edit to the authored catalogue is a
+        // reviewed change, not silent drift.
+        let envelope: Value =
+            serde_json::from_str(CONDITIONS).expect("checked condition catalogue");
+        assert_eq!(envelope["schema"], json!("actuation.prime-conditions/v1"));
+        assert_eq!(
+            envelope["source_revision"],
+            json!("324231df093a7c0ec07b8fef0432844214cc27ec"),
+            "provenance envelope must keep naming its origin revision"
+        );
+        let origin = &envelope["origins"][0];
+        assert_eq!(
+            origin["path"],
+            json!("experiments/ql-runtime/prime/conditions.mjs"),
+            "historical origin reference is retained"
+        );
+        assert_eq!(
+            origin["blob"],
+            json!("7a995256ffb7edb81a69d1f3d061d3ac979a782f"),
+            "historical origin blob is retained"
+        );
+        assert_eq!(
+            crate::evidence::stable_digest(&envelope["conditions"]),
+            "c76bcca91622ddaf67b679c2fb736fa8662d6696c5f988292c954ff11a7851e1",
+            "the declared condition catalogue changed; re-pin deliberately"
+        );
     }
 
     #[test]

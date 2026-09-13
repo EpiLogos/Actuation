@@ -95,7 +95,11 @@ fn slot<T>(value: Option<T>) -> Slot<T> {
     value.map(Slot::Value).unwrap_or(Slot::Absent)
 }
 
-fn merge_metadata(subject: &str, key: &str, extra: Option<serde_json::Map<String, Value>>) -> Slot<serde_json::Map<String, Value>> {
+fn merge_metadata(
+    subject: &str,
+    key: &str,
+    extra: Option<serde_json::Map<String, Value>>,
+) -> Slot<serde_json::Map<String, Value>> {
     let mut metadata = serde_json::Map::new();
     metadata.insert(key.into(), json!(subject));
     if let Some(extra) = extra {
@@ -190,7 +194,9 @@ pub fn agent_event(
     request: PostRequest,
 ) -> Result<StreamEvent> {
     if grant.role != GrantRole::Agent {
-        return Err(Error::new("posting stream material requires an agent-locus grant"));
+        return Err(Error::new(
+            "posting stream material requires an agent-locus grant",
+        ));
     }
     if !POSTABLE_KINDS.contains(&request.kind) {
         return Err(Error::new(format!(
@@ -211,7 +217,7 @@ pub fn agent_event(
         native_trace_ref: slot(request.native_trace_ref.clone()),
         resource_refs: slot(request.resource_refs.clone()),
         evidence_refs: slot(request.evidence_refs.clone()),
-        disclosure: slot(request.disclosure.clone()),
+        disclosure: slot(request.disclosure),
         content: slot(request.content.clone()),
         metadata: merge_metadata(&grant.subject, "gateway_subject", request.metadata),
         model_usage: Slot::Absent,
@@ -226,7 +232,10 @@ fn invocation_metadata(
 ) -> serde_json::Map<String, Value> {
     let mut metadata = serde_json::Map::new();
     metadata.insert("mode".into(), json!(request.mode.as_str()));
-    metadata.insert("invocation_ref".into(), json!(request.invocation_ref.as_str()));
+    metadata.insert(
+        "invocation_ref".into(),
+        json!(request.invocation_ref.as_str()),
+    );
     metadata.insert("return_ref".into(), json!(return_ref.as_str()));
     metadata.insert(
         "target_agency_ref".into(),
@@ -395,12 +404,28 @@ mod tests {
         .unwrap();
         let fields = event.fields();
         assert_eq!(fields.kind, EventKind::HumanMessage);
-        assert_eq!(fields.content.value().map(String::as_str), Some("challenge"));
         assert_eq!(
-            fields.actor.value().unwrap().fields().participant_ref.value(),
+            fields.content.value().map(String::as_str),
+            Some("challenge")
+        );
+        assert_eq!(
+            fields
+                .actor
+                .value()
+                .unwrap()
+                .fields()
+                .participant_ref
+                .value(),
             Some(&ExternalRef::new("participant:cli-user").unwrap())
         );
-        assert!(fields.actor.value().unwrap().fields().agency_ref.value().is_none());
+        assert!(fields
+            .actor
+            .value()
+            .unwrap()
+            .fields()
+            .agency_ref
+            .value()
+            .is_none());
         assert_eq!(
             fields.surface_ref.value().map(|r| r.as_str()),
             Some("surface:cli")
@@ -443,11 +468,25 @@ mod tests {
         )
         .unwrap();
         let actor = event.fields().actor.value().unwrap().fields();
-        assert_eq!(actor.agency_ref.value().map(|r| r.as_str()), Some("agency:worker"));
-        assert_eq!(actor.agent_ref.value().map(|r| r.as_str()), Some("agent:worker"));
-        assert_eq!(actor.locus_ref.value().map(|r| r.as_str()), Some("locus:worker"));
         assert_eq!(
-            event.fields().metadata.value().unwrap().get("gateway_subject"),
+            actor.agency_ref.value().map(|r| r.as_str()),
+            Some("agency:worker")
+        );
+        assert_eq!(
+            actor.agent_ref.value().map(|r| r.as_str()),
+            Some("agent:worker")
+        );
+        assert_eq!(
+            actor.locus_ref.value().map(|r| r.as_str()),
+            Some("locus:worker")
+        );
+        assert_eq!(
+            event
+                .fields()
+                .metadata
+                .value()
+                .unwrap()
+                .get("gateway_subject"),
             Some(&json!("agent:worker-1"))
         );
     }
@@ -491,7 +530,14 @@ mod tests {
         // Controller is the actor; the governing Agency of the containing
         // stream remains the target's own, never rewritten by the gateway.
         assert_eq!(
-            event.fields().actor.value().unwrap().fields().agency_ref.value(),
+            event
+                .fields()
+                .actor
+                .value()
+                .unwrap()
+                .fields()
+                .agency_ref
+                .value(),
             Some(&AgencyRef::new("agency:ctl").unwrap())
         );
         assert_eq!(event.fields().return_ref.value(), Some(&return_ref));
@@ -501,8 +547,11 @@ mod tests {
         );
         let metadata = event.fields().metadata.value().unwrap();
         assert_eq!(metadata.get("mode"), Some(&json!("delegation")));
-        assert_eq!(metadata.get("target_agency_ref"), Some(&json!("agency:worker")));
-        let found = find_return(&[event.clone()], &return_ref).is_none();
+        assert_eq!(
+            metadata.get("target_agency_ref"),
+            Some(&json!("agency:worker"))
+        );
+        let found = find_return(std::slice::from_ref(&event), &return_ref).is_none();
         assert!(found, "a delegation is not itself the Return");
     }
 
@@ -535,7 +584,12 @@ mod tests {
             event.fields().metadata.value().unwrap().get("denied"),
             Some(&json!(true))
         );
-        assert!(event.fields().content.value().unwrap().contains("not granted"));
+        assert!(event
+            .fields()
+            .content
+            .value()
+            .unwrap()
+            .contains("not granted"));
     }
 
     #[test]
