@@ -1,0 +1,157 @@
+{
+  "schema": "actuation.specimen-conformance/v1",
+  "specimen": {
+    "sdk": "deepseek-harness",
+    "upstream_revision": "47f943859bef60e4160492346772ded9b24f765a",
+    "package_version": "0.1.0-rc.5",
+    "provider_route": "deepseek-official",
+    "source": "public GitHub source, checked out at the pinned revision and built from source (pnpm build:lib:host)",
+    "adapter_origin": "experiments/native-research/adapters/dsh.mjs (retired at R11; blob at ece2478)",
+    "adapter_origin_revision": "ece2478649d58ed210eadd2e2bac00af9e5ced0d",
+    "captured": "2026-09-13",
+    "composition": "real Cordis Context + LlmRuntime + SessionStore + JsonlSessionPersistence + AgentRegistry + deepseek plugin"
+  },
+  "preflight": {
+    "wire_result": {
+      "ready": true,
+      "provider": "deepseek",
+      "model": "deepseek-v4-flash",
+      "framework": "deepseek-harness",
+      "package_version": "0.1.0-rc.5",
+      "upstream_revision": "47f943859bef60e4160492346772ded9b24f765a",
+      "credential_available": true,
+      "provider_request_executed": false,
+      "composition_fingerprint": "fixture-parent-fingerprint",
+      "native_session_ref": "<session-id>"
+    },
+    "rebinding_error": "DSH Series 1 provider cannot be rebound to another run."
+  },
+  "session_law": {
+    "agent_drive_refused": "Series 1 DSH Agent is observational; frozen LoopRuntime owns execution.",
+    "inspection_schema": "ql-series1-dsh-inspection/0.1",
+    "inspection_is_read_only": true,
+    "candidate_context_authority": false,
+    "provider_route": "deepseek-official"
+  },
+  "stream_completion": {
+    "request_seen_by_llm": {
+      "provider": "deepseek-official",
+      "model": "deepseek-v4-flash",
+      "system": "system",
+      "temperature": 0,
+      "messages": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "session_id": "<session-id>"
+    },
+    "failure_error": "DSH SDK completion failed; native failure retained",
+    "extraction": {
+      "output": "{\"content\":\"fixture\",\"capabilityCalls\":[]}",
+      "usage": {
+        "input_tokens": 5,
+        "output_tokens": 1,
+        "total_tokens": 6,
+        "native_usage": {
+          "inputTokens": 3,
+          "outputTokens": 1,
+          "cacheReadTokens": 2,
+          "cacheWriteTokens": 0
+        }
+      },
+      "raw": {
+        "provider": "deepseek-official",
+        "model": "deepseek-v4-flash",
+        "finish": {
+          "kind": "stop"
+        },
+        "dsh_session_id": "<session-id>"
+      }
+    },
+    "model_calls": [
+      {
+        "ordinal": 0,
+        "turn": 0,
+        "step": 0,
+        "error": true
+      },
+      {
+        "ordinal": 1,
+        "turn": 1,
+        "step": 0,
+        "error": false
+      }
+    ]
+  },
+  "usage_mapping": {
+    "input": {
+      "inputTokens": 3,
+      "outputTokens": 1,
+      "cacheReadTokens": 2,
+      "cacheWriteTokens": 0
+    },
+    "wire": {
+      "input_tokens": 5,
+      "output_tokens": 1,
+      "total_tokens": 6,
+      "native_usage": {
+        "inputTokens": 3,
+        "outputTokens": 1,
+        "cacheReadTokens": 2,
+        "cacheWriteTokens": 0
+      }
+    },
+    "law": "wire input_tokens sums inputTokens + cacheReadTokens + cacheWriteTokens; total_tokens adds output_tokens; absent counters are never manufactured (null)",
+    "absent_counters": {
+      "input_tokens": null,
+      "total_tokens": null
+    }
+  },
+  "finalize": {
+    "inspection_session_error": null,
+    "sessions_separated": true,
+    "candidate_session": {
+      "header_agent_preset": null,
+      "events_include_assistant_message": true,
+      "events_types": [
+        "turn/start",
+        "step/start",
+        "user/message",
+        "request/header",
+        "request/context",
+        "step/end",
+        "turn/end",
+        "assistant/chunk",
+        "assistant/message"
+      ],
+      "portable_events_present": 0
+    },
+    "inspection_session": {
+      "header_agent_preset": null,
+      "events_include_portable_event": true
+    },
+    "model_call_alignment": [
+      {
+        "ordinal": 0,
+        "error": true
+      },
+      {
+        "ordinal": 1,
+        "error": false
+      }
+    ],
+    "closure_note": "DSH turn/session completion is host evidence and is not QLClosure.",
+    "inspection_agent_preset": "series1-inspection-readonly",
+    "candidate_agent_preset": "series1-loopruntime"
+  },
+  "inspection_refusal": {
+    "law": "DSH inspection must be an explicitly read-only native projection"
+  }
+}

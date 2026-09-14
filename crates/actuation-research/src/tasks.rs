@@ -48,6 +48,9 @@ impl Task {
     pub fn start(&self) -> &Value {
         &self.0["starting_workspace"]
     }
+    pub fn category(&self) -> &str {
+        self.0["category"].as_str().unwrap_or_default()
+    }
     pub fn revision(&self) -> String {
         stable_digest(&self.0)
     }

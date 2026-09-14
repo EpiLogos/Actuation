@@ -1,0 +1,196 @@
+{
+  "schema": "actuation.specimen-conformance/v1",
+  "specimen": {
+    "sdk": "pi-ai",
+    "package": "@earendil-works/pi-ai",
+    "pinned_version": "0.84.1",
+    "source": "npm registry",
+    "adapter_origin": "experiments/native-research/adapters/pi.mjs (retired at R11; blob at ece2478)",
+    "captured": "2026-09-13",
+    "captured_with": {
+      "node": "v24.16.0",
+      "driver": "one-off capture driver (retired with the campaign; procedure documented in docs/rust-refoundation/R11-JS-RETIREMENT.md)"
+    },
+    "adapter_origin_revision": "ece2478649d58ed210eadd2e2bac00af9e5ced0d",
+    "upstream_source": {
+      "repository": "https://github.com/earendil-works/pi-ai (published npm package)",
+      "fetched_as": "@earendil-works/pi-ai@0.84.1 from the public npm registry"
+    }
+  },
+  "pins": {
+    "package_version_observed": "0.84.1",
+    "equals_pinned": true
+  },
+  "preflight": {
+    "wire_result": {
+      "ready": true,
+      "provider": "deepseek",
+      "model": "deepseek-v4-flash",
+      "framework": "pi-ai",
+      "package_version": "0.84.1",
+      "credential_available": true,
+      "provider_request_executed": false
+    },
+    "rebinding_error": "Pi body cannot be rebound"
+  },
+  "completion": {
+    "request_seen_by_model": {
+      "model_id": "deepseek-v4-flash",
+      "systemPrompt": "authored system",
+      "messages": [
+        {
+          "role": "user",
+          "content": "second",
+          "timestamp": "<clock>"
+        }
+      ],
+      "tools": [],
+      "has_signal": true,
+      "temperature": 0
+    },
+    "failure_request_seen_by_model": {
+      "model_id": "deepseek-v4-flash",
+      "systemPrompt": "authored system",
+      "messages": [
+        {
+          "role": "user",
+          "content": "first",
+          "timestamp": "<clock>"
+        }
+      ],
+      "tools": [],
+      "has_signal": true,
+      "temperature": 0
+    },
+    "extraction": {
+      "output": "{\"content\":\"fixture\",\"capabilityCalls\":[{\"name\":\"read_file\",\"args\":{\"path\":\"fact.txt\"}}]}",
+      "usage": {
+        "input_tokens": 10,
+        "output_tokens": 5,
+        "total_tokens": 15,
+        "cost": 0.0001
+      },
+      "raw": {
+        "framework": "pi-ai",
+        "package_version": "0.84.1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "stop_reason": "stop"
+      }
+    },
+    "failure_law": {
+      "adapter_error": "Pi SDK completion failed; failure retained in native evidence",
+      "call_status": "failed"
+    }
+  },
+  "finalize": {
+    "kind": "pi-native-sdk-evidence",
+    "framework": "pi-ai",
+    "package_version": "0.84.1",
+    "provider_evidence": "not-assessed",
+    "model_calls": [
+      [
+        0,
+        "failed"
+      ],
+      [
+        1,
+        "returned"
+      ]
+    ]
+  },
+  "refusals": {
+    "wrong_provider": "Explicit DeepSeek model required",
+    "absent_model": "Selected model absent from pinned Pi catalogue",
+    "missing_model": "Explicit DeepSeek model required"
+  },
+  "envelope": {
+    "frames": [
+      "preflight",
+      "unsupported",
+      "finalize"
+    ],
+    "replies": [
+      {
+        "type": "response",
+        "command": "preflight",
+        "id": "pi-preflight",
+        "success": true,
+        "error": null,
+        "data": {
+          "ready": true,
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash",
+          "framework": "pi-ai",
+          "package_version": "0.84.1",
+          "credential_available": false,
+          "provider_request_executed": false
+        }
+      },
+      {
+        "type": "response",
+        "command": "unsupported",
+        "id": "pi-bad",
+        "success": false,
+        "error": "Unsupported Pi adapter command",
+        "data": null
+      },
+      {
+        "type": "response",
+        "command": "finalize",
+        "id": "pi-finalize",
+        "success": true,
+        "error": null,
+        "data": {
+          "model_calls": [],
+          "provider_evidence": "not-assessed",
+          "kind": "pi-native-sdk-evidence"
+        }
+      }
+    ],
+    "ends_after_finalize": "yes"
+  },
+  "wire_contract": {
+    "rpc_commands": [
+      "preflight",
+      "complete",
+      "finalize"
+    ],
+    "preflight_keys": [
+      "ready",
+      "provider",
+      "model",
+      "framework",
+      "package_version",
+      "credential_available",
+      "provider_request_executed"
+    ],
+    "completion_data_keys": [
+      "output",
+      "usage",
+      "raw"
+    ],
+    "usage_keys": [
+      "input_tokens",
+      "output_tokens",
+      "total_tokens",
+      "cost"
+    ],
+    "finalize_keys": [
+      "kind",
+      "framework",
+      "package_version",
+      "model_calls",
+      "session_evidence",
+      "provider_evidence"
+    ],
+    "reply_envelope": {
+      "type": "response",
+      "command": "<request type>",
+      "id": "<request id>",
+      "success": "bool",
+      "data": "object|null",
+      "error": "string|null"
+    }
+  }
+}

@@ -1,19 +1,28 @@
 name: QL experiments
 
-# The three matched-runtime baselines share one foundation; one workflow, one
-# matrix, scoped to the experiment tree.
+# The QL research families (classic/direct/deep over the frozen task corpus)
+# are expressed and run by the native research harness since the R11
+# JavaScript retirement. This check runs the harness's offline suites: the
+# foundation runtime semantics, the matched-condition mechanics and the
+# live-evidence parity proofs over the recorded 2026-09-13 runs.
 
 on:
   pull_request:
     paths:
-      - 'experiments/ql-runtime/foundation/**'
-      - 'experiments/ql-runtime/experiments/**'
+      - 'crates/actuation-research/**'
+      - 'crates/actuation-runtime/**'
+      - 'crates/actuation-core/**'
+      - 'fixtures/research/**'
+      - 'experiments/ql-runtime/**/*.json'
       - '.github/workflows/ql-experiments.yml'
   push:
     branches: [main]
     paths:
-      - 'experiments/ql-runtime/foundation/**'
-      - 'experiments/ql-runtime/experiments/**'
+      - 'crates/actuation-research/**'
+      - 'crates/actuation-runtime/**'
+      - 'crates/actuation-core/**'
+      - 'fixtures/research/**'
+      - 'experiments/ql-runtime/**/*.json'
       - '.github/workflows/ql-experiments.yml'
   workflow_dispatch:
 
@@ -26,20 +35,11 @@ concurrency:
 
 jobs:
   baseline:
-    name: ${{ matrix.runtime }} baseline
+    name: native research baseline
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        runtime: [native, pi, pydantic]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Foundation tests
-        working-directory: experiments/ql-runtime/foundation
-        run: npm test
-      - name: ${{ matrix.runtime }} matched runtime smoke
-        run: node experiments/ql-runtime/experiments/${{ matrix.runtime }}/run-smoke.mjs
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Foundation semantics, matched runs and live-evidence parity
+        run: cargo test --locked -p actuation-research

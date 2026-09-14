@@ -3,11 +3,15 @@ on:
   pull_request:
     paths:
       - 'experiments/native-research/adapters/**'
+      - 'fixtures/research/specimens/**'
+      - 'crates/actuation-research/**'
       - '.github/workflows/research-sdk.yml'
   push:
     branches: [main]
     paths:
       - 'experiments/native-research/adapters/**'
+      - 'fixtures/research/specimens/**'
+      - 'crates/actuation-research/**'
       - '.github/workflows/research-sdk.yml'
 permissions:
   contents: read
@@ -26,9 +30,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22.19.0'
+      - uses: dtolnay/rust-toolchain@stable
       - uses: actions/setup-python@v5
         if: matrix.sdk == 'pydantic'
         with:
@@ -39,10 +41,19 @@ jobs:
           mkdir -p sdk-evidence
           git rev-parse HEAD > sdk-evidence/actuation-revision.txt
           printf '%s\n' 'D: native SDK ABI, controlled responses, no provider/P/M/H claim' > sdk-evidence/standing.txt
-      - name: Install pinned Pi package
-        if: matrix.sdk == 'pi'
-        working-directory: experiments/native-research/adapters
-        run: npm install --ignore-scripts --no-save --no-package-lock @earendil-works/pi-ai@0.84.1
+      # pi/dsh: recorded-fixture conformance since the R11 JavaScript
+      # retirement. The fixtures were captured from the pinned specimens
+      # (published pi-ai 0.84.1; deepseek-harness source at 47f9438…); the
+      # suite asserts those pins and replays the recorded specimen shapes
+      # through the Rust wire contract.
+      - name: Assert recorded specimen conformance and pins
+        if: matrix.sdk == 'pi' || matrix.sdk == 'dsh'
+        shell: bash
+        run: |
+          cargo test --locked -p actuation-research --test specimen_conformance -- \
+            "${{ matrix.sdk }}_" 2>&1 | tee sdk-evidence/test.log
+      # pydantic: the specimen stays live — the retained Python adapter
+      # executes the pinned pydantic-ai source with controlled model responses.
       - uses: actions/checkout@v4
         if: matrix.sdk == 'pydantic'
         with:
@@ -56,57 +67,12 @@ jobs:
           test "$(git -C .sdk/pydantic-ai rev-parse HEAD)" = 00db3a4b391eb9a46f3d6e704070bcf725121f75
           python -m pip install -e '.sdk/pydantic-ai/pydantic_graph'
           python -m pip install -e '.sdk/pydantic-ai/pydantic_ai_slim[openai]'
-      - uses: actions/checkout@v4
-        if: matrix.sdk == 'dsh'
-        with:
-          repository: deepseek-ai/deepseek-harness
-          ref: 47f943859bef60e4160492346772ded9b24f765a
-          path: .sdk/deepseek-harness
-          persist-credentials: false
-      - name: Build source-pinned DSH host packages
-        if: matrix.sdk == 'dsh'
-        working-directory: .sdk/deepseek-harness
-        env:
-          COREPACK_ENABLE_PROJECT_SPEC: '0'
-        run: |
-          test "$(git rev-parse HEAD)" = 47f943859bef60e4160492346772ded9b24f765a
-          npm install --global pnpm@10.15.1
-          pnpm install --frozen-lockfile
-          pnpm run build:lib:host
-      - name: Resolve actual DSH workspace packages
-        if: matrix.sdk == 'dsh'
-        run: |
-          node <<'NODE'
-          const fs = require('node:fs'), path = require('node:path');
-          const root = path.resolve('.sdk/deepseek-harness');
-          const target = path.resolve('experiments/native-research/adapters/node_modules');
-          let count = 0;
-          function visit(dir) {
-            for (const e of fs.readdirSync(dir, {withFileTypes: true})) {
-              if (e.name === 'node_modules' || e.name === '.git') continue;
-              const p = path.join(dir, e.name);
-              if (e.isDirectory()) { visit(p); continue; }
-              if (!e.isFile() || e.name !== 'package.json') continue;
-              const m = JSON.parse(fs.readFileSync(p, 'utf8'));
-              if (!m.name) continue;
-              const out = path.join(target, m.name);
-              fs.mkdirSync(path.dirname(out), {recursive: true});
-              fs.symlinkSync(path.dirname(p), out, 'dir'); count++;
-            }
-          }
-          for (const d of ['packages', 'vendor', 'apps']) visit(path.join(root, d));
-          if (!count) throw Error('No pinned DSH packages resolved');
-          console.log(`Resolved ${count} source-pinned packages`);
-          NODE
       - name: Execute actual SDK with controlled model responses
+        if: matrix.sdk == 'pydantic'
         shell: bash
         run: |
           set -euo pipefail
-          case '${{ matrix.sdk }}' in
-            pi) node --test experiments/native-research/adapters/test/pi.test.mjs 2>&1 | tee sdk-evidence/test.log ;;
-            pydantic) python experiments/native-research/adapters/test/pydantic_test.py 2>&1 | tee sdk-evidence/test.log ;;
-            dsh) node --test experiments/native-research/adapters/test/dsh.test.mjs 2>&1 | tee sdk-evidence/test.log ;;
-          esac
+          python experiments/native-research/adapters/test/pydantic_test.py 2>&1 | tee sdk-evidence/test.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -1,0 +1,174 @@
+{
+  "schema": "actuation.research-live-parity/v1",
+  "evidence_class": "D",
+  "family": "series1",
+  "captured": "2026-09-13",
+  "source": {
+    "path": "experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-RESTRAINT-001.json",
+    "sha256": "ad57043ff808dfcc625cc9ade7a7664778a560130b8a3d3ae11b89b736565c80",
+    "provider_mode": "live",
+    "model": {
+      "provider": "zai",
+      "id": "glm-5.3-flash",
+      "parameters": {
+        "temperature": 0
+      }
+    },
+    "task_corpus_revision": "e00dea3c264c975839cbbb0a69e4de61840763a69f504cae5d85673f63f59ab8",
+    "runner_revision": "61724a0b7c87ce688d50c5c50ad9d828f0301110a89852d5e15c95c99f46a3ee",
+    "benchmark_revision": "fc2a152320e63ceb2f62a9d2b3741756d240e291c292126f5af33b537d16eb8b",
+    "review_contract_revision": "a059ec4bb8a35eda84e5761b8e78f62f1fe3961dfa09b2af862b019482fe490a"
+  },
+  "recorded_held_constant": {
+    "prompt": true,
+    "success_constraints": true,
+    "start_state": true,
+    "model": true,
+    "capabilities": true,
+    "verification": true,
+    "budget": true,
+    "host_revision": true,
+    "host_composition": true,
+    "network_policy": true,
+    "benchmark_revision": true,
+    "task_revision": true,
+    "runner_revision": true,
+    "review_contract_revision": true,
+    "valid": true,
+    "mismatches": []
+  },
+  "records": [
+    {
+      "condition": "classic",
+      "repetition": 0,
+      "prompt_digest": "7e6c2438e17068df8465e54909b4b69bdbc9325aa9b64da66ba985c1ded7dff8",
+      "success_constraints_digest": "cd569eba875c73ead2be46ddb238982e1324e1e06e350f327c9b3c364e741de5",
+      "start_state_digest": "4b101cb25178d30e10b1b920e897aecc0ee254485eb54270a8434d42a0a039c4",
+      "capability_contract_digest": "3c8269a9294ac3c4b77bd8918242001969c1152c644b5ca4f61a5a208d793e3e",
+      "verification_protocol_digest": "a431ce6ca2d8840b8a0bd3352c879456514a0a9a7c78b9d19868d6f5f27af8f9",
+      "execution_budget_digest": "277267cdc0bcdf0e0c8f5d87f231c065c1e36c80f3044284f56b3c8f6850a024",
+      "network_policy_digest": "dccea87ddda7167e99966456604e6331c1c4b0b5c4bff82abc7147062a5451b5",
+      "benchmark_revision": "fc2a152320e63ceb2f62a9d2b3741756d240e291c292126f5af33b537d16eb8b",
+      "task_revision": "cb8509c92d62722dc729cad942e2facd4e177bffc0196f98a7edf418cf96030e",
+      "runner_revision": "61724a0b7c87ce688d50c5c50ad9d828f0301110a89852d5e15c95c99f46a3ee",
+      "review_contract_revision": "a059ec4bb8a35eda84e5761b8e78f62f1fe3961dfa09b2af862b019482fe490a",
+      "host": {
+        "id": "native",
+        "revision": "native-series1-host-v1",
+        "real_framework_path": "repo-owned DeepSeek OpenAI-compatible HTTP transport"
+      },
+      "host_revision": "native-series1-host-v1",
+      "host_composition_fingerprint": null,
+      "model": {
+        "provider": "zai",
+        "id": "glm-5.3-flash",
+        "parameters": {
+          "temperature": 0
+        }
+      },
+      "execution_budget": {
+        "max_steps": 16
+      },
+      "execution_status": "completed"
+    },
+    {
+      "condition": "ql-direct",
+      "repetition": 0,
+      "prompt_digest": "7e6c2438e17068df8465e54909b4b69bdbc9325aa9b64da66ba985c1ded7dff8",
+      "success_constraints_digest": "cd569eba875c73ead2be46ddb238982e1324e1e06e350f327c9b3c364e741de5",
+      "start_state_digest": "4b101cb25178d30e10b1b920e897aecc0ee254485eb54270a8434d42a0a039c4",
+      "capability_contract_digest": "3c8269a9294ac3c4b77bd8918242001969c1152c644b5ca4f61a5a208d793e3e",
+      "verification_protocol_digest": "a431ce6ca2d8840b8a0bd3352c879456514a0a9a7c78b9d19868d6f5f27af8f9",
+      "execution_budget_digest": "277267cdc0bcdf0e0c8f5d87f231c065c1e36c80f3044284f56b3c8f6850a024",
+      "network_policy_digest": "dccea87ddda7167e99966456604e6331c1c4b0b5c4bff82abc7147062a5451b5",
+      "benchmark_revision": "fc2a152320e63ceb2f62a9d2b3741756d240e291c292126f5af33b537d16eb8b",
+      "task_revision": "cb8509c92d62722dc729cad942e2facd4e177bffc0196f98a7edf418cf96030e",
+      "runner_revision": "61724a0b7c87ce688d50c5c50ad9d828f0301110a89852d5e15c95c99f46a3ee",
+      "review_contract_revision": "a059ec4bb8a35eda84e5761b8e78f62f1fe3961dfa09b2af862b019482fe490a",
+      "host": {
+        "id": "native",
+        "revision": "native-series1-host-v1",
+        "real_framework_path": "repo-owned DeepSeek OpenAI-compatible HTTP transport"
+      },
+      "host_revision": "native-series1-host-v1",
+      "host_composition_fingerprint": null,
+      "model": {
+        "provider": "zai",
+        "id": "glm-5.3-flash",
+        "parameters": {
+          "temperature": 0
+        }
+      },
+      "execution_budget": {
+        "max_steps": 16
+      },
+      "execution_status": "completed"
+    },
+    {
+      "condition": "ql-deep",
+      "repetition": 0,
+      "prompt_digest": "7e6c2438e17068df8465e54909b4b69bdbc9325aa9b64da66ba985c1ded7dff8",
+      "success_constraints_digest": "cd569eba875c73ead2be46ddb238982e1324e1e06e350f327c9b3c364e741de5",
+      "start_state_digest": "4b101cb25178d30e10b1b920e897aecc0ee254485eb54270a8434d42a0a039c4",
+      "capability_contract_digest": "3c8269a9294ac3c4b77bd8918242001969c1152c644b5ca4f61a5a208d793e3e",
+      "verification_protocol_digest": "a431ce6ca2d8840b8a0bd3352c879456514a0a9a7c78b9d19868d6f5f27af8f9",
+      "execution_budget_digest": "277267cdc0bcdf0e0c8f5d87f231c065c1e36c80f3044284f56b3c8f6850a024",
+      "network_policy_digest": "dccea87ddda7167e99966456604e6331c1c4b0b5c4bff82abc7147062a5451b5",
+      "benchmark_revision": "fc2a152320e63ceb2f62a9d2b3741756d240e291c292126f5af33b537d16eb8b",
+      "task_revision": "cb8509c92d62722dc729cad942e2facd4e177bffc0196f98a7edf418cf96030e",
+      "runner_revision": "61724a0b7c87ce688d50c5c50ad9d828f0301110a89852d5e15c95c99f46a3ee",
+      "review_contract_revision": "a059ec4bb8a35eda84e5761b8e78f62f1fe3961dfa09b2af862b019482fe490a",
+      "host": {
+        "id": "native",
+        "revision": "native-series1-host-v1",
+        "real_framework_path": "repo-owned DeepSeek OpenAI-compatible HTTP transport"
+      },
+      "host_revision": "native-series1-host-v1",
+      "host_composition_fingerprint": null,
+      "model": {
+        "provider": "zai",
+        "id": "glm-5.3-flash",
+        "parameters": {
+          "temperature": 0
+        }
+      },
+      "execution_budget": {
+        "max_steps": 16
+      },
+      "execution_status": "completed"
+    }
+  ],
+  "recorded_digests": {
+    "prompt": {
+      "value": "7e6c2438e17068df8465e54909b4b69bdbc9325aa9b64da66ba985c1ded7dff8",
+      "parity": "exact",
+      "law": "stable_digest over the frozen tasks.json twin prompt reproduces the live-recorded digest byte-for-byte"
+    },
+    "success_constraints": {
+      "value": "cd569eba875c73ead2be46ddb238982e1324e1e06e350f327c9b3c364e741de5",
+      "parity": "exact",
+      "law": "stable_digest over the frozen tasks.json twin successConditions reproduces the live-recorded digest byte-for-byte"
+    },
+    "capability_contract": {
+      "value": "3c8269a9294ac3c4b77bd8918242001969c1152c644b5ca4f61a5a208d793e3e",
+      "parity": "runner-local",
+      "law": "the JavaScript runner digested rich {name,description,args} contract objects; the Rust harness binds capability names (execution::CAPABILITIES). Same four capabilities, different digest identity"
+    },
+    "verification_protocol": {
+      "value": "a431ce6ca2d8840b8a0bd3352c879456514a0a9a7c78b9d19868d6f5f27af8f9",
+      "parity": "runner-local",
+      "law": "the JavaScript runner digested its verify-closure shape; the Rust harness digests the twin verificationProtocol array. Same protocol semantics, different digest identity"
+    },
+    "start_state": {
+      "value": "4b101cb25178d30e10b1b920e897aecc0ee254485eb54270a8434d42a0a039c4",
+      "parity": "runner-local",
+      "law": "the JavaScript runner digested its workspace fingerprint shape; the Rust harness digests the twin starting_workspace map. Same content, different digest identity"
+    },
+    "execution_budget": {
+      "value": "277267cdc0bcdf0e0c8f5d87f231c065c1e36c80f3044284f56b3c8f6850a024",
+      "parity": "runner-local",
+      "law": "the JavaScript runner digested its budget record shape; the Rust harness digests its own execution budget object. Same budget values, different digest identity"
+    }
+  },
+  "provenance_note": "Digests were recorded by the retired JavaScript series1 runner (tasks.mjs origin) during live GLM runs on 2026-09-13. The Rust twin reproduces the prompt and success-constraints digests byte-for-byte (stable_digest over the frozen JSON twin); the remaining recorded identities are runner-local shapes over equivalent content, as labelled. This file is a tracked extract for offline parity proofs; the live source manifest remains untracked owner evidence and is never modified by tests."
+}

@@ -1,26 +1,32 @@
 name: QL Series 1 Live
 
+# Owner-gated live-provider evidence collection, now through the native
+# research harness (R11). The harness's law is unchanged: the model body is an
+# explicit supplied process (one-shot JSON or sdk-jsonl RPC host); Actuation
+# owns context, bounds, records and evidence, never provider selection.
+# The FIRST live validation run collected by this workflow is an explicit
+# owner-gated step; dispatching it asserts that owner decision.
+
 on:
   workflow_dispatch:
     inputs:
       ref:
         description: Experiment ref to execute
         required: true
-        default: foundation/first-class-actuation
+        default: main
         type: string
-      host:
-        description: Host profile to execute
-        required: true
-        default: all
-        type: choice
-        options: [all, pi, pydantic-ai, native, dsh]
       task:
-        description: Benchmark task id or 'all'
+        description: Series 1 task id (from the frozen corpus)
         required: true
-        default: all
+        default: S1-RESTRAINT-001
+        type: string
+      conditions:
+        description: Comma-separated conditions (classic,ql-direct,ql-deep)
+        required: true
+        default: 'classic,ql-direct,ql-deep'
         type: string
       repetitions:
-        description: Repetitions per Classic/Direct/Deep condition (1 for exploratory human review)
+        description: Repetitions per condition (1 for exploratory human review)
         required: true
         default: '1'
         type: string
@@ -30,10 +36,16 @@ on:
         default: '16'
         type: string
       model:
-        description: Candidate DeepSeek model id, identical across all conditions and hosts
+        description: Model id recorded into the run evidence (identical across conditions)
         required: true
         default: glm-5.3-flash
         type: string
+      body:
+        description: |
+          Supplied model body JSON: {"process":{program,args,cwd,environment,timeout_ms,output_limit},
+          "configuration":{provider,model,...},"fixture_provider":false,"protocol":"one-shot-json",
+          "session_timeout_ms":...}. Secrets must be passed as process environment by the
+          dispatcher; they are redacted from records.
 
 permissions:
   contents: read
@@ -46,158 +58,60 @@ jobs:
   live-series1:
     runs-on: ubuntu-latest
     timeout-minutes: 240
-    env:
-      QL_SERIES1_PROVIDER: zai
-      QL_SERIES1_MODEL: ${{ inputs.model }}
-      ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
     steps:
       - name: Checkout experiment ref
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
+          persist-credentials: false
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.19.0'
+      - uses: dtolnay/rust-toolchain@stable
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install pinned Pi model stack
-        working-directory: experiments/ql-runtime/comparison/series1
-        run: npm install --no-save --no-package-lock @earendil-works/pi-ai@0.84.1
-
-      - name: Checkout pinned Pydantic AI
-        uses: actions/checkout@v4
-        with:
-          repository: pydantic/pydantic-ai
-          ref: 00db3a4b391eb9a46f3d6e704070bcf725121f75
-          path: .series1/pydantic-ai
-
-      - name: Install pinned Pydantic AI model stack
-        run: |
-          python -m pip install -e '.series1/pydantic-ai/pydantic_graph'
-          python -m pip install -e '.series1/pydantic-ai/pydantic_ai_slim[openai]'
-
-      - name: Checkout pinned public DeepSeek Harness source
-        if: ${{ inputs.host == 'dsh' || inputs.host == 'all' }}
-        uses: actions/checkout@v4
-        with:
-          repository: deepseek-ai/deepseek-harness
-          ref: 47f943859bef60e4160492346772ded9b24f765a
-          path: .series1/deepseek-harness
-
-      - name: Build pinned DSH host packages from public source
-        if: ${{ inputs.host == 'dsh' || inputs.host == 'all' }}
-        working-directory: .series1/deepseek-harness
+      - name: Preflight the frozen corpus and execute the matched benchmark
+        shell: bash
         env:
-          # Preserve the pinned DSH source even though its declared pnpm@11.7.0
-          # tarball is absent from the public registry. Lockfile v9 is readable
-          # by this pinned public pnpm 10 compatibility bootstrap.
-          COREPACK_ENABLE_PROJECT_SPEC: '0'
-        run: |
-          npm install --global pnpm@10.15.1
-          pnpm --version
-          pnpm install --frozen-lockfile
-          pnpm run build:lib:host
-
-      - name: Project pinned DSH packages into Series 1 resolution
-        if: ${{ inputs.host == 'dsh' || inputs.host == 'all' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          export DSH_DIR="$GITHUB_WORKSPACE/.series1/deepseek-harness"
-          export SERIES1_DIR="$GITHUB_WORKSPACE/experiments/ql-runtime/comparison/series1"
-          # Project every named DSH workspace package (pnpm-workspace.yaml
-          # globs: packages/*/*, vendor/*, apps/*), then assert the plugin
-          # tree the Series 1 provider imports actually resolves.
-          node <<'NODE'
-          const fs = require('node:fs');
-          const path = require('node:path');
-          const dshRoot = process.env.DSH_DIR;
-          const targetRoot = path.join(process.env.SERIES1_DIR, 'node_modules');
-          const roots = ['packages', 'vendor', 'apps'].map((dir) => path.join(dshRoot, dir));
-          let projected = 0;
-          function visit(dir) {
-            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-              if (entry.name === 'node_modules' || entry.name === '.git') continue;
-              const full = path.join(dir, entry.name);
-              if (entry.isDirectory()) { visit(full); continue; }
-              if (!entry.isFile() || entry.name !== 'package.json') continue;
-              const manifest = JSON.parse(fs.readFileSync(full, 'utf8'));
-              if (!manifest.name) continue;
-              const parts = manifest.name.startsWith('@') ? manifest.name.split('/') : [manifest.name];
-              const destination = path.join(targetRoot, ...parts);
-              fs.mkdirSync(path.dirname(destination), { recursive: true });
-              fs.rmSync(destination, { recursive: true, force: true });
-              fs.symlinkSync(path.dirname(full), destination, 'dir');
-              projected += 1;
-            }
-          }
-          for (const root of roots) visit(root);
-          if (projected === 0) throw new Error('No DSH workspace packages projected');
-          console.log(`Projected ${projected} pinned DSH workspace packages`);
-          NODE
-          while read -r pkg_name; do
-            test -f "$SERIES1_DIR/node_modules/$pkg_name/package.json" || {
-              echo "Series 1 resolution is missing $pkg_name from DSH_PLUGIN_TREE" >&2
-              exit 1
-            }
-          done < <(node -e "import('./experiments/ql-runtime/comparison/series1/dsh.mjs').then((m) => console.log(m.DSH_PLUGIN_TREE.filter((n) => n.startsWith('@deepseek-ai/')).join('\n')))")
-
-      - name: Preflight and execute matched benchmark
-        shell: bash
+          BODY: ${{ inputs.body }}
         run: |
           set -euo pipefail
           mkdir -p series1-evidence
-
-          if [[ '${{ inputs.host }}' == 'all' ]]; then
-            HOSTS=(pi pydantic-ai native dsh)
-            PREFLIGHT_HOST=()
-          else
-            HOSTS=('${{ inputs.host }}')
-            PREFLIGHT_HOST=(--host '${{ inputs.host }}')
-          fi
-
-          # Discover the task registry from tasks.mjs (SERIES1_TASKS) — never a
-          # transcribed id list that silently drops tasks added later.
-          if [[ '${{ inputs.task }}' == 'all' ]]; then
-            mapfile -t TASKS < <(node -e "import('./experiments/ql-runtime/comparison/series1/tasks.mjs').then((m) => console.log(m.SERIES1_TASKS.map((t) => t.id).join('\n')))")
-            (( ${#TASKS[@]} > 0 )) || { echo "no Series 1 tasks discovered from tasks.mjs" >&2; exit 1; }
-          else
-            TASKS=('${{ inputs.task }}')
-          fi
-
-          node experiments/ql-runtime/comparison/series1/preflight.mjs --live --task '${{ inputs.task }}' "${PREFLIGHT_HOST[@]}" \
-            > series1-evidence/preflight.json
-
-          for HOST in "${HOSTS[@]}"; do
-            for TASK in "${TASKS[@]}"; do
-              PREFIX="series1-evidence/${HOST}-${TASK}"
-              OUT="${PREFIX}-run.json"
-              node experiments/ql-runtime/comparison/series1/run.mjs \
-                --host "$HOST" \
-                --task "$TASK" \
-                --repetitions '${{ inputs.repetitions }}' \
-                --max-steps '${{ inputs.max_steps }}' \
-                > "$OUT"
-
-              node experiments/ql-runtime/comparison/series1/render-review.mjs "$OUT" --mode assessment \
-                > "${PREFIX}-assessment.json"
-              node -e "const fs=require('node:fs'); const a=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); if(!a.valid){ console.error('Series 1 evidence is invalid/incomplete: '+a.reasons.join('; ')); process.exit(1); }" \
-                "${PREFIX}-assessment.json"
-
-              node experiments/ql-runtime/comparison/series1/render-review.mjs "$OUT" --mode masked \
-                > "${PREFIX}-pass-a-masked.md"
-              node experiments/ql-runtime/comparison/series1/render-review.mjs "$OUT" --mode unmasked \
-                > "${PREFIX}-pass-b-unmasked.md"
-              node experiments/ql-runtime/comparison/series1/render-review.mjs "$OUT" --mode mapping \
-                > "${PREFIX}-mask-map.json"
-            done
-          done
+          cargo build --locked --release -p actuation-research
+          python3 - <<'PY' > /dev/null
+          import json, os
+          body = json.loads(os.environ["BODY"])
+          conditions = [c.strip() for c in "${{ inputs.conditions }}".split(",") if c.strip()]
+          request = {
+              "operation": "comparison.run",
+              "trace_ref": "series1-live:" + "${{ github.run_id }}",
+              "root": "series1-evidence/comparison",
+              "repetitions": int("${{ inputs.repetitions }}"),
+              "conditions": conditions,
+              "run": {
+                  "task_id": "${{ inputs.task }}",
+                  "max_steps": int("${{ inputs.max_steps }}"),
+                  "max_calls": 10000,
+                  "body": body,
+              },
+              "basis": {
+                  "host_id": "supplied-body",
+                  "host_revision": "native-series1-body-v1",
+                  "benchmark_revision": "series1-v0.1-human-review",
+                  "runner_revision": "actuation-research " + "${{ github.sha }}"[:12],
+                  "review_contract_revision": "ql-series1-review/0.1",
+              },
+          }
+          json.dump(request, open("series1-evidence/request.json", "w"), indent=1)
+          PY
+          ./target/release/actuation-research --json < series1-evidence/request.json > series1-evidence/manifest.json
+          python3 - <<'PY'
+          import json, sys
+          manifest = json.load(open("series1-evidence/manifest.json"))
+          if manifest.get("schema") != "ql-series1-run/0.3":
+              sys.exit("Series 1 run did not produce a run manifest: " + json.dumps(manifest)[:400])
+          held = manifest.get("held_constants", {})
+          print("determination:", manifest.get("determination"))
+          print("held constants valid:", held.get("valid"))
+          sys.exit(0 if held.get("valid") else 1)
+          PY
 
       - name: Publish Series 1 human-review evidence
         uses: actions/upload-artifact@v4

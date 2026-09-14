@@ -1,16 +1,23 @@
 name: QL Series 1 DSH
 
+# Since the R11 JavaScript retirement the pinned DeepSeek Harness guarantee is
+# carried by recorded-fixture conformance: fixtures captured from the public
+# source at the pinned revision (usage mapping, observational-agent law,
+# session/inspection separation) are asserted by the native suite. Re-capture
+# is an owner-run procedure documented in docs/rust-refoundation/
+# R11-JS-RETIREMENT.md; a pin bump without re-capture fails the pin assertions.
+
 on:
   push:
     branches: [main]
     paths:
-      - 'experiments/ql-runtime/comparison/series1/**'
-      - 'experiments/ql-runtime/deep-ql/test/series1-dsh.test.js'
+      - 'fixtures/research/specimens/**'
+      - 'crates/actuation-research/**'
       - '.github/workflows/ql-series1-dsh.yml'
   pull_request:
     paths:
-      - 'experiments/ql-runtime/comparison/series1/**'
-      - 'experiments/ql-runtime/deep-ql/test/series1-dsh.test.js'
+      - 'fixtures/research/specimens/**'
+      - 'crates/actuation-research/**'
       - '.github/workflows/ql-series1-dsh.yml'
   workflow_dispatch:
 
@@ -27,114 +34,6 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-
-      - name: Checkout pinned public DeepSeek Harness source
-        uses: actions/checkout@v4
-        with:
-          repository: deepseek-ai/deepseek-harness
-          ref: 47f943859bef60e4160492346772ded9b24f765a
-          path: .series1/deepseek-harness
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22.19.0'
-
-      - name: Build pinned DSH host packages from public source
-        working-directory: .series1/deepseek-harness
-        env:
-          # The pinned DSH source declares pnpm@11.7.0, but that tarball is not
-          # available from the public npm registry. Its lockfile is v9, so use
-          # a pinned public pnpm 10 bootstrap without moving the DSH source SHA.
-          COREPACK_ENABLE_PROJECT_SPEC: '0'
-        run: |
-          npm install --global pnpm@10.15.1
-          pnpm --version
-          pnpm install --frozen-lockfile
-          pnpm run build:lib:host
-
-      - name: Project pinned DSH workspace packages into Series 1 resolution
-        shell: bash
-        env:
-          DSH_DIR: ${{ github.workspace }}/.series1/deepseek-harness
-          SERIES1_DIR: ${{ github.workspace }}/experiments/ql-runtime/comparison/series1
-        run: |
-          set -euo pipefail
-          rm -rf "$SERIES1_DIR/node_modules"
-          mkdir -p "$SERIES1_DIR/node_modules"
-
-          # DSH is a pnpm workspace. Its own packages resolve one another from
-          # inside that workspace, but an external sibling module cannot import
-          # workspace package names merely by seeing DSH's root node_modules.
-          # Project every named workspace package explicitly into the Series 1
-          # resolver while keeping each link pointed at the exact cloned source.
-          # The roots follow the pinned pnpm-workspace.yaml globs: packages/*/*,
-          # vendor/* (where @deepseek-ai/cordis lives) and apps/*.
-          node <<'NODE'
-          const fs = require('node:fs');
-          const path = require('node:path');
-
-          const dshRoot = process.env.DSH_DIR;
-          const targetRoot = path.join(process.env.SERIES1_DIR, 'node_modules');
-          const roots = ['packages', 'vendor', 'apps'].map((dir) => path.join(dshRoot, dir));
-          let projected = 0;
-
-          function visit(dir) {
-            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-              if (entry.name === 'node_modules' || entry.name === '.git') continue;
-              const full = path.join(dir, entry.name);
-              if (entry.isDirectory()) {
-                visit(full);
-                continue;
-              }
-              if (!entry.isFile() || entry.name !== 'package.json') continue;
-
-              const manifest = JSON.parse(fs.readFileSync(full, 'utf8'));
-              if (!manifest.name) continue;
-              const pkgDir = path.dirname(full);
-              const parts = manifest.name.startsWith('@')
-                ? manifest.name.split('/')
-                : [manifest.name];
-              const destination = path.join(targetRoot, ...parts);
-              fs.mkdirSync(path.dirname(destination), { recursive: true });
-              fs.rmSync(destination, { recursive: true, force: true });
-              fs.symlinkSync(pkgDir, destination, 'dir');
-              projected += 1;
-            }
-          }
-
-          for (const root of roots) visit(root);
-          if (projected === 0) throw new Error('No DSH workspace packages projected');
-          console.log(`Projected ${projected} pinned DSH workspace packages`);
-          NODE
-
-          # Assert the DSH packages the Series 1 provider imports
-          # (DSH_PLUGIN_TREE in dsh.mjs) resolve — the declared source, not a
-          # transcribed subset that missed vendored packages like cordis.
-          # Non-@deepseek-ai entries are Series 1's own runtime adapters,
-          # registered in-process, not node modules to project.
-          while read -r pkg_name; do
-            test -f "$SERIES1_DIR/node_modules/$pkg_name/package.json" || {
-              echo "Series 1 resolution is missing $pkg_name from DSH_PLUGIN_TREE" >&2
-              exit 1
-            }
-          done < <(node -e "import('./experiments/ql-runtime/comparison/series1/dsh.mjs').then((m) => console.log(m.DSH_PLUGIN_TREE.filter((n) => n.startsWith('@deepseek-ai/')).join('\n')))")
-
-      - name: Pure DSH Series 1 invariants
-        working-directory: experiments/ql-runtime/deep-ql
-        run: node --test test/series1-dsh.test.js
-
-      - name: Real rc5 Cordis / Session / Agent / persistence composition
-        shell: bash
-        run: |
-          set -o pipefail
-          node experiments/ql-runtime/comparison/series1/dsh-structural.mjs 2>&1 | tee dsh-structural.log
-
-      - name: Publish structural evidence and diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ql-series1-dsh-structural-${{ github.run_id }}
-          path: |
-            dsh-structural.json
-            dsh-structural.log
-          if-no-files-found: warn
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Pinned DSH specimen conformance (recorded fixture, pins asserted)
+        run: cargo test --locked -p actuation-research --test specimen_conformance

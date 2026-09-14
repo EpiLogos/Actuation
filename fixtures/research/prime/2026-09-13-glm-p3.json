@@ -1,0 +1,34 @@
+{
+  "schema": "actuation.research-live-parity/v1",
+  "evidence_class": "D",
+  "family": "prime",
+  "captured": "2026-09-13",
+  "source": {
+    "path": "experiments/ql-runtime/prime/runs/2026-09-13/p3-restraint.json",
+    "sha256": "2d3b360d09a46e7126b29e6b0c20c76823c062c8785afefd2d21297ece843ed0",
+    "provider": "zai",
+    "model": "glm-5.3-flash",
+    "prime_release": "v0.9.4"
+  },
+  "condition_id": "prime-relational-return",
+  "condition_code": "P3",
+  "task": {
+    "prompt": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything.",
+    "success_conditions": [
+      "Answer from fact.txt.",
+      "Use one sentence.",
+      "Do not edit the workspace.",
+      "Stop once the bounded request is answered."
+    ]
+  },
+  "recorded_composed_prompt": "You are the root Agency for Actuation experiment P3.\nWork directly on the supplied task and leave the workspace in the requested state.\nPrime child agents are differentiated acting loci, not role-play labels. Create them only when the task genuinely benefits from differentiated work.\nA Python-backed ql_relational faculty is available to you and is inherited by Prime child agents.\nUse QL/MEF/Wiki operations where they disclose an operationally useful relation. Do not decorate prose with QL names in place of actual operations.\nWhen you create a child, tell it to situate its bounded task in relation to the parent task, use the same relational faculty where useful, preserve source/evidence provenance, and return material difference rather than a generic summary.\nWhen a child return materially affects the parent determination, preserve it using the Actuation Prime Return envelope. The ql_relational.return_envelope(...) helper can construct it.\nReconstitution must retain returned difference and unresolved relations before synthesis; do not flatten conflicting child returns merely to reach agreement.\n\nTASK\nAccording to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything.\n\nSUCCESS CONDITIONS\n- Answer from fact.txt.\n- Use one sentence.\n- Do not edit the workspace.\n- Stop once the bounded request is answered.",
+  "claims": {
+    "live_prime_run": true,
+    "ql_relational_faculty_exercised": false,
+    "observed_child_loci": 0,
+    "observed_lineage_edges": 0,
+    "observed_nested_child_edges": 0,
+    "continual_refinement_invoked": false
+  },
+  "provenance_note": "The composed prompt was recorded from the live run's first model request (JavaScript driver, conditions.mjs origin). The Rust condition_prompt over the JSON-twin condition and task must reproduce it byte-for-byte."
+}
