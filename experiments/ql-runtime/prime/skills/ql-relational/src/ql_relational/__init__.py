@@ -39,6 +39,21 @@ async def _run(*args: str, stdin: str | None = None) -> dict[str, Any]:
         return {"stdout": text, "stderr": stderr.decode(), "exit_code": proc.returncode}
 
 
+def _prebuilt(env_name: str) -> str | None:
+    """Return an existing executable path from an env override, else None.
+
+    Prebuilt binaries let repeated faculty calls skip a cargo compile per call;
+    callers fall back to `cargo run` from QL_MEF_ROOT when no override resolves.
+    """
+    value = os.environ.get(env_name)
+    if not value:
+        return None
+    path = Path(value).expanduser()
+    if path.is_file() and os.access(path, os.X_OK):
+        return str(path)
+    return None
+
+
 async def _git_revision() -> str:
     result = await _run("git", "rev-parse", "HEAD")
     return str(result.get("stdout", "")).strip()
@@ -49,7 +64,7 @@ def _digest(value: Any) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
-async def _record(operation: str, request: Any, response: Any) -> None:
+async def _record(operation: str, request: Any, response: Any, runner: str | None = None) -> None:
     target = os.environ.get("QL_RELATIONAL_EVIDENCE_LOG")
     if not target:
         return
@@ -61,6 +76,7 @@ async def _record(operation: str, request: Any, response: Any) -> None:
         "request_digest": _digest(request),
         "response_digest": _digest(response),
         "harmonic_enabled": os.environ.get("QL_PRIME_HARMONIC") == "1",
+        "runner": runner or "cargo-run",
     }
     path = Path(target)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -70,11 +86,17 @@ async def _record(operation: str, request: Any, response: Any) -> None:
 
 async def _ql(*args: str) -> dict[str, Any]:
     request = list(args)
-    response = await _run(
-        "cargo", "run", "--quiet", "--manifest-path", str(_root() / "Cargo.toml"),
-        "-p", "ql-cli", "--", *args, "--json"
-    )
-    await _record("ql-cli:" + ".".join(args[:2]), request, response)
+    ql_bin = _prebuilt("QL_QL_CLI_BIN")
+    if ql_bin is not None:
+        response = await _run(ql_bin, *args, "--json")
+        runner = f"prebuilt:{ql_bin}"
+    else:
+        response = await _run(
+            "cargo", "run", "--quiet", "--manifest-path", str(_root() / "Cargo.toml"),
+            "-p", "ql-cli", "--", *args, "--json"
+        )
+        runner = "cargo-run"
+    await _record("ql-cli:" + ".".join(args[:2]), request, response, runner)
     return response
 
 
@@ -111,12 +133,18 @@ async def negotiate(operation: str) -> dict[str, Any]:
 async def wiki_refract(request: dict[str, Any]) -> dict[str, Any]:
     """Run the native ql-mef/wiki-refraction/v1 engine over a caller-owned Wiki target."""
     payload = json.dumps(request)
-    response = await _run(
-        "cargo", "run", "--quiet", "--manifest-path", str(_root() / "Cargo.toml"),
-        "-p", "ql-wiki", "--bin", "ql-wiki-refraction",
-        stdin=payload,
-    )
-    await _record("ql-wiki:refract", request, response)
+    refraction_bin = _prebuilt("QL_WIKI_REFRACTION_BIN")
+    if refraction_bin is not None:
+        response = await _run(refraction_bin, stdin=payload)
+        runner = f"prebuilt:{refraction_bin}"
+    else:
+        response = await _run(
+            "cargo", "run", "--quiet", "--manifest-path", str(_root() / "Cargo.toml"),
+            "-p", "ql-wiki", "--bin", "ql-wiki-refraction",
+            stdin=payload,
+        )
+        runner = "cargo-run"
+    await _record("ql-wiki:refract", request, response, runner)
     return response
 
 

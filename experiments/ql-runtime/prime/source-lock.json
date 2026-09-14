@@ -13,8 +13,9 @@
   },
   "ql_mef": {
     "repository": "EpiLogos/QL-MEF",
-    "accepted_main_revision": "44ed3cd0e7a8bc25508a4e18ad3bb4c730013913",
-    "observed_at": "2026-09-09T09:04:24Z",
+    "accepted_main_revision": "82e779b78ac3bdd9b854487c9405ee72e58ca508",
+    "observed_at": "2026-09-13T23:54:44Z",
+    "provenance": "Advanced from 44ed3cd0e7a8bc25508a4e18ad3bb4c730013913 to 82e779b78ac3bdd9b854487c9405ee72e58ca508 ('feat(cli): add ql system --json settings disclosure' on the agent/wave5-system-disclosure line) so the lock carries the merged ql.vak-composition/v1 contract (#142, 374cf8d) and the `ql vak compose` CLI. Observed as the locked revision of the local QL-MEF checkout; origin/main has since advanced past this line (f09d2a4 at observation time), so re-pin only by an explicit owner decision.",
     "harmonic_research": {
       "issue": 31,
       "pull_request": 81,

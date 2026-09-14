@@ -44,6 +44,10 @@ For a differentiated child Agency:
 
 Prime children inherit this installed Skill from their parent runtime. A child may itself recurse when the live Prime depth configuration admits it.
 
+## Binary resolution
+
+By default every QL call compiles on demand through `cargo run` from `QL_MEF_ROOT`. When `QL_QL_CLI_BIN` (for `ql`) or `QL_WIKI_REFRACTION_BIN` (for `ql-wiki-refraction`) is set to an existing executable, that prebuilt binary is used instead, so repeated faculty calls stop paying a compile per call. The evidence log records which runner served each call (`prebuilt:<path>` or `cargo-run`).
+
 ## Wiki / constellation
 
 The deterministic Wiki structural contract is the common structural floor. `constellation_contract()` returns that source verbatim with its QL-MEF revision so you can reason from the current A/B/C, D1-D3, whole-anchor, constellation and Return canon instead of inventing another sixfold.
