@@ -107,6 +107,97 @@ impl<T: ModelBody + ?Sized> ModelBody for Box<T> {
         (**self).finish(inspection)
     }
 }
+/// A malformed turn is a host-protocol event, not a model verdict: re-ask
+/// with the failure made explicit rather than failing the run, and re-ask an
+/// empty model-carried act once before accepting the empty return as the
+/// interpreted difference. Applied uniformly to every condition; repair
+/// counts and failed attempts stay on the record.
+pub struct RepairingBody<B: ModelBody> {
+    pub inner: B,
+    pub max_repairs: usize,
+}
+impl<B: ModelBody> RepairingBody<B> {
+    pub fn new(inner: B) -> Self {
+        Self {
+            inner,
+            max_repairs: 2,
+        }
+    }
+    fn is_parse_error(error: &Error) -> bool {
+        let m = error.to_string();
+        m.contains("invalid JSON")
+            || m.contains("did not return a JSON object")
+            || m.contains("must be an object")
+    }
+    fn repair_request(request: &Value, note: &str) -> Value {
+        let mut repaired = request.clone();
+        if let Some(control) = repaired.get_mut("series1Control") {
+            let system = control["system"].as_str().unwrap_or_default().to_owned();
+            control["system"] = json!(format!("{system}\n\n{note}"));
+        }
+        repaired
+    }
+}
+impl<B: ModelBody> ModelBody for RepairingBody<B> {
+    fn complete(&mut self, request: &Value) -> Result<Value> {
+        let mut failed_attempts: Vec<Value> = Vec::new();
+        let mut response = self.inner.complete(request);
+        for attempt in 0..=self.max_repairs {
+            match &response {
+                Err(e) if Self::is_parse_error(e) && attempt < self.max_repairs => {
+                    failed_attempts.push(json!({"error":e.to_string()}));
+                    response = self.inner.complete(&Self::repair_request(
+                        request,
+                        "Your previous response was not a single valid JSON object. Return exactly one JSON object and no prose outside it. If you need to reason, do it silently and return only the JSON object.",
+                    ));
+                }
+                Ok(value)
+                    if request.get("qlAct").is_some()
+                        && value.get("control").map(Value::is_null).unwrap_or(true)
+                        && value
+                            .get("capabilityCalls")
+                            .and_then(Value::as_array)
+                            .map(Vec::is_empty)
+                            .unwrap_or(true)
+                        && value
+                            .get("content")
+                            .and_then(Value::as_str)
+                            .map(str::trim)
+                            .map(str::is_empty)
+                            .unwrap_or(true)
+                        && attempt < 1 =>
+                {
+                    // Empty model-carried act: no difference to interpret.
+                    response = self.inner.complete(&Self::repair_request(
+                        request,
+                        "Your previous response was an empty object. Perform the stated intent now and return exactly one JSON object with non-empty \"content\".",
+                    ));
+                    if let Ok(v) = &mut response {
+                        v["empty_content_retry"] = json!(true);
+                    }
+                }
+                _ => break,
+            }
+        }
+        if let Ok(value) = &mut response {
+            value["repairs"] = json!(failed_attempts.len());
+            if !failed_attempts.is_empty() {
+                value["failed_attempts"] = json!(failed_attempts);
+            }
+        }
+        response
+    }
+    fn basis(&self) -> Value {
+        let mut basis = self.inner.basis();
+        basis["turn_repairs"] =
+            json!({"malformed_reask_max":self.max_repairs,"empty_act_reask":true});
+        basis
+    }
+    fn finish(&mut self, inspection: &Value) -> Value {
+        self.inner.finish(inspection)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct ProcessModelBody {
     pub process: ProcessSpec,
@@ -366,7 +457,10 @@ pub fn run_task<B: ModelBody>(
         } else {
             Mode::Deep
         };
-        let mut policy = crate::policy::ModelPolicy::new(native_mode);
+        let mut policy = crate::policy::ModelPolicy::with_schedule(
+            native_mode,
+            crate::policy::schedule_for_category(task.category()),
+        );
         let mut inspector = TaskInspector {
             task: task.clone(),
             world: host.world.clone(),
