@@ -37,7 +37,8 @@ function args() {
     task: read('task', process.env.QL_SERIES1_TASK ?? 'S1-CODE-001'),
     repetitions: Number(read('repetitions', process.env.QL_SERIES1_REPETITIONS ?? '1')),
     maxSteps: Number(read('max-steps', process.env.QL_SERIES1_MAX_STEPS ?? '16')),
-    conditions: read('conditions', process.env.QL_SERIES1_CONDITIONS ?? 'all')
+    conditions: read('conditions', process.env.QL_SERIES1_CONDITIONS ?? 'all'),
+    compressedControl: values.includes('--compressed-control') || process.env.QL_SERIES1_COMPRESSED_CONTROL === '1'
   };
 }
 
@@ -84,18 +85,24 @@ function scheduleForTask(task) {
   return ALLOWANCE_SCHEDULES[task?.category] ?? ALLOWANCE_SCHEDULES.default;
 }
 
-function createRuntime(condition, runId, task) {
+function createRuntime(condition, runId, task, compressedControl = false) {
   if (condition === 'classic') return { runtime: new ClassicRuntime(), policy: null };
   const schedule = scheduleForTask(task);
+  // Compressed control (owner direction): intermediate QL control turns
+  // (next-act, interpret-return) run as deterministic compressions of the
+  // circuit state instead of model calls; acts and determination stay model
+  // turns. Off by default; enabled per run via --compressed-control or
+  // QL_SERIES1_COMPRESSED_CONTROL=1 so the held-constant comparison lane
+  // remains unchanged unless explicitly asked for.
   if (condition === 'ql-direct') {
-    const policy = createModelDrivenQLPolicy({ mode: 'direct', operatorRunId: `${runId}:operators`, allowanceSchedule: schedule });
+    const policy = createModelDrivenQLPolicy({ mode: 'direct', operatorRunId: `${runId}:operators`, allowanceSchedule: schedule, compressedControl });
     return { runtime: new QLDirectCoreRuntime({ policy }), policy };
   }
-  const policy = createModelDrivenQLPolicy({ mode: 'deep', operatorRunId: `${runId}:operators`, allowanceSchedule: schedule });
+  const policy = createModelDrivenQLPolicy({ mode: 'deep', operatorRunId: `${runId}:operators`, allowanceSchedule: schedule, compressedControl });
   return { runtime: new DEEP_CLASS({ policy }), policy };
 }
 
-async function runCondition({ hostId, task, condition, repetition, model, maxSteps, freeze }) {
+async function runCondition({ hostId, task, condition, repetition, model, maxSteps, freeze, compressedControl = false }) {
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), `ql-series1-${task.id}-${condition}-`));
   let provider = null;
   try {
@@ -152,7 +159,7 @@ async function runCondition({ hostId, task, condition, repetition, model, maxSte
       startState: { digest: startStateDigest }
     });
     const expectedRunId = runIdForManifest(manifest);
-    const { runtime, policy } = createRuntime(condition, expectedRunId, task);
+    const { runtime, policy } = createRuntime(condition, expectedRunId, task, compressedControl);
     const request = bindSeries1Host(baseRequest, host);
     const started = performance.now();
     const record = await executeRun({ runtime, host, request, manifest });
@@ -189,6 +196,7 @@ async function runCondition({ hostId, task, condition, repetition, model, maxSte
       host_native_evidence: hostNativeEvidence,
       condition,
       repetition,
+      compressed_control: policy?.compressedControl ?? false,
       runtime: { id: runtime.id, version: runtime.version },
       model,
       task_id: task.id,
@@ -271,7 +279,7 @@ async function main() {
   for (let repetition = 0; repetition < config.repetitions; repetition += 1) {
     for (const condition of rotation(repetition)) {
       if (!requestedConditions.includes(condition)) continue;
-      records.push(await runCondition({ hostId: config.host, task, condition, repetition, model, maxSteps: config.maxSteps, freeze }));
+      records.push(await runCondition({ hostId: config.host, task, condition, repetition, model, maxSteps: config.maxSteps, freeze, compressedControl: config.compressedControl }));
     }
   }
 

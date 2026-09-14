@@ -52,6 +52,222 @@ export function classifyStipulations(conditions) {
   }));
 }
 
+// Compressed-intent control path (owner direction, 2026-09-14): intermediate
+// QL control turns (next-act, interpret-return) run "as close to compressed
+// intent as possible until the actual P5 act" — decided by deterministic code
+// over the circuit state, with no model call. The rules are the loop's own
+// interpretive law (the same worked examples the model interpreter is taught),
+// applied by code; the model's capacity is reserved for acts and
+// determination (ql-act, propose-determination, evaluate-closure, and the
+// deep-mode conjugate return all remain model turns). Every compressed
+// decision records its rule and inputs as compressed_control: {rule, basis}
+// in the act metadata / return witness so the run stays fully auditable.
+const TASK_FILE_GLOBAL = /[\w@.-]+(?:\/[\w@.-]+)*\.(?:js|mjs|cjs|ts|json|md|txt)/g;
+
+function activeResidues(circuit) {
+  return (circuit.residues ?? []).filter((entry) => !entry.invalidated);
+}
+
+function residueRawResults(circuit) {
+  return activeResidues(circuit)
+    .map((entry) => entry.value?.difference?.raw_result)
+    .filter((raw) => raw && typeof raw === 'object');
+}
+
+function taskFilePaths(request) {
+  const texts = [request?.input, ...(request?.successConditions ?? [])]
+    .filter((value) => typeof value === 'string' && value.length);
+  const found = new Set();
+  for (const text of texts) {
+    for (const match of text.matchAll(TASK_FILE_GLOBAL)) found.add(match[0]);
+  }
+  return [...found];
+}
+
+function recordedReadPaths(circuit) {
+  const paths = new Set();
+  for (const raw of residueRawResults(circuit)) {
+    if (typeof raw.path === 'string' && typeof raw.content === 'string') paths.add(raw.path);
+  }
+  return paths;
+}
+
+function recordedWritePaths(circuit) {
+  const paths = new Set();
+  for (const raw of residueRawResults(circuit)) {
+    if (typeof raw.path === 'string' && typeof raw.bytes === 'number') paths.add(raw.path);
+  }
+  return paths;
+}
+
+function passingTestRecorded(circuit) {
+  return residueRawResults(circuit).some((raw) => raw.ok === true && raw.exit_code === 0);
+}
+
+// The planner claims machine-verified closure only when every goal condition
+// carries a checkable signal the circuit actually holds (a passing test run).
+// Conditions without a machine-checkable signal — human-review conditions and
+// exclusions — are never claimed by the planner; they stay with the closure
+// gate, where they belong.
+function verifiableConditionsSatisfied(stipulations, circuit) {
+  const goals = stipulations.filter((binding) => binding.kind === 'goal');
+  if (!goals.length) return false;
+  return goals.every((binding) => (/test/i.test(binding.text) ? passingTestRecorded(circuit) : false));
+}
+
+function frameIntentRealised(circuit) {
+  return activeResidues(circuit).some((entry) => entry.kind === 'determination');
+}
+
+function modelReturnContent(raw) {
+  if (typeof raw?.content === 'string' && raw.content.trim()) return raw.content.trim();
+  if (raw?.control && typeof raw.control === 'object' && Object.keys(raw.control).length) {
+    return JSON.stringify(raw.control);
+  }
+  return '';
+}
+
+function operationFailed(difference) {
+  if (difference?.operation_success === false) return true;
+  const raw = difference?.raw_result;
+  if (!raw || typeof raw !== 'object') return false;
+  if (raw.ok === false) return true;
+  return raw.error != null && raw.content == null && raw.ok === undefined;
+}
+
+function compressedInterpretation({ circuit, act, difference }) {
+  const raw = difference?.raw_result;
+  const carrier = act.carrier ?? { kind: 'model' };
+
+  const failed = operationFailed(difference);
+  const content = modelReturnContent(raw);
+
+  let destination;
+  let residueKind;
+  let rule;
+  let basis;
+  let law;
+
+  if (failed) {
+    rule = 'interpret:failed-operation';
+    law = 'a failed operation returns to P1 as failure residue rather than pretending success';
+    basis = {
+      carrier_kind: carrier.kind,
+      carrier_name: carrier.name ?? null,
+      operation_success: Boolean(difference?.operation_success),
+      error: typeof raw?.error === 'string' ? raw.error : raw?.ok === false ? 'capability reported ok=false' : 'operation threw'
+    };
+    destination = 'P1';
+    residueKind = RESIDUE_KIND.P1;
+  } else if (carrier.kind === 'capability' && (carrier.name === 'read_file' || carrier.name === 'list_files')) {
+    const previouslyRead = carrier.name === 'read_file' && recordedReadPaths(circuit).has(raw?.path);
+    rule = 'interpret:successful-read';
+    law = 'a successful read of unprocessed evidence belongs at P1 even if the act claimed otherwise';
+    basis = {
+      capability: carrier.name,
+      path: raw?.path ?? null,
+      content_bytes: typeof raw?.content === 'string' ? raw.content.length : null,
+      entries: Array.isArray(raw?.entries) ? raw.entries.length : null,
+      unprocessed: !previouslyRead
+    };
+    destination = 'P1';
+    residueKind = RESIDUE_KIND.P1;
+  } else if (carrier.kind === 'capability' && carrier.name === 'write_file') {
+    rule = 'interpret:successful-mutation';
+    law = 'a successful mutation belongs at P2: the workspace changed but nothing is realised yet';
+    basis = { path: raw?.path ?? null, bytes: raw?.bytes ?? null };
+    destination = 'P2';
+    residueKind = RESIDUE_KIND.P2;
+  } else if (carrier.kind === 'capability') {
+    rule = 'interpret:successful-operation';
+    law = 'a successful exterior operation belongs at P2: a tool result still in use';
+    basis = { capability: carrier.name, ok: raw?.ok === true, exit_code: raw?.exit_code ?? null };
+    destination = 'P2';
+    residueKind = RESIDUE_KIND.P2;
+  } else if (carrier.kind === 'model' && content) {
+    rule = 'interpret:delivered-realisation';
+    law = 'a delivered realisation of the stated intent with non-empty content belongs at P5';
+    basis = { content_chars: content.length, capability_calls: Array.isArray(raw?.capabilityCalls) ? raw.capabilityCalls.length : 0 };
+    destination = 'P5';
+    residueKind = RESIDUE_KIND.P5;
+  } else if (carrier.kind === 'model') {
+    rule = 'interpret:empty-return';
+    law = 'a model return without content delivered no realisation; the observed effect stays in use at P2';
+    basis = { content_chars: 0 };
+    destination = 'P2';
+    residueKind = RESIDUE_KIND.P2;
+  } else {
+    rule = 'interpret:internal-control';
+    law = 'an in-loop control return is an effect observed inside the whole, held at P2';
+    basis = { carrier_kind: carrier.kind, name: carrier.name ?? null, has_input: carrier.input != null };
+    destination = 'P2';
+    residueKind = RESIDUE_KIND.P2;
+  }
+
+  return {
+    destination,
+    rationale: `Compressed interpretive rule ${rule}: ${law}.`,
+    residueDelta: {
+      create: [{
+        kind: residueKind,
+        position: destination,
+        value: {
+          difference: clone(difference),
+          semantic_summary: `Compressed interpretation (${rule}): ${JSON.stringify(basis)}`
+        },
+        provenance: { compressed_interpretation: true, act_id: act.id }
+      }]
+    },
+    witness: {
+      claimed_position: act.claimed_position ?? destination,
+      observed_position: destination,
+      ambiguity: null,
+      structural_facts: {
+        carrier: clone(act.carrier),
+        operation_success: Boolean(difference?.operation_success)
+      },
+      compressed_control: { rule, basis }
+    }
+  };
+}
+
+// Simple deterministic next-act planner over the circuit state: read what the
+// task names and the loop has not yet read while the frame intent is unmet;
+// request closure when every goal condition is machine-verified in-circuit;
+// otherwise return null and the turn falls through to the model-carried act.
+function compressedNextActPlan({ circuit, request, stipulations, capabilities }) {
+  const active = circuit.activePosition.id;
+  const unread = taskFilePaths(request).filter((path) => (
+    !recordedReadPaths(circuit).has(path) && !recordedWritePaths(circuit).has(path)
+  ));
+
+  if (!frameIntentRealised(circuit) && unread.length > 0 && capabilities.includes('read_file')) {
+    const path = unread[0];
+    return {
+      rule: 'next-act:read-unread-task-file',
+      closureRequest: false,
+      intent: `Read the task-named file ${path} into the circuit as material.`,
+      carrier: { kind: 'capability', name: 'read_file', args: { path } },
+      rationale: `Frame intent unmet and ${path} is named by the task but unread; a compressed read serves P1 before any model turn.`,
+      basis: { unread_files: unread, frame_intent_met: false }
+    };
+  }
+
+  const stepsUsed = (circuit.trajectory ?? []).length;
+  if (stepsUsed > 0 && verifiableConditionsSatisfied(stipulations, circuit)) {
+    return {
+      rule: 'next-act:conditions-verified-closure',
+      closureRequest: true,
+      intent: 'Every machine-verifiable success condition is satisfied in-circuit; requesting determination.',
+      carrier: { kind: 'internal_control', name: 'close', input: { reason: 'compressed planner: all goal conditions machine-verified in-circuit' } },
+      rationale: 'Every goal condition carries a checkable signal and the circuit holds its passing evidence; only the P5 determination gate may close.',
+      basis: { verified_goals: stipulations.filter((binding) => binding.kind === 'goal').map((binding) => binding.id), steps_used: stepsUsed }
+    };
+  }
+
+  return null;
+}
+
 // Per-position allowance schedule (owner direction, 2026-09-13): measure is
 // staged per position on the kernel's shape — declared with the frame,
 // consumed by acts, restated at every control turn, and refused with a typed
@@ -241,7 +457,8 @@ async function runConjugate({ host, circuit, determination, request, session }) 
 export function createModelDrivenQLPolicy({
   mode = 'direct',
   operatorRunId = 'series1:operators',
-  allowanceSchedule = DEFAULT_ALLOWANCE_SCHEDULE
+  allowanceSchedule = DEFAULT_ALLOWANCE_SCHEDULE,
+  compressedControl = false
 } = {}) {
   if (!['direct', 'deep'].includes(mode)) throw new TypeError(`Unknown QL policy mode '${mode}'.`);
   const session = new DeepQLOperatorSession({ runId: operatorRunId });
@@ -266,6 +483,7 @@ export function createModelDrivenQLPolicy({
 
   return {
     mode,
+    compressedControl,
 
     async nextAct({ circuit, request, host }) {
       const capabilities = (request.capabilities ?? []).map((entry) => typeof entry === 'string' ? entry : entry.id).filter(Boolean);
@@ -305,6 +523,29 @@ export function createModelDrivenQLPolicy({
           position_limit: allowance.limit
         }
       };
+
+      // Compressed control: the deterministic planner decides this turn when
+      // it can — reading unread task files or requesting machine-verified
+      // closure — and only otherwise falls through to the model-carried act.
+      if (compressedControl) {
+        const planned = compressedNextActPlan({ circuit, request, stipulations, capabilities });
+        if (planned) {
+          return {
+            intent: planned.intent,
+            carrier: planned.carrier,
+            inputResidueRefs: [],
+            claimedPosition: active,
+            claimedRelation: null,
+            metadata: {
+              controller_rationale: planned.rationale,
+              budget,
+              compressed_control: { rule: planned.rule, basis: planned.basis },
+              ...(planned.closureRequest ? { closure_request: true } : {})
+            }
+          };
+        }
+      }
+
       const decision = await control(
         host,
         'ql-next-act',
@@ -365,7 +606,10 @@ export function createModelDrivenQLPolicy({
               ...(act.metadata.allowance_refusal ? { allowance_refusal: act.metadata.allowance_refusal } : {}),
               carrier: clone(act.carrier),
               operation_success: difference.operation_success
-            }
+            },
+            ...(act.metadata.compressed_control
+              ? { compressed_control: act.metadata.compressed_control }
+              : {})
           }
         };
       }
@@ -384,6 +628,13 @@ export function createModelDrivenQLPolicy({
           },
           witness: { structural_facts: { deep_operator: 'depth', typed_summary_only: true } }
         };
+      }
+
+      if (compressedControl) {
+        // Compressed control: the interpretive law is applied by deterministic
+        // code over carrier kind and operation result — no model call. The
+        // rule and its inputs ride the witness for full auditability.
+        return compressedInterpretation({ circuit, act, difference });
       }
 
       const decision = await control(

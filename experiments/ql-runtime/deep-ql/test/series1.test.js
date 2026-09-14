@@ -523,3 +523,197 @@ test('a violated exclusion stipulation forces the closure to record failure', as
   assert.ok(verdict.rationale.includes('S2'));
   assert.equal(verdict.stipulation_verdicts.length, 2);
 });
+
+test('compressed interpret applies the loop law by carrier kind without a model call', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  const policy = createModelDrivenQLPolicy({ mode: 'direct', compressedControl: true });
+  let modelCalls = 0;
+  const request = {
+    input: 'task',
+    successConditions: [],
+    __series1Host: { mode: 'direct', async callModel() { modelCalls += 1; return { control: {} }; } }
+  };
+  const actFor = (carrier) => ({ id: 'run_t:c0:act:0', carrier, claimed_position: 'P1', metadata: {} });
+  const emptyCircuit = { activePosition: { id: 'P1' }, residues: [], trajectory: [] };
+
+  // Failed operation -> P1 with failure residue.
+  const failed = await policy.interpret({
+    circuit: emptyCircuit,
+    difference: { operation_success: false, raw_result: { error: 'ENOENT: no such file or directory' } },
+    act: actFor({ kind: 'capability', name: 'read_file', args: { path: 'missing.txt' } }),
+    request
+  });
+  assert.equal(failed.destination, 'P1');
+  assert.equal(failed.residueDelta.create[0].kind, 'material');
+  assert.equal(failed.witness.compressed_control.rule, 'interpret:failed-operation');
+
+  // Successful read of unprocessed evidence -> P1.
+  const read = await policy.interpret({
+    circuit: emptyCircuit,
+    difference: { operation_success: true, raw_result: { ok: true, path: 'fact.txt', content: 'markdown' } },
+    act: actFor({ kind: 'capability', name: 'read_file', args: { path: 'fact.txt' } }),
+    request
+  });
+  assert.equal(read.destination, 'P1');
+  assert.equal(read.witness.compressed_control.rule, 'interpret:successful-read');
+  assert.equal(read.witness.compressed_control.basis.unprocessed, true);
+
+  // Re-read of already-recorded content is disclosed in the basis, still P1.
+  const alreadyRead = {
+    activePosition: { id: 'P1' },
+    residues: [{
+      id: 'run_t:c0:res:0', kind: 'material', position: 'P1',
+      value: { difference: { operation_success: true, raw_result: { ok: true, path: 'fact.txt', content: 'markdown' } } }
+    }],
+    trajectory: []
+  };
+  const reread = await policy.interpret({
+    circuit: alreadyRead,
+    difference: { operation_success: true, raw_result: { ok: true, path: 'fact.txt', content: 'markdown' } },
+    act: actFor({ kind: 'capability', name: 'read_file', args: { path: 'fact.txt' } }),
+    request
+  });
+  assert.equal(reread.destination, 'P1');
+  assert.equal(reread.witness.compressed_control.basis.unprocessed, false);
+
+  // Successful mutation -> P2 effect.
+  const written = await policy.interpret({
+    circuit: emptyCircuit,
+    difference: { operation_success: true, raw_result: { ok: true, path: 'deliverable.md', bytes: 42 } },
+    act: actFor({ kind: 'capability', name: 'write_file', args: { path: 'deliverable.md', content: 'x' } }),
+    request
+  });
+  assert.equal(written.destination, 'P2');
+  assert.equal(written.residueDelta.create[0].kind, 'effect');
+  assert.equal(written.witness.compressed_control.rule, 'interpret:successful-mutation');
+
+  // Successful operation (passing tests) -> P2; failing run is a failed operation -> P1.
+  const testsPassed = await policy.interpret({
+    circuit: emptyCircuit,
+    difference: { operation_success: true, raw_result: { ok: true, exit_code: 0, stdout: 'pass', stderr: '' } },
+    act: actFor({ kind: 'capability', name: 'run_tests', args: {} }),
+    request
+  });
+  assert.equal(testsPassed.destination, 'P2');
+  assert.equal(testsPassed.witness.compressed_control.rule, 'interpret:successful-operation');
+
+  const testsFailed = await policy.interpret({
+    circuit: emptyCircuit,
+    difference: { operation_success: true, raw_result: { ok: false, exit_code: 1, stdout: '', stderr: 'fail' } },
+    act: actFor({ kind: 'capability', name: 'run_tests', args: {} }),
+    request
+  });
+  assert.equal(testsFailed.destination, 'P1');
+  assert.equal(testsFailed.witness.compressed_control.rule, 'interpret:failed-operation');
+
+  // Delivered model realisation with non-empty content -> P5; empty model return -> P2.
+  const realised = await policy.interpret({
+    circuit: emptyCircuit,
+    difference: { operation_success: true, raw_result: { content: 'The preferred review format is Markdown.', capabilityCalls: [] } },
+    act: actFor({ kind: 'model' }),
+    request
+  });
+  assert.equal(realised.destination, 'P5');
+  assert.equal(realised.residueDelta.create[0].kind, 'determination');
+  assert.equal(realised.witness.compressed_control.rule, 'interpret:delivered-realisation');
+
+  const emptyReturn = await policy.interpret({
+    circuit: emptyCircuit,
+    difference: { operation_success: true, raw_result: { content: '', capabilityCalls: [] } },
+    act: actFor({ kind: 'model' }),
+    request
+  });
+  assert.equal(emptyReturn.destination, 'P2');
+  assert.equal(emptyReturn.witness.compressed_control.rule, 'interpret:empty-return');
+
+  assert.equal(modelCalls, 0, 'compressed interpret must decide without any model call');
+});
+
+test('compressed next-act planner reads unread task files before any model turn', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  let modelCalls = 0;
+  const host = { mode: 'direct', async callModel() { modelCalls += 1; return { control: { carrier: 'model' } }; } };
+  const request = {
+    input: 'According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything.',
+    successConditions: ['Answer from fact.txt.', 'Do not edit anything.'],
+    capabilities: [{ id: 'read_file', args: { path: 'required relative file path' } }],
+    maxSteps: 16
+  };
+  const emptyCircuit = { id: 'run_t:c0', depth: 0, face: 'direct', activePosition: { id: 'P1' }, residues: [], trajectory: [] };
+
+  const policy = createModelDrivenQLPolicy({ mode: 'direct', compressedControl: true });
+  const readAct = await policy.nextAct({ circuit: emptyCircuit, request, host });
+  assert.equal(modelCalls, 0, 'unread task file must be compressed into a deterministic read');
+  assert.deepEqual(readAct.carrier, { kind: 'capability', name: 'read_file', args: { path: 'fact.txt' } });
+  assert.equal(readAct.metadata.compressed_control.rule, 'next-act:read-unread-task-file');
+  assert.deepEqual(readAct.metadata.compressed_control.basis.unread_files, ['fact.txt']);
+
+  const readRecorded = {
+    ...emptyCircuit,
+    residues: [{
+      id: 'run_t:c0:res:0', kind: 'material', position: 'P1',
+      value: { difference: { operation_success: true, raw_result: { ok: true, path: 'fact.txt', content: 'markdown' } } }
+    }]
+  };
+  const modelAct = await policy.nextAct({ circuit: readRecorded, request, host });
+  assert.equal(modelCalls, 1, 'with nothing unread the turn falls through to the model-carried act');
+  assert.deepEqual(modelAct.carrier, { kind: 'model' });
+
+  const uncompressed = createModelDrivenQLPolicy({ mode: 'direct' });
+  const uncompressedAct = await uncompressed.nextAct({ circuit: emptyCircuit, request, host });
+  assert.equal(modelCalls, 2, 'without compressed control the same state asks the model');
+  assert.deepEqual(uncompressedAct.carrier, { kind: 'model' });
+});
+
+test('compressed planner requests closure only when every goal condition is machine-verified', async () => {
+  const { createModelDrivenQLPolicy } = await import('../../comparison/series1/policy.mjs');
+  let modelCalls = 0;
+  const host = { mode: 'direct', async callModel() { modelCalls += 1; return { control: { carrier: 'model' } }; } };
+  const passedTestsResidue = {
+    id: 'run_t:c0:res:1', kind: 'effect', position: 'P2',
+    value: { difference: { operation_success: true, raw_result: { ok: true, exit_code: 0, stdout: 'pass', stderr: '' } } }
+  };
+  const request = {
+    input: 'fix the code and run the tests',
+    successConditions: ['All existing tests pass.'],
+    capabilities: [{ id: 'run_tests', args: {} }],
+    maxSteps: 16
+  };
+  const advancedCircuit = {
+    id: 'run_t:c0', depth: 0, face: 'direct', activePosition: { id: 'P4' },
+    residues: [passedTestsResidue],
+    trajectory: [{ from: 'P2', to: 'P4', relation: 'R24' }]
+  };
+
+  const policy = createModelDrivenQLPolicy({ mode: 'direct', compressedControl: true });
+  const closureAct = await policy.nextAct({ circuit: advancedCircuit, request, host });
+  assert.equal(modelCalls, 0, 'machine-verified closure must be claimed without a model turn');
+  assert.equal(closureAct.carrier.kind, 'internal_control');
+  assert.equal(closureAct.carrier.name, 'close');
+  assert.equal(closureAct.metadata.closure_request, true);
+  assert.equal(closureAct.metadata.compressed_control.rule, 'next-act:conditions-verified-closure');
+  assert.deepEqual(closureAct.metadata.compressed_control.basis.verified_goals, ['S1']);
+
+  // The closure request routes to determination through the interpret gate,
+  // and the compressed planner's rule rides the witness.
+  const routed = await policy.interpret({
+    circuit: advancedCircuit,
+    difference: { operation_success: true },
+    act: closureAct,
+    request
+  });
+  assert.equal(routed.destination, 'P5');
+  assert.equal(routed.witness.compressed_control.rule, 'next-act:conditions-verified-closure');
+
+  // No closure on the first step: nothing is verified before an act has run.
+  const freshCircuit = { ...advancedCircuit, trajectory: [] };
+  const earlyAct = await policy.nextAct({ circuit: freshCircuit, request, host });
+  assert.equal(modelCalls, 1, 'an unverified first turn falls through to the model');
+  assert.deepEqual(earlyAct.carrier, { kind: 'model' });
+
+  // Exclusion-only conditions are never machine-verifiable closure grounds.
+  const exclusionRequest = { ...request, successConditions: ['Do not modify any file.'] };
+  const exclusionAct = await policy.nextAct({ circuit: advancedCircuit, request: exclusionRequest, host });
+  assert.equal(modelCalls, 2);
+  assert.deepEqual(exclusionAct.carrier, { kind: 'model' });
+});
