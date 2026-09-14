@@ -4,6 +4,7 @@
 //! before mutation. The append-only JSONL format remains the public store.
 //! Correlation consumes supplied owner facts; a missing side is not an empty one.
 mod activity;
+mod authority_store;
 mod correlation;
 mod event;
 mod journal;
@@ -13,6 +14,7 @@ mod usage;
 mod wire;
 pub use activity::*;
 pub use actuation_core::{Error, Result};
+pub use authority_store::*;
 pub use correlation::*;
 pub use event::*;
 pub use journal::*;
