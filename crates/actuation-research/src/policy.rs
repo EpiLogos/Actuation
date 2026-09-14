@@ -239,6 +239,10 @@ fn is_closure_control_carrier(carrier: &Value) -> bool {
 pub struct ModelPolicy {
     pub mode: Mode,
     pub schedule: AllowanceSchedule,
+    /// Compressed-intent control: interpret-return is decided by the loop's
+    /// own law in code — no model call — with the rule and basis recorded in
+    /// the witness. The model keeps acts, determination and closure.
+    pub compressed_control: bool,
     depth_used: BTreeSet<String>,
     acts_by_position: BTreeMap<String, u64>,
     grace_used: BTreeSet<String>,
@@ -255,11 +259,16 @@ impl ModelPolicy {
         Self {
             mode,
             schedule,
+            compressed_control: false,
             depth_used: BTreeSet::new(),
             acts_by_position: BTreeMap::new(),
             grace_used: BTreeSet::new(),
             last_context: None,
         }
+    }
+    pub fn with_compressed_control(mut self) -> Self {
+        self.compressed_control = true;
+        self
     }
     /// Allowance is per-position and frame-carried: consumed by acts at the
     /// active position, restated in every control payload, refused with a
@@ -397,6 +406,53 @@ impl Policy for ModelPolicy {
         difference: &Value,
         host: &mut dyn RuntimeHost,
     ) -> Result<Interpretation> {
+        if self.compressed_control && act.metadata["closure_request"] != true {
+            // The loop's own law decides the destination in code: delivered
+            // realisation with non-empty content is P5; a successful read of
+            // unprocessed evidence is P1; a successful mutation or operation
+            // is P2; a failed operation returns to P1 with its failure. The
+            // model keeps acts, determination and closure.
+            let success = difference["operation_success"] == true;
+            let content = difference["raw_result"]["content"]
+                .as_str()
+                .unwrap_or_default();
+            let delivered = act.carrier["kind"] == "model" && !content.trim().is_empty();
+            let destination = if !success {
+                1
+            } else if delivered {
+                5
+            } else if act.carrier["kind"] == "capability" {
+                let name = act.carrier["name"].as_str().unwrap_or_default();
+                if name == "write_file" {
+                    2
+                } else {
+                    1
+                }
+            } else {
+                2
+            };
+            return Ok(Interpretation {
+                destination,
+                rationale: json!(format!(
+                    "compressed interpret rule: {}",
+                    if !success {
+                        "failed operation returns to material"
+                    } else if delivered {
+                        "delivered realisation of the intent"
+                    } else if destination == 2 {
+                        "successful mutation is an effect"
+                    } else {
+                        "successful read of unprocessed evidence is material"
+                    }
+                )),
+                witness: json!({"compressed_control":{"rule_applied":true,"carrier":act.carrier["kind"],"operation_success":success},"observed_position":destination}),
+                create: vec![
+                    json!({"position":destination,"value":{"difference":difference},"provenance":{"compressed_interpretation":true}}),
+                ],
+                revise: vec![],
+                invalidate: vec![],
+            });
+        }
         if act.metadata["closure_request"] == true {
             // The controller stated the realisable intent is achieved (or the
             // allowance schedule refused further acts): route straight to

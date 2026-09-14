@@ -461,6 +461,9 @@ pub fn run_task<B: ModelBody>(
             native_mode,
             crate::policy::schedule_for_category(task.category()),
         );
+        if std::env::var("QL_COMPRESSED_CONTROL").as_deref() == Ok("1") {
+            policy = policy.with_compressed_control();
+        }
         let mut inspector = TaskInspector {
             task: task.clone(),
             world: host.world.clone(),
