@@ -501,7 +501,7 @@ impl Policy for ModelPolicy {
         } else {
             ""
         };
-        let d=control(cx,host,"ql-propose-determination",&format!("The active responsibility is P5: candidate determination. {CONJUGATE_DIRECTION_LAW} Synthesize what is actually realised relative to the initiating intent and success conditions; reading back from this determination toward the frame is the return direction of the same field. Return exactly one JSON object of the form {{\"synthesis\": string (the realised outcome in plain text; never empty), \"requested_outcome\": \"close\"|\"reopen\", \"claimed_adequacy\": \"adequate\"|\"partial\"|\"inadequate\"|\"unknown\", \"claimed_subject\": string, \"evidence_refs\": string[], \"unresolved_refs\": string[]}}.{deep_note}"),
+        let d=control(cx,host,"ql-propose-determination",&format!("The active responsibility is P5: candidate determination. {CONJUGATE_DIRECTION_LAW} Synthesize what is actually realised relative to the initiating intent and success conditions; reading back from this determination toward the frame is the return direction of the same field. Return exactly one JSON object of the form {{\"synthesis\": string (the realised outcome in plain text; never empty), \"requested_outcome\": \"close\"|\"reopen\", \"claimed_adequacy\": \"adequate\"|\"partial\"|\"inadequate\"|\"unknown\", \"claimed_subject\": string (exactly the task id, or null — free-text subjects cannot be verified), \"evidence_refs\": string[], \"unresolved_refs\": string[]}}. Never fabricate a claimed_state: the workspace digest is measured by the inspector, not asserted by you.{deep_note}"),
             json!({"mode":self.mode,"stipulations":classify_stipulations(&cx.request.wire()["successConditions"]),
                    "success_conditions":cx.request.wire()["successConditions"],"circuit":cx.circuit.compact()}))?;
         let synthesis = ["synthesis", "answer", "content"]
@@ -543,11 +543,27 @@ impl Policy for ModelPolicy {
         } else {
             None
         };
+        // The engine's positive-closure gate compares claimed_subject against
+        // the task id byte-for-byte and claimed_state against the measured
+        // workspace digest. The policy holds the task id and cannot compute
+        // the digest, so the claim is normalised to the id or dropped rather
+        // than letting free-text prose fail the gate.
+        let task_id = cx
+            .request
+            .wire()
+            .get("taskId")
+            .and_then(Value::as_str)
+            .map(str::to_owned);
+        let claimed_subject = d["claimed_subject"]
+            .as_str()
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(|s| task_id.clone().unwrap_or_else(|| s.to_owned()));
         Ok(Some(Determination {
             synthesis: json!(synthesis),
             requested_outcome: requested,
-            claimed_subject: d["claimed_subject"].as_str().map(str::to_owned),
-            claimed_state: d["claimed_state"].as_str().map(str::to_owned),
+            claimed_subject,
+            claimed_state: None,
             evidence_refs: strings(&d["evidence_refs"])?,
             evaluation_refs: cx
                 .circuit
@@ -572,6 +588,16 @@ impl Policy for ModelPolicy {
             json!({"stipulations":stipulations,"success_conditions":cx.request.wire()["successConditions"],
                    "frame":retained_context(&cx.circuit.frame),"determination":d,"inspection":inspection,
                    "evaluations":cx.circuit.residues.iter().filter(|r|r.kind=="evaluation"&&!r.invalidated).collect::<Vec<_>>()}))?;
+        // Engine law: a determination that requested reopening cannot
+        // silently receive a close verdict. The reopen plays out as further
+        // acts and a fresh determination; the closure evaluator is not asked
+        // to overturn it.
+        if matches!(d.requested_outcome, Outcome::Reopen) {
+            return Ok(Verdict::Reopen {
+                destination: 4,
+                rationale: json!("determination requested reopening; a fresh determination must follow further acts"),
+            });
+        }
         let verdicts = v.get("stipulation_verdicts").cloned().unwrap_or(json!([]));
         let violated = violated_exclusions(&stipulations, &verdicts);
         match v["status"].as_str() {

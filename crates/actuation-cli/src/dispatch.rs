@@ -95,6 +95,11 @@ static COMMANDS: &[CommandDescriptor] = &[
     command!("harness.self", &["harness", "self"], "actuation harness self [--json]", false, commands::harness_self),
     command!("harness.capability", &["harness", "capability"], "actuation harness capability [<slug>] [--json]", false, commands::harness_capability),
     command!("system.read", &["system"], "actuation system [--json]", false, commands::system_read),
+    command!("config.contribution", &["config-contribution"], "actuation config-contribution [--json]", false, commands::config_contribution),
+    command!("config.validate", &["config", "validate"], "actuation config validate [--json] [--setting <setting_ref>] [--scope <compact>] [--value <json> | --value-file <path|->]", false, commands::config_validate),
+    command!("config.plan", &["config", "plan"], "actuation config plan [--json] [--setting <setting_ref>] [--scope <compact>] [--value <json> | --value-file <path|->]", false, commands::config_plan),
+    command!("config.apply", &["config", "apply"], "actuation config apply [--json] [--plan-file <path|->] [--changeset <id>]", false, commands::config_apply),
+    command!("config.reset", &["config", "reset"], "actuation config reset [--json] [--setting <setting_ref>] [--scope <compact>] [--changeset <id>]", false, commands::config_reset),
     command!("verify", &["verify"], "actuation verify [--json]", false, commands::verify),
 ];
 
@@ -134,6 +139,11 @@ pub fn execute(argv: &[String], stdin: &str) -> Result<Output, Error> {
                 "unknown harness subcommand {}; expected catalog, detect, self or capability",
                 args.get(1).cloned().unwrap_or_else(|| "(none)".into())
             ))
+        } else if command.as_deref() == Some("config") {
+            Error::new(format!(
+                "unknown config subcommand {}; expected validate, plan, apply or reset",
+                args.get(1).cloned().unwrap_or_else(|| "(none)".into())
+            ))
         } else {
             Error::new(format!(
                 "unknown command {}; run actuation help",
@@ -161,7 +171,9 @@ pub fn help_text() -> String {
 
 /// stdin is read exactly when an input command has no positional file, or its
 /// first positional is "-", so `actuation stream usage --store <dir> -` reads
-/// stdin even though the marker follows value flags.
+/// stdin even though the marker follows value flags. The config verbs take no
+/// positional document; they read stdin exactly when their file flag is the
+/// stdin marker (`--value-file -`, `--plan-file -`).
 pub fn command_needs_stdin(argv: &[String]) -> bool {
     let args: Vec<String> = argv
         .iter()
@@ -171,22 +183,36 @@ pub fn command_needs_stdin(argv: &[String]) -> bool {
     let Some((entry, rest)) = match_route(&args) else {
         return false;
     };
-    if !entry.input {
-        return false;
-    }
-    let value_flags = ["--store", "--out"];
-    let mut positional = Vec::new();
-    let mut index = 0;
-    while index < rest.len() {
-        let value = &rest[index];
-        if value_flags.contains(&value.as_str()) {
+    if entry.input {
+        let value_flags = ["--store", "--out"];
+        let mut positional = Vec::new();
+        let mut index = 0;
+        while index < rest.len() {
+            let value = &rest[index];
+            if value_flags.contains(&value.as_str()) {
+                index += 1;
+            } else if !value.starts_with("--") {
+                positional.push(value.clone());
+            }
             index += 1;
-        } else if !value.starts_with("--") {
-            positional.push(value.clone());
         }
-        index += 1;
+        return positional.is_empty() || positional[0] == "-";
     }
-    positional.is_empty() || positional[0] == "-"
+    let stdin_markers: &[(&str, &str)] = &[
+        ("config.validate", "--value-file"),
+        ("config.plan", "--value-file"),
+        ("config.apply", "--plan-file"),
+    ];
+    stdin_markers
+        .iter()
+        .filter(|(name, _)| *name == entry.name)
+        .any(|(_, flag)| {
+            rest.iter()
+                .position(|arg| arg == flag)
+                .and_then(|index| rest.get(index + 1))
+                .map(|value| value == "-")
+                .unwrap_or(false)
+        })
 }
 
 pub fn read_stdin() -> String {
@@ -374,6 +400,52 @@ mod tests {
             "stream", "replay", "s:1", "--store", "/tmp/x"
         ])));
         assert!(!command_needs_stdin(&argv(&["capabilities", "--json"])));
+        // The config verbs read stdin exactly when their file flag carries
+        // the stdin marker; an inline --value never touches stdin.
+        assert!(command_needs_stdin(&argv(&[
+            "config",
+            "validate",
+            "--value-file",
+            "-",
+            "--setting",
+            "actuation:return:return.modes",
+        ])));
+        assert!(command_needs_stdin(&argv(&[
+            "config",
+            "apply",
+            "--plan-file",
+            "-",
+        ])));
+        assert!(!command_needs_stdin(&argv(&[
+            "config",
+            "apply",
+            "--plan-file",
+            "/tmp/plan.json",
+        ])));
+        assert!(!command_needs_stdin(&argv(&[
+            "config",
+            "validate",
+            "--value",
+            "[]",
+            "--value-file",
+            "/tmp/v.json",
+        ])));
+    }
+
+    #[test]
+    fn bare_config_names_its_subcommands() {
+        let error = execute(&argv(&["config"]), "").unwrap_err().to_string();
+        assert!(
+            error.contains("expected validate, plan, apply or reset"),
+            "{error}"
+        );
+        let error = execute(&argv(&["config", "teleport"]), "")
+            .unwrap_err()
+            .to_string();
+        assert!(
+            error.contains("expected validate, plan, apply or reset"),
+            "{error}"
+        );
     }
 
     #[test]

@@ -131,7 +131,12 @@ impl<B: ModelBody> RepairingBody<B> {
     }
     fn repair_request(request: &Value, note: &str) -> Value {
         let mut repaired = request.clone();
-        if let Some(control) = repaired.get_mut("series1Control") {
+        // The host wraps the call as {request, payload, capabilities}: the
+        // control surface lives under payload.series1Control.
+        if let Some(control) = repaired
+            .get_mut("payload")
+            .and_then(|payload| payload.get_mut("series1Control"))
+        {
             let system = control["system"].as_str().unwrap_or_default().to_owned();
             control["system"] = json!(format!("{system}\n\n{note}"));
         }
@@ -152,7 +157,10 @@ impl<B: ModelBody> ModelBody for RepairingBody<B> {
                     ));
                 }
                 Ok(value)
-                    if request.get("qlAct").is_some()
+                    if request
+                        .get("payload")
+                        .and_then(|p| p.get("qlAct"))
+                        .is_some()
                         && value.get("control").map(Value::is_null).unwrap_or(true)
                         && value
                             .get("capabilityCalls")

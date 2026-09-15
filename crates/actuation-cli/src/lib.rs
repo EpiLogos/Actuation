@@ -4,6 +4,7 @@
 //! dispatch; `verify` carries the compiled-in deterministic owner suite.
 pub mod authority;
 pub mod commands;
+pub mod configuration;
 pub mod dispatch;
 pub mod render;
 pub mod surface;
