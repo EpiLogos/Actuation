@@ -502,8 +502,20 @@ fn check_harness_catalog() -> std::result::Result<(), String> {
     if catalog.revision() < 1 || catalog.descriptors().is_empty() {
         return Err("bundled catalog must declare targets".into());
     }
-    if catalog.capability("zcode").is_none() {
-        return Err("bundled catalog lost the zcode capability".into());
+    for d in catalog.descriptors() {
+        let slug = d.slug();
+        if catalog.capability(slug).is_none() && catalog.capability_gap(slug).is_none() {
+            return Err(format!(
+                "descriptor {slug} declares neither capability nor capability gap"
+            ));
+        }
+    }
+    let covered = catalog.capabilities().len() + catalog.capability_gaps().len();
+    if covered != catalog.descriptors().len() {
+        return Err(format!(
+            "capability coverage {covered} does not match {} declared descriptors",
+            catalog.descriptors().len()
+        ));
     }
     Ok(())
 }

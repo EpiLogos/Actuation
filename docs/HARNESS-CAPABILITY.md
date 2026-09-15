@@ -29,12 +29,22 @@ capability
   injection_channel     kind + mechanism — how additional context actually travels
   blocking_semantics    deny-and-block | advisory-only | none
   wake_capability       immediate-wake | next-event | none
-  install_seam          config_path, format, entry_shape, ownership_marker
+  install_seam          config_path, format (json | jsonc | toml |
+                        skill-tree), entry_shape, ownership_marker
   uninstall_seam        same shape; must preserve foreign entries
   model_dispatch        optional; kind (native-provider-binding | none)
                         providers[] when binding: provider_ref,
                         selector (config-key | cli-flag | env-var + name),
                         credential (required + hint when required)
+  provenance            authored_by + source_refs
+
+capability_gap         declared absence, catalog sibling of capabilities[]
+  harness_slug          aligned with the detection catalog slug; must not
+                        shadow a declared capability
+  summary               optional; what the harness is, in one line
+  reason                why no descriptor is authored — true, specific, dated
+  evidence_refs[]       what the reason rests on (detection receipts,
+                        admission records, the coverage diagnosis)
   provenance            authored_by + source_refs
 ```
 
@@ -56,6 +66,19 @@ capability
   the projection does not own is untouched.
 - **Wake honesty.** `immediate-wake` requires notes naming the listener that
   makes it true. Relay transports read this field; optimism is not a transport.
+- **Coverage closure.** Every detection descriptor in the catalog MUST carry
+  either a capability descriptor or a declared capability gap. Detection
+  without capability standing is an open question wearing the clothes of a
+  settled one: consumers can see the harness but must guess — or silently
+  forgo — what dispatch into it accepts. A gap is a first-class declaration,
+  not a footnote: a gap with a true reason beats a descriptor with guessed
+  facts. Filling a gap means authoring the descriptor against observed
+  evidence under the citation discipline below, never by relaxing the
+  loader. The catalog loader rejects a descriptor that declares neither —
+  the converse of its existing alignment check, naming the slug — and the
+  shipped `verify` suite checks closure over all descriptors, not a spot
+  sample. The closure law was commissioned by the owner on 2026-09-14,
+  executed via coordinator.
 
 ## Catalog alignment
 
@@ -77,6 +100,25 @@ it does not enumerate a provider's model catalogue.
 
 Read models: `actuation harness capability` (catalog) and
 `actuation harness capability <slug>` (one descriptor, human or `--json`).
+
+Catalog r7 closed the coverage gap the other direction: the nine descriptors
+that carried no capability standing received declared capability gaps, the
+loader learned the converse of its alignment check, and the shipped verify
+suite stopped spot-checking one harness and started looping over all of them.
+Catalog r8 filled the first gap from evidence: `pi` is authored from the
+AIKit admission (ai-kit#186, closed 2026-09-08, riding the 2026-09-06
+detection receipt — sha256 unchanged on the 2026-09-15 re-detect) and live
+observation of pi 0.84.4 on this machine: additional context travels as
+skill capsules projected into `~/.pi/agent/skills` (global) and `.pi/skills`
+(project-relative) and read at session start — the `skill-tree` seam — with
+no observed stdout/JSON context channel, no deny-and-block, no wake, and no
+single provider binding (pi is provider-plural by design). Eight gaps
+remain, each naming its true reason: `gemini` and `gemini-antigravity`,
+`grok-bot`, `openclaw` and `kimi` have AIKit admissions that ride detection
+records or partial projection evidence with no observed event/blocking
+grammar; `hermes` and `hermes-acp` have no AIKit adapter at diagnosis;
+`ollama` is detected as a model-provider for model binding, not agency
+dispatch.
 
 ## Correction discipline
 

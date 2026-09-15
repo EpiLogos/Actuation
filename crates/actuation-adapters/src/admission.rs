@@ -11,6 +11,7 @@ use std::collections::HashSet;
 
 pub const HARNESS_DETECTION_VERSION: &str = "actuation.harness-detection/v1";
 pub const HARNESS_CAPABILITY_VERSION: &str = "actuation.harness-capability/v1";
+pub const HARNESS_CAPABILITY_GAP_VERSION: &str = "actuation.harness-capability-gap/v1";
 pub const INSTANTIATION_VERSION: &str = "actuation.instantiation/v1";
 pub const LEGACY_MODEL_BEARING_SCHEMA: &str = "actuation.model-bearing/v1";
 pub const SECRET_DETECTION_VERSION: &str = "actuation.secret-detection/v1";
@@ -207,6 +208,7 @@ macro_rules! wire_record {
 }
 wire_record!(HarnessDescriptor, validate_harness_descriptor);
 wire_record!(HarnessCapability, validate_harness_capability);
+wire_record!(HarnessCapabilityGap, validate_capability_gap);
 wire_record!(HarnessCatalog, validate_harness_catalog);
 wire_record!(HarnessDetection, validate_harness_detection);
 wire_record!(HarnessSelf, validate_harness_self);
@@ -271,10 +273,31 @@ pub fn validate_harness_descriptor(v: &Value) -> Result<()> {
         "catalog revision must be an integer",
     )
 }
+/// A declared capability absence: the coverage-closure counterpart of a
+/// capability descriptor. Every detection descriptor must carry one or the
+/// other; a gap is an honest absence with a named reason and evidence, never
+/// a placeholder for authoring.
+pub fn validate_capability_gap(v: &Value) -> Result<()> {
+    header(v, HARNESS_CAPABILITY_GAP_VERSION, Some("capability-gap"))?;
+    text(&v["harness_slug"])?;
+    optional_text(&v["summary"])?;
+    text(&v["reason"])?;
+    require(
+        !texts(&v["evidence_refs"])?.is_empty(),
+        "capability gap requires evidence refs",
+    )?;
+    let p = &v["provenance"];
+    object(p)?;
+    text(&p["authored_by"])?;
+    require(
+        !texts(&p["source_refs"])?.is_empty(),
+        "capability gap requires source provenance",
+    )
+}
 fn validate_seam(v: &Value) -> Result<()> {
     object(v)?;
     reference_fields(v, &["config_path", "entry_shape", "ownership_marker"], &[])?;
-    one(&v["format"], &["json", "jsonc", "toml"])?;
+    one(&v["format"], &["json", "jsonc", "toml", "skill-tree"])?;
     require(
         v["preserves_foreign_entries"] == true,
         "native seams must preserve foreign entries",
