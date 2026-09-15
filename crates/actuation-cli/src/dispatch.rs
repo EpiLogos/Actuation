@@ -3,8 +3,8 @@
 //! matches argv against that table and renders its consequences. Help text,
 //! the capabilities listing and dispatch are all derived from the table, so a
 //! command cannot exist in one representation and be missing from another.
-use crate::commands;
 use crate::surface::{cli_surface, ACTUATION_CLI_VERSION};
+use crate::{authority, commands};
 use actuation_core::Error;
 use serde_json::{json, Value};
 use std::io::Read;
@@ -77,6 +77,9 @@ static COMMANDS: &[CommandDescriptor] = &[
     command!("agency.read", &["agency"], "actuation agency [file|-] [--json]", true, commands::agency_read),
     command!("agency.actualise", &["agency", "actualise"], "actuation agency actualise [file|-] [--json]", true, commands::agency_actualise),
     command!("realised.read", &["realised"], "actuation realised [file|-] [--json]", true, commands::realised_read),
+    command!("authority.issue", &["authority", "issue"], "actuation authority issue [--store <dir>] [--now <ts>] [file|-] [--json]", true, authority::authority_issue),
+    command!("authority.resolve", &["authority", "resolve"], "actuation authority resolve [--store <dir>] [--now <ts>] [file|-] [--json]", true, authority::authority_resolve),
+    command!("authority.revoke", &["authority", "revoke"], "actuation authority revoke <authority_source_ref> [--reason <text>] [--store <dir>] [--now <ts>] [--json]", false, authority::authority_revoke),
     command!("stream.read", &["stream"], "actuation stream [file|-] [--json]", true, commands::stream_read),
     command!("stream.open", &["stream", "open"], "actuation stream open [--store <dir>] [file|-] [--json]", true, commands::stream_open),
     command!("stream.record", &["stream", "record"], "actuation stream record [--store <dir>] [file|-] [--json]", true, commands::stream_record),

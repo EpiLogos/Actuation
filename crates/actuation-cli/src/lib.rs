@@ -2,6 +2,7 @@
 //! application surfaces of the actuation-* libraries. The command table in
 //! `dispatch` is the single source of truth for routes, help, capabilities and
 //! dispatch; `verify` carries the compiled-in deterministic owner suite.
+pub mod authority;
 pub mod commands;
 pub mod configuration;
 pub mod dispatch;
