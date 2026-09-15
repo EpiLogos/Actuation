@@ -36,6 +36,15 @@ capability
                         selector (config-key | cli-flag | env-var + name),
                         credential (required + hint when required)
   provenance            authored_by + source_refs
+
+capability_gap         declared absence, catalog sibling of capabilities[]
+  harness_slug          aligned with the detection catalog slug; must not
+                        shadow a declared capability
+  summary               optional; what the harness is, in one line
+  reason                why no descriptor is authored — true, specific, dated
+  evidence_refs[]       what the reason rests on (detection receipts,
+                        admission records, the coverage diagnosis)
+  provenance            authored_by + source_refs
 ```
 
 ## Laws the contract carries
@@ -56,6 +65,19 @@ capability
   the projection does not own is untouched.
 - **Wake honesty.** `immediate-wake` requires notes naming the listener that
   makes it true. Relay transports read this field; optimism is not a transport.
+- **Coverage closure.** Every detection descriptor in the catalog MUST carry
+  either a capability descriptor or a declared capability gap. Detection
+  without capability standing is an open question wearing the clothes of a
+  settled one: consumers can see the harness but must guess — or silently
+  forgo — what dispatch into it accepts. A gap is a first-class declaration,
+  not a footnote: a gap with a true reason beats a descriptor with guessed
+  facts. Filling a gap means authoring the descriptor against observed
+  evidence under the citation discipline below, never by relaxing the
+  loader. The catalog loader rejects a descriptor that declares neither —
+  the converse of its existing alignment check, naming the slug — and the
+  shipped `verify` suite checks closure over all descriptors, not a spot
+  sample. The closure law was commissioned by the owner on 2026-09-14,
+  executed via coordinator.
 
 ## Catalog alignment
 
