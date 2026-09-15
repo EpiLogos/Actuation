@@ -11,10 +11,10 @@ use std::{
 #[test]
 fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     let original = NativeCatalog::bundled().unwrap();
-    assert_eq!(original.revision(), 7);
+    assert_eq!(original.revision(), 8);
     assert_eq!(original.descriptors().len(), 12);
-    assert_eq!(original.capabilities().len(), 3);
-    assert_eq!(original.capability_gaps().len(), 9);
+    assert_eq!(original.capabilities().len(), 4);
+    assert_eq!(original.capability_gaps().len(), 8);
     for slug in ["claude-code", "codex", "pi", "ollama", "zcode"] {
         assert!(original.descriptor(slug).is_some());
     }
@@ -23,10 +23,15 @@ fn declarative_catalog_is_extensible_without_generic_executable_changes() {
         "model-provider"
     );
     assert!(
-        original.capability("pi").is_none(),
+        original.capability("pi").is_some(),
+        "the pi descriptor is authored from admission evidence, not guessed"
+    );
+    assert!(original.capability_gap("pi").is_none());
+    assert!(
+        original.capability("gemini").is_none(),
         "an unauthored capability is declared as a gap, not guessed"
     );
-    assert!(original.capability_gap("pi").is_some());
+    assert!(original.capability_gap("gemini").is_some());
     for d in original.descriptors() {
         let slug = d.slug();
         assert!(

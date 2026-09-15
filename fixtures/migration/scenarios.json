@@ -8,7 +8,7 @@
       "kind": "catalog",
       "input": {},
       "expected": {
-        "revision": 7,
+        "revision": 8,
         "harnesses": [
           {
             "schema": "actuation.harness-detection/v1",
@@ -783,6 +783,55 @@
                 "investigation:zcode-model-dispatch-not-evidenced-2026-09-09"
               ],
               "catalog_revision": 6
+            }
+          },
+          {
+            "schema": "actuation.harness-capability/v1",
+            "document": "capability",
+            "harness_slug": "pi",
+            "summary": "Per-invocation CLI/TUI agent; additional context travels as skill capsules projected into the skills tree and read at session start; extensions install into settings.json; no observed stdout/JSON context channel, no deny-and-block, no wake.",
+            "native_events": [],
+            "injection_channel": {
+              "kind": "none",
+              "mechanism": "no stdout/JSON context-injection channel is observed on pi 0.84.4. Additional context travels as skill capsules projected into the skills tree — ~/.pi/agent/skills globally, .pi/skills project-relative — and read at session start; a running TUI picks changes up with /reload, and a fresh invocation is the guaranteed pickup. Dispatch projections must use the skills seam declared in install_seam, never stdout.",
+              "notes": "pi also carries an extension surface (pi install writes into settings.json); no extension event grammar is observed in Actuation's receipts, so none is declared here. Re-declare this descriptor when a pi release grows an additional-context channel."
+            },
+            "blocking_semantics": {
+              "kind": "none",
+              "notes": "no per-call blocking surface is observed: tool allowlists (--tools/--exclude-tools/--no-tools) are invocation flags set at launch, not dispatch hooks."
+            },
+            "wake_capability": {
+              "kind": "none",
+              "notes": "pi is per-invocation: nothing declared here wakes a running session or a closed one. A relay sender must not pretend pi can be woken."
+            },
+            "install_seam": {
+              "config_path": "~/.pi/agent/skills (global) and .pi/skills (project-relative)",
+              "format": "skill-tree",
+              "entry_shape": "one directory per skill capsule, each carrying a SKILL.md front-matter document; the capsule name is the directory name",
+              "ownership_marker": "capsule directories written by the AIKit pi projection (aikit:pi-adapter); foreign skill directories are untouched",
+              "preserves_foreign_entries": true
+            },
+            "uninstall_seam": {
+              "config_path": "~/.pi/agent/skills (global) and .pi/skills (project-relative)",
+              "format": "skill-tree",
+              "entry_shape": "capsule directories whose name matches a capsule the projection wrote are removed; directories without the ownership marker are untouched",
+              "ownership_marker": "capsule directories written by the AIKit pi projection (aikit:pi-adapter); foreign skill directories are untouched",
+              "preserves_foreign_entries": true
+            },
+            "model_dispatch": {
+              "kind": "none",
+              "notes": "pi is provider-plural by design: provider and model are chosen per invocation (--provider/--model) or via settings defaultProvider/defaultModel (observed: deepseek on this machine), with credentials resolved through pi's own auth surface. No single provider binding is admitted here and Actuation does not enumerate pi's provider catalogue."
+            },
+            "provenance": {
+              "authored_by": "O:I capability descriptor programme (AIKit admission evidence ai-kit#186 + Actuation detection receipts + live observation of pi 0.84.4 on this machine, 2026-09-15)",
+              "source_refs": [
+                "aikit:clients/pi.rs admission (ai-kit#186, closed 2026-09-08)",
+                "detection:2026-09-06T23:42:55.567Z pi:detected exe:~/.local/bin/pi sha256:5406c369954516fb56879d685e082ff9095cd6e06e41af406f394942377fd4bf",
+                "detection:2026-09-15 actuation harness detect pi:detected skills-facet-count-14 config-facet-settings-json (sha256 matches the 2026-09-06 admission record)",
+                "survey:local-machine-2026-09-15",
+                "upstream:github.com/earendil-works/pi"
+              ],
+              "catalog_revision": 8
             }
           }
         ],
@@ -2969,7 +3018,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 7,
+            "catalog_revision": 8,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3048,7 +3097,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 7,
+            "catalog_revision": 8,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3147,7 +3196,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 7,
+            "catalog_revision": 8,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3264,7 +3313,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 7,
+            "catalog_revision": 8,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3369,7 +3418,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 7,
+            "catalog_revision": 8,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3434,7 +3483,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 7,
+            "catalog_revision": 8,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -4025,7 +4074,7 @@
             "document": "self",
             "self_ref": "self:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 7,
+            "catalog_revision": 8,
             "matched": [],
             "resolved": null,
             "ambiguity": false,
@@ -4143,7 +4192,7 @@
             "document": "self",
             "self_ref": "self:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 7,
+            "catalog_revision": 8,
             "matched": [
               {
                 "slug": "fixture-0",
@@ -4277,7 +4326,7 @@
             "document": "self",
             "self_ref": "self:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 7,
+            "catalog_revision": 8,
             "matched": [
               {
                 "slug": "fixture-0",

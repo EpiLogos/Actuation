@@ -29,7 +29,8 @@ capability
   injection_channel     kind + mechanism — how additional context actually travels
   blocking_semantics    deny-and-block | advisory-only | none
   wake_capability       immediate-wake | next-event | none
-  install_seam          config_path, format, entry_shape, ownership_marker
+  install_seam          config_path, format (json | jsonc | toml |
+                        skill-tree), entry_shape, ownership_marker
   uninstall_seam        same shape; must preserve foreign entries
   model_dispatch        optional; kind (native-provider-binding | none)
                         providers[] when binding: provider_ref,
@@ -99,6 +100,25 @@ it does not enumerate a provider's model catalogue.
 
 Read models: `actuation harness capability` (catalog) and
 `actuation harness capability <slug>` (one descriptor, human or `--json`).
+
+Catalog r7 closed the coverage gap the other direction: the nine descriptors
+that carried no capability standing received declared capability gaps, the
+loader learned the converse of its alignment check, and the shipped verify
+suite stopped spot-checking one harness and started looping over all of them.
+Catalog r8 filled the first gap from evidence: `pi` is authored from the
+AIKit admission (ai-kit#186, closed 2026-09-08, riding the 2026-09-06
+detection receipt — sha256 unchanged on the 2026-09-15 re-detect) and live
+observation of pi 0.84.4 on this machine: additional context travels as
+skill capsules projected into `~/.pi/agent/skills` (global) and `.pi/skills`
+(project-relative) and read at session start — the `skill-tree` seam — with
+no observed stdout/JSON context channel, no deny-and-block, no wake, and no
+single provider binding (pi is provider-plural by design). Eight gaps
+remain, each naming its true reason: `gemini` and `gemini-antigravity`,
+`grok-bot`, `openclaw` and `kimi` have AIKit admissions that ride detection
+records or partial projection evidence with no observed event/blocking
+grammar; `hermes` and `hermes-acp` have no AIKit adapter at diagnosis;
+`ollama` is detected as a model-provider for model binding, not agency
+dispatch.
 
 ## Correction discipline
 

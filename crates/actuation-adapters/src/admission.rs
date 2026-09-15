@@ -297,7 +297,7 @@ pub fn validate_capability_gap(v: &Value) -> Result<()> {
 fn validate_seam(v: &Value) -> Result<()> {
     object(v)?;
     reference_fields(v, &["config_path", "entry_shape", "ownership_marker"], &[])?;
-    one(&v["format"], &["json", "jsonc", "toml"])?;
+    one(&v["format"], &["json", "jsonc", "toml", "skill-tree"])?;
     require(
         v["preserves_foreign_entries"] == true,
         "native seams must preserve foreign entries",
