@@ -572,6 +572,16 @@ impl Policy for ModelPolicy {
             json!({"stipulations":stipulations,"success_conditions":cx.request.wire()["successConditions"],
                    "frame":retained_context(&cx.circuit.frame),"determination":d,"inspection":inspection,
                    "evaluations":cx.circuit.residues.iter().filter(|r|r.kind=="evaluation"&&!r.invalidated).collect::<Vec<_>>()}))?;
+        // Engine law: a determination that requested reopening cannot
+        // silently receive a close verdict. The reopen plays out as further
+        // acts and a fresh determination; the closure evaluator is not asked
+        // to overturn it.
+        if matches!(d.requested_outcome, Outcome::Reopen) {
+            return Ok(Verdict::Reopen {
+                destination: 4,
+                rationale: json!("determination requested reopening; a fresh determination must follow further acts"),
+            });
+        }
         let verdicts = v.get("stipulation_verdicts").cloned().unwrap_or(json!([]));
         let violated = violated_exclusions(&stipulations, &verdicts);
         match v["status"].as_str() {
