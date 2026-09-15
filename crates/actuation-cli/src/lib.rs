@@ -3,6 +3,7 @@
 //! `dispatch` is the single source of truth for routes, help, capabilities and
 //! dispatch; `verify` carries the compiled-in deterministic owner suite.
 pub mod commands;
+pub mod configuration;
 pub mod dispatch;
 pub mod render;
 pub mod surface;

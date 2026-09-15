@@ -1,6 +1,7 @@
 //! The command handlers. Each one stays thin: product semantics remain in the
 //! actuation-* libraries; this layer translates argv, stdin and output
 //! envelopes around them.
+use crate::configuration;
 use crate::dispatch::{
     capabilities_listing, flag_value, git_revision, output, positional, read_json_input,
     remove_flag, Command, Output,
@@ -423,6 +424,66 @@ pub fn system_read(command: &Command) -> Result<Output> {
     let disclosure =
         build_system_disclosure(detection.as_value(), self_value.as_value(), now_unix_ms());
     output(disclosure, command.json, render::system)
+}
+
+/// The Configuration Plane contribution: bare oi.configuration-contribution/v1
+/// on stdout. The document is read-only truth about what the composed World
+/// may address; the mutability facts it declares are the mutability facts the
+/// config verbs enforce (one subject table, no second catalogue).
+pub fn config_contribution(command: &Command) -> Result<Output> {
+    let document = configuration::build_contribution(now_unix_ms());
+    if command.json {
+        return Ok(Output {
+            code: 0,
+            stdout: serde_json::to_string_pretty(&document)
+                .map_err(|e| Error::new(e.to_string()))?,
+            stderr: String::new(),
+        });
+    }
+    let mut lines = vec![format!(
+        "Actuation configuration contribution ({})",
+        configuration::CONFIGURATION_CONTRACT_REVISION
+    )];
+    for section in document["sections"].as_array().unwrap() {
+        lines.push(format!(
+            "\n{} — {}",
+            section["id"].as_str().unwrap_or_default(),
+            section["title"].as_str().unwrap_or_default()
+        ));
+        for setting in section["settings"].as_array().unwrap() {
+            lines.push(format!(
+                "  {} (declared, not writable)",
+                setting["setting_ref"].as_str().unwrap_or_default()
+            ));
+        }
+    }
+    lines.push(
+        "\nMutation transport: plan/apply/reset are unavailable — Actuation performs no settings mutation; validate answers truthfully.".to_owned(),
+    );
+    Ok(Output {
+        code: 0,
+        stdout: lines.join("\n"),
+        stderr: String::new(),
+    })
+}
+
+/// The four owner-native mutation verbs. Structured failures carry an
+/// oi.config-error/v1 document on stdout and exit non-zero (the handlers
+/// return Ok with a non-zero code so the document is not demoted to stderr).
+pub fn config_validate(command: &Command) -> Result<Output> {
+    configuration::config_validate(command)
+}
+
+pub fn config_plan(command: &Command) -> Result<Output> {
+    configuration::config_plan(command)
+}
+
+pub fn config_apply(command: &Command) -> Result<Output> {
+    configuration::config_apply(command)
+}
+
+pub fn config_reset(command: &Command) -> Result<Output> {
+    configuration::config_reset(command)
 }
 
 fn now_unix_ms() -> i64 {
