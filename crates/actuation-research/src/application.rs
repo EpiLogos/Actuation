@@ -206,20 +206,24 @@ pub fn run(v: &Value) -> Result<Value> {
         configuration["world"] = json!(world.root());
     }
     let body: Box<dyn ModelBody> = match v["body"]["protocol"].as_str() {
-        None | Some("one-shot-json") => Box::new(execution::ProcessModelBody {
-            process: spec,
-            source_basis: v["body"]["source_basis"].clone(),
-            fixture,
-        }),
-        Some("sdk-jsonl") => Box::new(crate::sdk::NativeSdkBody::new(
-            spec,
-            configuration,
-            v["body"]["source_basis"].clone(),
-            fixture,
-            v["body"]["session_timeout_ms"]
-                .as_u64()
-                .ok_or_else(|| Error::new("SDK session timeout required"))?,
-        )?),
+        None | Some("one-shot-json") => {
+            Box::new(execution::RepairingBody::new(execution::ProcessModelBody {
+                process: spec,
+                source_basis: v["body"]["source_basis"].clone(),
+                fixture,
+            }))
+        }
+        Some("sdk-jsonl") => Box::new(execution::RepairingBody::new(
+            crate::sdk::NativeSdkBody::new(
+                spec,
+                configuration,
+                v["body"]["source_basis"].clone(),
+                fixture,
+                v["body"]["session_timeout_ms"]
+                    .as_u64()
+                    .ok_or_else(|| Error::new("SDK session timeout required"))?,
+            )?,
+        )),
         _ => return Err(Error::new("unsupported model body protocol")),
     };
     let steps = v["max_steps"]
