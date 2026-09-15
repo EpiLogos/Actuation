@@ -164,6 +164,11 @@ actuation harness detect [--only <slugs>] [--versions] [--json]
 actuation harness self [--json]
 actuation harness capability [<slug>] [--json]
 actuation system [--json]
+actuation config-contribution [--json]
+actuation config validate [--json] [--setting <setting_ref>] [--scope <compact>] [--value <json> | --value-file <path|->]
+actuation config plan [--json] [--setting <setting_ref>] [--scope <compact>] [--value <json> | --value-file <path|->]
+actuation config apply [--json] [--plan-file <path|->] [--changeset <id>]
+actuation config reset [--json] [--setting <setting_ref>] [--scope <compact>] [--changeset <id>]
 actuation verify [--json]
 ```
 
@@ -175,6 +180,30 @@ detected, `harness detect` proves it live on this machine, and `--versions`
 enriches receipts by executing detected binaries with their declared
 `version_args` (opt-in: some version probes are slow or prompt the
 keychain; failures are disclosed, never folded into detection state).
+`config-contribution` emits Actuation's configuration contribution
+(`oi.configuration-contribution/v1`): the settings Actuation genuinely owns
+as configuration — its declared agency constitution (determination kinds,
+WorldBinding constraint categories, metagency operations, derivation and
+federation authority rules), its Return modes and its durable stream store
+selection. Every contributed subject is declared code, not applied
+configuration: `writable` is false, and `plan`/`apply`/`reset` are
+structurally unavailable. The four config verbs implement the frozen
+owner-native transport (`config validate|plan|apply|reset --json`), and they
+preserve Actuation's authority law end to end: discoverability is not
+authority, O:I root position confers no Actuation permission, a mutation of
+the authority constitution is refused as `not_authorised` (it would be a
+metagency configure-agency act under an explicit grant, which the transport
+carries no channel for), every other mutation is refused as
+`unsupported_setting`, and failures exit non-zero with an
+`oi.config-error/v1` document on stdout — never a silent success. The frozen
+argument grammar is `config validate --json --setting <setting_ref>
+[--scope <compact>] (--value <json> | --value-file <path|->)` for validate
+and plan (scopes default to this machine; compact form is `kind:ref`), `config
+apply --json (--plan-file <path|->) [--changeset <id>]`, and `config reset
+--json --setting <setting_ref> [--scope <compact>] [--changeset <id>]`.
+An executed idempotency key (owner, changeset, setting, scope, plan digest)
+replays as outcome `no_op` naming the original receipt instead of
+re-executing.
 `instantiation record --out <file>` appends bound receipts as JSONL.
 `agency actualise` accepts one complete semantic request and fails closed unless
 its `MetagencyGrant` matches the exact governing Agency and WorldBinding,

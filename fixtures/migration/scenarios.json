@@ -5639,6 +5639,11 @@
             "harness.self",
             "harness.capability",
             "system.read",
+            "config.contribution",
+            "config.validate",
+            "config.plan",
+            "config.apply",
+            "config.reset",
             "verify"
           ],
           "revision": "$REVISION"

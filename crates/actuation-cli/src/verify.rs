@@ -51,6 +51,10 @@ pub fn suite() -> Vec<Check> {
         ("harness/catalog-declared", check_harness_catalog),
         ("system/disclosure-digest-stable", check_disclosure_digest),
         (
+            "config/contribution-declared-not-writable",
+            check_config_contribution,
+        ),
+        (
             "verify/receipt-names-the-suite",
             check_receipt_names_the_suite,
         ),
@@ -83,6 +87,141 @@ pub fn run() -> VerifyReceipt {
         tests: tests.iter().map(|(name, _)| *name).collect(),
         failure: None,
     }
+}
+
+/// The configuration contribution is declared truth, not applied state: every
+/// contributed subject must be non-writable, non-profileable, validate-only,
+/// and the digest must be a function of the reading (07 §4.5), not the clock.
+fn check_config_contribution() -> std::result::Result<(), String> {
+    let value = run_cli(&["config-contribution", "--json"], "")?;
+    if value["schema"] != json!("oi.configuration-contribution/v1") {
+        return Err(format!("contribution schema drift: {}", value["schema"]));
+    }
+    if value["contract_revision"] != json!("configuration-plane/contribution.1") {
+        return Err(format!(
+            "contribution contract_revision drift: {}",
+            value["contract_revision"]
+        ));
+    }
+    if value["owner"]["owner_ref"] != json!("actuation")
+        || value["owner"]["owner_kind"] != json!("product")
+    {
+        return Err("contribution owner drift".into());
+    }
+    if value["operations"]["transport"] != json!("cli/v1") {
+        return Err("contribution transport drift".into());
+    }
+    for verb in ["plan", "apply", "reset"] {
+        if value["operations"][verb]["availability"] != json!("unavailable") {
+            return Err(format!("contribution {verb} must be declared unavailable"));
+        }
+    }
+    let mut subjects = 0;
+    for section in value["sections"]
+        .as_array()
+        .ok_or("sections must be an array")?
+    {
+        for setting in section["settings"]
+            .as_array()
+            .ok_or("settings must be an array")?
+        {
+            subjects += 1;
+            let reference = setting["setting_ref"]
+                .as_str()
+                .ok_or("setting_ref missing")?;
+            if setting["writable"] != json!(false) {
+                return Err(format!("{reference} must be declared not writable"));
+            }
+            if setting["operations"]["validate"] != json!(true)
+                || setting["operations"]["plan"] != json!(false)
+                || setting["operations"]["apply"] != json!(false)
+                || setting["operations"]["reset"] != json!(false)
+            {
+                return Err(format!("{reference} must be validate-only"));
+            }
+            let expected = format!("actuation:{}:", section["id"].as_str().unwrap_or_default());
+            if !reference.starts_with(&expected) {
+                return Err(format!("{reference} does not carry its section in its ref"));
+            }
+        }
+    }
+    if subjects < 5 {
+        return Err(format!(
+            "the contribution must cover the declared constitutional subjects, found {subjects}"
+        ));
+    }
+    // A mutation attempt is refused with the owner error, never silent.
+    let raw = run_cli_raw(
+        &[
+            "config",
+            "plan",
+            "--json",
+            "--setting",
+            "actuation:return:return.modes",
+            "--value",
+            "[\"optional\"]",
+        ],
+        "",
+    )?;
+    let error: Value =
+        serde_json::from_str(&raw).map_err(|e| format!("plan refusal not JSON: {e}"))?;
+    if error["schema"] != json!("oi.config-error/v1")
+        || error["error_code"] != json!("unsupported_setting")
+    {
+        return Err(format!("plan refusal drift: {error}"));
+    }
+    // The authority constitution refuses on its own law: a metagency
+    // configure-agency act under an explicit grant, never a settings write —
+    // discoverability is not authority and O:I root position confers no
+    // Actuation permission.
+    let raw = run_cli_raw(
+        &[
+            "config",
+            "plan",
+            "--json",
+            "--setting",
+            "actuation:authority:authority.derivation.rule",
+            "--value",
+            "\"rewritten\"",
+        ],
+        "",
+    )?;
+    let error: Value =
+        serde_json::from_str(&raw).map_err(|e| format!("authority refusal not JSON: {e}"))?;
+    if error["schema"] != json!("oi.config-error/v1")
+        || error["error_code"] != json!("not_authorised")
+    {
+        return Err(format!("authority refusal drift: {error}"));
+    }
+    // Validate answers truthfully in-document (exit 0, valid:false): every
+    // subject is declared code, so no value can be validly set.
+    let answer = run_cli(
+        &[
+            "config",
+            "validate",
+            "--json",
+            "--setting",
+            "actuation:return:return.modes",
+            "--value",
+            "[\"required\"]",
+        ],
+        "",
+    )?;
+    if answer["schema"] != json!("oi.config-validation/v1") || answer["valid"] != json!(false) {
+        return Err(format!("validate answer drift: {answer}"));
+    }
+    let codes: Vec<String> = answer["violations"]
+        .as_array()
+        .ok_or("violations must be an array")?
+        .iter()
+        .filter_map(|violation| violation["code"].as_str().map(str::to_owned))
+        .collect();
+    if !codes.contains(&"not_writable".to_owned()) {
+        return Err(format!(
+            "validate must carry the not_writable violation: {codes:?}"
+        ));
+    }
+    Ok(())
 }
 
 fn run_cli(argv: &[&str], stdin: &str) -> std::result::Result<Value, String> {

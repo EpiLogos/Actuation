@@ -19,5 +19,11 @@ tempfile = "3"
 name = "actuation"
 path = "src/main.rs"
 
+[dev-dependencies]
+assert_cmd = "2"
+# The configuration-plane contribution is validated against the frozen C0
+# JSON Schema (vendored at tests/fixtures/) exactly as O:I will validate it.
+jsonschema = { version = "0.30", default-features = false, features = ["resolve-file"] }
+
 [lints]
 workspace = true
