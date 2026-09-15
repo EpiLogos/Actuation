@@ -11,6 +11,7 @@ pub struct NativeCatalog {
     revision: i64,
     descriptors: Vec<HarnessDescriptor>,
     capabilities: Vec<HarnessCapability>,
+    gaps: Vec<HarnessCapabilityGap>,
     secrets: SecretSourceCatalog,
 }
 impl NativeCatalog {
@@ -39,6 +40,10 @@ impl NativeCatalog {
         let descriptors: Vec<HarnessDescriptor> = serde_json::from_value(v["descriptors"].clone())?;
         let capabilities: Vec<HarnessCapability> =
             serde_json::from_value(v["capabilities"].clone())?;
+        let gaps: Vec<HarnessCapabilityGap> = match v.get("capability_gaps") {
+            Some(g) => serde_json::from_value(g.clone())?,
+            None => Vec::new(),
+        };
         let mut seen = HashSet::new();
         for c in &capabilities {
             let slug = text(&c.as_value()["harness_slug"])?;
@@ -46,6 +51,33 @@ impl NativeCatalog {
             require(
                 descriptors.iter().any(|d| d.slug() == slug),
                 "capability names an undeclared target",
+            )?;
+        }
+        let mut gapped = HashSet::new();
+        for g in &gaps {
+            let slug = text(&g.as_value()["harness_slug"])?;
+            require(gapped.insert(slug), "duplicate capability gap slug")?;
+            require(
+                descriptors.iter().any(|d| d.slug() == slug),
+                "capability gap names an undeclared target",
+            )?;
+            require(
+                !capabilities
+                    .iter()
+                    .any(|c| c.as_value()["harness_slug"] == slug),
+                "capability gap shadows a declared capability",
+            )?;
+        }
+        for d in &descriptors {
+            let slug = d.slug();
+            require(
+                capabilities
+                    .iter()
+                    .any(|c| c.as_value()["harness_slug"] == slug)
+                    || gapped.contains(slug),
+                &format!(
+                    "detection descriptor {slug} declares neither a capability nor a capability gap"
+                ),
             )?;
         }
         for d in &descriptors {
@@ -60,6 +92,7 @@ impl NativeCatalog {
             revision,
             descriptors,
             capabilities,
+            gaps,
             secrets: SecretSourceCatalog::try_from(v["secret_sources"].clone())?,
         })
     }
@@ -71,6 +104,14 @@ impl NativeCatalog {
     }
     pub fn capabilities(&self) -> &[HarnessCapability] {
         &self.capabilities
+    }
+    pub fn capability_gaps(&self) -> &[HarnessCapabilityGap] {
+        &self.gaps
+    }
+    pub fn capability_gap(&self, slug: &str) -> Option<&HarnessCapabilityGap> {
+        self.gaps
+            .iter()
+            .find(|g| g.as_value()["harness_slug"] == slug)
     }
     pub fn descriptor(&self, slug: &str) -> Option<&HarnessDescriptor> {
         self.descriptors.iter().find(|d| d.slug() == slug)

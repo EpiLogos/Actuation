@@ -11,9 +11,10 @@ use std::{
 #[test]
 fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     let original = NativeCatalog::bundled().unwrap();
-    assert_eq!(original.revision(), 6);
+    assert_eq!(original.revision(), 7);
     assert_eq!(original.descriptors().len(), 12);
     assert_eq!(original.capabilities().len(), 3);
+    assert_eq!(original.capability_gaps().len(), 9);
     for slug in ["claude-code", "codex", "pi", "ollama", "zcode"] {
         assert!(original.descriptor(slug).is_some());
     }
@@ -23,8 +24,16 @@ fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     );
     assert!(
         original.capability("pi").is_none(),
-        "a missing capability is not guessed"
+        "an unauthored capability is declared as a gap, not guessed"
     );
+    assert!(original.capability_gap("pi").is_some());
+    for d in original.descriptors() {
+        let slug = d.slug();
+        assert!(
+            original.capability(slug).is_some() || original.capability_gap(slug).is_some(),
+            "every declared descriptor closes: {slug}"
+        );
+    }
     let mut v = catalog_value();
     let mut target = v["descriptors"][0].clone();
     target["slug"] = json!("controlled-new-body");
@@ -33,11 +42,114 @@ fn declarative_catalog_is_extensible_without_generic_executable_changes() {
         .as_array_mut()
         .unwrap()
         .push(target.clone());
+    // Extensibility holds under the closure law: a new descriptor declares a
+    // gap until a capability descriptor is authored for it.
+    v["capability_gaps"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!({
+            "schema": "actuation.harness-capability-gap/v1",
+            "document": "capability-gap",
+            "harness_slug": "controlled-new-body",
+            "reason": "acceptance fixture: freshly declared target, capability not authored",
+            "evidence_refs": ["fixture:declarative-extensibility"],
+            "provenance": {
+                "authored_by": "acceptance fixture",
+                "source_refs": ["fixture:declarative-extensibility"]
+            }
+        }));
     let extended = NativeCatalog::from_json(&v.to_string()).unwrap();
     assert!(extended.descriptor("controlled-new-body").is_some());
+    assert!(extended.capability_gap("controlled-new-body").is_some());
     assert!(extended.select(&["unknown".into()]).is_err());
     v["descriptors"].as_array_mut().unwrap().push(target);
     assert!(NativeCatalog::from_json(&v.to_string()).is_err());
+}
+#[test]
+fn capability_closure_is_structural_not_conventional() {
+    let gap_fixture = |slug: &str| {
+        json!({
+            "schema": "actuation.harness-capability-gap/v1",
+            "document": "capability-gap",
+            "harness_slug": slug,
+            "reason": "acceptance fixture: capability withdrawn without replacement",
+            "evidence_refs": ["fixture:capability-closure-acceptance"],
+            "provenance": {
+                "authored_by": "acceptance fixture",
+                "source_refs": ["fixture:capability-closure-acceptance"]
+            }
+        })
+    };
+    // (a) Removing a descriptor's capability without a gap declaration fails
+    // the load, naming the slug.
+    let mut v = catalog_value();
+    v["capabilities"]
+        .as_array_mut()
+        .unwrap()
+        .retain(|c| c["harness_slug"] != json!("zcode"));
+    let err = NativeCatalog::from_json(&v.to_string())
+        .err()
+        .expect("an unclosed catalog must fail to load")
+        .to_string();
+    assert!(
+        err.contains("zcode") && err.contains("neither"),
+        "load error must name the slug: {err}"
+    );
+
+    // (b) A well-formed gap closes the catalog: it loads, the slug is
+    // answered by a gap rather than a capability, and coverage is exact.
+    v["capability_gaps"]
+        .as_array_mut()
+        .unwrap()
+        .push(gap_fixture("zcode"));
+    let closed = NativeCatalog::from_json(&v.to_string()).expect("a gapped catalog must load");
+    assert!(closed.capability("zcode").is_none());
+    let gap = closed.capability_gap("zcode").expect("gap declared");
+    assert_eq!(
+        gap.as_value()["reason"],
+        json!("acceptance fixture: capability withdrawn without replacement")
+    );
+    assert_eq!(
+        closed.capabilities().len() + closed.capability_gaps().len(),
+        closed.descriptors().len()
+    );
+
+    // (c) Malformed gap declarations fail the load: undeclared target,
+    // shadowed capability, missing evidence.
+    let mut undeclared = catalog_value();
+    undeclared["capability_gaps"]
+        .as_array_mut()
+        .unwrap()
+        .push(gap_fixture("never-declared"));
+    assert!(NativeCatalog::from_json(&undeclared.to_string()).is_err());
+
+    let mut shadowed = catalog_value();
+    shadowed["capability_gaps"]
+        .as_array_mut()
+        .unwrap()
+        .push(gap_fixture("claude-code"));
+    assert!(NativeCatalog::from_json(&shadowed.to_string()).is_err());
+
+    let mut unevidenced = catalog_value();
+    let mut bare = gap_fixture("codex");
+    bare["evidence_refs"] = json!([]);
+    unevidenced["capability_gaps"]
+        .as_array_mut()
+        .unwrap()
+        .push(bare);
+    assert!(NativeCatalog::from_json(&unevidenced.to_string()).is_err());
+
+    // (d) A catalog without the gaps array cannot hide an open descriptor.
+    let mut legacy = catalog_value();
+    legacy["capability_gaps"].as_array_mut().unwrap().clear();
+    let err = NativeCatalog::from_json(&legacy.to_string())
+        .err()
+        .expect("a catalog with open descriptors must fail")
+        .to_string();
+    assert!(
+        err.contains("neither"),
+        "closure error names the failure: {err}"
+    );
 }
 #[test]
 fn absence_and_existing_configuration_never_become_a_fake_executable_or_version_call() {

@@ -1,6 +1,6 @@
 {
   "schema": "actuation.native-catalog/v1",
-  "catalog_revision": 6,
+  "catalog_revision": 7,
   "descriptors": [
     {
       "schema": "actuation.harness-detection/v1",
@@ -775,6 +775,180 @@
           "investigation:zcode-model-dispatch-not-evidenced-2026-09-09"
         ],
         "catalog_revision": 6
+      }
+    }
+  ],
+  "capability_gaps": [
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "pi",
+      "summary": "pi coding agent harness; admission-evidenced, descriptor not yet authored",
+      "reason": "No capability descriptor authored at diagnosis (2026-09-14): AIKit admits pi through the harness-adapter contract on detection evidence (ai-kit#186, closed 2026-09-08), but Actuation had not yet authored the descriptor from that evidence. The gap is a scheduling fact, not an absence of evidence.",
+      "evidence_refs": [
+        "aikit:clients/pi.rs admission (ai-kit#186, closed 2026-09-08)",
+        "detection:2026-09-06T23:42:55.567Z pi:detected exe:~/.local/bin/pi sha256:5406c369954516fb56879d685e082ff9095cd6e06e41af406f394942377fd4bf",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "gemini",
+      "summary": "Gemini CLI agent harness; adapter consumes the detection record, descriptor not authored",
+      "reason": "No capability descriptor authored at diagnosis (2026-09-14): the gemini CLI's native event/blocking surface has not been observed into descriptor form. AIKit's adapter cites the detection record for discovery (ai-kit#186 round-2 migration) and records the undeclared capability state honestly; authoring the descriptor is Actuation-side work that had not happened.",
+      "evidence_refs": [
+        "aikit:clients/gemini.rs (ai-kit#186 round-2 migration, commit 971e8fa)",
+        "survey:local-machine-2026-09-05",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "gemini-antigravity",
+      "summary": "Antigravity agent inside the gemini config tree; detected only",
+      "reason": "No capability descriptor authored at diagnosis (2026-09-14): the antigravity agent's native surface is unobserved beyond detection; AIKit's admission rides the detection record only and projects nothing into the harness.",
+      "evidence_refs": [
+        "aikit:clients/antigravity.rs admission (ai-kit#186, closed 2026-09-08)",
+        "survey:local-machine-2026-09-05",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "hermes",
+      "summary": "Hermes agent harness; no adapter, no observed dispatch surface",
+      "reason": "No capability descriptor authored and no AIKit adapter exists at diagnosis (2026-09-14); detection provenance is the 2026-09-05 machine survey only, and no event/blocking surface has been observed.",
+      "evidence_refs": [
+        "survey:local-machine-2026-09-05",
+        "aikit:clients/ contains no hermes adapter at diagnosis 2026-09-14",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "hermes-acp",
+      "summary": "Hermes ACP bridge; no adapter, no observed dispatch surface",
+      "reason": "No capability descriptor authored and no AIKit adapter exists at diagnosis (2026-09-14); the acp-bridge edition shares the hermes config tree, so whatever is true of hermes detection is true here, and no event/blocking surface has been observed for either.",
+      "evidence_refs": [
+        "survey:local-machine-2026-09-05",
+        "aikit:clients/ contains no hermes-acp adapter at diagnosis 2026-09-14",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "grok-bot",
+      "summary": "grok-bot harness; detected only, daemon wake unobserved",
+      "reason": "No capability descriptor authored at diagnosis (2026-09-14): AIKit's admission rides the detection record only, and the native surface — including whether the background daemon admits a wake — is unobserved. Wake optimism is not a transport, so nothing is declared.",
+      "evidence_refs": [
+        "aikit:clients/grokbot.rs admission (ai-kit#186, closed 2026-09-08)",
+        "survey:local-machine-2026-09-05",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "ollama",
+      "summary": "Local model runtime and provider; detected for model binding, not agency dispatch",
+      "reason": "Capability descriptors declare what a dispatch target accepts; ollama is detected as a model-provider for model binding, not agency, and AIKit's admission is brokered (a stateless model server, 14/15 faculties unsupported with reasons). No harness capability applies and none is authored.",
+      "evidence_refs": [
+        "aikit:clients/ollama.rs admission (ai-kit#186, closed 2026-09-08)",
+        "survey:local-machine-2026-09-05",
+        "upstream:github.com/ollama/ollama/blob/main/docs/api.md",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "openclaw",
+      "summary": "OpenClaw agent harness; detected only",
+      "reason": "No capability descriptor authored at diagnosis (2026-09-14): AIKit's admission rides the detection record only; the native event/blocking surface is unobserved.",
+      "evidence_refs": [
+        "aikit:clients/openclaw.rs admission (ai-kit#186, closed 2026-09-08)",
+        "survey:local-machine-2026-09-05",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "kimi",
+      "summary": "Kimi CLI harness; projection surface partially evidenced, descriptor not authored",
+      "reason": "No capability descriptor authored at diagnosis (2026-09-14): AIKit's admission evidences a real projection surface (project-root AGENTS.md, next-session activation) but the native event/blocking grammar is unobserved, and a descriptor carrying only the projection facts would understate what capability descriptors must declare.",
+      "evidence_refs": [
+        "aikit:clients/kimi.rs admission (ai-kit#186, closed 2026-09-08)",
+        "survey:local-machine-2026-09-05",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
       }
     }
   ],
