@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 RETURN_SCHEMA = "actuation.prime-return/v0"
+FACULTY_RESULT_SCHEMA = "actuation.prime-faculty-result/v1"
 
 
 def _root() -> Path:
@@ -68,6 +69,55 @@ async def _record(operation: str, request: Any, response: Any) -> None:
         handle.write(json.dumps(row, sort_keys=True) + "\n")
 
 
+async def _receipt(native_request: dict[str, Any], response: Any) -> None:
+    """File the native Actuation faculty receipt for one executed operation.
+
+    When the research binary is available (ACTUATION_RESEARCH_BIN), the same
+    operation is replayed through the engine's `faculty.invoke` so a
+    content-addressed native receipt lands in the faculty configuration's
+    evidence World — the receipts the experiment driver's claims collector
+    reads. The request shape mirrors crates/actuation-research/src/faculty.rs
+    exactly. The JSONL evidence log above is independent and stays. A
+    success:false envelope still carries its receipt (the native refusal is
+    itself evidence); only a missing or malformed receipt is a bridge failure.
+    """
+    research_bin = os.environ.get("ACTUATION_RESEARCH_BIN")
+    if not research_bin:
+        return
+    configuration = os.environ.get("ACTUATION_RESEARCH_FACULTY_CONFIG")
+    if not configuration:
+        raise RuntimeError(
+            "ACTUATION_RESEARCH_FACULTY_CONFIG is required to file native faculty receipts"
+        )
+    payload = {
+        "operation": "faculty.invoke",
+        "configuration": configuration,
+        "request": native_request,
+        "trace_ref": os.environ.get("ACTUATION_RESEARCH_TRACE_REF"),
+        "declared_locus_ref": os.environ.get("ACTUATION_RESEARCH_LOCUS_REF"),
+    }
+    proc = await asyncio.create_subprocess_exec(
+        research_bin,
+        stdin=asyncio.subprocess.PIPE,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    stdout, stderr = await proc.communicate(json.dumps(payload).encode())
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"native faculty receipt filing failed ({proc.returncode}): "
+            f"{stderr.decode(errors='replace').strip()}"
+        )
+    try:
+        result = json.loads(stdout.decode())
+    except json.JSONDecodeError as e:
+        raise RuntimeError("native faculty receipt reply is not JSON") from e
+    if result.get("schema") != FACULTY_RESULT_SCHEMA or not isinstance(
+        result.get("receipt"), dict
+    ):
+        raise RuntimeError(f"native faculty receipt is missing: {result}")
+
+
 async def _ql(*args: str) -> dict[str, Any]:
     request = list(args)
     response = await _run(
@@ -80,32 +130,46 @@ async def _ql(*args: str) -> dict[str, Any]:
 
 async def capabilities() -> dict[str, Any]:
     """Return accepted QL/MEF CLI, kernel, MEF, Context Frame, VĀK and service capability disclosure."""
-    return await _ql("capabilities")
+    result = await _ql("capabilities")
+    await _receipt({"operation": "capabilities"}, result)
+    return result
 
 
 async def kernel_apply(operator: str, address: str) -> dict[str, Any]:
     """Apply one accepted deterministic QL kernel operator to one QL address."""
-    return await _ql("kernel", "apply", operator, address)
+    result = await _ql("kernel", "apply", operator, address)
+    await _receipt(
+        {"operation": "kernel-apply", "operator": operator, "address": address}, result
+    )
+    return result
 
 
 async def mef_lenses() -> dict[str, Any]:
     """Return the source-locked twelve-lens MEF registry."""
-    return await _ql("mef", "lenses")
+    result = await _ql("mef", "lenses")
+    await _receipt({"operation": "mef-lenses"}, result)
+    return result
 
 
 async def context_frames() -> dict[str, Any]:
     """Return the accepted Context Frame registry."""
-    return await _ql("context-frame", "list")
+    result = await _ql("context-frame", "list")
+    await _receipt({"operation": "context-frames"}, result)
+    return result
 
 
 async def vak_locate(vak_ref: str) -> dict[str, Any]:
     """Locate one source-backed VĀK entry."""
-    return await _ql("vak", "locate", vak_ref)
+    result = await _ql("vak", "locate", vak_ref)
+    await _receipt({"operation": "vak-locate", "vak_ref": vak_ref}, result)
+    return result
 
 
 async def negotiate(operation: str) -> dict[str, Any]:
     """Negotiate capabilities|locate|refract|relate|synthesise against the current QL service."""
-    return await _ql("service", "negotiate", operation)
+    result = await _ql("service", "negotiate", operation)
+    await _receipt({"operation": "negotiate", "service_operation": operation}, result)
+    return result
 
 
 async def wiki_refract(request: dict[str, Any]) -> dict[str, Any]:
@@ -117,6 +181,7 @@ async def wiki_refract(request: dict[str, Any]) -> dict[str, Any]:
         stdin=payload,
     )
     await _record("ql-wiki:refract", request, response)
+    await _receipt({"operation": "wiki-refract", "request": request}, response)
     return response
 
 
@@ -129,6 +194,7 @@ async def source_state() -> dict[str, Any]:
         "harmonic_enabled": os.environ.get("QL_PRIME_HARMONIC") == "1",
     }
     await _record("source-state", {}, result)
+    await _receipt({"operation": "source-state"}, result)
     return result
 
 
@@ -137,7 +203,9 @@ async def constellation_contract() -> dict[str, Any]:
     path = _root() / "docs" / "wiki-structural-contract-v2.md"
     text = path.read_text(encoding="utf-8")
     result = {"path": str(path.relative_to(_root())), "revision": await _git_revision(), "content": text}
-    await _record("constellation-contract", {}, {"path": result["path"], "revision": result["revision"], "content_digest": _digest(text)})
+    logged = {"path": result["path"], "revision": result["revision"], "content_digest": _digest(text)}
+    await _record("constellation-contract", {}, logged)
+    await _receipt({"operation": "constellation-contract"}, logged)
     return result
 
 
@@ -179,6 +247,10 @@ async def harmonic_search(query: str, max_matches: int = 8) -> dict[str, Any]:
         "matches": matches,
     }
     await _record("harmonic-search", {"query": query, "max_matches": max_matches}, result)
+    await _receipt(
+        {"operation": "harmonic-search", "query": query, "max_matches": max_matches},
+        result,
+    )
     return result
 
 
@@ -245,6 +317,7 @@ fn main() {
     result["revision"] = await _git_revision()
     result["standing"] = "accepted-main"
     await _record("harmonic-snapshot", {"basis": basis}, result)
+    await _receipt({"operation": "harmonic-snapshot", "basis": basis}, result)
     return result
 
 

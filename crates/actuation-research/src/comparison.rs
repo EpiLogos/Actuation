@@ -451,6 +451,7 @@ where
                 }
             };
             let r = &output["result"];
+            let (total_tokens, usage_partial) = observed_token_usage(r);
             // Outcomes may fail or remain unknown; common parameters come from
             // the supplied plan, never inferred from a neighbouring successful run.
             let model = match (
@@ -483,7 +484,8 @@ where
                     "session_timeout_ms":common["body"]["session_timeout_ms"]})),
                 "network_policy_digest":source["network_policy_digest"],
                 "elapsed_ms":begun.elapsed().as_millis(),"model_calls":r["model_calls"],
-                "capability_calls":r["capability_calls"],"total_tokens":observed_total_tokens(r),
+                "capability_calls":r["capability_calls"],
+                "total_tokens":total_tokens,"usage_partial":usage_partial,
                 "receipt_path":format!("{trial_name}/receipt.json"),"record":output,
                 "human_acceptance":false,"provider_evidence":"not-assessed"});
             record = sanitize(&record, &secret_values);
@@ -499,29 +501,36 @@ where
     root.write("manifest.json", manifest.to_string().as_bytes(), true)?;
     Ok(manifest)
 }
-fn observed_total_tokens(run: &Value) -> Value {
+/// Token usage is summed from whatever per-call usage the specimen disclosed.
+/// A call without usage never nulls the record: the partial sum travels with
+/// an explicit `usage_partial` flag instead.
+fn observed_token_usage(run: &Value) -> (Value, bool) {
     let Some(observations) = run["observations"].as_array() else {
-        return Value::Null;
+        return (Value::Null, false);
     };
     let mut total = 0_u64;
     let mut observed = false;
+    let mut partial = false;
     for event in observations
         .iter()
         .filter(|o| o["event_type"] == "model_returned")
     {
-        let Some(n) = event["value"]["result"]["usage"]["total_tokens"].as_u64() else {
-            return Value::Null;
-        };
-        let Some(sum) = total.checked_add(n) else {
-            return Value::Null;
-        };
-        total = sum;
-        observed = true;
+        match event["value"]["result"]["usage"]["total_tokens"].as_u64() {
+            Some(n) => {
+                let Some(sum) = total.checked_add(n) else {
+                    // An unusable sum is still a partial disclosure.
+                    return (Value::Null, true);
+                };
+                total = sum;
+                observed = true;
+            }
+            None => partial = true,
+        }
     }
     if observed {
-        json!(total)
+        (json!(total), partial)
     } else {
-        Value::Null
+        (Value::Null, partial)
     }
 }
 
@@ -670,6 +679,35 @@ mod tests {
     }
 
     #[test]
+    fn token_usage_sums_partial_disclosure_instead_of_nulling_the_record() {
+        let (total, partial) = observed_token_usage(&json!({"observations":[
+            {"event_type":"model_returned","value":{"result":{"usage":{"total_tokens":7}}}},
+            {"event_type":"model_returned","value":{"result":{"content":"no usage disclosed"}}}
+        ]}));
+        assert_eq!(total, json!(7), "the disclosed calls still sum");
+        assert!(partial, "the call without usage is flagged");
+
+        let (total, partial) = observed_token_usage(&json!({"observations":[
+            {"event_type":"model_returned","value":{"result":{"usage":{"total_tokens":2}}}},
+            {"event_type":"model_returned","value":{"result":{"usage":{"total_tokens":3}}}}
+        ]}));
+        assert_eq!(total, json!(5));
+        assert!(!partial);
+
+        // Calls happened but none disclosed usage: nothing is claimed, and
+        // the incompleteness is explicit rather than a bare null.
+        let (total, partial) = observed_token_usage(&json!({"observations":[
+            {"event_type":"model_returned","value":{"result":{}}}
+        ]}));
+        assert_eq!(total, Value::Null);
+        assert!(partial);
+
+        let (total, partial) = observed_token_usage(&json!({}));
+        assert_eq!(total, Value::Null);
+        assert!(!partial);
+    }
+
+    #[test]
     fn run_with_executes_each_trial_in_its_own_world_and_records_failures() {
         let root_dir = tempfile::tempdir().unwrap();
         let root = World::open(root_dir.path()).unwrap();
@@ -714,6 +752,7 @@ mod tests {
         for r in records {
             assert_eq!(r["status"], json!("completed"));
             assert_eq!(r["total_tokens"], json!(7));
+            assert_eq!(r["usage_partial"], json!(false));
             assert_eq!(r["fixture_provider"], json!(true));
             assert_eq!(r["human_acceptance"], json!(false));
         }
