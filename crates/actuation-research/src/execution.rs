@@ -217,7 +217,16 @@ impl ModelBody for ProcessModelBody {
         candidate_boundary(request)?;
         let r = self.process.run(request.to_string().as_bytes())?;
         if r.code != Some(0) {
-            return Err(Error::new("supplied model specimen failed"));
+            // Host-side failures (disk pressure, a missing runtime) otherwise
+            // surface with zero diagnostics. Carry the head of the specimen's
+            // stderr into the error the run records.
+            let head = r.stderr.chars().take(2048).collect::<String>();
+            let detail = head.trim();
+            return Err(Error::new(if detail.is_empty() {
+                "supplied model specimen failed (no stderr captured)".to_owned()
+            } else {
+                format!("supplied model specimen failed: {detail}")
+            }));
         }
         let value: Value = serde_json::from_str(&r.stdout)
             .map_err(|_| Error::new("model specimen returned invalid JSON"))?;
@@ -832,5 +841,49 @@ mod tests {
         .unwrap();
         let err = spec.validate().unwrap_err();
         assert!(err.to_string().contains("absolute"));
+    }
+
+    #[test]
+    fn a_failed_specimen_carries_the_head_of_its_stderr() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = tempfile::tempdir().unwrap();
+        let mut body = ProcessModelBody {
+            process: ProcessSpec {
+                program: dir.path().join("failing-specimen.sh"),
+                args: vec![],
+                cwd: dir.path().to_owned(),
+                environment: Default::default(),
+                timeout_ms: 10_000,
+                output_limit: 1 << 20,
+            },
+            source_basis: json!({}),
+            fixture: false,
+        };
+        std::fs::write(
+            &body.process.program,
+            b"#!/bin/sh\ncat >/dev/null\necho 'disk pressure on host' >&2\nexit 1\n",
+        )
+        .unwrap();
+        std::fs::set_permissions(
+            &body.process.program,
+            std::fs::Permissions::from_mode(0o755),
+        )
+        .unwrap();
+        let err = body.complete(&json!({"payload":{}})).unwrap_err();
+        let message = err.to_string();
+        assert!(
+            message.contains("supplied model specimen failed"),
+            "{message}"
+        );
+        assert!(message.contains("disk pressure on host"), "{message}");
+
+        // A silent failure still says what happened instead of bare tone.
+        std::fs::write(
+            &body.process.program,
+            b"#!/bin/sh\ncat >/dev/null\nexit 1\n",
+        )
+        .unwrap();
+        let err = body.complete(&json!({"payload":{}})).unwrap_err();
+        assert!(err.to_string().contains("no stderr captured"));
     }
 }

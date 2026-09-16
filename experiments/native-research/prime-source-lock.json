@@ -13,7 +13,7 @@
   },
   "ql_mef": {
     "repository": "EpiLogos/QL-MEF",
-    "accepted_main_revision": "e753efc91f62b5b2af09e0a852c5063e366eccbe",
+    "accepted_main_revision": "08d14e89c6427cb885e117c2e9bc9dc61a0f90b7",
     "harmonic_research": {
       "issue": 31,
       "pull_request": 81,

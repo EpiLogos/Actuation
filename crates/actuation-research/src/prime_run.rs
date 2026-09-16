@@ -47,6 +47,53 @@ fn task_snapshot(world: &World) -> Result<Value> {
         .retain(|k, _| !k.starts_with(".prime/"));
     Ok(v)
 }
+/// The relational specimen's bridge to the native faculty: the research
+/// binary, the faculty configuration and the owning trace — plus a PYTHONPATH
+/// carrying the configured skill's `src/`, because the specimen environment is
+/// cleared and the skill's imports would otherwise not resolve. A
+/// request-supplied PYTHONPATH is preserved ahead of the skill source.
+fn apply_relational_environment(
+    process: &mut ProcessSpec,
+    request: &PrimeRunRequest,
+) -> Result<()> {
+    process.environment.insert(
+        "ACTUATION_RESEARCH_BIN".into(),
+        request
+            .research_binary
+            .as_ref()
+            .expect("relational research binary is checked")
+            .to_string_lossy()
+            .into_owned(),
+    );
+    process.environment.insert(
+        "ACTUATION_RESEARCH_FACULTY_CONFIG".into(),
+        request
+            .faculty_config
+            .as_ref()
+            .expect("relational faculty configuration is checked")
+            .to_string_lossy()
+            .into_owned(),
+    );
+    process.environment.insert(
+        "ACTUATION_RESEARCH_TRACE_REF".into(),
+        request.trace_ref.to_string(),
+    );
+    let skill_src = request
+        .skill_path
+        .as_ref()
+        .expect("relational skill path is checked")
+        .join("src");
+    let mut segments = vec![skill_src];
+    if let Some(existing) = process.environment.get("PYTHONPATH") {
+        segments.extend(std::env::split_paths(existing));
+    }
+    let joined = std::env::join_paths(segments)
+        .map_err(|_| Error::new("skill source path cannot form a PYTHONPATH"))?;
+    process
+        .environment
+        .insert("PYTHONPATH".into(), joined.to_string_lossy().into_owned());
+    Ok(())
+}
 /// Call with a dedicated empty World. No existing personal Control is touched.
 /// `owner` is required for relational conditions; not a local formal fallback.
 pub fn run_prime(
@@ -194,28 +241,7 @@ pub fn run_prime(
                 .to_string_lossy()
                 .into_owned(),
         ]);
-        process.environment.insert(
-            "ACTUATION_RESEARCH_BIN".into(),
-            request
-                .research_binary
-                .as_ref()
-                .unwrap()
-                .to_string_lossy()
-                .into_owned(),
-        );
-        process.environment.insert(
-            "ACTUATION_RESEARCH_FACULTY_CONFIG".into(),
-            request
-                .faculty_config
-                .as_ref()
-                .unwrap()
-                .to_string_lossy()
-                .into_owned(),
-        );
-        process.environment.insert(
-            "ACTUATION_RESEARCH_TRACE_REF".into(),
-            request.trace_ref.to_string(),
-        );
+        apply_relational_environment(&mut process, request)?;
     }
     let secrets = request
         .prime
@@ -361,6 +387,24 @@ pub fn run_prime(
             .map(|rows| json!(rows.iter().any(|r| r["success"] == true)))
             .unwrap_or(Value::Null)
     };
+    // Every native receipt names the operation it recorded, refused or not:
+    // what the faculty was exercised with is claim surface, not only success.
+    let relational_operations = if condition["relational"] != true {
+        json!([])
+    } else {
+        faculty_records
+            .as_ref()
+            .map(|rows| {
+                let mut ops: Vec<String> = rows
+                    .iter()
+                    .filter_map(|r| r["operation"].as_str().map(str::to_owned))
+                    .collect();
+                ops.sort();
+                ops.dedup();
+                json!(ops)
+            })
+            .unwrap_or(Value::Null)
+    };
     let status = if execution.is_ok() && faculty_error.is_none() {
         "completed"
     } else {
@@ -385,6 +429,73 @@ pub fn run_prime(
             &secrets,
         ),
     )?);
-    let record = json!({"schema":"actuation.prime-recursive-experiment/v1","execution_status":status,"error":error,"condition":condition,"task":task.candidate(),"source":{"lock":lock.as_value(),"ql_owner":ql,"task_revision":task.revision()},"prime":{"observed_version":observed,"provider":request.provider,"model":request.model,"selection_standing":"supplied-not-resolved-by-Actuation","final_state":final_state,"session_stats":stats,"messages":messages,"requested_rlm_max_depth":condition["maxDepth"],"family":family,"prime_acceptance":acceptance_result,"rpc_records":client.records(),"stderr":client.stderr_text()?},"workspace":{"before":before,"after":after_task,"after_refinement":after_refinement,"excluded_generated_prefix":".prime/"},"faculty":{"receipts":faculty_records,"collection_error":faculty_error,"standing":"native-invocation-receipts; caller-locus-labels-not-authenticated"},"outcome":output,"verification":verification,"continual_refinement":refinement,"refinement_verification":refinement_verification,"evidence_refs":evidence,"claims":{"fixture_provider":request.fixture_provider,"live_prime_run":if request.fixture_provider{json!(false)}else{Value::Null},"prime_body_executed":true,"ql_relational_faculty_exercised":faculty_exercised,"observed_child_loci":family["child_nodes"].as_array().unwrap().len(),"observed_lineage_edges":family["edges"].as_array().unwrap().len(),"observed_nested_child_edges":family["nested_edges"].as_array().unwrap().len(),"continual_refinement_invoked":client.refinement_attempted(),"provider_evidence":"not-assessed","owner_machine_evidence":false,"human_acceptance":false}});
+    let record = json!({"schema":"actuation.prime-recursive-experiment/v1","execution_status":status,"error":error,"condition":condition,"task":task.candidate(),"source":{"lock":lock.as_value(),"ql_owner":ql,"task_revision":task.revision()},"prime":{"observed_version":observed,"provider":request.provider,"model":request.model,"selection_standing":"supplied-not-resolved-by-Actuation","final_state":final_state,"session_stats":stats,"messages":messages,"requested_rlm_max_depth":condition["maxDepth"],"family":family,"prime_acceptance":acceptance_result,"rpc_records":client.records(),"stderr":client.stderr_text()?},"workspace":{"before":before,"after":after_task,"after_refinement":after_refinement,"excluded_generated_prefix":".prime/"},"faculty":{"receipts":faculty_records,"collection_error":faculty_error,"standing":"native-invocation-receipts; caller-locus-labels-not-authenticated"},"outcome":output,"verification":verification,"continual_refinement":refinement,"refinement_verification":refinement_verification,"evidence_refs":evidence,"claims":{"fixture_provider":request.fixture_provider,"live_prime_run":if request.fixture_provider{json!(false)}else{Value::Null},"prime_body_executed":true,"ql_relational_faculty_exercised":faculty_exercised,"relational_operations":relational_operations,"observed_child_loci":family["child_nodes"].as_array().unwrap().len(),"observed_lineage_edges":family["edges"].as_array().unwrap().len(),"observed_nested_child_edges":family["nested_edges"].as_array().unwrap().len(),"continual_refinement_invoked":client.refinement_attempted(),"provider_evidence":"not-assessed","owner_machine_evidence":false,"human_acceptance":false}});
     Ok(sanitize(&record, &secrets))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::BTreeMap;
+
+    fn bridge_request(skill: PathBuf) -> PrimeRunRequest {
+        PrimeRunRequest {
+            trace_ref: ExternalRef::new("trace:test:prime-env").unwrap(),
+            task_id: "S1-RESTRAINT-001".into(),
+            condition: "prime-relational".into(),
+            source_lock: json!({}),
+            prime: ProcessSpec {
+                program: "/bin/true".into(),
+                args: vec![],
+                cwd: std::env::temp_dir(),
+                environment: BTreeMap::new(),
+                timeout_ms: 1_000,
+                output_limit: 1 << 20,
+            },
+            provider: "provider".into(),
+            model: "model".into(),
+            fixture_provider: true,
+            allow_refinement: false,
+            node: None,
+            skill_path: Some(skill),
+            research_binary: Some("/bin/true".into()),
+            faculty_config: Some("/tmp/faculty.json".into()),
+        }
+    }
+
+    #[test]
+    fn relational_specimen_environment_carries_the_faculty_bridge_and_skill_src() {
+        let skill = std::env::temp_dir().join("ql-relational-env-test");
+        let mut request = bridge_request(skill.clone());
+        let mut process = request.prime.clone();
+        apply_relational_environment(&mut process, &request).unwrap();
+        assert_eq!(
+            process.environment["ACTUATION_RESEARCH_TRACE_REF"],
+            "trace:test:prime-env"
+        );
+        assert_eq!(process.environment["ACTUATION_RESEARCH_BIN"], "/bin/true");
+        assert_eq!(
+            process.environment["ACTUATION_RESEARCH_FACULTY_CONFIG"],
+            "/tmp/faculty.json"
+        );
+        let expected = std::env::join_paths([skill.join("src")]).unwrap();
+        assert_eq!(
+            process.environment["PYTHONPATH"],
+            expected.to_string_lossy().into_owned(),
+            "the cleared specimen environment must receive the skill's src/ on PYTHONPATH"
+        );
+
+        // A request-supplied PYTHONPATH survives, with the skill source first.
+        request
+            .prime
+            .environment
+            .insert("PYTHONPATH".into(), "/site-packages".into());
+        let mut process = request.prime.clone();
+        apply_relational_environment(&mut process, &request).unwrap();
+        let expected = std::env::join_paths([skill.join("src"), "/site-packages".into()]).unwrap();
+        assert_eq!(
+            process.environment["PYTHONPATH"],
+            expected.to_string_lossy().into_owned()
+        );
+    }
 }
