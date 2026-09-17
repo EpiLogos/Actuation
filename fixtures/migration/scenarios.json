@@ -5738,8 +5738,9 @@
             "config.reset",
             "verify"
           ],
-          "revision": "d2d5f2f83ee2712458152333237c391b231b77e2"
-        }
+          "revision": "$REVISION"
+        },
+        "stderr": ""
       }
     },
     {
@@ -5770,7 +5771,8 @@
           "harness_detection": "actuation.harness-detection/v1",
           "harness_capability": "actuation.harness-capability/v1",
           "system_disclosure": "oi.product-settings-disclosure/v2"
-        }
+        },
+        "stderr": ""
       }
     },
     {
@@ -6277,7 +6279,8 @@
               }
             }
           ]
-        }
+        },
+        "stderr": ""
       }
     },
     {
@@ -6670,7 +6673,8 @@
               }
             }
           ]
-        }
+        },
+        "stderr": ""
       }
     },
     {
