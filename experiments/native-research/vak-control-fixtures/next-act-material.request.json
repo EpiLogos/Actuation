@@ -1,0 +1,104 @@
+{
+ "contract": "ql.vak-composition/v1",
+ "steps": [
+  {
+   "op": "whole",
+   "useRef": "circuit:trace:t1:c0:state",
+   "subjectRef": "circuit:trace:t1:c0",
+   "wholeRef": "anchor:circuit:trace:t1:c0",
+   "category": "M",
+   "groundRef": "ground:circuit:trace:t1:c0",
+   "groundFace": "direct",
+   "frame": {
+    "id": "CF1",
+    "lens": "L0",
+    "basis": "chromatic",
+    "face": "direct",
+    "positions": "local"
+   },
+   "basis": {
+    "caller": "actuation:vak-control",
+    "source": "trace:t1:c0",
+    "revision": "trace:t1",
+    "standing": "OBSERVED",
+    "evidence": [
+     "circuit:trace:t1:c0",
+     "trace:trace:t1"
+    ]
+   },
+   "members": [
+    {
+     "subjectRef": "circuit:trace:t1:c0:p0",
+     "position": 0,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:trace:t1:c0:p1",
+     "position": 1,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:trace:t1:c0:p2:vacant",
+     "position": 2,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:trace:t1:c0:p3:vacant",
+     "position": 3,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:trace:t1:c0:p4:vacant",
+     "position": 4,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:trace:t1:c0:p5:vacant",
+     "position": 5,
+     "face": "direct"
+    }
+   ],
+   "sourceReturns": [
+    {
+     "fromRef": "trace:t1:c0:act:0:return",
+     "anchorRef": "anchor:circuit:trace:t1:c0",
+     "groundRef": "ground:circuit:trace:t1:c0",
+     "face": "direct",
+     "kind": "own"
+    }
+   ]
+  },
+  {
+   "op": "enter",
+   "id": "ctx",
+   "useRef": "circuit:trace:t1:c0:state",
+   "categoryGround": {
+    "position": 1,
+    "face": "direct"
+   }
+  },
+  {
+   "op": "cpf",
+   "context": "ctx",
+   "into": "circuit:trace:t1:c0:cpf",
+   "face": "direct",
+   "operators": [
+    "+",
+    "x",
+    "/",
+    "="
+   ],
+   "basis": {
+    "caller": "actuation:vak-control",
+    "source": "trace:t1:c0",
+    "revision": "trace:t1",
+    "standing": "OBSERVED",
+    "evidence": [
+     "circuit:trace:t1:c0",
+     "trace:trace:t1",
+     "vacant-offices:2,3,4,5"
+    ]
+   }
+  }
+ ]
+}

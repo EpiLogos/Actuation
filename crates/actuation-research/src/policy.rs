@@ -243,6 +243,11 @@ pub struct ModelPolicy {
     /// own law in code — no model call — with the rule and basis recorded in
     /// the witness. The model keeps acts, determination and closure.
     pub compressed_control: bool,
+    /// Kernel-native control: the QL-MEF vak composition contract answers
+    /// interpret-return and next-act over the circuit's positional field.
+    /// Mutually exclusive with compressed control (enforced at the run seam);
+    /// a refused kernel turn is an error, never a model fallback.
+    pub vak_control: Option<crate::vak_control::VakControl>,
     depth_used: BTreeSet<String>,
     acts_by_position: BTreeMap<String, u64>,
     grace_used: BTreeSet<String>,
@@ -260,6 +265,7 @@ impl ModelPolicy {
             mode,
             schedule,
             compressed_control: false,
+            vak_control: None,
             depth_used: BTreeSet::new(),
             acts_by_position: BTreeMap::new(),
             grace_used: BTreeSet::new(),
@@ -268,6 +274,10 @@ impl ModelPolicy {
     }
     pub fn with_compressed_control(mut self) -> Self {
         self.compressed_control = true;
+        self
+    }
+    pub fn with_vak_control(mut self, control: crate::vak_control::VakControl) -> Self {
+        self.vak_control = Some(control);
         self
     }
     /// Allowance is per-position and frame-carried: consumed by acts at the
@@ -334,14 +344,40 @@ impl Policy for ModelPolicy {
                 }),
             }));
         }
-        let d=control(cx,host,"ql-next-act",&format!("You are controlling a QL-native agent recurrence. Positions are responsibilities, not chronological stages: P0 initiating intent and operative frame; P1 material, evidence and givens; P2 effect, operation and transformation; P3 form, pattern and implementation; P4 whole-relative evaluation, context and adequacy; P5 candidate determination and synthesis. {CONJUGATE_DIRECTION_LAW} Choose the next exterior act appropriate to the currently active position. Return exactly one JSON object of the form {{\"intent\": string, \"carrier\": {{\"kind\": \"model\"|\"capability\"|\"internal_control\", \"name\": <capability id, required when kind is \"capability\">, \"args\": object}}, \"claimed_relation\": string|null, \"rationale\": string}}. The \"internal_control\" kind is only a closure request: use {{\"kind\": \"internal_control\", \"name\": \"close\", \"args\": {{\"reason\": string}}}} when the realisable intent is already achieved and no exterior act remains — do not repeat equivalent acts. Stipulations of kind \"exclusion\" forbid the entire class of action including creating new artifacts: check the carrier choice against every exclusion stipulation before returning. In Deep mode, only at P4, you may add \"deep_operator\": \"depth\" when a genuinely local whole — a sub-question whose independent resolution would materially change the evaluation, resolvable without the parent's transcript — warrants independent treatment at the lemniscate point; depth at #4 is the nesting entry, not a ceremony. Do not force a six-step path."),
+        let d=if let Some(vak) = self.vak_control.as_ref() {
+            // Kernel-native control: the composition contract names the next
+            // office's faculty over the circuit's own positional field. No
+            // model turn runs; a refused kernel turn fails the run closed.
+            let run_id = cx.request.wire()["runId"].as_str().unwrap_or_default();
+            let d = vak.next_act(cx.circuit, run_id)?;
+            let mut metadata = json!({"vak_control":{
+                "operation":"next-act",
+                "request_digest":d.request_digest,
+                "result":d.kernel_evidence()}});
+            if d.closure {
+                metadata["closure_request"] = json!(true);
+                metadata["controller_rationale"] = json!(d.intent);
+            }
+            return Ok(Some(Act {
+                source_position: Some(cx.circuit.active_position),
+                intent: json!(d.intent),
+                carrier: d.carrier.clone().unwrap_or_else(|| {
+                    json!({"kind":"internal_control","name":"close","input":null})
+                }),
+                input_residue_refs: vec![],
+                nested: None,
+                metadata,
+            }));
+        } else {
+            control(cx,host,"ql-next-act",&format!("You are controlling a QL-native agent recurrence. Positions are responsibilities, not chronological stages: P0 initiating intent and operative frame; P1 material, evidence and givens; P2 effect, operation and transformation; P3 form, pattern and implementation; P4 whole-relative evaluation, context and adequacy; P5 candidate determination and synthesis. {CONJUGATE_DIRECTION_LAW} Choose the next exterior act appropriate to the currently active position. Return exactly one JSON object of the form {{\"intent\": string, \"carrier\": {{\"kind\": \"model\"|\"capability\"|\"internal_control\", \"name\": <capability id, required when kind is \"capability\">, \"args\": object}}, \"claimed_relation\": string|null, \"rationale\": string}}. The \"internal_control\" kind is only a closure request: use {{\"kind\": \"internal_control\", \"name\": \"close\", \"args\": {{\"reason\": string}}}} when the realisable intent is already achieved and no exterior act remains — do not repeat equivalent acts. Stipulations of kind \"exclusion\" forbid the entire class of action including creating new artifacts: check the carrier choice against every exclusion stipulation before returning. In Deep mode, only at P4, you may add \"deep_operator\": \"depth\" when a genuinely local whole — a sub-question whose independent resolution would materially change the evaluation, resolvable without the parent's transcript — warrants independent treatment at the lemniscate point; depth at #4 is the nesting entry, not a ceremony. Do not force a six-step path."),
             json!({"mode":self.mode,"task":cx.request.wire()["input"],"stipulations":stipulations,
                    "success_conditions":cx.request.wire()["successConditions"],
                    "capabilities":cx.circuit.frame["available_capabilities"],
                    "circuit":cx.circuit.compact(),
                    "budget":{"max_steps":cx.request.wire()["maxSteps"],"allowance":{
                        "schedule":self.schedule.value(),"consumed":self.consumption(),
-                       "active_position":active}}}))?;
+                       "active_position":active}}}))?
+        };
         if d["deep_operator"] == "depth" {
             if self.mode != Mode::Deep
                 || cx.circuit.active_position != 4
@@ -406,7 +442,59 @@ impl Policy for ModelPolicy {
         difference: &Value,
         host: &mut dyn RuntimeHost,
     ) -> Result<Interpretation> {
-        if self.compressed_control && act.metadata["closure_request"] != true {
+        if act.metadata["closure_request"] == true {
+            // The controller stated the realisable intent is achieved (or the
+            // allowance schedule refused further acts): route straight to
+            // determination. Only the P5 propose/evaluate path may establish
+            // positive closure.
+            let refusal = act.metadata.get("allowance_refusal").cloned();
+            return Ok(Interpretation {
+                destination: 5,
+                rationale: act.metadata["controller_rationale"].clone(),
+                witness: {
+                    let mut witness = json!({
+                        "claimed_position":"P5","observed_position":"P5","closure_request":true,
+                        "operation_success":difference["operation_success"]
+                    });
+                    if let Some(refusal) = refusal {
+                        witness["allowance_refusal"] = refusal;
+                    }
+                    witness
+                },
+                create: vec![],
+                revise: vec![],
+                invalidate: vec![],
+            });
+        }
+        if let Some(vak) = self.vak_control.as_ref() {
+            // Kernel-native control: the composition contract attaches the
+            // returned difference as a derived reading of the circuit whole and
+            // the admitted operator's own office is the destination. No model
+            // turn runs; a refused or mismatched kernel turn fails closed.
+            let run_id = cx.request.wire()["runId"].as_str().unwrap_or_default();
+            let reading = vak.interpret_return(cx.circuit, act, difference, run_id)?;
+            let destination = reading.destination;
+            return Ok(Interpretation {
+                destination,
+                rationale: json!(format!(
+                    "vak-control reading: the kernel admitted operator '{}' at office P{}",
+                    reading.operator, destination
+                )),
+                witness: json!({"vak_control":{
+                    "operation":"interpret-return",
+                    "request_digest":reading.request_digest,
+                    "result":reading.kernel_evidence()}}),
+                create: vec![
+                    json!({"position":destination,"value":{"difference":difference,
+                        "vak_reading":{"operator":reading.operator,"harmonic_pitch":reading.harmonic_pitch,
+                                      "focus_interval":reading.focus_interval}},
+                        "provenance":{"vak_interpretation":true}}),
+                ],
+                revise: vec![],
+                invalidate: vec![],
+            });
+        }
+        if self.compressed_control {
             // The loop's own law decides the destination in code: delivered
             // realisation with non-empty content is P5; a successful read of
             // unprocessed evidence is P1; a successful mutation or operation
@@ -449,30 +537,6 @@ impl Policy for ModelPolicy {
                 create: vec![
                     json!({"position":destination,"value":{"difference":difference},"provenance":{"compressed_interpretation":true}}),
                 ],
-                revise: vec![],
-                invalidate: vec![],
-            });
-        }
-        if act.metadata["closure_request"] == true {
-            // The controller stated the realisable intent is achieved (or the
-            // allowance schedule refused further acts): route straight to
-            // determination. Only the P5 propose/evaluate path may establish
-            // positive closure.
-            let refusal = act.metadata.get("allowance_refusal").cloned();
-            return Ok(Interpretation {
-                destination: 5,
-                rationale: act.metadata["controller_rationale"].clone(),
-                witness: {
-                    let mut witness = json!({
-                        "claimed_position":"P5","observed_position":"P5","closure_request":true,
-                        "operation_success":difference["operation_success"]
-                    });
-                    if let Some(refusal) = refusal {
-                        witness["allowance_refusal"] = refusal;
-                    }
-                    witness
-                },
-                create: vec![],
                 revise: vec![],
                 invalidate: vec![],
             });

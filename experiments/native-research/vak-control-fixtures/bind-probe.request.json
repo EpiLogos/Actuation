@@ -1,0 +1,72 @@
+{
+ "contract": "ql.vak-composition/v1",
+ "steps": [
+  {
+   "op": "whole",
+   "useRef": "circuit:vak-bind-probe:state",
+   "subjectRef": "circuit:vak-bind-probe",
+   "wholeRef": "anchor:circuit:vak-bind-probe",
+   "category": "M",
+   "groundRef": "ground:circuit:vak-bind-probe",
+   "groundFace": "direct",
+   "frame": {
+    "id": "CF1",
+    "lens": "L0",
+    "basis": "chromatic",
+    "face": "direct",
+    "positions": "local"
+   },
+   "basis": {
+    "caller": "actuation:vak-control",
+    "source": "vak-bind-probe",
+    "revision": "trace:bind-probe",
+    "standing": "OBSERVED",
+    "evidence": [
+     "circuit:vak-bind-probe",
+     "trace:trace:bind-probe"
+    ]
+   },
+   "members": [
+    {
+     "subjectRef": "circuit:vak-bind-probe:p0",
+     "position": 0,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:vak-bind-probe:p1:vacant",
+     "position": 1,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:vak-bind-probe:p2:vacant",
+     "position": 2,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:vak-bind-probe:p3:vacant",
+     "position": 3,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:vak-bind-probe:p4:vacant",
+     "position": 4,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:vak-bind-probe:p5:vacant",
+     "position": 5,
+     "face": "direct"
+    }
+   ],
+   "sourceReturns": [
+    {
+     "fromRef": "circuit:vak-bind-probe:origin",
+     "anchorRef": "anchor:circuit:vak-bind-probe",
+     "groundRef": "ground:circuit:vak-bind-probe",
+     "face": "direct",
+     "kind": "own"
+    }
+   ]
+  }
+ ]
+}

@@ -27,6 +27,8 @@ pub mod relational;
 
 pub mod policy;
 
+pub mod vak_control;
+
 pub mod readiness;
 
 pub mod sdk;
