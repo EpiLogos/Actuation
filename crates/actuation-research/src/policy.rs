@@ -25,6 +25,11 @@ const CONJUGATE_DIRECTION_LAW: &str = "Positions P0..P5 are directional views on
 /// Per-position allowance schedule, declared with the frame (kernel shape:
 /// lawful refusal and explicit allowance, never a silent stop). Acts are the
 /// loop-native currency; token consumption is metered in the run record.
+/// The conjugate-cycle allowance is not a position: it bounds how many times
+/// Deep mode may select the P′ return (one backward reading per selection,
+/// reopens included) before the typed refusal routes to determination.
+pub const CONJUGATE_ALLOWANCE_KEY: &str = "conjugate";
+
 pub fn default_allowance_schedule() -> AllowanceSchedule {
     AllowanceSchedule::new([
         ("P0", 2),
@@ -33,6 +38,7 @@ pub fn default_allowance_schedule() -> AllowanceSchedule {
         ("P3", 4),
         ("P4", 4),
         ("P5", 3),
+        (CONJUGATE_ALLOWANCE_KEY, 2),
     ])
 }
 
@@ -49,6 +55,7 @@ pub fn schedule_for_category(category: &str) -> AllowanceSchedule {
             ("P3", 4),
             ("P4", 4),
             ("P5", 3),
+            (CONJUGATE_ALLOWANCE_KEY, 2),
         ])
     } else {
         default_allowance_schedule()
@@ -305,6 +312,26 @@ impl ModelPolicy {
                 .collect(),
         )
     }
+    /// Deep mode always takes the conjugate return (owner law), now bounded by
+    /// the typed conjugate-cycle allowance declared with the frame schedule.
+    /// While the allowance holds, the P′ face executes as before; when spent,
+    /// the refusal is typed and the determination falls through to the
+    /// ordinary closure law instead of spawning another backward reading.
+    fn deep_outcome(
+        &mut self,
+        requested: Option<&str>,
+        synthesis_non_empty: bool,
+    ) -> (Outcome, Option<Value>) {
+        let (exhausted, refusal) = self.allowance(CONJUGATE_ALLOWANCE_KEY);
+        if !exhausted {
+            return (Outcome::Conjugate, None);
+        }
+        let outcome = match requested {
+            Some("close") if synthesis_non_empty => Outcome::Close,
+            _ => Outcome::Reopen,
+        };
+        (outcome, Some(refusal))
+    }
 }
 impl Policy for ModelPolicy {
     fn next_act(
@@ -512,16 +539,28 @@ impl Policy for ModelPolicy {
         let empty_synthesis = synthesis.trim().is_empty();
         // Closure is a positive determination: it may not close on an empty
         // synthesis. Deep mode always takes the conjugate return — the P′
-        // face executes on every closure evaluation per the owner's law.
+        // face executes on every closure evaluation per the owner's law,
+        // bounded by the typed conjugate-cycle allowance; its refusal rides
+        // the determination as an unresolved ref and closure proceeds on the
+        // ordinary law.
+        let mut conjugate_refusal: Option<Value> = None;
         let requested = match d["requested_outcome"].as_str() {
             Some("reopen") => Outcome::Reopen,
-            _ if self.mode == Mode::Deep => Outcome::Conjugate,
+            _ if self.mode == Mode::Deep => {
+                let (outcome, refusal) =
+                    self.deep_outcome(d["requested_outcome"].as_str(), !empty_synthesis);
+                conjugate_refusal = refusal;
+                outcome
+            }
             Some("close") if !empty_synthesis => Outcome::Close,
             _ => Outcome::Reopen,
         };
         let mut unresolved = strings(&d["unresolved_refs"])?;
         if empty_synthesis && !matches!(requested, Outcome::Reopen) {
             unresolved.push("determination-synthesis-empty".into());
+        }
+        if let Some(refusal) = conjugate_refusal {
+            unresolved.push(format!("conjugate-allowance-refused:{refusal}"));
         }
         let nested = if matches!(requested, Outcome::Conjugate) {
             let s=control(cx,host,"ql-conjugate-scope","Select a fresh inspection packet for the backward reading: scope whole|current_position, selected_residue_refs, optional pairing_modulation with owner fields family, pair_index, degree and projection_side for D2. Do not invoke a modulation merely because one exists. The new context will not inherit the persuasive direct transcript.",json!({"circuit":cx.circuit.compact(),"determination":d,"synthesis":synthesis}))?;
@@ -718,6 +757,51 @@ mod tests {
         assert_eq!(research.limit("P1"), 10);
         assert_eq!(default.limit("P1"), 6);
         assert_eq!(research.limit("P4"), default.limit("P4"));
+    }
+
+    #[test]
+    fn schedules_declare_the_conjugate_allowance_explicitly() {
+        // A missing entry would fall to the silent 8-act default; both
+        // schedules must declare the bound.
+        assert_eq!(
+            default_allowance_schedule().limit(CONJUGATE_ALLOWANCE_KEY),
+            2
+        );
+        assert_eq!(
+            schedule_for_category("local-research").limit(CONJUGATE_ALLOWANCE_KEY),
+            2
+        );
+    }
+
+    #[test]
+    fn deep_outcome_grants_conjugate_then_refuses_with_typed_fallthrough() {
+        let mut policy =
+            ModelPolicy::with_schedule(Mode::Deep, AllowanceSchedule::new([("conjugate", 1)]));
+        let (outcome, refusal) = policy.deep_outcome(Some("close"), true);
+        assert!(matches!(outcome, Outcome::Conjugate));
+        assert!(refusal.is_none());
+        // Spent: the refusal is typed and the determination falls through to
+        // the ordinary closure law instead of spawning another reading.
+        let (outcome, refusal) = policy.deep_outcome(Some("close"), true);
+        assert!(matches!(outcome, Outcome::Close));
+        assert_eq!(refusal.as_ref().unwrap()["position"], "conjugate");
+        assert_eq!(refusal.as_ref().unwrap()["grace_extension"], 2);
+        // The recorded grace restores the P′ face for the window (two more
+        // selections at limit 1), then binds without further extension.
+        let (outcome, refusal) = policy.deep_outcome(Some("close"), true);
+        assert!(matches!(outcome, Outcome::Conjugate));
+        assert!(refusal.is_none());
+        let (outcome, refusal) = policy.deep_outcome(Some("close"), true);
+        assert!(matches!(outcome, Outcome::Conjugate));
+        assert!(refusal.is_none());
+        // Bound again: an empty synthesis may not ride the refusal to a
+        // positive close, a realisable close falls through.
+        let (outcome, refusal) = policy.deep_outcome(Some("close"), false);
+        assert!(matches!(outcome, Outcome::Reopen));
+        assert_eq!(refusal.as_ref().unwrap()["grace_extension"], 0);
+        let (outcome, refusal) = policy.deep_outcome(Some("close"), true);
+        assert!(matches!(outcome, Outcome::Close));
+        assert_eq!(refusal.as_ref().unwrap()["grace_extension"], 0);
     }
 
     #[test]
