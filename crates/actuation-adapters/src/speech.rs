@@ -37,7 +37,7 @@
 //! redefine the contract, and provider spellings travel only as provenance.
 
 use crate::admission::{
-    date, facts, no_value_keys, one, optional_text, optional_texts, require, text, texts,
+    date, facts, one, optional_text, optional_texts, require, text, texts,
     validate_model_access_profile, validate_model_relation, INSTANTIATION_VERSION,
 };
 use actuation_core::{
@@ -300,14 +300,15 @@ pub fn validate_speech_constitution(v: &Value) -> Result<()> {
     // Interruption is a resolved capability, stated in the same four states.
     support_entry(&v["interruption"])?;
     // Provider/material binding provenance: refs only, never secret material.
-    let provider = v["provider_binding"]
-        .as_object()
-        .ok_or_else(|| Error::new("provider_binding provenance is required"))?;
-    field_text(&provider["provider_ref"], "provider_ref")?;
-    optional_text(&provider["provider_session_ref"])?;
-    optional_text(&provider["transport_connection_ref"])?;
-    optional_text(&provider["material_binding_ref"])?;
-    facts(&provider["facts"])?;
+    require(
+        v["provider_binding"].is_object(),
+        "provider_binding provenance is required",
+    )?;
+    field_text(&v["provider_binding"]["provider_ref"], "provider_ref")?;
+    optional_text(&v["provider_binding"]["provider_session_ref"])?;
+    optional_text(&v["provider_binding"]["transport_connection_ref"])?;
+    optional_text(&v["provider_binding"]["material_binding_ref"])?;
+    facts(&v["provider_binding"]["facts"])?;
     // Degraded/unavailable conditions are named, never absorbed.
     if !v["conditions"].is_null() {
         let conditions = v["conditions"]
@@ -323,7 +324,44 @@ pub fn validate_speech_constitution(v: &Value) -> Result<()> {
     require(v["provenance"].is_object(), "provenance is required")?;
     optional_texts(&v["provenance"]["source_refs"])?;
     date(&v["resolved_at"])?;
-    no_value_keys(v)
+    no_secret_material_keys(v)
+}
+
+/// A constitution carries refs, phases and scalar provider facts — never
+/// secret material. The same value-shaped key names the secret scan refuses
+/// are refused here, except `material`: a model relation's material binding
+/// provenance is a legitimate, admitted constitution field, not a secret.
+fn no_secret_material_keys(v: &Value) -> Result<()> {
+    const FORBIDDEN: &[&str] = &[
+        "value",
+        "secret_value",
+        "secretvalue",
+        "plaintext",
+        "secret",
+        "password",
+        "token_value",
+        "api_key",
+        "apikey",
+        "credential",
+    ];
+    match v {
+        Value::Object(m) => {
+            for (k, v) in m {
+                require(
+                    !FORBIDDEN.contains(&k.to_lowercase().as_str()),
+                    "constitution carries a forbidden value-shaped key",
+                )?;
+                no_secret_material_keys(v)?;
+            }
+        }
+        Value::Array(a) => {
+            for v in a {
+                no_secret_material_keys(v)?;
+            }
+        }
+        _ => (),
+    }
+    Ok(())
 }
 
 /// A lossless admitted wire record: foreign fields, null and omission all
@@ -517,7 +555,7 @@ pub fn validate_speech_constitution_change(v: &Value) -> Result<()> {
         "a body change requires evidence of the change",
     )?;
     date(&v["changed_at"])?;
-    no_value_keys(v)
+    no_secret_material_keys(v)
 }
 wire_record!(
     SpeechConstitutionChange,
@@ -647,7 +685,7 @@ pub fn validate_speech_tool_request(v: &Value) -> Result<()> {
     let payloads = texts(&v["payload_refs"])?;
     require(!payloads.is_empty(), "a tool request names what it wants")?;
     date(&v["requested_at"])?;
-    no_value_keys(v)
+    no_secret_material_keys(v)
 }
 wire_record!(SpeechToolRequest, validate_speech_tool_request);
 
@@ -700,7 +738,7 @@ pub fn validate_speech_tool_decision(v: &Value) -> Result<()> {
         }
     }
     date(&v["decided_at"])?;
-    no_value_keys(v)
+    no_secret_material_keys(v)
 }
 
 impl SpeechToolDecision {
@@ -764,7 +802,7 @@ pub fn validate_speech_execution(v: &Value) -> Result<()> {
         "execution requires evidence",
     )?;
     date(&v["executed_at"])?;
-    no_value_keys(v)
+    no_secret_material_keys(v)
 }
 
 /// Adjudicate one speech-model tool request against the body's declared
