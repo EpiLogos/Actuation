@@ -1,0 +1,18 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "clean-state-landed-pr-82-merged-2026-09-14",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "zcode-clean-state-landed",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1789390981,
+  "subject": "Clean state landed: PR #82 merged (ff863c7), JS research layer retired on origin, Rust research policy owns the staged loop; detailed cross-round results analysis delivered",
+  "result": "PR #82 merged with all 14 CI checks green (native-cli branch-required, native-rust ubuntu+macos, full native gate). origin/main is now ff863c7: the R11 JavaScript retirement plus the R12 staged-loop port in one landed state. Local main reset to origin (the squash content-landed R11 without its commit history; the R11/R12 commits remain preserved on branch act-rust/r12-staged-loop and the JS research line remains pushed at ql/series1-carrier-handshake and ql/vak-integration as retained evidence). Detailed results analysis delivered to the owner covering the four-round trajectory (deepseek smoke 36-call ceremony through GLM round-2 repair, round-3 staged loop, bounded deep-lane retest with the P-prime face doing real work), the QL quality-add evidence, cost anatomy, the honest-failure ledger, and the recommended shape of the next round: the first owner-gated live run from the Rust harness, the compressed-control lane (currently JS-only on ql/vak-integration, needs Rust port), the deep-lane economics question, and the two verifier fixes (AGENCY quoting regex, stipulation verdicts parsed forward). Open items: QL-MEF PR #185 review + wave5-vs-main pin; compressed-control Rust port; Vak-vs-whittled-English experiment branch design.",
+  "status": "active",
+  "source_refs": [
+    "crates/actuation-research/src/policy.rs",
+    "experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm"
+  ],
+  "evidence_refs": [
+    "https://github.com/EpiLogos/Actuation/pull/82"
+  ]
+}

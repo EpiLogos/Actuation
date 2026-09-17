@@ -1,0 +1,21 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "series-1-experiment-thread-activated-live-2026-09-13",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "zcode-series1-activation",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1789295089,
+  "subject": "Series 1 experiment thread activated: live smoke executed, carrier handshake defect fixed (PR #79), QL closure-gate finding raised",
+  "result": "Activated the Factory QL-agent Series 1 thread (#94/#110/#140) on this machine. State: benchmark v0.1 frozen (#133), review optics done (#134), DSH host implemented but its ticket #139 open; no live run had ever occurred. Executed the prescribed smoke: S1-RESTRAINT-001 native host x classic/ql-direct/ql-deep on deepseek-v4-flash with local DEEPSEEK_API_KEY. First pass fail-closed both QL conditions (unsupported carrier undefined): the ql-next-act prompt never specified the carrier JSON shape while asCarrier parsed only the documented object form. Fixed on branch ql/series1-carrier-handshake (shape leniency only, unknown kinds still fail closed; schema stated in prompt; regression test replays the live decision), deep-ql suite 35/35 + conformance + readiness green, draft PR #79 open for CI. Post-fix live smoke: held constants valid, classic 2 calls/correct; ql-direct correct but 36 calls/142.7K tokens with circuit_reopened cycling ~8 loops before closure (ceremony finding, exactly what RESTRAINT-001 probes, for #137 review); ql-deep closed in 9 calls but with empty-synthesis determination and empty outcome - closure gate accepted an empty positive determination; raised as owner-level finding, deliberately not changed. Evidence: experiments/ql-runtime/comparison/series1/runs/2026-09-13-smoke-restraint/ (run.json pre-fix, run-fixed.json + review bundles post-fix). Next condition: merge #79 through CI, then decide the DSH lane setup (pinned deepseek-harness checkout + pnpm build, scripted in ql-series1-dsh.yml) and whether the Actions secret DEEPSEEK_API_KEY should be set for CI lanes (owner decision - not done unasked). Open findings for tickets: (1) closure gate accepts empty-synthesis determinations; (2) direct-condition closure ceremony on bounded tasks. The Prime P0-P5 campaign (#26) remains separately blocked on Prime provider config.",
+  "status": "active",
+  "source_refs": [
+    "experiments/ql-runtime/comparison/series1/runs/2026-09-13-smoke-restraint",
+    "experiments/ql-runtime/comparison/series1/policy.mjs",
+    "experiments/ql-runtime/comparison/series1/BENCHMARK-V0.1.md"
+  ],
+  "evidence_refs": [
+    "https://github.com/EpiLogos/Actuation/pull/79",
+    "https://github.com/EpiLogos/Factory/issues/140",
+    "https://github.com/EpiLogos/Factory/issues/110"
+  ]
+}

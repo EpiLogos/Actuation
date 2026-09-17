@@ -1,0 +1,18 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "full-rust-move-complete-pr-83-2026-09-14",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "zcode-full-rust-move",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1789404607,
+  "subject": "Full Rust move complete (PR #83 merged, main 67e6b29): compressed-intent control is native; fresh all-experiments round dispatched from the Rust harness",
+  "result": "Ported compressed-intent control to the native research policy and merged as PR #83 (14/14 CI checks): under QL_COMPRESSED_CONTROL=1 interpret-return is decided by the loop law in code - delivered realisation to P5, successful read of unprocessed evidence to P1, successful mutation to P2, failed operation back to P1 - zero model calls on compressed turns, rule and basis recorded in the witness; model keeps acts, determination and closure. Main is now 67e6b29 with the complete native feature set: Relational Logos system prompt, conjugacy law with Deep P-prime execution, per-position allowances with typed refusal, typed stipulations with closure verdicts, never-close-on-empty synthesis, closure-request routing, carrier shape leniency, transport repair decorator, research-scaled schedules, compressed control. JS research layer fully retired from main; JS lines remain as retained evidence branches. Fresh round dispatched from the Rust harness: one sequential agent building the GLM one-shot model-body adapter (OpenAI-compatible, mode-aware envelope/control parsing), discovering the owner-instrument requirements from the crate tests, then running all six tasks x three conditions via comparison.run plus a bounded compressed-lane probe, low concurrency per owner note. Records and report to follow.",
+  "status": "active",
+  "source_refs": [
+    "crates/actuation-research/src/policy.rs",
+    "crates/actuation-research/src/application.rs"
+  ],
+  "evidence_refs": [
+    "https://github.com/EpiLogos/Actuation/pull/83"
+  ]
+}
