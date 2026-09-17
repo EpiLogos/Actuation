@@ -7,6 +7,7 @@
 mod actualisation;
 mod locus;
 mod loop_runtime;
+mod nara;
 mod realised;
 mod speech_session;
 mod stream_observer;
@@ -14,6 +15,7 @@ pub use actualisation::*;
 pub use actuation_core::{Error, Result};
 pub use locus::*;
 pub use loop_runtime::*;
+pub use nara::*;
 pub use realised::*;
 pub use speech_session::*;
 pub use stream_observer::*;
