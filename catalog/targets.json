@@ -1,6 +1,6 @@
 {
   "schema": "actuation.native-catalog/v1",
-  "catalog_revision": 6,
+  "catalog_revision": 9,
   "descriptors": [
     {
       "schema": "actuation.harness-detection/v1",
@@ -41,12 +41,21 @@
         },
         "settings": {
           "path": "~/.claude/settings.json"
+        },
+        "mcp-config": {
+          "path": "~/.claude.json",
+          "inventory": {
+            "kind": "mcp-servers",
+            "source": "file",
+            "collection": "mcpServers"
+          }
         }
       },
       "provenance": {
         "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
         "source_refs": [
-          "survey:local-machine-2026-09-05"
+          "survey:local-machine-2026-09-05",
+          "survey:mcp-config-facet-2026-09-16"
         ],
         "catalog_revision": 1
       }
@@ -121,12 +130,21 @@
         },
         "agents": {
           "path": "~/.gemini/antigravity"
+        },
+        "mcp-config": {
+          "path": "~/.gemini/settings.json",
+          "inventory": {
+            "kind": "mcp-servers",
+            "source": "file",
+            "collection": "mcpServers"
+          }
         }
       },
       "provenance": {
         "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
         "source_refs": [
-          "survey:local-machine-2026-09-05"
+          "survey:local-machine-2026-09-05",
+          "survey:mcp-config-facet-2026-09-16"
         ],
         "catalog_revision": 1
       }
@@ -376,12 +394,21 @@
         },
         "config": {
           "path": "~/.openclaw/openclaw.json"
+        },
+        "mcp-config": {
+          "path": "~/.openclaw/mcp.json",
+          "inventory": {
+            "kind": "mcp-servers",
+            "source": "file",
+            "collection": "mcpServers"
+          }
         }
       },
       "provenance": {
         "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
         "source_refs": [
-          "survey:local-machine-2026-09-05"
+          "survey:local-machine-2026-09-05",
+          "survey:mcp-config-facet-2026-09-16"
         ],
         "catalog_revision": 1
       }
@@ -442,12 +469,21 @@
       "facets": {
         "plugins": {
           "path": "~/.zcode/cli/plugins"
+        },
+        "mcp-config": {
+          "path": "~/.zcode/cli/config.json",
+          "inventory": {
+            "kind": "mcp-servers",
+            "source": "file",
+            "collection": "mcp.servers"
+          }
         }
       },
       "provenance": {
         "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
         "source_refs": [
-          "survey:local-machine-2026-09-05"
+          "survey:local-machine-2026-09-05",
+          "survey:mcp-config-facet-2026-09-16"
         ],
         "catalog_revision": 2
       }
@@ -775,6 +811,210 @@
           "investigation:zcode-model-dispatch-not-evidenced-2026-09-09"
         ],
         "catalog_revision": 6
+      }
+    },
+    {
+      "schema": "actuation.harness-capability/v1",
+      "document": "capability",
+      "harness_slug": "pi",
+      "summary": "Per-invocation CLI/TUI agent; additional context travels as skill capsules projected into the skills tree and read at session start; extensions install into settings.json; no observed stdout/JSON context channel, no deny-and-block, no wake.",
+      "native_events": [],
+      "injection_channel": {
+        "kind": "none",
+        "mechanism": "no stdout/JSON context-injection channel is observed on pi 0.84.4. Additional context travels as skill capsules projected into the skills tree — ~/.pi/agent/skills globally, .pi/skills project-relative — and read at session start; a running TUI picks changes up with /reload, and a fresh invocation is the guaranteed pickup. Dispatch projections must use the skills seam declared in install_seam, never stdout.",
+        "notes": "pi also carries an extension surface (pi install writes into settings.json); no extension event grammar is observed in Actuation's receipts, so none is declared here. Re-declare this descriptor when a pi release grows an additional-context channel."
+      },
+      "blocking_semantics": {
+        "kind": "none",
+        "notes": "no per-call blocking surface is observed: tool allowlists (--tools/--exclude-tools/--no-tools) are invocation flags set at launch, not dispatch hooks."
+      },
+      "wake_capability": {
+        "kind": "none",
+        "notes": "pi is per-invocation: nothing declared here wakes a running session or a closed one. A relay sender must not pretend pi can be woken."
+      },
+      "install_seam": {
+        "config_path": "~/.pi/agent/skills (global) and .pi/skills (project-relative)",
+        "format": "skill-tree",
+        "entry_shape": "one directory per skill capsule, each carrying a SKILL.md front-matter document; the capsule name is the directory name",
+        "ownership_marker": "capsule directories written by the AIKit pi projection (aikit:pi-adapter); foreign skill directories are untouched",
+        "preserves_foreign_entries": true
+      },
+      "uninstall_seam": {
+        "config_path": "~/.pi/agent/skills (global) and .pi/skills (project-relative)",
+        "format": "skill-tree",
+        "entry_shape": "capsule directories whose name matches a capsule the projection wrote are removed; directories without the ownership marker are untouched",
+        "ownership_marker": "capsule directories written by the AIKit pi projection (aikit:pi-adapter); foreign skill directories are untouched",
+        "preserves_foreign_entries": true
+      },
+      "model_dispatch": {
+        "kind": "none",
+        "notes": "pi is provider-plural by design: provider and model are chosen per invocation (--provider/--model) or via settings defaultProvider/defaultModel (observed: deepseek on this machine), with credentials resolved through pi's own auth surface. No single provider binding is admitted here and Actuation does not enumerate pi's provider catalogue."
+      },
+      "provenance": {
+        "authored_by": "O:I capability descriptor programme (AIKit admission evidence ai-kit#186 + Actuation detection receipts + live observation of pi 0.84.4 on this machine, 2026-09-15)",
+        "source_refs": [
+          "aikit:clients/pi.rs admission (ai-kit#186, closed 2026-09-08)",
+          "detection:2026-09-06T23:42:55.567Z pi:detected exe:~/.local/bin/pi sha256:5406c369954516fb56879d685e082ff9095cd6e06e41af406f394942377fd4bf",
+          "detection:2026-09-15 actuation harness detect pi:detected skills-facet-count-14 config-facet-settings-json (sha256 matches the 2026-09-06 admission record)",
+          "survey:local-machine-2026-09-15",
+          "upstream:github.com/earendil-works/pi"
+        ],
+        "catalog_revision": 8
+      }
+    }
+  ],
+  "capability_gaps": [
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "gemini",
+      "summary": "Gemini CLI agent harness; adapter consumes the detection record, descriptor not authored",
+      "reason": "No capability descriptor authored at diagnosis (2026-09-14): the gemini CLI's native event/blocking surface has not been observed into descriptor form. AIKit's adapter cites the detection record for discovery (ai-kit#186 round-2 migration) and records the undeclared capability state honestly; authoring the descriptor is Actuation-side work that had not happened.",
+      "evidence_refs": [
+        "aikit:clients/gemini.rs (ai-kit#186 round-2 migration, commit 971e8fa)",
+        "survey:local-machine-2026-09-05",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "gemini-antigravity",
+      "summary": "Antigravity agent inside the gemini config tree; detected only",
+      "reason": "No capability descriptor authored at diagnosis (2026-09-14): the antigravity agent's native surface is unobserved beyond detection; AIKit's admission rides the detection record only and projects nothing into the harness.",
+      "evidence_refs": [
+        "aikit:clients/antigravity.rs admission (ai-kit#186, closed 2026-09-08)",
+        "survey:local-machine-2026-09-05",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "hermes",
+      "summary": "Hermes agent harness; no adapter, no observed dispatch surface",
+      "reason": "No capability descriptor authored and no AIKit adapter exists at diagnosis (2026-09-14); detection provenance is the 2026-09-05 machine survey only, and no event/blocking surface has been observed.",
+      "evidence_refs": [
+        "survey:local-machine-2026-09-05",
+        "aikit:clients/ contains no hermes adapter at diagnosis 2026-09-14",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "hermes-acp",
+      "summary": "Hermes ACP bridge; no adapter, no observed dispatch surface",
+      "reason": "No capability descriptor authored and no AIKit adapter exists at diagnosis (2026-09-14); the acp-bridge edition shares the hermes config tree, so whatever is true of hermes detection is true here, and no event/blocking surface has been observed for either.",
+      "evidence_refs": [
+        "survey:local-machine-2026-09-05",
+        "aikit:clients/ contains no hermes-acp adapter at diagnosis 2026-09-14",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "grok-bot",
+      "summary": "grok-bot harness; detected only, daemon wake unobserved",
+      "reason": "No capability descriptor authored at diagnosis (2026-09-14): AIKit's admission rides the detection record only, and the native surface — including whether the background daemon admits a wake — is unobserved. Wake optimism is not a transport, so nothing is declared.",
+      "evidence_refs": [
+        "aikit:clients/grokbot.rs admission (ai-kit#186, closed 2026-09-08)",
+        "survey:local-machine-2026-09-05",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "ollama",
+      "summary": "Local model runtime and provider; detected for model binding, not agency dispatch",
+      "reason": "Capability descriptors declare what a dispatch target accepts; ollama is detected as a model-provider for model binding, not agency, and AIKit's admission is brokered (a stateless model server, 14/15 faculties unsupported with reasons). No harness capability applies and none is authored.",
+      "evidence_refs": [
+        "aikit:clients/ollama.rs admission (ai-kit#186, closed 2026-09-08)",
+        "survey:local-machine-2026-09-05",
+        "upstream:github.com/ollama/ollama/blob/main/docs/api.md",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "openclaw",
+      "summary": "OpenClaw agent harness; detected only",
+      "reason": "No capability descriptor authored at diagnosis (2026-09-14): AIKit's admission rides the detection record only; the native event/blocking surface is unobserved.",
+      "evidence_refs": [
+        "aikit:clients/openclaw.rs admission (ai-kit#186, closed 2026-09-08)",
+        "survey:local-machine-2026-09-05",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "kimi",
+      "summary": "Kimi CLI harness; projection surface partially evidenced, descriptor not authored",
+      "reason": "No capability descriptor authored at diagnosis (2026-09-14): AIKit's admission evidences a real projection surface (project-root AGENTS.md, next-session activation) but the native event/blocking grammar is unobserved, and a descriptor carrying only the projection facts would understate what capability descriptors must declare.",
+      "evidence_refs": [
+        "aikit:clients/kimi.rs admission (ai-kit#186, closed 2026-09-08)",
+        "survey:local-machine-2026-09-05",
+        "diagnosis:harness-capability-coverage-2026-09-14"
+      ],
+      "provenance": {
+        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "source_refs": [
+          "diagnosis:harness-capability-coverage-2026-09-14"
+        ],
+        "catalog_revision": 7
       }
     }
   ],

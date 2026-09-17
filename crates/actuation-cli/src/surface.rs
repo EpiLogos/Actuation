@@ -4,10 +4,13 @@
 //! surface ↔ table parity is asserted by the crate tests.
 use actuation_adapters::{
     HARNESS_CAPABILITY_VERSION, HARNESS_DETECTION_VERSION, INSTANTIATION_VERSION,
-    LEGACY_MODEL_BEARING_SCHEMA,
+    LEGACY_MODEL_BEARING_SCHEMA, SPEECH_CONSTITUTION_VERSION, SPEECH_TOOL_DECISION_VERSION,
 };
 pub use actuation_core::AGENCY_CONTRACT_VERSION;
-use actuation_runtime::{AGENCY_ACTUALISATION_VERSION, REALISED_ACTUATION_VERSION};
+use actuation_runtime::{
+    AGENCY_ACTUALISATION_VERSION, NARA_BINDING_VERSION, REALISED_ACTUATION_VERSION,
+    SPEECH_INTERRUPTION_VERSION,
+};
 use serde_json::{json, Value};
 
 pub const ACTUATION_CLI_VERSION: &str = "0.2.0";
@@ -33,6 +36,10 @@ pub fn native_contracts() -> Value {
         "model_usage": MODEL_USAGE_VERSION,
         "instantiation": INSTANTIATION_VERSION,
         "model_bearing_legacy": LEGACY_MODEL_BEARING_SCHEMA,
+        "speech_constitution": SPEECH_CONSTITUTION_VERSION,
+        "speech_tool_decision": SPEECH_TOOL_DECISION_VERSION,
+        "speech_interruption": SPEECH_INTERRUPTION_VERSION,
+        "nara_binding": NARA_BINDING_VERSION,
         "harness_detection": HARNESS_DETECTION_VERSION,
         "harness_capability": HARNESS_CAPABILITY_VERSION,
         "system_disclosure": SYSTEM_DISCLOSURE_VERSION,
@@ -68,5 +75,18 @@ mod tests {
         );
         assert_eq!(INSTANTIATION_VERSION, "actuation.instantiation/v1");
         assert_eq!(LEGACY_MODEL_BEARING_SCHEMA, "actuation.model-bearing/v1");
+        assert_eq!(
+            SPEECH_CONSTITUTION_VERSION,
+            "actuation.speech-constitution/v1"
+        );
+        assert_eq!(
+            SPEECH_TOOL_DECISION_VERSION,
+            "actuation.speech-tool-decision/v1"
+        );
+        assert_eq!(
+            SPEECH_INTERRUPTION_VERSION,
+            "actuation.speech-interruption/v1"
+        );
+        assert_eq!(NARA_BINDING_VERSION, "actuation.nara-binding/v1");
     }
 }

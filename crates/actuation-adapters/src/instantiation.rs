@@ -1,4 +1,8 @@
-use crate::{admission::*, Error, Result};
+use crate::{
+    admission::*,
+    speech::{attach_speech_constitution, SpeechConstitution},
+    Error, Result,
+};
 use actuation_core::{ActuationRef, AgencyRef, WorldBindingRef};
 use serde_json::{json, Value};
 
@@ -21,6 +25,15 @@ impl InstantiationReceipt {
             self.as_value(),
             detection.as_value(),
         )?)
+    }
+    /// Attach the resolved speech body to this receipt. Identity is
+    /// correlated exactly: a receipt cannot carry another session's body.
+    pub fn with_speech_constitution(&self, constitution: &SpeechConstitution) -> Result<Self> {
+        Self::try_from(attach_speech_constitution(self.as_value(), constitution)?)
+    }
+    /// The attached speech body, when this instantiation carried one.
+    pub fn speech_constitution(&self) -> Option<SpeechConstitution> {
+        SpeechConstitution::try_from(self.as_value()["speech_constitution"].clone()).ok()
     }
     /// Contextual readback admission: an already-shaped receipt must still
     /// name the actual request's identities. Shape alone is not execution.

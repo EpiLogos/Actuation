@@ -224,6 +224,18 @@ impl ProbeEffects for FixtureEffects {
             Err(v["reason"].as_str().unwrap_or("no reason captured").into())
         }
     }
+    fn read_text_file(&mut self, p: &str) -> ProbeResult<String> {
+        let v = self.call(
+            "readTextFile",
+            vec![json!(p)],
+            json!({"ok":false,"reason":"not supplied"}),
+        );
+        if v["ok"] == true {
+            Ok(v["text"].as_str().unwrap_or("").into())
+        } else {
+            Err(v["reason"].as_str().unwrap_or("no reason captured").into())
+        }
+    }
 }
 impl SecretEffects for FixtureEffects {
     fn expand_root(&mut self, p: &str) -> ProbeResult<String> {

@@ -53,6 +53,7 @@ pub trait ProbeEffects {
     fn service(&mut self, spec: &Value) -> ProbeResult<ServiceObservation>;
     fn version(&mut self, path: &str, args: &[String]) -> ProbeResult<String>;
     fn http_json(&mut self, url: &str) -> ProbeResult<Value>;
+    fn read_text_file(&mut self, path: &str) -> ProbeResult<String>;
 }
 
 /// Explicit observation environment. It intentionally implements neither Debug
@@ -328,6 +329,17 @@ impl ProbeEffects for NativeEffects {
             .read_to_vec()
             .map_err(|e| format!("bounded inventory read failed: {e}"))?;
         serde_json::from_slice(&bytes).map_err(|_| "unparseable inventory JSON".into())
+    }
+    fn read_text_file(&mut self, path: &str) -> ProbeResult<String> {
+        let metadata = fs::metadata(path).map_err(|e| format!("file unavailable: {e}"))?;
+        if !metadata.is_file() {
+            return Err("file inventory requires a regular file".into());
+        }
+        const LIMIT: u64 = 4 * 1024 * 1024;
+        if metadata.len() > LIMIT {
+            return Err("file inventory exceeds read budget".into());
+        }
+        fs::read_to_string(path).map_err(|e| format!("file read failed: {e}"))
     }
 }
 
