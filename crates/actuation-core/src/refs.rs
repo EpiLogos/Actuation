@@ -41,6 +41,13 @@ macro_rules! references {
 // Nominal distinctions prevent a Session, Run, provider or process reference
 // from being passed where an enduring Agent/World-relative Agency is required.
 // External refs have no resolution, inference or ownership behaviour here.
+//
+// Speech/audio material identity is nominal for the same reason (#94): the
+// resolved body (a ModelSurface), the provider's own session and the live
+// transport connection are three different material facts, and none of them
+// is the Agent, the Agency or the AgentSession that carries them. Swapping
+// any of the three therefore cannot mint or rename a semantic identity by
+// type confusion; a body change is recorded, not re-identified.
 references!(
     AgentRef,
     AgencyRef,
@@ -66,6 +73,9 @@ references!(
     RequestRef,
     ActionRef,
     LocusRef,
+    ModelSurfaceRef,
+    ProviderSessionRef,
+    TransportConnectionRef,
     ExternalRef
 );
 
