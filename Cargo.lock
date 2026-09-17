@@ -83,6 +83,7 @@ dependencies = [
 name = "actuation-runtime"
 version = "0.2.0"
 dependencies = [
+ "actuation-adapters",
  "actuation-core",
  "actuation-stream",
  "serde",
