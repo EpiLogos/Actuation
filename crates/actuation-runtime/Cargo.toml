@@ -6,6 +6,7 @@ publish.workspace = true
 repository.workspace = true
 
 [dependencies]
+actuation-adapters = { path = "../actuation-adapters" }
 actuation-stream = { path = "../actuation-stream" }
 actuation-core = { path = "../actuation-core" }
 serde.workspace = true
