@@ -8,7 +8,7 @@
       "kind": "catalog",
       "input": {},
       "expected": {
-        "revision": 9,
+        "revision": 10,
         "harnesses": [
           {
             "schema": "actuation.harness-detection/v1",
@@ -57,13 +57,20 @@
                   "source": "file",
                   "collection": "mcpServers"
                 }
+              },
+              "permissions": {
+                "path": "~/.claude/settings.json"
+              },
+              "trusts": {
+                "path": "~/.claude.json"
               }
             },
             "provenance": {
               "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
               "source_refs": [
                 "survey:local-machine-2026-09-05",
-                "survey:mcp-config-facet-2026-09-16"
+                "survey:mcp-config-facet-2026-09-16",
+                "survey:permissions-trusts-facet-2026-09-17"
               ],
               "catalog_revision": 1
             }
@@ -98,12 +105,19 @@
               },
               "config": {
                 "path": "~/.codex/config.toml"
+              },
+              "permissions": {
+                "path": "~/.codex/config.toml"
+              },
+              "trusts": {
+                "path": "~/.codex/config.toml"
               }
             },
             "provenance": {
               "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
               "source_refs": [
-                "survey:local-machine-2026-09-05"
+                "survey:local-machine-2026-09-05",
+                "survey:permissions-trusts-facet-2026-09-17"
               ],
               "catalog_revision": 1
             }
@@ -485,13 +499,20 @@
                   "source": "file",
                   "collection": "mcp.servers"
                 }
+              },
+              "permissions": {
+                "path": "~/.zcode/cli/config.json"
+              },
+              "trusts": {
+                "path": "~/.zcode/cli/config.json"
               }
             },
             "provenance": {
               "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
               "source_refs": [
                 "survey:local-machine-2026-09-05",
-                "survey:mcp-config-facet-2026-09-16"
+                "survey:mcp-config-facet-2026-09-16",
+                "survey:permissions-trusts-facet-2026-09-17"
               ],
               "catalog_revision": 2
             }
@@ -782,7 +803,7 @@
             "injection_channel": {
               "kind": "stdout-additional-context",
               "mechanism": "hook stdout is parsed as a strict JSON schema; additionalContext is injected into the conversation. Exit codes carry the deny channel: 0 pass, 2 block, other non-zero error.",
-              "notes": "the schema is strict — any extra key fails validation, so a projection must emit exactly the admitted fields."
+              "notes": "the schema is strict \u2014 any extra key fails validation, so a projection must emit exactly the admitted fields."
             },
             "blocking_semantics": {
               "kind": "deny-and-block",
@@ -808,7 +829,7 @@
             },
             "model_dispatch": {
               "kind": "none",
-              "notes": "neither zcode's detection descriptor nor its shipped hook documentation evidences a model-provider binding in this repo — no service probe, no provider config key, no upstream reference naming one. Declaring a provider here would be a guess, not a reading. Re-declare when zcode's own config or plugin surface names one."
+              "notes": "neither zcode's detection descriptor nor its shipped hook documentation evidences a model-provider binding in this repo \u2014 no service probe, no provider config key, no upstream reference naming one. Declaring a provider here would be a guess, not a reading. Re-declare when zcode's own config or plugin surface names one."
             },
             "provenance": {
               "authored_by": "O:I capability descriptor programme (zcode hook grammar read from the shipped zcode-guide plugin's diagnosing-hooks documentation; config surfaces observed on this machine, 2026-09-06)",
@@ -829,7 +850,7 @@
             "native_events": [],
             "injection_channel": {
               "kind": "none",
-              "mechanism": "no stdout/JSON context-injection channel is observed on pi 0.84.4. Additional context travels as skill capsules projected into the skills tree — ~/.pi/agent/skills globally, .pi/skills project-relative — and read at session start; a running TUI picks changes up with /reload, and a fresh invocation is the guaranteed pickup. Dispatch projections must use the skills seam declared in install_seam, never stdout.",
+              "mechanism": "no stdout/JSON context-injection channel is observed on pi 0.84.4. Additional context travels as skill capsules projected into the skills tree \u2014 ~/.pi/agent/skills globally, .pi/skills project-relative \u2014 and read at session start; a running TUI picks changes up with /reload, and a fresh invocation is the guaranteed pickup. Dispatch projections must use the skills seam declared in install_seam, never stdout.",
               "notes": "pi also carries an extension surface (pi install writes into settings.json); no extension event grammar is observed in Actuation's receipts, so none is declared here. Re-declare this descriptor when a pi release grows an additional-context channel."
             },
             "blocking_semantics": {
@@ -950,7 +971,8 @@
             }
           ]
         }
-      }
+      },
+      "notes": null
     },
     {
       "id": "durable-identity-cursor-usage-lifecycle",
@@ -961,7 +983,7 @@
             "label": "open",
             "operation": "openDurableStream",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:oracle",
               "agent_session_ref": "session:oracle",
@@ -977,7 +999,7 @@
             "label": "idempotent-open",
             "operation": "openDurableStream",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:oracle",
               "agent_session_ref": "session:oracle",
@@ -994,7 +1016,7 @@
             "label": "identity-conflict",
             "operation": "openDurableStream",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:imposter",
               "agent_session_ref": "session:oracle",
@@ -1011,7 +1033,7 @@
             "label": "record",
             "operation": "recordBoundaryOccurrence",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "harness": "zcode",
               "native_event": "SessionStart",
               "event_ref": "event:oracle:1",
@@ -1029,7 +1051,7 @@
             "label": "duplicate-event",
             "operation": "recordBoundaryOccurrence",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "harness": "zcode",
               "native_event": "SessionStart",
               "event_ref": "event:oracle:1",
@@ -1048,7 +1070,7 @@
             "label": "unknown-native-event",
             "operation": "recordBoundaryOccurrence",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "harness": "zcode",
               "native_event": "invented-event",
               "event_ref": "event:2",
@@ -1067,7 +1089,7 @@
             "label": "declared-custom",
             "operation": "recordBoundaryOccurrence",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "harness": "zcode",
               "native_event": "PermissionRequest",
               "event_ref": "event:custom",
@@ -1085,7 +1107,7 @@
             "label": "usage",
             "operation": "recordModelUsageObservation",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "event_ref": "event:usage:1",
               "observation": {
                 "schema": "actuation.model-usage/v1",
@@ -1147,7 +1169,7 @@
             "label": "usage-idempotence",
             "operation": "recordModelUsageObservation",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "event_ref": "event:usage:1",
               "observation": {
                 "schema": "actuation.model-usage/v1",
@@ -1210,7 +1232,7 @@
             "label": "usage-conflict",
             "operation": "recordModelUsageObservation",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "event_ref": "event:usage:1",
               "observation": {
                 "schema": "actuation.model-usage/v1",
@@ -1274,7 +1296,7 @@
             "label": "cursor",
             "operation": "replayDurableStream",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "afterSequence": 1,
               "limit": 1
             },
@@ -1285,7 +1307,7 @@
             "label": "close",
             "operation": "closeDurableStream",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "state": "closed",
               "ended_at": "2026-09-10T00:01:00.000Z"
             },
@@ -1295,7 +1317,7 @@
             "label": "closed-append-refusal",
             "operation": "recordBoundaryOccurrence",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "harness": "zcode",
               "native_event": "SessionStart",
               "event_ref": "event:after-close",
@@ -1314,7 +1336,7 @@
             "label": "closed-close-refusal",
             "operation": "closeDurableStream",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "state": "closed",
               "ended_at": "2026-09-10T00:01:00.000Z"
             },
@@ -1325,7 +1347,7 @@
             "label": "closed-dedup-no-reopening",
             "operation": "recordModelUsageObservation",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "event_ref": "event:usage:1",
               "observation": {
                 "schema": "actuation.model-usage/v1",
@@ -1388,7 +1410,7 @@
             "label": "reopen-read-only",
             "operation": "openDurableStream",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:oracle",
               "agent_session_ref": "session:oracle",
@@ -1409,7 +1431,7 @@
             "ok": true,
             "value": {
               "schema": "actuation.stream/v1",
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:oracle",
               "agent_session_ref": "session:oracle",
@@ -1433,7 +1455,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n"
           }
         },
         {
@@ -1442,7 +1464,7 @@
             "ok": true,
             "value": {
               "schema": "actuation.stream/v1",
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:oracle",
               "agent_session_ref": "session:oracle",
@@ -1466,7 +1488,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n"
           }
         },
         {
@@ -1475,11 +1497,11 @@
             "ok": false,
             "error": {
               "name": "TypeError",
-              "message": "ActuationStream agency_ref is already agency:oracle; refusing to reopen stream:oracle/雪 !'()* as agency:imposter"
+              "message": "ActuationStream agency_ref is already agency:oracle; refusing to reopen stream:oracle/\u96ea !'()* as agency:imposter"
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n"
           }
         },
         {
@@ -1487,7 +1509,7 @@
           "result": {
             "ok": true,
             "value": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "event": {
                 "event_ref": "event:oracle:1",
                 "sequence": 1,
@@ -1514,7 +1536,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
           }
         },
         {
@@ -1527,7 +1549,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
           }
         },
         {
@@ -1540,7 +1562,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
           }
         },
         {
@@ -1548,7 +1570,7 @@
           "result": {
             "ok": true,
             "value": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "event": {
                 "event_ref": "event:custom",
                 "sequence": 2,
@@ -1575,7 +1597,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
           }
         },
         {
@@ -1583,7 +1605,7 @@
           "result": {
             "ok": true,
             "value": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "event": {
                 "event_ref": "event:usage:1",
                 "sequence": 3,
@@ -1659,7 +1681,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
           }
         },
         {
@@ -1667,7 +1689,7 @@
           "result": {
             "ok": true,
             "value": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "event": {
                 "event_ref": "event:usage:1",
                 "sequence": 3,
@@ -1743,7 +1765,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
           }
         },
         {
@@ -1756,7 +1778,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
           }
         },
         {
@@ -1765,7 +1787,7 @@
             "ok": true,
             "value": {
               "schema": "actuation.stream/v1",
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:oracle",
               "agent_session_ref": "session:oracle",
@@ -1805,7 +1827,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
           }
         },
         {
@@ -1814,7 +1836,7 @@
             "ok": true,
             "value": {
               "schema": "actuation.stream/v1",
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:oracle",
               "agent_session_ref": "session:oracle",
@@ -1933,7 +1955,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"closed\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"closed\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
           }
         },
         {
@@ -1946,7 +1968,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"closed\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"closed\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
           }
         },
         {
@@ -1959,7 +1981,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"closed\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"closed\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
           }
         },
         {
@@ -1967,7 +1989,7 @@
           "result": {
             "ok": true,
             "value": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "event": {
                 "event_ref": "event:usage:1",
                 "sequence": 3,
@@ -2044,7 +2066,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"closed\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"closed\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
           }
         },
         {
@@ -2053,7 +2075,7 @@
             "ok": true,
             "value": {
               "schema": "actuation.stream/v1",
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:oracle",
               "agent_session_ref": "session:oracle",
@@ -2172,7 +2194,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"closed\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"closed\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
           }
         }
       ]
@@ -2186,7 +2208,7 @@
             "label": "open",
             "operation": "openDurableStream",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:oracle",
               "agent_session_ref": "session:oracle",
@@ -2202,7 +2224,7 @@
             "label": "record",
             "operation": "recordBoundaryOccurrence",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "harness": "zcode",
               "native_event": "SessionStart",
               "event_ref": "event:oracle:1",
@@ -2220,7 +2242,7 @@
             "label": "close",
             "operation": "closeDurableStream",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "state": "interrupted",
               "ended_at": "2026-09-10T00:01:00.000Z"
             },
@@ -2235,7 +2257,7 @@
             "ok": true,
             "value": {
               "schema": "actuation.stream/v1",
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:oracle",
               "agent_session_ref": "session:oracle",
@@ -2259,7 +2281,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n"
           }
         },
         {
@@ -2267,7 +2289,7 @@
           "result": {
             "ok": true,
             "value": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "event": {
                 "event_ref": "event:oracle:1",
                 "sequence": 1,
@@ -2294,7 +2316,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
           }
         },
         {
@@ -2303,7 +2325,7 @@
             "ok": true,
             "value": {
               "schema": "actuation.stream/v1",
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:oracle",
               "agent_session_ref": "session:oracle",
@@ -2344,7 +2366,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"interrupted\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"interrupted\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
           }
         }
       ]
@@ -2358,7 +2380,7 @@
             "label": "open",
             "operation": "openDurableStream",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:oracle",
               "agent_session_ref": "session:oracle",
@@ -2374,7 +2396,7 @@
             "label": "record",
             "operation": "recordBoundaryOccurrence",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "harness": "zcode",
               "native_event": "SessionStart",
               "event_ref": "event:oracle:1",
@@ -2392,7 +2414,7 @@
             "label": "close",
             "operation": "closeDurableStream",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "state": "cancelled",
               "ended_at": "2026-09-10T00:01:00.000Z"
             },
@@ -2407,7 +2429,7 @@
             "ok": true,
             "value": {
               "schema": "actuation.stream/v1",
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:oracle",
               "agent_session_ref": "session:oracle",
@@ -2431,7 +2453,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n"
           }
         },
         {
@@ -2439,7 +2461,7 @@
           "result": {
             "ok": true,
             "value": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "event": {
                 "event_ref": "event:oracle:1",
                 "sequence": 1,
@@ -2466,7 +2488,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
           }
         },
         {
@@ -2475,7 +2497,7 @@
             "ok": true,
             "value": {
               "schema": "actuation.stream/v1",
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "actuation_ref": "actuation:oracle",
               "agency_ref": "agency:oracle",
               "agent_session_ref": "session:oracle",
@@ -2516,7 +2538,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"cancelled\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"cancelled\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
           }
         }
       ]
@@ -2530,7 +2552,7 @@
             "label": "record",
             "operation": "recordBoundaryOccurrence",
             "args": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "harness": "zcode",
               "native_event": "SessionStart",
               "event_ref": "event:oracle:1",
@@ -2541,7 +2563,7 @@
                 "caller_standing": "unknown"
               },
               "identity": {
-                "stream_ref": "stream:oracle/雪 !'()*",
+                "stream_ref": "stream:oracle/\u96ea !'()*",
                 "actuation_ref": "actuation:oracle",
                 "agency_ref": "agency:oracle",
                 "agent_session_ref": "session:oracle",
@@ -2562,7 +2584,7 @@
           "result": {
             "ok": true,
             "value": {
-              "stream_ref": "stream:oracle/雪 !'()*",
+              "stream_ref": "stream:oracle/\u96ea !'()*",
               "event": {
                 "event_ref": "event:oracle:1",
                 "sequence": 1,
@@ -2588,7 +2610,7 @@
             }
           },
           "files": {
-            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
+            "stream%3Aoracle%2F%E9%9B%AA%20!'()*.jsonl": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
           }
         }
       ]
@@ -2597,13 +2619,13 @@
       "id": "fold-valid-open",
       "kind": "fold",
       "input": {
-        "raw": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
+        "raw": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
       },
       "expected": {
         "ok": true,
         "value": {
           "schema": "actuation.stream/v1",
-          "stream_ref": "stream:oracle/雪 !'()*",
+          "stream_ref": "stream:oracle/\u96ea !'()*",
           "actuation_ref": "actuation:oracle",
           "agency_ref": "agency:oracle",
           "agent_session_ref": "session:oracle",
@@ -2658,13 +2680,13 @@
       "id": "fold-valid-terminal",
       "kind": "fold",
       "input": {
-        "raw": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"closed\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
+        "raw": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"closed\",\"started_at\":\"2026-09-10T00:00:00.000Z\",\"ended_at\":\"2026-09-10T00:01:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:usage:1\",\"sequence\":3,\"kind\":\"model-usage\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"native_trace_ref\":\"trace:claude-code:line-42\",\"evidence_refs\":[\"trace:claude-code:line-42\"],\"disclosure\":\"portable\",\"model_usage\":{\"schema\":\"actuation.model-usage/v1\",\"usage_ref\":\"model-usage:claude-code:message-real-shape\",\"actuation_ref\":\"actuation:oracle\",\"invocation_ref\":\"invocation:claude-code:request-real-shape\",\"correlation\":{\"harness_ref\":\"harness:claude-code\",\"native_session_ref\":\"claude-code:session:session-real-shape\",\"agent_session_ref\":\"session:oracle\",\"agency_ref\":\"agency:oracle\"},\"provider\":{\"standing\":\"not-reported\"},\"model\":{\"standing\":\"normalized-from-native\",\"name\":\"claude-fable-5\"},\"tokens\":{\"standing\":\"normalized-from-native\",\"input\":11,\"output\":8},\"cache\":{\"standing\":\"normalized-from-native\",\"read_input\":5},\"timing\":{\"completed_at\":\"2026-09-08T20:00:00Z\",\"latency\":{\"standing\":\"not-reported\"}},\"cost\":{\"standing\":\"not-reported\"},\"outcome\":{\"state\":\"completed\",\"standing\":\"normalized-from-native\",\"reason\":\"end_turn\"},\"provenance\":{\"reporter_ref\":\"harness:claude-code\",\"native_event_ref\":\"claude-code:message:message-real-shape\",\"native_request_ref\":\"claude-code:request:request-real-shape\",\"native_schema\":\"claude-code.transcript/assistant-message\",\"observed_at\":\"2026-09-08T20:00:00Z\",\"raw_evidence_refs\":[\"trace:claude-code:line-42\"]}}}\n"
       },
       "expected": {
         "ok": true,
         "value": {
           "schema": "actuation.stream/v1",
-          "stream_ref": "stream:oracle/雪 !'()*",
+          "stream_ref": "stream:oracle/\u96ea !'()*",
           "actuation_ref": "actuation:oracle",
           "agency_ref": "agency:oracle",
           "agent_session_ref": "session:oracle",
@@ -2811,7 +2833,7 @@
       "id": "fold-torn-tail",
       "kind": "fold",
       "input": {
-        "raw": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":"
+        "raw": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":"
       },
       "expected": {
         "ok": false,
@@ -2825,7 +2847,7 @@
       "id": "fold-interior-hole",
       "kind": "fold",
       "input": {
-        "raw": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
+        "raw": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
       },
       "expected": {
         "ok": false,
@@ -2839,7 +2861,7 @@
       "id": "fold-gap",
       "kind": "fold",
       "input": {
-        "raw": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":5,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
+        "raw": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":5,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
       },
       "expected": {
         "ok": false,
@@ -2853,7 +2875,7 @@
       "id": "fold-duplicate-ref",
       "kind": "fold",
       "input": {
-        "raw": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
+        "raw": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":0,\"next_sequence\":1},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
       },
       "expected": {
         "ok": false,
@@ -2867,13 +2889,13 @@
       "id": "fold-derived-header-cursor",
       "kind": "fold",
       "input": {
-        "raw": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/雪 !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":500,\"next_sequence\":900},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
+        "raw": "{\"schema\":\"actuation.stream/v1\",\"stream_ref\":\"stream:oracle/\u96ea !'()*\",\"actuation_ref\":\"actuation:oracle\",\"agency_ref\":\"agency:oracle\",\"agent_session_ref\":\"session:oracle\",\"lifecycle\":{\"state\":\"open\",\"started_at\":\"2026-09-10T00:00:00.000Z\"},\"cursor\":{\"last_sequence\":500,\"next_sequence\":900},\"events\":[],\"world_binding_ref\":\"binding:oracle\",\"provenance\":[\"source:oracle\"]}\n{\"event_ref\":\"event:oracle:1\",\"sequence\":1,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"SessionStart\",\"boundary\":\"session-start\",\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n{\"event_ref\":\"event:custom\",\"sequence\":2,\"kind\":\"harness-event\",\"metadata\":{\"harness\":\"zcode\",\"native_event\":\"PermissionRequest\",\"boundary\":null,\"catalog_revision\":6,\"caller_standing\":\"unknown\"},\"observed_at\":\"2026-09-10T00:00:00.000Z\",\"content\":\"visible boundary\",\"native_trace_ref\":\"native:opaque:1\"}\n"
       },
       "expected": {
         "ok": true,
         "value": {
           "schema": "actuation.stream/v1",
-          "stream_ref": "stream:oracle/雪 !'()*",
+          "stream_ref": "stream:oracle/\u96ea !'()*",
           "actuation_ref": "actuation:oracle",
           "agency_ref": "agency:oracle",
           "agent_session_ref": "session:oracle",
@@ -2925,10 +2947,10 @@
       }
     },
     {
-      "id": "filename-\"stream:oracle/雪 !'()*\"",
+      "id": "filename-\"stream:oracle/\u96ea !'()*\"",
       "kind": "filename",
       "input": {
-        "ref": "stream:oracle/雪 !'()*"
+        "ref": "stream:oracle/\u96ea !'()*"
       },
       "expected": {
         "ok": true,
@@ -3054,7 +3076,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3133,7 +3155,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3232,7 +3254,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3349,7 +3371,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3454,7 +3476,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3519,7 +3541,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -4110,7 +4132,7 @@
             "document": "self",
             "self_ref": "self:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "matched": [],
             "resolved": null,
             "ambiguity": false,
@@ -4228,7 +4250,7 @@
             "document": "self",
             "self_ref": "self:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "matched": [
               {
                 "slug": "fixture-0",
@@ -4362,7 +4384,7 @@
             "document": "self",
             "self_ref": "self:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "matched": [
               {
                 "slug": "fixture-0",
@@ -6584,7 +6606,7 @@
               "injection_channel": {
                 "kind": "stdout-additional-context",
                 "mechanism": "hook stdout is parsed as a strict JSON schema; additionalContext is injected into the conversation. Exit codes carry the deny channel: 0 pass, 2 block, other non-zero error.",
-                "notes": "the schema is strict — any extra key fails validation, so a projection must emit exactly the admitted fields."
+                "notes": "the schema is strict \u2014 any extra key fails validation, so a projection must emit exactly the admitted fields."
               },
               "blocking_semantics": {
                 "kind": "deny-and-block",
@@ -6610,7 +6632,7 @@
               },
               "model_dispatch": {
                 "kind": "none",
-                "notes": "neither zcode's detection descriptor nor its shipped hook documentation evidences a model-provider binding in this repo — no service probe, no provider config key, no upstream reference naming one. Declaring a provider here would be a guess, not a reading. Re-declare when zcode's own config or plugin surface names one."
+                "notes": "neither zcode's detection descriptor nor its shipped hook documentation evidences a model-provider binding in this repo \u2014 no service probe, no provider config key, no upstream reference naming one. Declaring a provider here would be a guess, not a reading. Re-declare when zcode's own config or plugin surface names one."
               },
               "provenance": {
                 "authored_by": "O:I capability descriptor programme (zcode hook grammar read from the shipped zcode-guide plugin's diagnosing-hooks documentation; config surfaces observed on this machine, 2026-09-06)",
@@ -6631,7 +6653,7 @@
               "native_events": [],
               "injection_channel": {
                 "kind": "none",
-                "mechanism": "no stdout/JSON context-injection channel is observed on pi 0.84.4. Additional context travels as skill capsules projected into the skills tree — ~/.pi/agent/skills globally, .pi/skills project-relative — and read at session start; a running TUI picks changes up with /reload, and a fresh invocation is the guaranteed pickup. Dispatch projections must use the skills seam declared in install_seam, never stdout.",
+                "mechanism": "no stdout/JSON context-injection channel is observed on pi 0.84.4. Additional context travels as skill capsules projected into the skills tree \u2014 ~/.pi/agent/skills globally, .pi/skills project-relative \u2014 and read at session start; a running TUI picks changes up with /reload, and a fresh invocation is the guaranteed pickup. Dispatch projections must use the skills seam declared in install_seam, never stdout.",
                 "notes": "pi also carries an extension surface (pi install writes into settings.json); no extension event grammar is observed in Actuation's receipts, so none is declared here. Re-declare this descriptor when a pi release grows an additional-context channel."
               },
               "blocking_semantics": {
@@ -6902,13 +6924,13 @@
       }
     },
     {
-      "id": "cli-stream replay stream:oracle/雪 !'()* --after -1 --store $STORE --json",
+      "id": "cli-stream replay stream:oracle/\u96ea !'()* --after -1 --store $STORE --json",
       "kind": "cli",
       "input": {
         "argv": [
           "stream",
           "replay",
-          "stream:oracle/雪 !'()*",
+          "stream:oracle/\u96ea !'()*",
           "--after",
           "-1",
           "--store",
@@ -6919,7 +6941,7 @@
       "expected": {
         "code": 2,
         "stdout": "",
-        "stderr": "actuation: no durable ActuationStream named stream:oracle/雪 !'()* under $STORE\n"
+        "stderr": "actuation: no durable ActuationStream named stream:oracle/\u96ea !'()* under $STORE\n"
       }
     }
   ]
