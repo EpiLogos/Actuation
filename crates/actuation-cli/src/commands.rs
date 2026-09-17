@@ -265,7 +265,9 @@ pub fn instantiation_record(command: &Command) -> Result<Output> {
             "receipt has no harness_ref; pass --allow-unattributed to record an unattributed instantiation",
         ));
     }
-    let detection = run_detection(&[])?;
+    // Instantiation evidence is a presence binding; version probing is asked
+    // for explicitly on the detection surface and never implied here.
+    let detection = run_detection(&[], false)?;
     let bound = attach_detection_evidence(receipt.as_value(), &detection)?;
     if let Some(out) = &out_path {
         use std::io::Write;
@@ -316,7 +318,7 @@ fn catalog() -> Result<NativeCatalog> {
     NativeCatalog::bundled()
 }
 
-fn run_detection(selected: &[String]) -> Result<Value> {
+fn run_detection(selected: &[String], probe_versions: bool) -> Result<Value> {
     let catalog = catalog()?;
     let descriptors = catalog.select(selected).map_err(|_| {
         Error::new(format!(
@@ -333,7 +335,8 @@ fn run_detection(selected: &[String]) -> Result<Value> {
     })?;
     let mut effects = NativeEffects::from_environment()
         .map_err(|e| Error::new(format!("harness probes unavailable: {e}")))?;
-    let options = DetectionOptions::now(&catalog)?;
+    let mut options = DetectionOptions::now(&catalog)?;
+    options.probe_versions = probe_versions;
     let record = actuation_adapters::run_detection(&descriptors, &mut effects, &options)?;
     Ok(record.as_value().clone())
 }
@@ -345,7 +348,7 @@ pub fn harness_catalog(command: &Command) -> Result<Output> {
 
 pub fn harness_detect(command: &Command) -> Result<Output> {
     let mut args = command.args.clone();
-    let _probe_versions = remove_flag(&mut args, "--versions");
+    let probe_versions = remove_flag(&mut args, "--versions");
     let only = flag_value(&mut args, "--only")?;
     let wanted: Vec<String> = match only {
         Some(raw) => raw
@@ -355,7 +358,7 @@ pub fn harness_detect(command: &Command) -> Result<Output> {
             .collect(),
         None => Vec::new(),
     };
-    let record = run_detection(&wanted)?;
+    let record = run_detection(&wanted, probe_versions)?;
     output(record, command.json, render::detection)
 }
 
