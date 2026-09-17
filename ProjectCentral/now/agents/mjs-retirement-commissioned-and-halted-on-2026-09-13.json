@@ -1,0 +1,11 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "mjs-retirement-commissioned-and-halted-on-2026-09-13",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "agent/coordinator-primary",
+  "kind": "note",
+  "recorded_at_unix_seconds": 1789334649,
+  "subject": "mjs retirement commissioned and halted on evidence; R9 retention upheld",
+  "result": "Owner asked whether the 49 .mjs files are superseded by the Rust implementation and commissioned retirement. Evidence-based verification retired NOTHING: scripts/migration is live branch-required CI gate machinery (frozen-corpus parity oracles R2-R6); experiments/ql-runtime is the live research instrument (5 CI workflows; prime.rs include_str!s prime/conditions.mjs so cargo build breaks without it; capability-matrix pins digests; live campaigns ran 2026-09-13 with filed #79/#80); native-research/adapters are specimen-native SDK oracles (research-sdk.yml, pinned external revisions); epistemic-cultivation is functionally superseded (records.rs/store.rs at R6 parity) but preserved by the R9 convergence record. Decisive: live-provider QL research evidence is collected ONLY through the JS tree (application.rs declares deep-runtime/series1-live unexercised in Rust). Baseline independently confirmed green at ece2478. Rust retirement would require replacing the live research harness in Rust and unwinding CI, corpus origins and matrix pins - a campaign decision for the owner, not a deletion commit.",
+  "status": "active"
+}

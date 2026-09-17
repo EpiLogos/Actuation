@@ -45,6 +45,7 @@ const FACETS: &[&str] = &[
     "settings",
     "config",
     "models",
+    "mcp-config",
 ];
 const SECRET_PROBES: &[&str] = &["env", "file-pattern", "cli-presence", "vault-item"];
 const FORBIDDEN: &[&str] = &[
@@ -247,19 +248,26 @@ pub fn validate_harness_descriptor(v: &Value) -> Result<()> {
             if !f["inventory"].is_null() {
                 let i = &f["inventory"];
                 object(i)?;
-                one(&i["kind"], &["http-json"])?;
-                one(&i["from"], &["service"])?;
-                require(
-                    !v["probe"]["service"].is_null(),
-                    "inventory requires the descriptor's own service probe",
-                )?;
-                require(
-                    text(&i["route"])?.starts_with('/'),
-                    "inventory route must remain a path on the declared endpoint",
-                )?;
-                reference_fields(i, &["collection", "id_field"], &[])?;
-                optional_texts(&i["also_id_fields"])?;
-                optional_texts(&i["detail_fields"])?;
+                if i["source"] == "file" {
+                    // A file-declared inventory reads a JSON collection at the
+                    // facet path itself; no service probe is involved.
+                    one(&i["kind"], &["mcp-servers"])?;
+                    reference_fields(i, &["collection"], &[])?;
+                } else {
+                    one(&i["kind"], &["http-json"])?;
+                    one(&i["from"], &["service"])?;
+                    require(
+                        !v["probe"]["service"].is_null(),
+                        "inventory requires the descriptor's own service probe",
+                    )?;
+                    require(
+                        text(&i["route"])?.starts_with('/'),
+                        "inventory route must remain a path on the declared endpoint",
+                    )?;
+                    reference_fields(i, &["collection", "id_field"], &[])?;
+                    optional_texts(&i["also_id_fields"])?;
+                    optional_texts(&i["detail_fields"])?;
+                }
             }
         }
     }
@@ -422,7 +430,7 @@ fn validate_inventory(f: &Value) -> Result<()> {
     }
     let r = &f["inventory_receipt"];
     object(r)?;
-    one(&r["kind"], &["http-json"])?;
+    one(&r["kind"], &["http-json", "mcp-servers"])?;
     text(&r["source"])?;
     date(&r["observed_at"])?;
     require(

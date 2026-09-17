@@ -67,10 +67,12 @@ fn frozen_catalog_probe_and_secret_effect_scenarios_match() {
     for row in rows {
         let actual = support::scenario(row).unwrap_or_else(|e| panic!("{}: {e}", row["id"]));
         assert_eq!(
-            support::stream::normalized(actual),
+            support::stream::normalized(actual.clone()),
             support::stream::normalized(row["expected"].clone()),
-            "{}",
-            row["id"]
+            "{}\nexpected:\n{}\nactual:\n{}",
+            row["id"],
+            serde_json::to_string_pretty(&row["expected"]).unwrap(),
+            serde_json::to_string_pretty(&actual).unwrap()
         );
     }
 }

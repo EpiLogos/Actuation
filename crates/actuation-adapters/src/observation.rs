@@ -239,15 +239,15 @@ fn observe_facets(
                 }
             }
             if !spec["inventory"].is_null() {
-                let inventory = observe_inventory(
-                    d,
-                    &spec["inventory"],
+                let context = InventoryContext {
+                    descriptor: d,
+                    facet_path: declared,
+                    expanded_path: &path,
                     probes,
                     live,
-                    effects,
-                    disclosure,
-                    options,
-                )?;
+                };
+                let inventory =
+                    observe_inventory(context, &spec["inventory"], effects, disclosure, options)?;
                 for (k, v) in object(&inventory)? {
                     entry[k] = v.clone();
                 }
@@ -257,15 +257,145 @@ fn observe_facets(
     }
     Ok(out)
 }
-fn observe_inventory(
-    d: &HarnessDescriptor,
+/// One MCP server spec reduced to an evidence-bearing, secret-free summary:
+/// the launch command (or remote URL), with secret-flag arguments redacted —
+/// including the value a bare secret flag introduces — and environment blocks
+/// never read.
+fn mcp_server_summary(spec: &Value) -> Option<String> {
+    const SECRET_FLAGS: &[&str] = &[
+        "password",
+        "token",
+        "api-key",
+        "apikey",
+        "secret",
+        "credential",
+        "auth",
+    ];
+    let is_secret_flag = |arg: &str| -> bool {
+        let lower = arg.to_lowercase();
+        SECRET_FLAGS
+            .iter()
+            .any(|flag| lower == format!("--{flag}") || lower == format!("-{flag}"))
+    };
+    let redact_inline = |arg: &str| -> String {
+        let lower = arg.to_lowercase();
+        for flag in SECRET_FLAGS {
+            if lower.starts_with(&format!("--{flag}=")) || lower.starts_with(&format!("{flag}=")) {
+                return format!("{}=[redacted]", arg.split('=').next().unwrap_or(arg));
+            }
+        }
+        arg.to_owned()
+    };
+    if let Some(command) = spec["command"].as_str() {
+        let args: Vec<&str> = spec["args"]
+            .as_array()
+            .map(|a| a.iter().filter_map(|v| v.as_str()).collect())
+            .unwrap_or_default();
+        let mut summary = redact_inline(command);
+        let mut redact_next_value = false;
+        for arg in args {
+            summary.push(' ');
+            if redact_next_value {
+                summary.push_str("[redacted-value]");
+                redact_next_value = false;
+            } else if is_secret_flag(arg) {
+                summary.push_str("[redacted-flag]");
+                redact_next_value = true;
+            } else {
+                summary.push_str(&redact_inline(arg));
+            }
+        }
+        Some(summary.chars().take(200).collect())
+    } else {
+        spec["url"]
+            .as_str()
+            .or(spec["endpoint"].as_str())
+            .map(|u| u.chars().take(200).collect())
+    }
+}
+/// A file-declared inventory reads the JSON document at the facet path and
+/// names the entries under its dotted `collection` path. Read failures are
+/// disclosure, never an empty inventory.
+fn observe_file_inventory(
+    facet_path: &str,
+    expanded_path: &str,
     declared: &Value,
-    probes: &[Value],
-    live: bool,
     effects: &mut dyn ProbeEffects,
     disclosure: &mut Vec<String>,
     options: &DetectionOptions,
 ) -> Result<Value> {
+    let unavailable = |reason: String| json!({"inventory_unavailable_reason": format!("declared file inventory not read: {reason}")});
+    let contents = match effects.read_text_file(expanded_path) {
+        Ok(c) => c,
+        Err(reason) => {
+            disclosure.push(format!("mcp-config inventory read failed ({reason})"));
+            return Ok(unavailable(reason));
+        }
+    };
+    let parsed: Value = match serde_json::from_str(&contents) {
+        Ok(v) => v,
+        Err(reason) => {
+            let reason = format!("unparseable inventory JSON: {reason}");
+            disclosure.push(reason.clone());
+            return Ok(unavailable(reason));
+        }
+    };
+    let collection = text(&declared["collection"])?;
+    let mut cursor = &parsed;
+    for segment in collection.split('.') {
+        cursor = &cursor[segment];
+    }
+    let Some(entries) = cursor.as_object() else {
+        let reason = format!("no \"{collection}\" object in {facet_path}");
+        disclosure.push(reason.clone());
+        return Ok(unavailable(reason));
+    };
+    let mut inventory = Vec::new();
+    for (name, spec) in entries {
+        let mut item = json!({"id": name});
+        if let Some(summary) = mcp_server_summary(spec) {
+            item["command"] = json!(summary);
+        }
+        inventory.push(item);
+    }
+    Ok(
+        json!({"inventory":inventory,"inventory_receipt":{"kind":declared["kind"],"source":facet_path,"observed_at":options.observed_at.as_str(),"item_count":inventory.len()}}),
+    )
+}
+/// The descriptor-scoped facts one facet observation needs, bundled so the
+/// observation functions keep a readable argument list.
+struct InventoryContext<'a> {
+    descriptor: &'a HarnessDescriptor,
+    facet_path: &'a str,
+    expanded_path: &'a str,
+    probes: &'a [Value],
+    live: bool,
+}
+
+fn observe_inventory(
+    context: InventoryContext<'_>,
+    declared: &Value,
+    effects: &mut dyn ProbeEffects,
+    disclosure: &mut Vec<String>,
+    options: &DetectionOptions,
+) -> Result<Value> {
+    let InventoryContext {
+        descriptor: d,
+        facet_path,
+        expanded_path,
+        probes,
+        live,
+    } = context;
+    if declared["source"] == "file" {
+        return observe_file_inventory(
+            facet_path,
+            expanded_path,
+            declared,
+            effects,
+            disclosure,
+            options,
+        );
+    }
     if !live {
         let reason = if let Some(service) = probes.iter().find(|p| p["kind"] == "service") {
             format!("declared service inventory not read: service probe did not prove a live endpoint ({})", service["detail"].as_str().or(service["result"].as_str()).unwrap_or("unknown"))

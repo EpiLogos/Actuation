@@ -1,0 +1,18 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "round-3-stagedloop-corpus-complete-classic-2026-09-13",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "zcode-staged-loop-round3",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1789321610,
+  "subject": "Round 3 staged-loop corpus complete: classic 6/6, allowance refusals and stipulation verdicts firing correctly, honest documented-failure closure showcased; design questions: P1-heavy research shape, deep-operator null result, empty-content carrier anomaly",
+  "result": "Implemented and validated the staged loop (commit 84e2803 on PR #79): per-position allowance schedule (P0:2 P1:6 P2:5 P3:4 P4:4 P5:3 + one 2-act grace) with typed allowance_refusal events routing to determination; typed goal|exclusion stipulations riding every control payload with mandatory per-stipulation closure verdicts and violated-exclusion forcing task_success false; the owner conjugacy law stated in prompts (P/P-prime as directional views on #0-#5, looking back from P5 IS the conjugate direction, depth grounded at the lemniscate #4); pinned interpret-return schema with worked examples; conformance note in the manifest (ql-direct = partial-QL lane, ql-deep = full lane); cached-input-token metering. Full six-task corpus rerun via three parallel agents on glm-5.3-flash (records runs/2026-09-13-glm/staged-*). Results: classic completed 6/6 tasks for the first time (AGENCY checker regex quirk remains, quoting-vs-asserting confirmed reproducible); zero pathological loops corpus-wide; staged governance fired exactly where needed (SKILL P1 refusal routed to determination, closure evaluator refused premature close on S2-unmet verdict, reentry recovered to true close) and stayed silent where not (CODE/AGENCY/EPISTEMIC well inside allowances); RESEARCH do-not-edit exclusion held in every condition (round 2 both QL runs violated it) with S1-S5 verdicts met and evidence-cited; RESTRAINT ql-deep showcased honest failure: glm empty-content carrier anomaly five times, P4 typed refusal, evaluator refused positive closure and recorded documented-failure (task_success false) with the answer preserved at res:1 - no fabricated success. Design questions surfaced for the owner: (1) research tasks are P1-heavy (both runs consumed exactly 6/6 then closed without visiting P2-P4) - allowance shape or act-class question; (2) deep operators fired zero times across every round-3 run - ql-deep currently differs only by prompt and +27-77% cost, so the deep condition needs redesign or the conjugate direction needs model-driven invocation from P5; (3) empty-content model-carrier anomaly is model-specific - retry policy candidate; (4) stipulation verdicts should be parsed forward into closure_evaluated event payloads; (5) interpret minor schema variance. Deep-ql 21/21, prime 9/9, preflights green. Queued next: owner rulings on the five questions, Vak integration tickets still drafted-unfiled (per-position schedule is the Actuation-side instance), Prime faculty deployment deferred per owner (installs handled separately).",
+  "status": "active",
+  "source_refs": [
+    "experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm",
+    "experiments/ql-runtime/comparison/series1/policy.mjs"
+  ],
+  "evidence_refs": [
+    "https://github.com/EpiLogos/Actuation/pull/79"
+  ]
+}
