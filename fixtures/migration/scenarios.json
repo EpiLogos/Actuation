@@ -8,7 +8,7 @@
       "kind": "catalog",
       "input": {},
       "expected": {
-        "revision": 9,
+        "revision": 10,
         "harnesses": [
           {
             "schema": "actuation.harness-detection/v1",
@@ -494,6 +494,67 @@
                 "survey:mcp-config-facet-2026-09-16"
               ],
               "catalog_revision": 2
+            }
+          },
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "opencode",
+            "native_kind": "harness",
+            "edition": "cli",
+            "native_owner": "SST",
+            "summary": "OpenCode terminal agent harness; config lives under ~/.config/opencode",
+            "probe": {
+              "executable": {
+                "names": [
+                  "opencode"
+                ],
+                "version_args": [
+                  "--version"
+                ]
+              },
+              "config-dir": {
+                "path": "~/.config/opencode"
+              }
+            },
+            "facets": {
+              "skills": {
+                "path": "~/.config/opencode/skill"
+              },
+              "agents": {
+                "path": "~/.config/opencode/agents"
+              },
+              "commands": {
+                "path": "~/.config/opencode/commands"
+              },
+              "plugins": {
+                "path": "~/.config/opencode/plugins"
+              },
+              "rules": {
+                "path": "~/.config/opencode/AGENTS.md"
+              },
+              "config": {
+                "path": "~/.config/opencode/opencode.json"
+              },
+              "mcp-config": {
+                "path": "~/.config/opencode/opencode.json",
+                "inventory": {
+                  "kind": "mcp-servers",
+                  "source": "file",
+                  "collection": "mcp"
+                }
+              }
+            },
+            "provenance": {
+              "authored_by": "Hermes-Nara session on this machine, 2026-09-17 (opencode strapping)",
+              "source_refs": [
+                "doc:opencode.ai/docs/config",
+                "doc:opencode.ai/docs/rules",
+                "doc:opencode.ai/docs/plugins",
+                "native:opencode --version = 1.18.30",
+                "aikit:clients/opencode.rs (ai-kit#186 round-2 migration)"
+              ],
+              "catalog_revision": 10
             }
           }
         ],
@@ -3054,7 +3115,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3133,7 +3194,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3232,7 +3293,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3349,7 +3410,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3454,7 +3515,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3519,7 +3580,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3770,6 +3831,26 @@
                     "detail": "no marker set"
                   }
                 ]
+              },
+              {
+                "slug": "opencode",
+                "harness_ref": "harness/opencode",
+                "native_kind": "harness",
+                "state": "not-installed",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "opencode",
+                    "detail": "not found on PATH"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.config/opencode",
+                    "detail": "not found"
+                  }
+                ]
               }
             ],
             "absent": [
@@ -3784,7 +3865,8 @@
               "ollama",
               "openclaw",
               "kimi",
-              "zcode"
+              "zcode",
+              "opencode"
             ],
             "availability": "complete"
           }
@@ -4041,6 +4123,26 @@
                 "ZCODE_ENV"
               ]
             ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.config/opencode"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "opencode"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.config/opencode"
+            ]
           }
         ]
       }
@@ -4110,7 +4212,7 @@
             "document": "self",
             "self_ref": "self:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "matched": [],
             "resolved": null,
             "ambiguity": false,
@@ -4228,7 +4330,7 @@
             "document": "self",
             "self_ref": "self:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "matched": [
               {
                 "slug": "fixture-0",
@@ -4362,7 +4464,7 @@
             "document": "self",
             "self_ref": "self:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 9,
+            "catalog_revision": 10,
             "matched": [
               {
                 "slug": "fixture-0",
@@ -5790,7 +5892,7 @@
         "stdout": {
           "schema": "actuation.harness-detection/v1",
           "document": "catalog",
-          "catalog_revision": 9,
+          "catalog_revision": 10,
           "descriptors": [
             {
               "schema": "actuation.harness-detection/v1",
@@ -6277,6 +6379,67 @@
                 ],
                 "catalog_revision": 2
               }
+            },
+            {
+              "schema": "actuation.harness-detection/v1",
+              "document": "descriptor",
+              "slug": "opencode",
+              "native_kind": "harness",
+              "edition": "cli",
+              "native_owner": "SST",
+              "summary": "OpenCode terminal agent harness; config lives under ~/.config/opencode",
+              "probe": {
+                "executable": {
+                  "names": [
+                    "opencode"
+                  ],
+                  "version_args": [
+                    "--version"
+                  ]
+                },
+                "config-dir": {
+                  "path": "~/.config/opencode"
+                }
+              },
+              "facets": {
+                "skills": {
+                  "path": "~/.config/opencode/skill"
+                },
+                "agents": {
+                  "path": "~/.config/opencode/agents"
+                },
+                "commands": {
+                  "path": "~/.config/opencode/commands"
+                },
+                "plugins": {
+                  "path": "~/.config/opencode/plugins"
+                },
+                "rules": {
+                  "path": "~/.config/opencode/AGENTS.md"
+                },
+                "config": {
+                  "path": "~/.config/opencode/opencode.json"
+                },
+                "mcp-config": {
+                  "path": "~/.config/opencode/opencode.json",
+                  "inventory": {
+                    "kind": "mcp-servers",
+                    "source": "file",
+                    "collection": "mcp"
+                  }
+                }
+              },
+              "provenance": {
+                "authored_by": "Hermes-Nara session on this machine, 2026-09-17 (opencode strapping)",
+                "source_refs": [
+                  "doc:opencode.ai/docs/config",
+                  "doc:opencode.ai/docs/rules",
+                  "doc:opencode.ai/docs/plugins",
+                  "native:opencode --version = 1.18.30",
+                  "aikit:clients/opencode.rs (ai-kit#186 round-2 migration)"
+                ],
+                "catalog_revision": 10
+              }
             }
           ]
         },
@@ -6298,7 +6461,7 @@
         "stdout": {
           "schema": "actuation.harness-capability/v1",
           "document": "capability-catalog",
-          "catalog_revision": 9,
+          "catalog_revision": 10,
           "capabilities": [
             {
               "schema": "actuation.harness-capability/v1",
