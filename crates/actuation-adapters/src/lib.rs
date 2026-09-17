@@ -11,6 +11,7 @@ pub mod effects;
 mod instantiation;
 mod observation;
 pub mod secrets;
+mod speech;
 pub mod usage;
 
 pub use actuation_core::{Error, Result};
@@ -18,3 +19,4 @@ pub use admission::*;
 pub use catalog::*;
 pub use instantiation::*;
 pub use observation::*;
+pub use speech::*;
