@@ -25,7 +25,14 @@ pub struct ProcessSpec {
     #[serde(default)]
     pub environment: BTreeMap<String, String>,
     pub timeout_ms: u64,
+    /// Requests that omit an explicit bound get the documented maximum
+    /// (64 MiB), matching what recursive Prime runs need; validate() still
+    /// rejects anything above it.
+    #[serde(default = "default_output_limit")]
     pub output_limit: usize,
+}
+fn default_output_limit() -> usize {
+    64 * 1024 * 1024
 }
 #[derive(Clone, Debug, Serialize)]
 pub struct ProcessResult {
@@ -501,6 +508,31 @@ mod tests {
 
         let out = spec("/usr/bin/false", &[], 10_000, 1_000).run(b"").unwrap();
         assert_eq!(out.code, Some(1));
+    }
+
+    #[test]
+    fn output_limit_defaults_to_the_documented_maximum_when_a_request_omits_it() {
+        let spec: ProcessSpec = serde_json::from_value(json!({
+            "program": "/bin/cat",
+            "args": [],
+            "cwd": std::env::temp_dir().to_string_lossy(),
+            "environment": {},
+            "timeout_ms": 1_000
+        }))
+        .expect("request without an explicit output limit");
+        assert_eq!(spec.output_limit, 64 * 1024 * 1024);
+        assert!(spec.validate().is_ok());
+        // An explicit bound is never overwritten by the default.
+        let explicit: ProcessSpec = serde_json::from_value(json!({
+            "program": "/bin/cat",
+            "args": [],
+            "cwd": std::env::temp_dir().to_string_lossy(),
+            "environment": {},
+            "timeout_ms": 1_000,
+            "output_limit": 1_000
+        }))
+        .expect("request with an explicit output limit");
+        assert_eq!(explicit.output_limit, 1_000);
     }
 
     #[test]

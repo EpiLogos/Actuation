@@ -11,7 +11,7 @@ use std::{
 #[test]
 fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     let original = NativeCatalog::bundled().unwrap();
-    assert_eq!(original.revision(), 8);
+    assert_eq!(original.revision(), 9);
     assert_eq!(original.descriptors().len(), 12);
     assert_eq!(original.capabilities().len(), 4);
     assert_eq!(original.capability_gaps().len(), 8);
@@ -49,20 +49,17 @@ fn declarative_catalog_is_extensible_without_generic_executable_changes() {
         .push(target.clone());
     // Extensibility holds under the closure law: a new descriptor declares a
     // gap until a capability descriptor is authored for it.
-    v["capability_gaps"]
-        .as_array_mut()
-        .unwrap()
-        .push(json!({
-            "schema": "actuation.harness-capability-gap/v1",
-            "document": "capability-gap",
-            "harness_slug": "controlled-new-body",
-            "reason": "acceptance fixture: freshly declared target, capability not authored",
-            "evidence_refs": ["fixture:declarative-extensibility"],
-            "provenance": {
-                "authored_by": "acceptance fixture",
-                "source_refs": ["fixture:declarative-extensibility"]
-            }
-        }));
+    v["capability_gaps"].as_array_mut().unwrap().push(json!({
+        "schema": "actuation.harness-capability-gap/v1",
+        "document": "capability-gap",
+        "harness_slug": "controlled-new-body",
+        "reason": "acceptance fixture: freshly declared target, capability not authored",
+        "evidence_refs": ["fixture:declarative-extensibility"],
+        "provenance": {
+            "authored_by": "acceptance fixture",
+            "source_refs": ["fixture:declarative-extensibility"]
+        }
+    }));
     let extended = NativeCatalog::from_json(&v.to_string()).unwrap();
     assert!(extended.descriptor("controlled-new-body").is_some());
     assert!(extended.capability_gap("controlled-new-body").is_some());
@@ -93,8 +90,7 @@ fn capability_closure_is_structural_not_conventional() {
         .unwrap()
         .retain(|c| c["harness_slug"] != json!("zcode"));
     let err = NativeCatalog::from_json(&v.to_string())
-        .err()
-        .expect("an unclosed catalog must fail to load")
+        .expect_err("an unclosed catalog must fail to load")
         .to_string();
     assert!(
         err.contains("zcode") && err.contains("neither"),
@@ -148,14 +144,72 @@ fn capability_closure_is_structural_not_conventional() {
     let mut legacy = catalog_value();
     legacy["capability_gaps"].as_array_mut().unwrap().clear();
     let err = NativeCatalog::from_json(&legacy.to_string())
-        .err()
-        .expect("a catalog with open descriptors must fail")
+        .expect_err("a catalog with open descriptors must fail")
         .to_string();
     assert!(
         err.contains("neither"),
         "closure error names the failure: {err}"
     );
 }
+#[test]
+fn mcp_config_facet_names_declared_servers_and_redacts_secret_flag_values() {
+    let catalog = NativeCatalog::bundled().unwrap();
+    let mut d = catalog.descriptor("openclaw").unwrap().as_value().clone();
+    d["probe"] = json!({"config-dir": {"path": "~/.openclaw"}});
+    d["facets"] = json!({
+        "mcp-config": {
+            "path": "~/.openclaw/mcp.json",
+            "inventory": {"kind": "mcp-servers", "source": "file", "collection": "mcpServers"}
+        }
+    });
+    let mut effects = support::FixtureEffects::new(json!({
+        "statProbe": {"value": {"exists": true, "isDir": true}},
+        "readTextFile": {"value": {"ok": true, "text": "{\"mcpServers\":{\"bimba-mcp\":{\"command\":\"docker\",\"args\":[\"exec\",\"-i\",\"epi-bimba-mcp\",\"node\",\"dist/index.js\"]},\"linear-server\":{\"command\":\"npx\",\"args\":[\"-y\",\"mcp-remote\",\"https://mcp.linear.app/mcp\"]},\"secretive\":{\"command\":\"srv\",\"args\":[\"--password\",\"hunter2\",\"--token=abc123\",\"--port\",\"9\"]},\"remote\":{\"url\":\"https://mcp.example/mcp\"}}}"}}
+    }));
+    let read = run_detection(
+        &[HarnessDescriptor::try_from(d).unwrap()],
+        &mut effects,
+        &options(&catalog),
+    )
+    .unwrap();
+    let entry = &read.as_value()["harnesses"][0];
+    assert_eq!(entry["state"], "detected");
+    let facet = entry["facets"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|f| f["kind"] == "mcp-config")
+        .expect("mcp-config facet observed")
+        .clone();
+    let inventory = facet["inventory"].as_array().unwrap();
+    assert_eq!(inventory.len(), 4);
+    let bimba = inventory.iter().find(|i| i["id"] == "bimba-mcp").unwrap();
+    assert_eq!(
+        bimba["command"],
+        "docker exec -i epi-bimba-mcp node dist/index.js"
+    );
+    let secretive = inventory.iter().find(|i| i["id"] == "secretive").unwrap();
+    let command = secretive["command"].as_str().unwrap();
+    assert!(
+        command.contains("[redacted-flag] [redacted-value]"),
+        "{command}"
+    );
+    assert!(command.contains("--token=[redacted]"), "{command}");
+    assert!(command.contains("--port 9"), "{command}");
+    assert!(
+        !command.contains("hunter2")
+            && !command.contains("abc123")
+            && !command.contains("--password"),
+        "{command}"
+    );
+    assert_eq!(facet["inventory_receipt"]["item_count"], 4);
+    assert_eq!(facet["inventory_receipt"]["source"], "~/.openclaw/mcp.json");
+    assert!(
+        !effects.calls.iter().any(|c| c["effect"] == "envProbe"),
+        "file inventory never reads environment values"
+    );
+}
+
 #[test]
 fn absence_and_existing_configuration_never_become_a_fake_executable_or_version_call() {
     let catalog = NativeCatalog::bundled().unwrap();

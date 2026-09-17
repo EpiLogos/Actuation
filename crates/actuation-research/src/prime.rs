@@ -250,14 +250,20 @@ mod tests {
     #[test]
     fn source_lock_fixture_is_admitted_and_classifies_as_authored() {
         let lock = SourceLock::read(&valid_lock()).expect("fixture is a valid lock");
+        let accepted = lock.as_value()["ql_mef"]["accepted_main_revision"]
+            .as_str()
+            .expect("accepted revision")
+            .to_owned();
         assert_eq!(
-            lock.classify("e753efc91f62b5b2af09e0a852c5063e366eccbe", false, false)
-                .unwrap(),
+            accepted, "08d14e89c6427cb885e117c2e9bc9dc61a0f90b7",
+            "the frozen twin must keep naming the accepted QL-MEF main deliberately"
+        );
+        assert_eq!(
+            lock.classify(&accepted, false, false).unwrap(),
             "accepted-main"
         );
         assert_eq!(
-            lock.classify("e753efc91f62b5b2af09e0a852c5063e366eccbe", true, false)
-                .unwrap(),
+            lock.classify(&accepted, true, false).unwrap(),
             "accepted-main-harmonic"
         );
         assert_eq!(
@@ -271,8 +277,7 @@ mod tests {
             "explicit-drift"
         );
         assert_eq!(
-            lock.classify("e753efc91f62b5b2af09e0a852c5063e366eccbe", false, true)
-                .unwrap(),
+            lock.classify(&accepted, false, true).unwrap(),
             "explicit-drift"
         );
     }

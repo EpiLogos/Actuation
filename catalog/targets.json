@@ -1,6 +1,6 @@
 {
   "schema": "actuation.native-catalog/v1",
-  "catalog_revision": 8,
+  "catalog_revision": 9,
   "descriptors": [
     {
       "schema": "actuation.harness-detection/v1",
@@ -41,12 +41,21 @@
         },
         "settings": {
           "path": "~/.claude/settings.json"
+        },
+        "mcp-config": {
+          "path": "~/.claude.json",
+          "inventory": {
+            "kind": "mcp-servers",
+            "source": "file",
+            "collection": "mcpServers"
+          }
         }
       },
       "provenance": {
         "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
         "source_refs": [
-          "survey:local-machine-2026-09-05"
+          "survey:local-machine-2026-09-05",
+          "survey:mcp-config-facet-2026-09-16"
         ],
         "catalog_revision": 1
       }
@@ -121,12 +130,21 @@
         },
         "agents": {
           "path": "~/.gemini/antigravity"
+        },
+        "mcp-config": {
+          "path": "~/.gemini/settings.json",
+          "inventory": {
+            "kind": "mcp-servers",
+            "source": "file",
+            "collection": "mcpServers"
+          }
         }
       },
       "provenance": {
         "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
         "source_refs": [
-          "survey:local-machine-2026-09-05"
+          "survey:local-machine-2026-09-05",
+          "survey:mcp-config-facet-2026-09-16"
         ],
         "catalog_revision": 1
       }
@@ -376,12 +394,21 @@
         },
         "config": {
           "path": "~/.openclaw/openclaw.json"
+        },
+        "mcp-config": {
+          "path": "~/.openclaw/mcp.json",
+          "inventory": {
+            "kind": "mcp-servers",
+            "source": "file",
+            "collection": "mcpServers"
+          }
         }
       },
       "provenance": {
         "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
         "source_refs": [
-          "survey:local-machine-2026-09-05"
+          "survey:local-machine-2026-09-05",
+          "survey:mcp-config-facet-2026-09-16"
         ],
         "catalog_revision": 1
       }
@@ -442,12 +469,21 @@
       "facets": {
         "plugins": {
           "path": "~/.zcode/cli/plugins"
+        },
+        "mcp-config": {
+          "path": "~/.zcode/cli/config.json",
+          "inventory": {
+            "kind": "mcp-servers",
+            "source": "file",
+            "collection": "mcp.servers"
+          }
         }
       },
       "provenance": {
         "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
         "source_refs": [
-          "survey:local-machine-2026-09-05"
+          "survey:local-machine-2026-09-05",
+          "survey:mcp-config-facet-2026-09-16"
         ],
         "catalog_revision": 2
       }

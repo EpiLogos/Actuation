@@ -8,11 +8,11 @@ It uses Prime's native RLM recursion and Continual Harness to test the open Actu
 
 ## Source lock
 
-`source-lock.json` was deliberately reinspected on 2026-09-09 and now pins:
+`source-lock.json` was deliberately reinspected on 2026-09-09 and re-reinspected on 2026-09-15; it now pins:
 
 - Actuation base `7925f69c99a068fc064eeec6518efea9bb7aa265`;
 - Prime Agent stable `v0.9.4` / `f771dfcedd684d1afff84ca2c6fa95c7a21efbc2`, separately from observed main `55ade48b73f636d992855b7cab797d71dc1f6f1c`;
-- QL-MEF accepted main `44ed3cd0e7a8bc25508a4e18ad3bb4c730013913`;
+- QL-MEF accepted main `08d14e89c6427cb885e117c2e9bc9dc61a0f90b7`;
 - the historical harmonic #81 head `42d36ed75fd9cf8a70bcbabc5dca766cc51b6811`, whose pull request closed unmerged but whose exact commit entered accepted main through `781981374eaa1f02952249dcdbca1af671d1ece4`.
 
 Re-source-lock deliberately when those products move. Do not silently accept drift.
@@ -159,7 +159,7 @@ P5 performs exactly one explicit RPC `refine` after the task trajectory complete
 Use QL-MEF at the source-locked accepted main, then:
 
 ```bash
-export QL_MEF_ROOT=/path/to/QL-MEF-at-44ed3cd0e7a8bc25508a4e18ad3bb4c730013913
+export QL_MEF_ROOT=/path/to/QL-MEF-at-08d14e89c6427cb885e117c2e9bc9dc61a0f90b7
 export QL_PRIME_HARMONIC=1
 
 node experiments/ql-runtime/prime/run.mjs \

@@ -45,6 +45,7 @@ const FACETS: &[&str] = &[
     "settings",
     "config",
     "models",
+    "mcp-config",
 ];
 const SECRET_PROBES: &[&str] = &["env", "file-pattern", "cli-presence", "vault-item"];
 const FORBIDDEN: &[&str] = &[
@@ -92,7 +93,7 @@ pub(crate) fn optional_text(v: &Value) -> Result<()> {
     }
     Ok(())
 }
-fn optional_texts(v: &Value) -> Result<()> {
+pub(crate) fn optional_texts(v: &Value) -> Result<()> {
     if !v.is_null() {
         texts(v)?;
     }
@@ -111,7 +112,7 @@ fn integer(v: &Value) -> bool {
 fn nonnegative_integer(v: &Value) -> bool {
     integer(v) && v.as_f64().is_some_and(|n| n >= 0.0)
 }
-fn date(v: &Value) -> Result<()> {
+pub(crate) fn date(v: &Value) -> Result<()> {
     Timestamp::new(text(v)?)?;
     Ok(())
 }
@@ -247,19 +248,26 @@ pub fn validate_harness_descriptor(v: &Value) -> Result<()> {
             if !f["inventory"].is_null() {
                 let i = &f["inventory"];
                 object(i)?;
-                one(&i["kind"], &["http-json"])?;
-                one(&i["from"], &["service"])?;
-                require(
-                    !v["probe"]["service"].is_null(),
-                    "inventory requires the descriptor's own service probe",
-                )?;
-                require(
-                    text(&i["route"])?.starts_with('/'),
-                    "inventory route must remain a path on the declared endpoint",
-                )?;
-                reference_fields(i, &["collection", "id_field"], &[])?;
-                optional_texts(&i["also_id_fields"])?;
-                optional_texts(&i["detail_fields"])?;
+                if i["source"] == "file" {
+                    // A file-declared inventory reads a JSON collection at the
+                    // facet path itself; no service probe is involved.
+                    one(&i["kind"], &["mcp-servers"])?;
+                    reference_fields(i, &["collection"], &[])?;
+                } else {
+                    one(&i["kind"], &["http-json"])?;
+                    one(&i["from"], &["service"])?;
+                    require(
+                        !v["probe"]["service"].is_null(),
+                        "inventory requires the descriptor's own service probe",
+                    )?;
+                    require(
+                        text(&i["route"])?.starts_with('/'),
+                        "inventory route must remain a path on the declared endpoint",
+                    )?;
+                    reference_fields(i, &["collection", "id_field"], &[])?;
+                    optional_texts(&i["also_id_fields"])?;
+                    optional_texts(&i["detail_fields"])?;
+                }
             }
         }
     }
@@ -422,7 +430,7 @@ fn validate_inventory(f: &Value) -> Result<()> {
     }
     let r = &f["inventory_receipt"];
     object(r)?;
-    one(&r["kind"], &["http-json"])?;
+    one(&r["kind"], &["http-json", "mcp-servers"])?;
     text(&r["source"])?;
     date(&r["observed_at"])?;
     require(
@@ -543,7 +551,7 @@ pub fn validate_harness_self(v: &Value) -> Result<()> {
         "self requires same-run detection cross-check",
     )
 }
-fn facts(v: &Value) -> Result<()> {
+pub(crate) fn facts(v: &Value) -> Result<()> {
     if !v.is_null() {
         for (k, value) in object(v)? {
             text(&Value::String(k.clone()))?;
@@ -621,6 +629,26 @@ pub fn validate_instantiation_receipt(v: &Value) -> Result<()> {
     )?;
     validate_model_relation(&v["model_relation"])?;
     validate_model_access_profile(&v["access_profile"])?;
+    if !v["speech_constitution"].is_null() {
+        let c = &v["speech_constitution"];
+        crate::speech::validate_speech_constitution(c)?;
+        // A receipt cannot carry another session's body: the constitution's
+        // identity must be the receipt's own identity.
+        require(
+            c["agency_ref"] == v["agency_ref"],
+            "receipt speech constitution belongs to another Agency",
+        )?;
+        require(
+            c["world_binding_ref"] == v["world_binding_ref"],
+            "receipt speech constitution belongs to another WorldBinding",
+        )?;
+        if !v["agent_session_ref"].is_null() {
+            require(
+                c["agent_session_ref"] == v["agent_session_ref"],
+                "receipt speech constitution belongs to another AgentSession",
+            )?;
+        }
+    }
     optional_texts(&v["bounds_refs"])?;
     optional_texts(&v["evidence_refs"])?;
     if !v["experiment"].is_null() {
