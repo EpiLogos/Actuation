@@ -539,11 +539,16 @@ fn run_jev_close_check(synthesis: &str, success_conditions: Value) -> Result<Val
         .map_err(|e| Error::new(format!("jev close-check request not written: {e}")))?,
     )
     .map_err(|e| Error::new(format!("jev close-check request not written: {}", e.kind())))?;
+    // The instrument is a Node script resolved through PATH: inherit the
+    // host's PATH (an empty environment leaves `env node` unresolvable).
+    let environment = [("PATH".to_owned(), std::env::var("PATH").unwrap_or_default())]
+        .into_iter()
+        .collect();
     let spec = crate::process::ProcessSpec {
         program: std::path::PathBuf::from(program),
         args: vec![request_path.to_string_lossy().into_owned()],
         cwd: scratch.path().to_owned(),
-        environment: Default::default(),
+        environment,
         timeout_ms: 30_000,
         output_limit: 4 * 1024 * 1024,
     };
