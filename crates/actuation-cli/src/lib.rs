@@ -7,6 +7,7 @@ pub mod commands;
 pub mod configuration;
 pub mod dispatch;
 pub mod render;
+pub mod speech;
 pub mod surface;
 pub mod system;
 pub mod verify;

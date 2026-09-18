@@ -4,12 +4,14 @@
 //! surface ↔ table parity is asserted by the crate tests.
 use actuation_adapters::{
     HARNESS_CAPABILITY_VERSION, HARNESS_DETECTION_VERSION, INSTANTIATION_VERSION,
-    LEGACY_MODEL_BEARING_SCHEMA, SPEECH_CONSTITUTION_VERSION, SPEECH_TOOL_DECISION_VERSION,
+    LEGACY_MODEL_BEARING_SCHEMA, SPEECH_CONSTITUTION_CHANGE_VERSION, SPEECH_CONSTITUTION_VERSION,
+    SPEECH_TOOL_DECISION_VERSION,
 };
 pub use actuation_core::AGENCY_CONTRACT_VERSION;
 use actuation_runtime::{
-    AGENCY_ACTUALISATION_VERSION, NARA_BINDING_VERSION, REALISED_ACTUATION_VERSION,
-    SPEECH_INTERRUPTION_VERSION,
+    AGENCY_ACTUALISATION_VERSION, NARA_BINDING_VERSION, NARA_CONTEXT_READ_VERSION,
+    NARA_DELEGATION_VERSION, NARA_ENRICHMENT_VERSION, NARA_INTERRUPTION_VERSION,
+    REALISED_ACTUATION_VERSION, SPEECH_INTERRUPTION_VERSION, SPEECH_SESSION_READ_VERSION,
 };
 use serde_json::{json, Value};
 
@@ -37,9 +39,15 @@ pub fn native_contracts() -> Value {
         "instantiation": INSTANTIATION_VERSION,
         "model_bearing_legacy": LEGACY_MODEL_BEARING_SCHEMA,
         "speech_constitution": SPEECH_CONSTITUTION_VERSION,
+        "speech_constitution_change": SPEECH_CONSTITUTION_CHANGE_VERSION,
         "speech_tool_decision": SPEECH_TOOL_DECISION_VERSION,
         "speech_interruption": SPEECH_INTERRUPTION_VERSION,
+        "speech_session_read": SPEECH_SESSION_READ_VERSION,
         "nara_binding": NARA_BINDING_VERSION,
+        "nara_interruption": NARA_INTERRUPTION_VERSION,
+        "nara_delegation": NARA_DELEGATION_VERSION,
+        "nara_enrichment": NARA_ENRICHMENT_VERSION,
+        "nara_context_read": NARA_CONTEXT_READ_VERSION,
         "harness_detection": HARNESS_DETECTION_VERSION,
         "harness_capability": HARNESS_CAPABILITY_VERSION,
         "system_disclosure": SYSTEM_DISCLOSURE_VERSION,
@@ -88,5 +96,17 @@ mod tests {
             "actuation.speech-interruption/v1"
         );
         assert_eq!(NARA_BINDING_VERSION, "actuation.nara-binding/v1");
+        assert_eq!(
+            SPEECH_CONSTITUTION_CHANGE_VERSION,
+            "actuation.speech-constitution-change/v1"
+        );
+        assert_eq!(NARA_INTERRUPTION_VERSION, "actuation.nara-interruption/v1");
+        assert_eq!(NARA_DELEGATION_VERSION, "actuation.nara-delegation/v1");
+        assert_eq!(NARA_ENRICHMENT_VERSION, "actuation.nara-enrichment/v1");
+        assert_eq!(NARA_CONTEXT_READ_VERSION, "actuation.nara-context-read/v1");
+        assert_eq!(
+            SPEECH_SESSION_READ_VERSION,
+            "actuation.speech-session-read/v1"
+        );
     }
 }

@@ -520,6 +520,133 @@ pub fn harness_self(self_value: &Value) -> String {
     out
 }
 
+pub fn speech_constitution(value: &Value) -> String {
+    let modalities = |key: &str| {
+        value[key]
+            .as_array()
+            .map(|items| items.iter().map(text).collect::<Vec<_>>().join(", "))
+            .unwrap_or_default()
+    };
+    let reconnect = value["connection"]["reconnect"]
+        .as_str()
+        .map(str::to_owned)
+        .unwrap_or_else(|| "not-applicable".into());
+    format!(
+        "Speech constitution {} admitted\nAgent: {}\nSession: {}\nBody: {}\nHears: {}\nSpeaks: {}\nInterruption: {}\nReconnect: {}",
+        text(&value["constitution_ref"]),
+        text(&value["agent_ref"]),
+        text(&value["agent_session_ref"]),
+        text(&value["body_ref"]),
+        modalities("input_modalities"),
+        modalities("output_modalities"),
+        text(&value["interruption"]["state"]),
+        reconnect,
+    )
+}
+
+pub fn speech_decision(value: &Value) -> String {
+    let authorised = value["resolution"]["resolution"] == "authorised";
+    let outcome = if authorised {
+        format!(
+            "authorised action {}",
+            text(&value["resolution"]["action_ref"])
+        )
+    } else {
+        format!(
+            "refused at {} — {}",
+            text(&value["resolution"]["stage"]),
+            text(&value["resolution"]["reason"])
+        )
+    };
+    format!(
+        "Speech tool decision {}\nRequest: {}\nDecided by {} at {}\n{}",
+        text(&value["decision_ref"]),
+        text(&value["request"]["request_ref"]),
+        text(&value["decided_by"]),
+        text(&value["decided_at"]),
+        outcome,
+    )
+}
+
+pub fn speech_interrupt(value: &Value) -> String {
+    let executed = value["executed_refs"]
+        .as_array()
+        .map(|refs| refs.iter().map(text).collect::<Vec<_>>().join(", "))
+        .unwrap_or_default();
+    let executed = if executed.is_empty() {
+        "none".into()
+    } else {
+        executed
+    };
+    let outcome = if value["outcome"] == "refused" {
+        format!("refused — {}", text(&value["refusal_reason"]))
+    } else {
+        text(&value["outcome"])
+    };
+    format!(
+        "Speech interruption {}\nSession: {}\nResponse: {}\nExecuted standing: {}\n{}",
+        text(&value["interruption_ref"]),
+        text(&value["agent_session_ref"]),
+        text(&value["response_ref"]),
+        executed,
+        outcome,
+    )
+}
+
+pub fn speech_session(value: &Value) -> String {
+    format!(
+        "Speech session {}\nBody: {}\nPhase: {}\nInterruption: {}\nFull-duplex realtime: {}\nBarge-in: {}\nReconnect: {}",
+        text(&value["agent_session_ref"]),
+        text(&value["body_ref"]),
+        text(&value["phase"]),
+        text(&value["interruption"]["state"]),
+        text(&value["full_duplex_realtime"]["state"]),
+        text(&value["barge_in"]["state"]),
+        text(&value["reconnect"]),
+    )
+}
+
+pub fn nara_context(value: &Value) -> String {
+    format!(
+        "Nara context {}\nNara: {}\nSession: {}\nExpression: {} @ {}\nExpressive act: {}",
+        text(&value["context_ref"]),
+        text(&value["nara_ref"]),
+        text(&value["agent_session_ref"]),
+        text(&value["expression_ref"]),
+        text(&value["expression_revision"]),
+        text(&value["expressive_act"]["expressive_act_ref"]),
+    )
+}
+
+pub fn nara_delegate(value: &Value) -> String {
+    let current = if value["basis_current_at_receipt"].as_bool() == Some(true) {
+        "yes"
+    } else {
+        "no"
+    };
+    format!(
+        "Nara delegation receipt {}\nForeground: {}\nEpii session: {}\nBasis current at receipt: {}",
+        text(&value["delegation_receipt_ref"]),
+        text(&value["foreground_agent"]),
+        text(&value["epii_session_ref"]),
+        current,
+    )
+}
+
+pub fn nara_enrichment(value: &Value) -> String {
+    let reason = value["currentness"]["reason"]
+        .as_str()
+        .map(|r| format!("\n{}", r))
+        .unwrap_or_default();
+    format!(
+        "Nara enrichment receipt {}\nStanding: {}\nApplied: {}{}",
+        text(&value["enrichment_receipt_ref"]),
+        text(&value["standing"]),
+        text(&value["applied"]),
+        reason,
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -27,6 +27,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
 pub const SPEECH_INTERRUPTION_VERSION: &str = "actuation.speech-interruption/v1";
+/// The read model [`SpeechSession::read`] produces.
+pub const SPEECH_SESSION_READ_VERSION: &str = "actuation.speech-session-read/v1";
 
 /// The phase of the speech turn itself. Distinct from any stream lifecycle
 /// state: a session can be open while its speech body is between turns.
@@ -274,7 +276,7 @@ impl SpeechSession {
     /// four-state capabilities that matter to a speech UI.
     pub fn read(&self) -> Value {
         json!({
-            "schema": "actuation.speech-session-read/v1",
+            "schema": SPEECH_SESSION_READ_VERSION,
             "agent_ref": self.constitution.as_value()["agent_ref"],
             "agency_ref": self.constitution.as_value()["agency_ref"],
             "agent_session_ref": self.constitution.as_value()["agent_session_ref"],

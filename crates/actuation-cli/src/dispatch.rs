@@ -4,7 +4,7 @@
 //! the capabilities listing and dispatch are all derived from the table, so a
 //! command cannot exist in one representation and be missing from another.
 use crate::surface::{cli_surface, ACTUATION_CLI_VERSION};
-use crate::{authority, commands};
+use crate::{authority, commands, speech};
 use actuation_core::Error;
 use serde_json::{json, Value};
 use std::io::Read;
@@ -100,6 +100,13 @@ static COMMANDS: &[CommandDescriptor] = &[
     command!("config.plan", &["config", "plan"], "actuation config plan [--json] [--setting <setting_ref>] [--scope <compact>] [--value <json> | --value-file <path|->]", false, commands::config_plan),
     command!("config.apply", &["config", "apply"], "actuation config apply [--json] [--plan-file <path|->] [--changeset <id>]", false, commands::config_apply),
     command!("config.reset", &["config", "reset"], "actuation config reset [--json] [--setting <setting_ref>] [--scope <compact>] [--changeset <id>]", false, commands::config_reset),
+    command!("speech.constitution", &["speech", "constitution"], "actuation speech constitution [file|-] [--json]", true, speech::speech_constitution),
+    command!("speech.decision", &["speech", "decision"], "actuation speech decision [file|-] [--json]", true, speech::speech_decision),
+    command!("speech.interrupt", &["speech", "interrupt"], "actuation speech interrupt [file|-] [--json]", true, speech::speech_interrupt),
+    command!("speech.session", &["speech", "session"], "actuation speech session [file|-] [--json]", true, speech::speech_session),
+    command!("nara.context", &["nara", "context"], "actuation nara context [file|-] [--json]", true, speech::nara_context),
+    command!("nara.delegate", &["nara", "delegate"], "actuation nara delegate [file|-] [--json]", true, speech::nara_delegate),
+    command!("nara.enrichment", &["nara", "enrichment"], "actuation nara enrichment [file|-] [--json]", true, speech::nara_enrichment),
     command!("verify", &["verify"], "actuation verify [--json]", false, commands::verify),
 ];
 
@@ -142,6 +149,16 @@ pub fn execute(argv: &[String], stdin: &str) -> Result<Output, Error> {
         } else if command.as_deref() == Some("config") {
             Error::new(format!(
                 "unknown config subcommand {}; expected validate, plan, apply or reset",
+                args.get(1).cloned().unwrap_or_else(|| "(none)".into())
+            ))
+        } else if command.as_deref() == Some("speech") {
+            Error::new(format!(
+                "unknown speech subcommand {}; expected constitution, decision, interrupt or session",
+                args.get(1).cloned().unwrap_or_else(|| "(none)".into())
+            ))
+        } else if command.as_deref() == Some("nara") {
+            Error::new(format!(
+                "unknown nara subcommand {}; expected context, delegate or enrichment",
                 args.get(1).cloned().unwrap_or_else(|| "(none)".into())
             ))
         } else {

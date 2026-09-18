@@ -39,6 +39,7 @@ pub const NARA_BINDING_VERSION: &str = "actuation.nara-binding/v1";
 pub const NARA_INTERRUPTION_VERSION: &str = "actuation.nara-interruption/v1";
 pub const NARA_DELEGATION_VERSION: &str = "actuation.nara-delegation/v1";
 pub const NARA_ENRICHMENT_VERSION: &str = "actuation.nara-enrichment/v1";
+pub const NARA_CONTEXT_READ_VERSION: &str = "actuation.nara-context-read/v1";
 
 /// QL contract names. Actuation carries these documents as data; their
 /// semantics stay in QL-MEF.
@@ -116,6 +117,26 @@ pub fn read_dialogue_context(
             .is_some_and(|p| p == "composing" || p == "active"),
         expressive_act_speech_turn_ref: act["speech_turn_ref"].as_str().map(str::to_owned),
     })
+}
+
+impl ContextReading {
+    /// The wire read model a desktop client consumes after a context
+    /// admission: the same facts this module checked, nothing more.
+    pub fn read_model(&self) -> Value {
+        json!({
+            "schema": NARA_CONTEXT_READ_VERSION,
+            "context_ref": self.context_ref,
+            "nara_ref": self.nara_ref,
+            "agent_session_ref": self.agent_session_ref,
+            "expression_ref": self.expression_ref,
+            "expression_revision": self.expression_revision,
+            "expressive_act": {
+                "expressive_act_ref": self.expressive_act_ref,
+                "live": self.expressive_act_live,
+                "speech_turn_ref": self.expressive_act_speech_turn_ref,
+            },
+        })
+    }
 }
 
 /// Canonical Nara: one Agent, one Agency, whichever speech-capable body the
