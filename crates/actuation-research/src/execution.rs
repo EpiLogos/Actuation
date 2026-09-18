@@ -462,9 +462,7 @@ impl ControlArm {
             .map(std::path::PathBuf::from)
             .filter(|p| !p.as_os_str().is_empty())
             .ok_or_else(|| {
-                Error::new(
-                    "QL_VAK_CONTROL=1 requires an explicit QL_VAK_BIN path to the ql binary",
-                )
+                Error::new("QL_VAK_CONTROL=1 requires an explicit QL_VAK_BIN path to the ql binary")
             })?;
         Ok(Self::Vak(crate::vak_control::VakControl::bind(program)?))
     }

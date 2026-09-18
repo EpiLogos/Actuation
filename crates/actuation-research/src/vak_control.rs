@@ -472,7 +472,6 @@ impl VakControl {
                 "vak cpf did not admit the walked office {lead} at P{lead_position}"
             )));
         }
-        let id = &circuit.id;
         let (closure, carrier, intent) = match lead {
             "-" => (
                 false,

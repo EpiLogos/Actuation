@@ -371,7 +371,7 @@ impl Policy for ModelPolicy {
                 }),
             }));
         }
-        let d=if let Some(vak) = self.vak_control.as_ref() {
+        let d = if let Some(vak) = self.vak_control.as_ref() {
             // Kernel-native control: the composition contract names the next
             // office's faculty over the circuit's own positional field. No
             // model turn runs; a refused kernel turn fails the run closed.
@@ -388,9 +388,9 @@ impl Policy for ModelPolicy {
             return Ok(Some(Act {
                 source_position: Some(cx.circuit.active_position),
                 intent: json!(d.intent),
-                carrier: d.carrier.clone().unwrap_or_else(|| {
-                    json!({"kind":"internal_control","name":"close","input":null})
-                }),
+                carrier: d.carrier.clone().unwrap_or_else(
+                    || json!({"kind":"internal_control","name":"close","input":null}),
+                ),
                 input_residue_refs: vec![],
                 nested: None,
                 metadata,
