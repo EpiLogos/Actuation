@@ -155,6 +155,68 @@ domain!(
     }
 );
 
+/// Audio-material usage evidence: bounded aggregates only (seconds heard or
+/// spoken, turn counts), by ref to the underlying usage observations. Audio
+/// packet material, sample streams and byte counts have no representation
+/// here — an aggregate that cannot be stated as a duration or a count is not
+/// stated at all. Absence of evidence stays absence: the whole section is
+/// optional on the observation and an unavailable standing carries nothing.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct AudioUsageFields {
+    pub standing: EvidenceStanding,
+    /// Audio seconds the body received, across the correlated scope.
+    #[serde(default, skip_serializing_if = "Slot::is_absent")]
+    pub input_seconds: Slot<serde_json::Number>,
+    /// Audio seconds the body produced, across the correlated scope.
+    #[serde(default, skip_serializing_if = "Slot::is_absent")]
+    pub output_seconds: Slot<serde_json::Number>,
+    /// Bounded count of speech turns the aggregate covers.
+    #[serde(default, skip_serializing_if = "Slot::is_absent")]
+    pub turns: Slot<Count>,
+    /// Refs to the native usage observations the aggregates summarise.
+    #[serde(default, skip_serializing_if = "Slot::is_absent")]
+    pub evidence_refs: Slot<NonEmpty<ExternalRef>>,
+    #[serde(flatten)]
+    pub extensions: Extensions,
+}
+domain!(
+    AudioUsage,
+    AudioUsageFields,
+    [
+        standing,
+        input_seconds,
+        output_seconds,
+        turns,
+        evidence_refs
+    ],
+    |v: &Self| {
+        let measures = v.input_seconds.value().is_some()
+            || v.output_seconds.value().is_some()
+            || v.turns.value().is_some()
+            || v.evidence_refs.value().is_some();
+        if !v.standing.is_available() && measures {
+            Err(Error::new("unavailable usage must not carry measures"))
+        } else if v.standing.is_available() && !measures {
+            Err(Error::new(
+                "reported audio usage requires at least one aggregate measure or evidence ref; omit the section when nothing was reported",
+            ))
+        } else if v
+            .input_seconds
+            .value()
+            .is_some_and(|n| !crate::wire::nonnegative(n))
+            || v.output_seconds
+                .value()
+                .is_some_and(|n| !crate::wire::nonnegative(n))
+        {
+            Err(Error::new(
+                "audio seconds must be non-negative finite numbers",
+            ))
+        } else {
+            Ok(())
+        }
+    }
+);
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct UsageClassFields {
     pub class: ExternalRef,
@@ -329,6 +391,11 @@ pub struct ModelUsageObservationFields {
     pub model: UsageIdentity,
     pub tokens: TokenUsage,
     pub cache: CacheUsage,
+    /// Audio-material usage evidence by ref. Optional: a text-only
+    /// invocation, or a provider that reports no audio usage, carries no
+    /// `audio` section at all — absence is never rendered as zeros.
+    #[serde(default, skip_serializing_if = "Slot::is_absent")]
+    pub audio: Slot<AudioUsage>,
     #[serde(default, skip_serializing_if = "Slot::is_absent")]
     pub usage_classes: Slot<Vec<UsageClass>>,
     pub timing: UsageTiming,
@@ -353,6 +420,7 @@ domain!(
         model,
         tokens,
         cache,
+        audio,
         usage_classes,
         timing,
         cost,
@@ -376,3 +444,122 @@ domain!(
         Ok(())
     }
 );
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::{json, Value};
+
+    fn observation(audio: Value) -> Value {
+        let mut v = json!({
+            "schema":"actuation.model-usage/v1",
+            "usage_ref":"model-usage:test:1",
+            "actuation_ref":"actuation:nara-1",
+            "invocation_ref":"invocation:1",
+            "correlation":{"activity_ref":"activity:1","agent_ref":"nara:canonical",
+                "agency_ref":"agency:nara","agent_session_ref":"session:nara-1",
+                "body_ref":"model-surface:realtime"},
+            "provider":{"standing":"not-reported"},
+            "model":{"standing":"normalized-from-native","name":"realtime-model"},
+            "tokens":{"standing":"not-reported"},
+            "cache":{"standing":"not-reported"},
+            "timing":{"completed_at":"2026-09-18T09:00:00Z","latency":{"standing":"not-reported"}},
+            "cost":{"standing":"not-reported"},
+            "outcome":{"state":"completed","standing":"provider-reported"},
+            "provenance":{"reporter_ref":"provider:realtime","native_event_ref":"provider:event:1",
+                "native_schema":"provider.usage/v1","observed_at":"2026-09-18T09:00:00Z",
+                "raw_evidence_refs":["evidence:usage-1"]}
+        });
+        if !audio.is_null() {
+            v["audio"] = audio;
+        }
+        v
+    }
+
+    #[test]
+    fn audio_evidence_travels_as_bounded_aggregates_by_ref() {
+        let observation = ModelUsageObservation::try_from(observation(json!({
+            "standing":"provider-reported",
+            "input_seconds":12.5,
+            "output_seconds":8.25,
+            "turns":3,
+            "evidence_refs":["evidence:audio-usage-1","evidence:audio-usage-2"]
+        })))
+        .expect("audio aggregates are admissible usage evidence");
+        let audio = observation
+            .fields()
+            .audio
+            .value()
+            .expect("the audio section is present");
+        assert_eq!(
+            audio.fields().input_seconds.value().map(|n| n.as_f64()),
+            Some(Some(12.5))
+        );
+        assert_eq!(
+            audio.fields().output_seconds.value().map(|n| n.as_f64()),
+            Some(Some(8.25))
+        );
+        assert_eq!(audio.fields().turns.value().map(|t| t.get()), Some(3));
+        assert_eq!(
+            audio
+                .fields()
+                .evidence_refs
+                .value()
+                .expect("refs present")
+                .as_slice()
+                .len(),
+            2
+        );
+        // Round-trip through the wire preserves the evidence exactly.
+        let encoded = serde_json::to_value(&observation).unwrap();
+        let decoded = ModelUsageObservation::try_from(encoded).unwrap();
+        assert_eq!(observation, decoded);
+    }
+
+    #[test]
+    fn audio_absence_stays_absent_never_invented_zeros() {
+        let observation = ModelUsageObservation::try_from(observation(Value::Null))
+            .expect("a text-only invocation carries no audio section");
+        assert!(observation.fields().audio.is_absent());
+        let encoded = serde_json::to_value(&observation).unwrap();
+        assert!(
+            encoded.get("audio").is_none(),
+            "the wire must not carry an audio key when nothing was reported: {encoded}"
+        );
+    }
+
+    #[test]
+    fn an_unavailable_audio_standing_must_not_carry_measures() {
+        let invented = observation(json!({
+            "standing":"not-reported",
+            "input_seconds":5
+        }));
+        assert!(ModelUsageObservation::try_from(invented).is_err());
+        // An explicit unavailable section with nothing attached is honest and
+        // admissible.
+        let unavailable = observation(json!({"standing":"not-reported"}));
+        assert!(ModelUsageObservation::try_from(unavailable).is_ok());
+    }
+
+    #[test]
+    fn a_reported_audio_standing_requires_something_reported() {
+        let empty = observation(json!({"standing":"provider-reported"}));
+        assert!(ModelUsageObservation::try_from(empty).is_err());
+    }
+
+    #[test]
+    fn audio_measures_are_bounded_to_non_negative_aggregates() {
+        let negative = observation(json!({
+            "standing":"provider-reported","output_seconds":-1
+        }));
+        assert!(ModelUsageObservation::try_from(negative).is_err());
+        // Refs only — the shape has no field a packet could even occupy.
+        let by_ref_only = observation(json!({
+            "standing":"observed",
+            "evidence_refs":["evidence:provider-usage-report"]
+        }));
+        let observation = ModelUsageObservation::try_from(by_ref_only)
+            .expect("ref-only audio evidence is admissible");
+        assert!(observation.fields().audio.value().is_some());
+    }
+}
