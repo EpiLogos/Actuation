@@ -965,6 +965,63 @@ mod tests {
     }
 
     #[test]
+    fn a_nara_without_a_speech_body_reads_the_named_gap_and_the_swap_path() {
+        // Canonical Nara constituted on a text-only body: text-capable now,
+        // speech body absent, gap named — never a silently complete text
+        // agent.
+        let mut nara = NaraBinding::constitute(
+            constitution(
+                "text",
+                "session:nara-1",
+                false,
+                json!({"state": "unsupported", "reason": "no speech output exists to interrupt"}),
+            ),
+            context("nara:canonical", "session:nara-1"),
+            vec![],
+            vec![],
+        )
+        .unwrap();
+        let read = nara.read();
+        assert_eq!(read["speech"]["speech_body"]["state"], "absent");
+        assert_eq!(read["speech"]["speech_body"]["reason"], "none-supplied");
+        assert_eq!(read["speech"]["speech_body"]["text_capable"], true);
+        assert_eq!(read["speech"]["speech_capable"], false);
+        assert!(read["speech"]["last_change"].is_null());
+        // Identity is intact and unaffected by the gap.
+        assert_eq!(read["nara_ref"], "nara:canonical");
+        assert_eq!(read["agent_ref"], "nara:canonical");
+
+        // A speech body is constituted later: same Nara, and the swap is
+        // legible from the wire document alone.
+        let change = nara
+            .reconnect(
+                "change:text-to-realtime",
+                constitution(
+                    "realtime",
+                    "session:nara-1",
+                    true,
+                    json!({"state": "supported"}),
+                ),
+                context("nara:canonical", "session:nara-1"),
+                "a speech-capable body was resolved for the same Nara",
+                vec![ExternalRef::new("evidence:aikit-resolution").unwrap()],
+                "2026-09-17T09:16:00Z",
+            )
+            .unwrap();
+        assert_eq!(change.identity().0.as_str(), "nara:canonical");
+        let read = nara.read();
+        assert_eq!(read["speech"]["speech_body"]["state"], "present");
+        let last = &read["speech"]["last_change"];
+        assert_eq!(last["change_ref"], "change:text-to-realtime");
+        assert_eq!(last["delta"]["speech_capable_before"], false);
+        assert_eq!(last["delta"]["speech_capable_after"], true);
+        // The identity the change preserved is the identity on the document.
+        assert_eq!(last["agent_ref"], read["agent_ref"]);
+        assert_eq!(last["agency_ref"], read["agency_ref"]);
+        assert_eq!(read["nara_ref"], "nara:canonical");
+    }
+
+    #[test]
     fn two_naras_on_one_world_keep_separate_identity_and_context() {
         let a = realtime_binding();
         let mut other_context = context("nara:canonical", "session:nara-1");

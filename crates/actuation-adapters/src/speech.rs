@@ -679,7 +679,10 @@ impl SpeechConstitution {
     }
     /// Whether the constituted body can read and write text.
     pub fn text_capable(&self) -> bool {
-        let text_in = self.modalities("input_modalities").iter().any(|m| m == "text");
+        let text_in = self
+            .modalities("input_modalities")
+            .iter()
+            .any(|m| m == "text");
         let text_out = self
             .modalities("output_modalities")
             .iter()

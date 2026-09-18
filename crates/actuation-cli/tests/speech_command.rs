@@ -254,8 +254,12 @@ fn speech_session_prints_the_read_model_of_a_described_session() {
     assert_eq!(read["phase"], "listening");
     assert_eq!(read["speech_capable"], true);
     assert_eq!(read["realtime_capable"], true);
+    // The speech body reads present, with no change recorded yet.
+    assert_eq!(read["speech_body"]["state"], "present");
+    assert!(read["last_change"].is_null());
 
-    // A text-only body can be described as text-only: the read model says so.
+    // A text-only body reads as the named gap, not a complete text agent:
+    // text-capable now, speech body absent (none-supplied).
     let text_only = json!({
         "constitution": text_only_constitution_value(),
         "session_state": null,
@@ -264,6 +268,22 @@ fn speech_session_prints_the_read_model_of_a_described_session() {
     let read = run(&["speech", "session", "-"], &text_only);
     assert_eq!(read["speech_capable"], false);
     assert_eq!(read["phase"], "idle");
+    assert_eq!(read["speech_body"]["state"], "absent");
+    assert_eq!(read["speech_body"]["reason"], "none-supplied");
+    assert_eq!(read["speech_body"]["text_capable"], true);
+
+    // A credential-gated speech body names the gate: the pre-key state is
+    // visible before any provider key exists.
+    let mut gated = constitution_value("realtime");
+    gated["credential_condition"] = json!({"condition": "required", "hint": "bind ZAI_API_KEY"});
+    let read = run(
+        &["speech", "session", "-"],
+        &json!({"constitution": gated, "session_state": null, "interruption_ref": null}),
+    );
+    assert_eq!(read["speech_body"]["state"], "absent");
+    assert_eq!(read["speech_body"]["reason"], "credential-gated");
+    assert_eq!(read["speech_body"]["detail"], "bind ZAI_API_KEY");
+    assert_eq!(read["speech_capable"], true);
 
     // But it cannot be described into listening: a state the session could
     // not actually be in is refused, not approximated.

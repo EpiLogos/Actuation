@@ -605,9 +605,8 @@ mod tests {
         assert_eq!(session.phase(), SpeechTurnPhase::Speaking);
     }
 
-    #[test]
-    fn a_text_only_body_refuses_speech_and_stays_usable_for_text() {
-        let text_only = SpeechConstitution::try_from(json!({
+    fn text_only_constitution() -> SpeechConstitution {
+        SpeechConstitution::try_from(json!({
             "schema": SPEECH_CONSTITUTION_VERSION,
             "constitution_ref": "constitution:text",
             "agent_ref": "agent:nara",
@@ -629,7 +628,82 @@ mod tests {
             "provenance": {"source_refs": ["aikit:model-runtime:fixture@1"]},
             "resolved_at": "2026-09-17T09:00:00Z"
         }))
-        .unwrap();
+        .expect("fixture constitution must be valid")
+    }
+
+    #[test]
+    fn a_text_only_session_reads_as_a_named_gap_not_a_complete_text_agent() {
+        let mut session = SpeechSession::constitute(text_only_constitution()).unwrap();
+        let read = session.read();
+        assert_eq!(read["speech_body"]["state"], "absent");
+        assert_eq!(read["speech_body"]["reason"], "none-supplied");
+        assert_eq!(read["speech_body"]["text_capable"], true);
+        assert_eq!(read["speech_capable"], false);
+        assert_eq!(read["phase"], "idle");
+        // No change has occurred: the field is present and empty.
+        assert!(read["last_change"].is_null());
+        // The text turn path still works — the wire just never calls the
+        // session a complete speech agent.
+        session
+            .begin_response(ExternalRef::new("response:text-1").unwrap())
+            .unwrap();
+        session.complete_response().unwrap();
+        assert_eq!(session.read()["phase"], "completed");
+    }
+
+    #[test]
+    fn a_credential_gated_body_reads_the_gate_by_name() {
+        let mut value = constitution("realtime", json!({"state": "supported"})).into_value();
+        value["credential_condition"] =
+            json!({"condition": "required", "hint": "bind ZAI_API_KEY"});
+        let gated = SpeechConstitution::try_from(value).unwrap();
+        let session = SpeechSession::constitute(gated).unwrap();
+        let read = session.read();
+        assert_eq!(read["speech_body"]["state"], "absent");
+        assert_eq!(read["speech_body"]["reason"], "credential-gated");
+        assert_eq!(read["speech_body"]["detail"], "bind ZAI_API_KEY");
+        // Capability and availability are different facts on the same wire.
+        assert_eq!(read["speech_capable"], true);
+        assert_eq!(read["speech_body"]["speech_capable"], true);
+    }
+
+    #[test]
+    fn a_body_swap_is_readable_from_the_wire_afterwards() {
+        let mut session =
+            SpeechSession::constitute(constitution("realtime", json!({"state": "supported"})))
+                .unwrap();
+        session
+            .replace_body(
+                "change:1",
+                text_only_constitution(),
+                "speech body failed; text fallback",
+                vec![ExternalRef::new("evidence:failure").unwrap()],
+                "2026-09-17T09:20:00Z",
+            )
+            .unwrap();
+        let read = session.read();
+        let last = &read["last_change"];
+        assert_eq!(last["change_ref"], "change:1");
+        assert_eq!(last["reason"], "speech body failed; text fallback");
+        // The identity the change preserved is the identity the session
+        // still carries: "Nara stayed Nara" reads from the document alone.
+        assert_eq!(last["agent_ref"], read["agent_ref"]);
+        assert_eq!(last["agency_ref"], read["agency_ref"]);
+        assert_eq!(last["delta"]["body_changed"], true);
+        assert_eq!(last["delta"]["speech_capable_before"], true);
+        assert_eq!(last["delta"]["speech_capable_after"], false);
+        // The post-swap availability names the new gap.
+        assert_eq!(read["speech_body"]["state"], "absent");
+        assert_eq!(read["speech_body"]["reason"], "none-supplied");
+        assert_eq!(
+            session.last_change().expect("change is kept").change_ref(),
+            "change:1"
+        );
+    }
+
+    #[test]
+    fn a_text_only_body_refuses_speech_and_stays_usable_for_text() {
+        let text_only = text_only_constitution();
         assert!(!text_only.speech_capable());
         let mut session = SpeechSession::constitute(text_only).unwrap();
         assert!(session.begin_listening().is_err());

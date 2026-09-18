@@ -476,6 +476,115 @@ fn a_text_only_constitution_is_valid_and_unavailable_bodies_cannot_hide() {
 }
 
 #[test]
+fn the_speech_body_names_its_gap_instead_of_passing_as_a_text_agent() {
+    // A satisfied, fully capable body reads present.
+    let present = SpeechConstitution::try_from(base_constitution(
+        "realtime",
+        json!({"credential_condition": {"condition": "satisfied", "hint": "bind ZAI_API_KEY",
+              "binding_ref": "secret-ref:zai"}}),
+    ))
+    .unwrap();
+    let body = present.speech_body();
+    assert_eq!(body["state"], "present");
+    assert_eq!(body["text_capable"], true);
+    assert_eq!(body["speech_capable"], true);
+    assert_eq!(body["realtime_capable"], true);
+    assert_eq!(body["credential_condition"]["condition"], "satisfied");
+    assert!(body["reason"].is_null(), "a present body names no gap");
+
+    // none-supplied: a text-only body — text-capable, speech body absent.
+    let text_only = SpeechConstitution::try_from(base_constitution(
+        "text",
+        json!({
+            "input_modalities": ["text"],
+            "output_modalities": ["text"],
+            "transforms": null,
+            "transform_role": null,
+            "interaction": {"request-response": {"state": "supported"}},
+            "transport": "http",
+            "connection": {"kind": "stateless", "reconnect": null},
+            "interruption": {"state": "unsupported", "reason": "no speech output exists to interrupt"},
+            "provider_binding": {"provider_ref": "provider:text"}
+        }),
+    ))
+    .unwrap();
+    let body = text_only.speech_body();
+    assert_eq!(body["state"], "absent");
+    assert_eq!(body["reason"], "none-supplied");
+    assert!(body["detail"].is_null());
+    assert_eq!(body["text_capable"], true);
+    assert_eq!(body["speech_capable"], false);
+
+    // credential-gated: a speech body is declared but its credential is
+    // required and unbound — the visible pre-key state.
+    let gated = SpeechConstitution::try_from(base_constitution(
+        "realtime",
+        json!({"credential_condition": {"condition": "required", "hint": "bind ZAI_API_KEY"}}),
+    ))
+    .unwrap();
+    let body = gated.speech_body();
+    assert_eq!(body["state"], "absent");
+    assert_eq!(body["reason"], "credential-gated");
+    assert_eq!(body["detail"], "bind ZAI_API_KEY");
+    // Capability and availability are two different facts; both stay honest
+    // on the wire.
+    assert_eq!(body["speech_capable"], true);
+
+    // degraded: a recorded availability condition reduces the body.
+    let degraded = SpeechConstitution::try_from(base_constitution(
+        "realtime",
+        json!({"conditions": [{"condition": "degraded", "reason": "elevation limits barge-in"}]}),
+    ))
+    .unwrap();
+    let body = degraded.speech_body();
+    assert_eq!(body["state"], "absent");
+    assert_eq!(body["reason"], "degraded");
+    assert_eq!(body["detail"], "elevation limits barge-in");
+
+    // unavailable: a recorded condition forbids the body outright, and the
+    // conditions stay on the wire unflattened.
+    let down = SpeechConstitution::try_from(base_constitution(
+        "down",
+        json!({
+            "constitution_ref": "constitution:down",
+            "conditions": [{"condition": "unavailable", "reason": "provider region outage"}]
+        }),
+    ))
+    .unwrap();
+    let body = down.speech_body();
+    assert_eq!(body["state"], "absent");
+    assert_eq!(body["reason"], "unavailable");
+    assert_eq!(body["detail"], "provider region outage");
+    assert_eq!(body["conditions"][0]["condition"], "unavailable");
+
+    // Priority: a body that declares no acoustic modality names none-supplied
+    // even when a credential gate is also carried.
+    let both = SpeechConstitution::try_from(base_constitution(
+        "text",
+        json!({
+            "input_modalities": ["text"],
+            "output_modalities": ["text"],
+            "transforms": null,
+            "transform_role": null,
+            "interaction": {"request-response": {"state": "supported"}},
+            "transport": "http",
+            "connection": {"kind": "stateless", "reconnect": null},
+            "interruption": {"state": "unsupported", "reason": "no speech output"},
+            "provider_binding": {"provider_ref": "provider:text"},
+            "credential_condition": {"condition": "required", "hint": "bind ZAI_API_KEY"}
+        }),
+    ))
+    .unwrap();
+    assert_eq!(both.speech_body()["reason"], "none-supplied");
+
+    // The credential fact is condition/hint/refs only: the exact key
+    // "credential" stays a refused value-shaped key.
+    let mut leak = base_constitution("realtime", json!({}));
+    leak["credential"] = json!("must-not-travel");
+    assert!(SpeechConstitution::try_from(leak).is_err());
+}
+
+#[test]
 fn instantiation_receipts_carry_a_correlated_speech_constitution() {
     let constitution =
         SpeechConstitution::try_from(base_constitution("realtime", json!({}))).unwrap();

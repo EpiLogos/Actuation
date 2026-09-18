@@ -171,7 +171,9 @@ fn admission_accepts_every_mirrored_term_in_its_own_category() {
             condition[k.clone()] = v.clone();
         }
         assert!(
-            admit(base_constitution(json!({"credential_condition": condition}))),
+            admit(base_constitution(
+                json!({"credential_condition": condition})
+            )),
             "credential condition {c} must be admitted"
         );
     }
