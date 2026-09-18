@@ -8,9 +8,9 @@
 //! drops or respells a term breaks here loudly instead of drifting silently.
 
 use actuation_adapters::{
-    validate_speech_constitution, SpeechSupport, INTERACTIONS, MIRRORED_MODALITY_VOCABULARY,
-    MIRRORED_SUPPORT_STATES, MODALITIES, RECONNECTS, SPEECH_CONSTITUTION_VERSION, TRANSFORMS,
-    TRANSPORTS,
+    validate_speech_constitution, SpeechSupport, AVAILABILITY_CONDITIONS, CREDENTIAL_CONDITIONS,
+    INTERACTIONS, MIRRORED_MODALITY_VOCABULARY, MIRRORED_SUPPORT_STATES, MODALITIES, RECONNECTS,
+    SPEECH_CONSTITUTION_VERSION, TRANSFORMS, TRANSPORTS,
 };
 use serde_json::{json, Value};
 
@@ -56,6 +56,8 @@ fn the_frozen_vocabulary_is_exactly_the_union_of_the_admission_grammars() {
     grammar.extend_from_slice(INTERACTIONS);
     grammar.extend_from_slice(TRANSPORTS);
     grammar.extend_from_slice(RECONNECTS);
+    grammar.extend_from_slice(AVAILABILITY_CONDITIONS);
+    grammar.extend_from_slice(CREDENTIAL_CONDITIONS);
     grammar.extend_from_slice(&[
         // The connection semantics kinds are carried by the same fixture.
         "stateless",
@@ -140,6 +142,39 @@ fn admission_accepts_every_mirrored_term_in_its_own_category() {
     assert!(admit(base_constitution(json!({
         "connection": {"kind": "connected", "reconnect": "resumable"},
     }))));
+    // Availability conditions: each recorded state is admissible with its
+    // named reason ("available" is the absence of a condition, so it is not
+    // a recorded fact and is not part of the grammar).
+    for &a in AVAILABILITY_CONDITIONS {
+        assert!(
+            admit(base_constitution(json!({
+                "conditions": [{"condition": a, "reason": "the contract requires a named reason"}],
+            }))),
+            "availability condition {a} must be admitted"
+        );
+    }
+    // Credential conditions: each state with exactly its own fields.
+    for (c, extra) in [
+        ("not-required", json!({})),
+        ("required", json!({"hint": "bind ZAI_API_KEY"})),
+        (
+            "satisfied",
+            json!({"hint": "bind ZAI_API_KEY", "binding_ref": "secret-ref:zai"}),
+        ),
+    ] {
+        assert!(
+            CREDENTIAL_CONDITIONS.contains(&c),
+            "credential condition {c} is missing from the grammar"
+        );
+        let mut condition = json!({"condition": c});
+        for (k, v) in extra.as_object().expect("object extra") {
+            condition[k.clone()] = v.clone();
+        }
+        assert!(
+            admit(base_constitution(json!({"credential_condition": condition}))),
+            "credential condition {c} must be admitted"
+        );
+    }
 }
 
 #[test]
@@ -153,6 +188,12 @@ fn admission_refuses_an_invented_term_in_every_category() {
         json!({"transport": "carrier-pigeon"}),
         json!({"connection": {"kind": "smoky", "reconnect": null}}),
         json!({"connection": {"kind": "connected", "reconnect": "auto-magic"}}),
+        json!({"conditions": [{"condition": "gone", "reason": "invented"}]}),
+        json!({"credential_condition": {"condition": "smoky"}}),
+        // A half-stated credential fact is refused, not guessed at.
+        json!({"credential_condition": {"condition": "required"}}),
+        json!({"credential_condition": {"condition": "satisfied", "hint": "h"}}),
+        json!({"credential_condition": {"condition": "not-required", "hint": "h"}}),
     ];
     for case in invented {
         let constitution = base_constitution(case.clone());

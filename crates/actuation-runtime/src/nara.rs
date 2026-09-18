@@ -16,6 +16,13 @@
 //! - **One Nara across bodies.** Realtime, cascade, reconnect or text-only —
 //!   the AgentRef/AgencyRef stay the same; the body change is a #94
 //!   constitution change, visible in receipts.
+//! - **Absence of a speech body is a named gap, not a complete text agent.**
+//!   The binding's read model carries the session's `speech_body`
+//!   disclosure: a Nara without a usable speech body reads `absent` with
+//!   the gap named (`none-supplied`, `credential-gated`, `degraded`,
+//!   `unavailable`), and `last_change` makes a body swap — "a body may be
+//!   constituted or changed later, Nara stays Nara" — legible from the wire
+//!   document alone.
 //! - **Interruption is not destruction.** A spoken response can be
 //!   cancelled where the body supports it; the receipt attributes what was
 //!   cancelled and what executed; unsupported cancellation degrades
@@ -399,7 +406,12 @@ impl NaraBinding {
 
     /// The wire read a desktop client consumes: one Nara, its current body,
     /// turn phase, expressive-act correlation, governance decisions and
-    /// delegation receipts.
+    /// delegation receipts. The `speech` block is the session read model:
+    /// it carries `speech_body` — the named availability of the speech body
+    /// (present, or absent with the gap named) — and `last_change` when a
+    /// body was swapped, so "text-capable now, speech body absent: <reason>,
+    /// a body may be constituted or swapped later, Nara stayed Nara" reads
+    /// from this document alone.
     pub fn read(&self) -> Value {
         json!({
             "schema": NARA_BINDING_VERSION,

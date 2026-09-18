@@ -15,7 +15,12 @@
 //!   constitution survive it;
 //! - a body swap records a [`SpeechConstitutionChange`] and keeps the same
 //!   Agent/Agency identity; a body that failed can fall back to a text-only
-//!   constitution and the session stays usable.
+//!   constitution and the session stays usable;
+//! - the read model discloses availability by name: `speech_body` carries
+//!   present/absent with the gap named (`none-supplied`, `credential-gated`,
+//!   `degraded`, `unavailable`), and `last_change` carries the most recent
+//!   body swap with its delta — absence is a named gap and replacement
+//!   stays legible on the wire alone.
 //!
 //! No audio packets, sample counts or transport frames appear anywhere in
 //! these records: usage evidence rides refs to the usage observations, not
@@ -59,6 +64,10 @@ pub struct SpeechSession {
     /// Results that were actually executed before any interruption; they
     /// stand regardless of what is cancelled later.
     executed: Vec<ExternalRef>,
+    /// The most recent body change on this session, when one has occurred.
+    /// Kept so the read model can disclose the swap path: "we swapped the
+    /// body and the identity persisted" is readable from the wire alone.
+    last_change: Option<SpeechConstitutionChange>,
 }
 
 impl SpeechSession {
@@ -75,10 +84,15 @@ impl SpeechSession {
             phase: SpeechTurnPhase::Idle,
             in_flight: None,
             executed: Vec::new(),
+            last_change: None,
         })
     }
     pub fn constitution(&self) -> &SpeechConstitution {
         &self.constitution
+    }
+    /// The most recent body change, when one has occurred.
+    pub fn last_change(&self) -> Option<&SpeechConstitutionChange> {
+        self.last_change.as_ref()
     }
     pub fn phase(&self) -> SpeechTurnPhase {
         self.phase
@@ -250,6 +264,8 @@ impl SpeechSession {
 
     /// Replace the body. The change receipt enforces identity preservation;
     /// the session continues with the new constitution and a cleared turn.
+    /// The receipt is kept and disclosed by [`SpeechSession::read`] as
+    /// `last_change`, so a body swap stays legible on the wire afterwards.
     pub fn replace_body(
         &mut self,
         change_ref: impl AsRef<str>,
@@ -269,11 +285,17 @@ impl SpeechSession {
         self.constitution = next;
         self.phase = SpeechTurnPhase::Idle;
         self.in_flight = None;
+        self.last_change = Some(change.clone());
         Ok(change)
     }
 
-    /// The wire state a desktop client reads: current body, phase, and the
-    /// four-state capabilities that matter to a speech UI.
+    /// The wire state a desktop client reads: current body, phase, the
+    /// four-state capabilities that matter to a speech UI, the **named
+    /// availability of the speech body** (`speech_body`), and the most
+    /// recent body change (`last_change`) with its identity-preserving
+    /// delta. A session without a usable speech body reads
+    /// `speech_body.state = "absent"` with the gap named — never as a
+    /// silently complete text agent.
     pub fn read(&self) -> Value {
         json!({
             "schema": SPEECH_SESSION_READ_VERSION,
@@ -284,6 +306,7 @@ impl SpeechSession {
             "body_ref": self.constitution.as_value()["body_ref"],
             "speech_capable": self.constitution.speech_capable(),
             "realtime_capable": self.constitution.realtime_capable(),
+            "speech_body": self.constitution.speech_body(),
             "phase": self.phase,
             "in_flight_response_ref": self.in_flight,
             "executed_refs": self.executed.iter().map(|r| r.as_str()).collect::<Vec<_>>(),
@@ -293,8 +316,27 @@ impl SpeechSession {
             "barge_in": self.constitution.interaction_support("barge-in").as_value(),
             "final_transcripts": self.constitution.interaction_support("final-transcripts").as_value(),
             "reconnect": self.constitution.reconnect_support(),
+            "last_change": self.last_change.as_ref().map(change_summary),
         })
     }
+}
+
+/// The swap-path disclosure: the change's ref, the identity it preserved,
+/// and the delta summary — enough for "we swapped to a better model and the
+/// same Nara stood on both sides" to be read from the wire document alone.
+fn change_summary(change: &SpeechConstitutionChange) -> Value {
+    let v = change.as_value();
+    json!({
+        "change_ref": v["change_ref"],
+        "agent_ref": v["agent_ref"],
+        "agency_ref": v["agency_ref"],
+        "agent_session_before": v["agent_session_before"],
+        "agent_session_after": v["agent_session_after"],
+        "delta": v["delta"],
+        "reason": v["reason"],
+        "evidence_refs": v["evidence_refs"],
+        "changed_at": v["changed_at"],
+    })
 }
 
 fn require_phase(actual: SpeechTurnPhase, allowed: &[SpeechTurnPhase], what: &str) -> Result<()> {

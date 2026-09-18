@@ -28,8 +28,21 @@
 //!    dropped or flattened; a session's behaviour must match the recorded
 //!    truth.
 //!
-//! Credential facts are ref/presence only; secret-shaped keys are refused at
+//! Credential facts are ref/presence only ([`CREDENTIAL_CONDITIONS`], the
+//! AIKit `CredentialCondition` vocabulary); secret-shaped keys are refused at
 //! admission like every other public wire record.
+//!
+//! **Availability is a named state, not an implication.** A session whose
+//! body cannot hear and speak must read as a named gap — `none-supplied`
+//! (no acoustic modality was declared), `credential-gated` (the body needs a
+//! credential that is not bound), `degraded` (a recorded availability
+//! condition reduces it), `unavailable` (a recorded condition forbids it) —
+//! never as a silently complete text agent. [`SpeechConstitution::speech_body`]
+//! derives that disclosure from the carried facts alone; capability
+//! ([`SpeechConstitution::speech_capable`]) and availability stay two
+//! different facts and both remain on the wire. The swap path is part of the
+//! same disclosure: a body can be constituted or changed later without
+//! touching the Agent/Agency identity, and the change receipts prove it.
 //!
 //! Modalities, transforms, interaction capabilities, transports and
 //! reconnect support use the same kebab vocabulary as `aikit.model-modality/
@@ -107,11 +120,25 @@ pub const RECONNECTS: &[&str] = &[
 /// Connection semantics kinds, in the same vocabulary.
 pub const CONNECTION_KINDS: &[&str] = &["stateless", "connected"];
 
+/// Availability conditions a body can record, in the AIKit
+/// `SurfaceAvailability` vocabulary (`aikit-core/src/model_modality.rs`).
+/// `available` is the absence of a condition, so it is not admitted here:
+/// only the two states that are facts get recorded.
+pub const AVAILABILITY_CONDITIONS: &[&str] = &["degraded", "unavailable"];
+
+/// Credential conditions a body can declare, in the AIKit
+/// `CredentialCondition` vocabulary (`aikit-core/src/model_route.rs`).
+/// `required` is the pre-key fact — the body exists and no credential is
+/// bound for it — which is exactly the state that must be visible before any
+/// provider key exists. Refs and hints only; never secret material.
+pub const CREDENTIAL_CONDITIONS: &[&str] = &["not-required", "required", "satisfied"];
+
 /// The frozen list of every kebab term Actuation mirrors from AIKit's
-/// `aikit.model-modality/v1` contract. Upstream source: ai-kit
+/// `aikit.model-modality/v1` contract family. Upstream sources: ai-kit
 /// `crates/aikit-core/src/model_modality.rs` (`ModelModality`,
 /// `TransformCapability`, `InteractionCapability`, `TransportKind`,
-/// `ReconnectSupport`, `ConnectionSemantics`).
+/// `ReconnectSupport`, `ConnectionSemantics`, `SurfaceAvailability`) and
+/// `crates/aikit-core/src/model_route.rs` (`CredentialCondition`).
 ///
 /// This is a tested fixture, not decoration: `speech_vocabulary` conformance
 /// asserts that the admission grammar above accepts exactly this list — no
@@ -123,6 +150,10 @@ pub const MIRRORED_MODALITY_VOCABULARY: &[&str] = &[
     // ConnectionSemantics kinds.
     "connected",
     "stateless",
+    // CredentialCondition.
+    "not-required",
+    "required",
+    "satisfied",
     // InteractionCapability.
     "barge-in",
     "final-transcripts",
@@ -144,6 +175,10 @@ pub const MIRRORED_MODALITY_VOCABULARY: &[&str] = &[
     "reconnect-without-session",
     "resumable",
     "unsupported",
+    // SurfaceAvailability (the two recorded states; "available" is the
+    // absence of a condition and is not a recorded fact).
+    "degraded",
+    "unavailable",
     // TransformCapability.
     "audio-understanding",
     "multimodal-text-audio",
@@ -391,15 +426,61 @@ pub fn validate_speech_constitution(v: &Value) -> Result<()> {
             .ok_or_else(|| Error::new("conditions must be an array of named facts"))?;
         for c in conditions {
             require(c.is_object(), "each condition must be an object")?;
-            one(&c["condition"], &["degraded", "unavailable"])?;
+            one(&c["condition"], AVAILABILITY_CONDITIONS)?;
             field_text(&c["reason"], "condition reason")?;
         }
     }
+    validate_credential_condition(&v["credential_condition"])?;
     optional_texts(&v["usage_evidence_refs"])?;
     require(v["provenance"].is_object(), "provenance is required")?;
     optional_texts(&v["provenance"]["source_refs"])?;
     date(&v["resolved_at"])?;
     no_secret_material_keys(v)
+}
+
+/// Admit the optional `credential_condition` fact: the AIKit
+/// `CredentialCondition` shape, refs and hints only. Each state carries
+/// exactly its own fields — `required` names the missing credential in its
+/// hint, `satisfied` names the hint and the binding ref, `not-required`
+/// carries neither — so a half-stated credential fact is refused rather
+/// than guessed at.
+fn validate_credential_condition(v: &Value) -> Result<()> {
+    if v.is_null() {
+        return Ok(());
+    }
+    require(
+        v.is_object(),
+        "credential_condition must be an object when carried",
+    )?;
+    match v["condition"].as_str() {
+        Some("not-required") => {
+            require(
+                v["hint"].is_null(),
+                "a credential-free body cannot carry a credential hint",
+            )?;
+            require(
+                v["binding_ref"].is_null(),
+                "a credential-free body cannot carry a binding ref",
+            )?;
+        }
+        Some("required") => {
+            field_text(&v["hint"], "credential hint")?;
+            require(
+                v["binding_ref"].is_null(),
+                "an unbound credential cannot carry a binding ref",
+            )?;
+        }
+        Some("satisfied") => {
+            field_text(&v["hint"], "credential hint")?;
+            field_text(&v["binding_ref"], "credential binding_ref")?;
+        }
+        _ => {
+            return Err(Error::new(
+                "credential condition must be not-required, required or satisfied",
+            ))
+        }
+    }
+    Ok(())
 }
 
 /// A constitution carries refs, phases and scalar provider facts — never
@@ -587,6 +668,91 @@ impl SpeechConstitution {
     /// recorded reduction.
     pub fn body_usable(&self) -> bool {
         !self.has_unavailable_condition()
+    }
+    /// The declared credential condition, when the body carries one.
+    pub fn credential_condition(&self) -> Option<&str> {
+        self.0["credential_condition"]["condition"].as_str()
+    }
+    /// The hint a `required` or `satisfied` credential condition names.
+    pub fn credential_hint(&self) -> Option<&str> {
+        self.0["credential_condition"]["hint"].as_str()
+    }
+    /// Whether the constituted body can read and write text.
+    pub fn text_capable(&self) -> bool {
+        let text_in = self.modalities("input_modalities").iter().any(|m| m == "text");
+        let text_out = self
+            .modalities("output_modalities")
+            .iter()
+            .any(|m| m == "text");
+        text_in && text_out
+    }
+
+    /// The named availability of the speech body, derived from the carried
+    /// facts alone.
+    ///
+    /// This is the disclosure law a downstream UI renders: a session whose
+    /// body cannot hear and speak reads as **absent with a named gap** —
+    /// never as a silently complete text agent — and the gap names itself:
+    ///
+    /// - `unavailable` — a recorded condition forbids the body outright
+    ///   (cannot appear on a live session: constituting one is refused);
+    /// - `none-supplied` — no acoustic modality was declared: no speech body
+    ///   exists;
+    /// - `credential-gated` — a speech body is declared but its credential
+    ///   is required and unbound: the visible pre-key state;
+    /// - `degraded` — a recorded availability condition reduces the body.
+    ///
+    /// A body that carries none of these reads `present`. Capability and
+    /// availability stay two different facts: `speech_capable`,
+    /// `realtime_capable` and `text_capable` ride beside this disclosure, and
+    /// the conditions and credential facts stay unflattened. The swap path is
+    /// disclosed by the session read model's `last_change`: a body can be
+    /// constituted or changed later without touching the Agent/Agency
+    /// identity.
+    pub fn speech_body(&self) -> Value {
+        let acoustic = |key: &str| {
+            self.modalities(key)
+                .iter()
+                .any(|m| m == "audio" || m == "speech")
+        };
+        let conditions = self.0["conditions"].as_array().cloned().unwrap_or_default();
+        let condition_reason = |kind: &str| {
+            conditions
+                .iter()
+                .find(|c| c["condition"] == kind)
+                .and_then(|c| c["reason"].as_str())
+                .map(str::to_owned)
+        };
+        let gap = if let Some(detail) = condition_reason("unavailable") {
+            Some(("unavailable", Some(detail)))
+        } else if !acoustic("input_modalities") || !acoustic("output_modalities") {
+            Some(("none-supplied", None))
+        } else if self.credential_condition() == Some("required") {
+            Some((
+                "credential-gated",
+                self.credential_hint().map(str::to_owned),
+            ))
+        } else {
+            condition_reason("degraded").map(|detail| ("degraded", Some(detail)))
+        };
+        let state = if gap.is_some() { "absent" } else { "present" };
+        let mut body = json!({
+            "state": state,
+            "body_ref": self.as_value()["body_ref"],
+            "body_revision": self.as_value()["body_revision"],
+            "input_modalities": self.as_value()["input_modalities"],
+            "output_modalities": self.as_value()["output_modalities"],
+            "text_capable": self.text_capable(),
+            "speech_capable": self.speech_capable(),
+            "realtime_capable": self.realtime_capable(),
+            "conditions": conditions,
+            "credential_condition": self.as_value()["credential_condition"],
+        });
+        if let Some((reason, detail)) = gap {
+            body["reason"] = json!(reason);
+            body["detail"] = detail.map(Value::String).unwrap_or(Value::Null);
+        }
+        body
     }
     pub fn resolved_at(&self) -> &str {
         self.str_field("resolved_at")

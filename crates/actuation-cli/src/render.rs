@@ -594,15 +594,31 @@ pub fn speech_interrupt(value: &Value) -> String {
 }
 
 pub fn speech_session(value: &Value) -> String {
+    let body = &value["speech_body"];
+    let speech_body = if body["state"] == "absent" {
+        let detail = body["detail"]
+            .as_str()
+            .map(|d| format!(" — {d}"))
+            .unwrap_or_default();
+        format!("absent ({}){}", text(&body["reason"]), detail)
+    } else {
+        "present".into()
+    };
+    let last_change = value["last_change"]["change_ref"]
+        .as_str()
+        .map(|r| format!("\nLast body change: {r}"))
+        .unwrap_or_default();
     format!(
-        "Speech session {}\nBody: {}\nPhase: {}\nInterruption: {}\nFull-duplex realtime: {}\nBarge-in: {}\nReconnect: {}",
+        "Speech session {}\nBody: {}\nSpeech body: {}\nPhase: {}\nInterruption: {}\nFull-duplex realtime: {}\nBarge-in: {}\nReconnect: {}{}",
         text(&value["agent_session_ref"]),
         text(&value["body_ref"]),
+        speech_body,
         text(&value["phase"]),
         text(&value["interruption"]["state"]),
         text(&value["full_duplex_realtime"]["state"]),
         text(&value["barge_in"]["state"]),
         text(&value["reconnect"]),
+        last_change,
     )
 }
 
