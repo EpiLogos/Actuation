@@ -189,12 +189,12 @@ pub async fn run_toolset(
         json!({"frame": ctx.request.wire()["input"], "active_position": 0}),
     );
     let settle = |residues: &mut Vec<Value>,
-                      transitions: &mut Vec<Value>,
-                      active: &mut u8,
-                      position: u8,
-                      kind: &str,
-                      value: Value,
-                      by: &str| {
+                  transitions: &mut Vec<Value>,
+                  active: &mut u8,
+                  position: u8,
+                  kind: &str,
+                  value: Value,
+                  by: &str| {
         residues.push(json!({
             "id": format!("{circuit_id}:res:{}", residues.len()),
             "position": position, "kind": kind, "value": value, "invalidated": false}));
@@ -312,17 +312,34 @@ pub async fn run_toolset(
                 let mut refusal: Option<String> = None;
                 match ctx.close_check {
                     CloseCheck::Jev => {
-                        status = "failed";
-                        error = Some(
-                            "close check 'jev' is a named seam; the jev+vak thread owns its wiring"
-                                .into(),
+                        // The jev+vak pairing: jev-latest judges the synthesis
+                        // against the success conditions through the
+                        // TypeSafe System One instrument named by QL_JEV_BIN.
+                        // Fail-closed: an unavailable or undecided instrument
+                        // refuses the closure and the refusal rides the record.
+                        let check = run_jev_close_check(
+                            &synthesis,
+                            ctx.request.wire()["successConditions"].clone(),
                         );
-                        record(
-                            "run_failed",
-                            json!({"error": error.clone().unwrap_or_default()}),
-                        );
-                        ended = true;
-                        break;
+                        model_calls += 0; // instrument call, not a model-body call
+                        let evaluated = match check {
+                            Ok(v) => v,
+                            Err(e) => {
+                                checks = false;
+                                refusal = Some(format!("jev close-check unavailable: {e}"));
+                                json!({"verdict": "reopen", "rationale": e.to_string()})
+                            }
+                        };
+                        if evaluated["verdict"] == json!("reopen") {
+                            checks = false;
+                            refusal = Some(format!(
+                                "jev close-check refused the synthesis: {}",
+                                evaluated["rationale"].as_str().unwrap_or_default()
+                            ));
+                            record("closure_refused", json!({"evaluation": evaluated}));
+                        } else {
+                            record("closure_evaluated", json!({"evaluation": evaluated}));
+                        }
                     }
                     CloseCheck::Model => {
                         let check = dispatch_host_carrier(
@@ -381,9 +398,9 @@ pub async fn run_toolset(
                     record("run_completed", json!({"outcome": outcome}));
                 } else {
                     status = "failed";
-                    error = Some(
-                        "the return condition ran but the workspace checks do not pass".into(),
-                    );
+                    error = Some(refusal.clone().unwrap_or_else(|| {
+                        "the return condition ran but the workspace checks do not pass".into()
+                    }));
                     record("closure_refused", json!({"verification": verification}));
                     record("run_failed", json!({"reason": "closure-refused"}));
                 }
@@ -497,6 +514,45 @@ pub async fn run_toolset(
         report,
         evidence_refs: evidence,
     }
+}
+
+/// Run the jev close-check instrument (QL_JEV_BIN) against one proposed
+/// closure. The instrument is a process, like the owner instrument: request
+/// JSON in a scratch file, one JSON verdict on stdout, fail-closed.
+fn run_jev_close_check(synthesis: &str, success_conditions: Value) -> Result<Value> {
+    let program = std::env::var("QL_JEV_BIN")
+        .ok()
+        .filter(|p| !p.is_empty())
+        .ok_or_else(|| {
+            Error::new(
+                "QL_CLOSE_CHECK=jev requires QL_JEV_BIN (path to the close-check instrument)",
+            )
+        })?;
+    let scratch = tempfile::tempdir()
+        .map_err(|e| Error::new(format!("jev close-check scratch unavailable: {e}")))?;
+    let request_path = scratch.path().join("request.json");
+    std::fs::write(
+        &request_path,
+        serde_json::to_vec(
+            &json!({"success_conditions": success_conditions, "synthesis": synthesis}),
+        )
+        .map_err(|e| Error::new(format!("jev close-check request not written: {e}")))?,
+    )
+    .map_err(|e| Error::new(format!("jev close-check request not written: {}", e.kind())))?;
+    let spec = crate::process::ProcessSpec {
+        program: std::path::PathBuf::from(program),
+        args: vec![request_path.to_string_lossy().into_owned()],
+        cwd: scratch.path().to_owned(),
+        environment: Default::default(),
+        timeout_ms: 30_000,
+        output_limit: 4 * 1024 * 1024,
+    };
+    let r = spec.run(&[])?;
+    if r.code != Some(0) {
+        let why: String = r.stderr.chars().take(300).collect();
+        return Err(Error::new(format!("instrument exited {:?}: {why}", r.code)));
+    }
+    serde_json::from_str(&r.stdout).map_err(|_| Error::new("jev close-check returned invalid JSON"))
 }
 
 #[cfg(test)]
