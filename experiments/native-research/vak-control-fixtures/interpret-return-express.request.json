@@ -1,0 +1,135 @@
+{
+ "contract": "ql.vak-composition/v1",
+ "steps": [
+  {
+   "op": "whole",
+   "useRef": "circuit:trace:t1:c0:state",
+   "subjectRef": "circuit:trace:t1:c0",
+   "wholeRef": "anchor:circuit:trace:t1:c0",
+   "category": "M",
+   "groundRef": "ground:circuit:trace:t1:c0",
+   "groundFace": "direct",
+   "frame": {
+    "id": "CF1",
+    "lens": "L0",
+    "basis": "chromatic",
+    "face": "direct",
+    "positions": "local"
+   },
+   "basis": {
+    "caller": "actuation:vak-control",
+    "source": "trace:t1:c0",
+    "revision": "trace:t1",
+    "standing": "OBSERVED",
+    "evidence": [
+     "circuit:trace:t1:c0",
+     "trace:trace:t1"
+    ]
+   },
+   "members": [
+    {
+     "subjectRef": "circuit:trace:t1:c0:p0",
+     "position": 0,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:trace:t1:c0:p1",
+     "position": 1,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:trace:t1:c0:p2",
+     "position": 2,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:trace:t1:c0:p3:vacant",
+     "position": 3,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:trace:t1:c0:p4:vacant",
+     "position": 4,
+     "face": "direct"
+    },
+    {
+     "subjectRef": "circuit:trace:t1:c0:p5:vacant",
+     "position": 5,
+     "face": "direct"
+    }
+   ],
+   "sourceReturns": [
+    {
+     "fromRef": "trace:t1:c0:act:2:return",
+     "anchorRef": "anchor:circuit:trace:t1:c0",
+     "groundRef": "ground:circuit:trace:t1:c0",
+     "face": "direct",
+     "kind": "own"
+    }
+   ]
+  },
+  {
+   "op": "interpret",
+   "from": "circuit:trace:t1:c0:state",
+   "into": "circuit:trace:t1:c0:interpret:4",
+   "language": {
+    "acceptedSyntaxRevision": "4e35f499c50b987551ab124b4432757973e823ae",
+    "nativeNodeRef": "trace:t1:c0:act:2:return",
+    "selfOther": "!?",
+    "field": "N#",
+    "interpreter": "actuation:vak-control",
+    "expectedGround": null,
+    "general": {
+     "syntaxVersion": "aikit.operative-resolve/v1",
+     "ownerRevision": "4e35f499c50b987551ab124b4432757973e823ae",
+     "resolvePathIdentity": "actuation://ql/trace:t1:c0/trace:t1:c0:act:2:return",
+     "rendered": "vak-control reading of returned difference trace:t1:c0:act:2:return",
+     "fullVakRendering": "= returned-difference of trace:t1:c0:act:2:return",
+     "evidence": [
+      "actuation:vak-control:trace:t1:c0",
+      "trace:t1:c0:act:2:return"
+     ]
+    },
+    "reading": {
+     "contract": "vak-expression-reading-v1",
+     "operator": "=",
+     "horizon": "@5",
+     "subjects": [
+      {
+       "native": "circuit:trace:t1:c0"
+      }
+     ],
+     "relationRefs": [],
+     "complementRefs": [],
+     "worldRef": null,
+     "projectRef": null,
+     "focusRef": null,
+     "expectedReturn": null,
+     "standing": "DERIVED",
+     "evidence": [
+      "actuation:vak-control:trace:t1:c0",
+      "trace:t1:c0:act:2:return",
+      "carrier:model:content-delivered"
+     ]
+    }
+   },
+   "basis": {
+    "caller": "actuation:vak-control",
+    "source": "trace:t1:c0:act:2:return",
+    "revision": "trace:t1",
+    "standing": "DERIVED",
+    "evidence": [
+     "circuit:trace:t1:c0",
+     "trace:t1:c0:act:2:return",
+     "carrier:model",
+     "operation_success:true"
+    ]
+   }
+  },
+  {
+   "op": "read",
+   "useRef": "circuit:trace:t1:c0:interpret:4",
+   "lens": "L0"
+  }
+ ]
+}

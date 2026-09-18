@@ -428,6 +428,57 @@ impl RuntimeObserver for CheckedObserver<'_> {
         result
     }
 }
+/// Which authority answers the loop's control turns. Selection is explicit:
+/// the environment at the run seam (QL_COMPRESSED_CONTROL, QL_VAK_CONTROL plus
+/// QL_VAK_BIN), never a silent default inside the loop. Model control remains
+/// the unchanged baseline.
+pub enum ControlArm {
+    /// Free English model control — the original lane.
+    Model,
+    /// Hand-ruled compression of interpret-return.
+    Compressed,
+    /// Kernel-native vak composition control over the QL-MEF `ql vak compose`
+    /// instrument named by QL_VAK_BIN.
+    Vak(crate::vak_control::VakControl),
+}
+impl ControlArm {
+    pub fn from_env() -> Result<Self> {
+        let compressed = std::env::var("QL_COMPRESSED_CONTROL").as_deref() == Ok("1");
+        let vak = std::env::var("QL_VAK_CONTROL").as_deref() == Ok("1");
+        if compressed && vak {
+            return Err(Error::new(
+                "QL_COMPRESSED_CONTROL and QL_VAK_CONTROL select different control arms; enable exactly one",
+            ));
+        }
+        if !vak {
+            return Ok(if compressed {
+                Self::Compressed
+            } else {
+                Self::Model
+            });
+        }
+        let program = std::env::var("QL_VAK_BIN")
+            .ok()
+            .map(std::path::PathBuf::from)
+            .filter(|p| !p.as_os_str().is_empty())
+            .ok_or_else(|| {
+                Error::new(
+                    "QL_VAK_CONTROL=1 requires an explicit QL_VAK_BIN path to the ql binary",
+                )
+            })?;
+        Ok(Self::Vak(crate::vak_control::VakControl::bind(program)?))
+    }
+    /// Run-record disclosure of the armed control lane. Absent for the
+    /// unchanged model lane so ordinary runs keep their record shape.
+    fn disclosure(&self) -> Option<Value> {
+        match self {
+            Self::Model => None,
+            Self::Compressed => Some(json!({"compressed_control":true,"vak_control":null})),
+            Self::Vak(v) => Some(json!({"compressed_control":false,"vak_control":v.basis()})),
+        }
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn run_task<B: ModelBody>(
     task: &tasks::Task,
@@ -439,6 +490,31 @@ pub fn run_task<B: ModelBody>(
     observer: &mut dyn RuntimeObserver,
     cancellation: &CancellationToken,
 ) -> Result<Value> {
+    run_task_with_control(
+        task,
+        trace,
+        mode,
+        limits,
+        owner,
+        host,
+        observer,
+        cancellation,
+        ControlArm::from_env()?,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn run_task_with_control<B: ModelBody>(
+    task: &tasks::Task,
+    trace: ExternalRef,
+    mode: RunMode,
+    limits: crate::relational::Limits,
+    owner: Option<&dyn crate::relational::FormalOwner>,
+    host: &mut ResearchHost<B>,
+    observer: &mut dyn RuntimeObserver,
+    cancellation: &CancellationToken,
+    arm: ControlArm,
+) -> Result<Value> {
     use crate::relational::{Engine, Mode, TaskInspector};
     limits.validate()?;
     if mode != RunMode::Classic && owner.is_none() {
@@ -446,6 +522,7 @@ pub fn run_task<B: ModelBody>(
             "relational execution requires an explicitly bound QL owner",
         ));
     }
+    let disclosure = arm.disclosure();
     let candidate = task.candidate();
     let request = LoopRequest::from_legacy(
         json!({"id":task.id(),"taskId":task.id(),"runId":trace,"input":candidate["prompt"],
@@ -478,8 +555,10 @@ pub fn run_task<B: ModelBody>(
             native_mode,
             crate::policy::schedule_for_category(task.category()),
         );
-        if std::env::var("QL_COMPRESSED_CONTROL").as_deref() == Ok("1") {
-            policy = policy.with_compressed_control();
+        match arm {
+            ControlArm::Model => {}
+            ControlArm::Compressed => policy = policy.with_compressed_control(),
+            ControlArm::Vak(vak) => policy = policy.with_vak_control(vak),
         }
         let mut inspector = TaskInspector {
             task: task.clone(),
@@ -551,7 +630,7 @@ pub fn run_task<B: ModelBody>(
     } else {
         execution["report"]["status"].clone()
     };
-    let record = json!({"schema":"actuation.research-run/v1","runtime":mode.name(),"status":status,
+    let mut record = json!({"schema":"actuation.research-run/v1","runtime":mode.name(),"status":status,
         "task":candidate,"task_revision":task.revision(),"trace_ref":trace,"model_body":host.body.basis(),
         "workspace":{"before":before,"after":after},"execution":execution,"body_evidence":body_evidence,
         "observations":host.observations,"verification":verification,"model_calls":host.model_calls,
@@ -559,6 +638,9 @@ pub fn run_task<B: ModelBody>(
         "budget":{"limits":limits,"max_calls":host.max_calls},
         "evidence_standing":"D-unless-separately-exercised-and-attested","provider_evidence":"not-assessed",
         "human_acceptance":false,"factory_ancestry":"not-supplied"});
+    if let (Some(m), Some(d)) = (record.as_object_mut(), disclosure) {
+        m.insert("control".into(), d);
+    }
     Ok(sanitize(&record, &secrets))
 }
 /// Backwards-compatible library entry, using the same lifecycle as Direct/Deep.
