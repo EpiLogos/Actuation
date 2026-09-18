@@ -214,7 +214,8 @@ fn the_lane_receipts_persist_and_replay_byte_faithfully_through_a_fresh_store() 
         .unwrap();
     let generic_interrupted = session.interrupt("interruption:2", "stop", "2026-09-18T09:06:00Z");
 
-    let lanes: [(&str, SpeechLaneReceipt, &dyn Fn(&Value) -> bool); 7] = [
+    type Lane<'a> = (&'a str, SpeechLaneReceipt<'a>, &'a dyn Fn(&Value) -> bool);
+    let lanes: [Lane<'_>; 7] = [
         (
             "actuation:event:constitution",
             SpeechLaneReceipt::Constitution(&realtime),
