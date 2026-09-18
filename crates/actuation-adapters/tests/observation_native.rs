@@ -11,11 +11,23 @@ use std::{
 #[test]
 fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     let original = NativeCatalog::bundled().unwrap();
-    assert_eq!(original.revision(), 10);
-    assert_eq!(original.descriptors().len(), 13);
+    assert_eq!(original.revision(), 11);
+    assert_eq!(original.descriptors().len(), 18);
     assert_eq!(original.capabilities().len(), 4);
-    assert_eq!(original.capability_gaps().len(), 9);
-    for slug in ["claude-code", "codex", "pi", "ollama", "zcode", "opencode"] {
+    assert_eq!(original.capability_gaps().len(), 14);
+    for slug in [
+        "claude-code",
+        "codex",
+        "pi",
+        "ollama",
+        "zcode",
+        "opencode",
+        "aider",
+        "cursor-cli",
+        "deepseek-harness",
+        "goose",
+        "qwen-code",
+    ] {
         assert!(original.descriptor(slug).is_some());
     }
     assert!(

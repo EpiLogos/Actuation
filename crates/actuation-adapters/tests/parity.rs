@@ -144,5 +144,3 @@ fn r5_explicit_corrections_hold_natively_after_the_cutover() {
     );
     assert!(detection["harnesses"][0]["receipts"].is_null());
 }
-
-

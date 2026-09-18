@@ -8,7 +8,7 @@
       "kind": "catalog",
       "input": {},
       "expected": {
-        "revision": 10,
+        "revision": 11,
         "harnesses": [
           {
             "schema": "actuation.harness-detection/v1",
@@ -579,6 +579,232 @@
                 "aikit:clients/opencode.rs (ai-kit#186 round-2 migration)"
               ],
               "catalog_revision": 10
+            }
+          },
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "aider",
+            "native_kind": "harness",
+            "edition": "cli",
+            "native_owner": "Aider-AI",
+            "summary": "Aider terminal AI pair-programming CLI; process-per-invocation, reads user-level ~/.aider.conf.yml at startup",
+            "probe": {
+              "executable": {
+                "names": [
+                  "aider"
+                ],
+                "version_args": [
+                  "--version"
+                ]
+              }
+            },
+            "facets": {
+              "config": {
+                "path": "~/.aider.conf.yml"
+              }
+            },
+            "provenance": {
+              "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+              "source_refs": [
+                "aikit:clients/aider.rs (ai-kit#186 round-2 migration)",
+                "doc:aider.chat/docs/config/aider_conf.html (user-level ~/.aider.conf.yml read at startup)",
+                "survey:which-aider-2026-09-18 (not installed on this machine; probes report that honestly)"
+              ],
+              "catalog_revision": 11
+            }
+          },
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "cursor-cli",
+            "native_kind": "harness",
+            "edition": "cli",
+            "native_owner": "Anysphere",
+            "summary": "Cursor CLI agent harness; user surface under ~/.cursor, binary ships as cursor-agent",
+            "aliases": [
+              "cursor-agent"
+            ],
+            "probe": {
+              "executable": {
+                "names": [
+                  "cursor-agent"
+                ],
+                "version_args": [
+                  "--version"
+                ]
+              },
+              "config-dir": {
+                "path": "~/.cursor"
+              }
+            },
+            "facets": {
+              "skills": {
+                "path": "~/.cursor/skills"
+              },
+              "hooks": {
+                "path": "~/.cursor/hooks.json"
+              },
+              "mcp-config": {
+                "path": "~/.cursor/mcp.json",
+                "inventory": {
+                  "kind": "mcp-servers",
+                  "source": "file",
+                  "collection": "mcpServers"
+                }
+              },
+              "config": {
+                "path": "~/.cursor/cli-config.json"
+              }
+            },
+            "provenance": {
+              "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+              "source_refs": [
+                "aikit:clients/cursor.rs (ai-kit#186 round-2 migration)",
+                "doc:cursor.com/docs/cli/overview (rules, skills, hooks.json, mcp.json, cli-config.json)",
+                "native:cursor-agent --version = 2026.09.15-d2fe57e (observed on this machine 2026-09-18)",
+                "survey:~/.cursor 2026-09-18 (cli-config.json present; skills/hooks/mcp.json documented but absent here)"
+              ],
+              "catalog_revision": 11
+            }
+          },
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "deepseek-harness",
+            "native_kind": "harness",
+            "edition": "cli",
+            "native_owner": "DeepSeek AI",
+            "summary": "DeepSeek Harness (DSH) agent harness; Cordis plugin runtime, harness home $DSH_HOME or ~/.dsh",
+            "aliases": [
+              "dsh"
+            ],
+            "probe": {
+              "executable": {
+                "names": [
+                  "dsh"
+                ],
+                "version_args": [
+                  "--version"
+                ]
+              },
+              "config-dir": {
+                "path": "~/.dsh"
+              },
+              "env": {
+                "any_of": [
+                  "DSH_HOME"
+                ]
+              }
+            },
+            "facets": {
+              "rules": {
+                "path": "~/.dsh/AGENTS.md"
+              }
+            },
+            "provenance": {
+              "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+              "source_refs": [
+                "aikit:clients/dsh.rs (ai-kit#186 round-2 migration; composition-managed census)",
+                "doc:github.com/deepseek-ai/deepseek-harness README (dsh CLI; npx @deepseek-ai/dsh; MIT developer preview)",
+                "doc:deepseek-harness docs/config-catalog.md (harness home $DSH_HOME or ~/.dsh; fixed user-global AGENTS.md)",
+                "survey:which-dsh-2026-09-18 (not installed on this machine; probes report that honestly)"
+              ],
+              "catalog_revision": 11
+            }
+          },
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "goose",
+            "native_kind": "harness",
+            "edition": "cli",
+            "native_owner": "Goose",
+            "summary": "Goose general-purpose agent harness (CLI/desktop/API); user config ~/.config/goose, project hints via .goosehints",
+            "probe": {
+              "executable": {
+                "names": [
+                  "goose"
+                ],
+                "version_args": [
+                  "--version"
+                ]
+              },
+              "config-dir": {
+                "path": "~/.config/goose"
+              }
+            },
+            "facets": {
+              "config": {
+                "path": "~/.config/goose/config.yaml"
+              },
+              "skills": {
+                "path": "~/.agents/skills"
+              }
+            },
+            "provenance": {
+              "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+              "source_refs": [
+                "aikit:clients/goose.rs (ai-kit#186 round-2 migration)",
+                "doc:aaif-goose/goose documentation/docs/guides/context-engineering/using-skills.md (global skills at ~/.agents/skills)",
+                "survey:which-goose-2026-09-18 (not installed on this machine; probes report that honestly)"
+              ],
+              "catalog_revision": 11
+            }
+          },
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "qwen-code",
+            "native_kind": "harness",
+            "edition": "cli",
+            "native_owner": "QwenLM",
+            "summary": "Qwen Code terminal agent harness (Gemini CLI lineage); global memory ~/.qwen/QWEN.md, user settings ~/.qwen/settings.json",
+            "aliases": [
+              "qwen"
+            ],
+            "probe": {
+              "executable": {
+                "names": [
+                  "qwen"
+                ],
+                "version_args": [
+                  "--version"
+                ]
+              },
+              "config-dir": {
+                "path": "~/.qwen"
+              }
+            },
+            "facets": {
+              "rules": {
+                "path": "~/.qwen/QWEN.md"
+              },
+              "skills": {
+                "path": "~/.qwen/skills"
+              },
+              "config": {
+                "path": "~/.qwen/settings.json"
+              },
+              "mcp-config": {
+                "path": "~/.qwen/settings.json",
+                "inventory": {
+                  "kind": "mcp-servers",
+                  "source": "file",
+                  "collection": "mcpServers"
+                }
+              }
+            },
+            "provenance": {
+              "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+              "source_refs": [
+                "aikit:clients/qwen.rs (ai-kit#186 round-2 migration)",
+                "doc:QwenLM/qwen-code docs/users/features/memory.md (global ~/.qwen/QWEN.md)",
+                "doc:QwenLM/qwen-code docs/users/features/skills.md (personal skills ~/.qwen/skills/)",
+                "doc:QwenLM/qwen-code docs/users/features/mcp.md (mcpServers in ~/.qwen/settings.json, user scope default)",
+                "survey:which-qwen-2026-09-18 (not installed on this machine; probes report that honestly)"
+              ],
+              "catalog_revision": 11
             }
           }
         ],
@@ -3140,7 +3366,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 10,
+            "catalog_revision": 11,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3219,7 +3445,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 10,
+            "catalog_revision": 11,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3318,7 +3544,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 10,
+            "catalog_revision": 11,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3435,7 +3661,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 10,
+            "catalog_revision": 11,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3540,7 +3766,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 10,
+            "catalog_revision": 11,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3605,7 +3831,7 @@
             "document": "detection",
             "detection_ref": "detection:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 10,
+            "catalog_revision": 11,
             "detector": {
               "implementation": "actuation surface-probes",
               "version": "0.1.0"
@@ -3876,6 +4102,106 @@
                     "detail": "not found"
                   }
                 ]
+              },
+              {
+                "slug": "aider",
+                "harness_ref": "harness/aider",
+                "native_kind": "harness",
+                "state": "not-installed",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "aider",
+                    "detail": "not found on PATH"
+                  }
+                ]
+              },
+              {
+                "slug": "cursor-cli",
+                "harness_ref": "harness/cursor-cli",
+                "native_kind": "harness",
+                "state": "not-installed",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "cursor-agent",
+                    "detail": "not found on PATH"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.cursor",
+                    "detail": "not found"
+                  }
+                ]
+              },
+              {
+                "slug": "deepseek-harness",
+                "harness_ref": "harness/deepseek-harness",
+                "native_kind": "harness",
+                "state": "not-installed",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "dsh",
+                    "detail": "not found on PATH"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.dsh",
+                    "detail": "not found"
+                  },
+                  {
+                    "kind": "env",
+                    "result": "pass",
+                    "spec": "DSH_HOME",
+                    "detail": "no marker set"
+                  }
+                ]
+              },
+              {
+                "slug": "goose",
+                "harness_ref": "harness/goose",
+                "native_kind": "harness",
+                "state": "not-installed",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "goose",
+                    "detail": "not found on PATH"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.config/goose",
+                    "detail": "not found"
+                  }
+                ]
+              },
+              {
+                "slug": "qwen-code",
+                "harness_ref": "harness/qwen-code",
+                "native_kind": "harness",
+                "state": "not-installed",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "qwen",
+                    "detail": "not found on PATH"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.qwen",
+                    "detail": "not found"
+                  }
+                ]
               }
             ],
             "absent": [
@@ -3891,7 +4217,12 @@
               "openclaw",
               "kimi",
               "zcode",
-              "opencode"
+              "opencode",
+              "aider",
+              "cursor-cli",
+              "deepseek-harness",
+              "goose",
+              "qwen-code"
             ],
             "availability": "complete"
           }
@@ -4168,6 +4499,102 @@
             "args": [
               "/home/oracle/.config/opencode"
             ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "aider"
+              ]
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.cursor"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "cursor-agent"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.cursor"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.dsh"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "dsh"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.dsh"
+            ]
+          },
+          {
+            "effect": "envProbe",
+            "args": [
+              [
+                "DSH_HOME"
+              ]
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.config/goose"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "goose"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.config/goose"
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.qwen"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "qwen"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.qwen"
+            ]
           }
         ]
       }
@@ -4237,7 +4664,7 @@
             "document": "self",
             "self_ref": "self:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 10,
+            "catalog_revision": 11,
             "matched": [],
             "resolved": null,
             "ambiguity": false,
@@ -4355,7 +4782,7 @@
             "document": "self",
             "self_ref": "self:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 10,
+            "catalog_revision": 11,
             "matched": [
               {
                 "slug": "fixture-0",
@@ -4489,7 +4916,7 @@
             "document": "self",
             "self_ref": "self:2026-09-10T00:00:00.000Z",
             "observed_at": "2026-09-10T00:00:00.000Z",
-            "catalog_revision": 10,
+            "catalog_revision": 11,
             "matched": [
               {
                 "slug": "fixture-0",
@@ -5917,7 +6344,7 @@
         "stdout": {
           "schema": "actuation.harness-detection/v1",
           "document": "catalog",
-          "catalog_revision": 10,
+          "catalog_revision": 11,
           "descriptors": [
             {
               "schema": "actuation.harness-detection/v1",
@@ -6489,6 +6916,232 @@
                 ],
                 "catalog_revision": 10
               }
+            },
+            {
+              "schema": "actuation.harness-detection/v1",
+              "document": "descriptor",
+              "slug": "aider",
+              "native_kind": "harness",
+              "edition": "cli",
+              "native_owner": "Aider-AI",
+              "summary": "Aider terminal AI pair-programming CLI; process-per-invocation, reads user-level ~/.aider.conf.yml at startup",
+              "probe": {
+                "executable": {
+                  "names": [
+                    "aider"
+                  ],
+                  "version_args": [
+                    "--version"
+                  ]
+                }
+              },
+              "facets": {
+                "config": {
+                  "path": "~/.aider.conf.yml"
+                }
+              },
+              "provenance": {
+                "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+                "source_refs": [
+                  "aikit:clients/aider.rs (ai-kit#186 round-2 migration)",
+                  "doc:aider.chat/docs/config/aider_conf.html (user-level ~/.aider.conf.yml read at startup)",
+                  "survey:which-aider-2026-09-18 (not installed on this machine; probes report that honestly)"
+                ],
+                "catalog_revision": 11
+              }
+            },
+            {
+              "schema": "actuation.harness-detection/v1",
+              "document": "descriptor",
+              "slug": "cursor-cli",
+              "native_kind": "harness",
+              "edition": "cli",
+              "native_owner": "Anysphere",
+              "summary": "Cursor CLI agent harness; user surface under ~/.cursor, binary ships as cursor-agent",
+              "aliases": [
+                "cursor-agent"
+              ],
+              "probe": {
+                "executable": {
+                  "names": [
+                    "cursor-agent"
+                  ],
+                  "version_args": [
+                    "--version"
+                  ]
+                },
+                "config-dir": {
+                  "path": "~/.cursor"
+                }
+              },
+              "facets": {
+                "skills": {
+                  "path": "~/.cursor/skills"
+                },
+                "hooks": {
+                  "path": "~/.cursor/hooks.json"
+                },
+                "mcp-config": {
+                  "path": "~/.cursor/mcp.json",
+                  "inventory": {
+                    "kind": "mcp-servers",
+                    "source": "file",
+                    "collection": "mcpServers"
+                  }
+                },
+                "config": {
+                  "path": "~/.cursor/cli-config.json"
+                }
+              },
+              "provenance": {
+                "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+                "source_refs": [
+                  "aikit:clients/cursor.rs (ai-kit#186 round-2 migration)",
+                  "doc:cursor.com/docs/cli/overview (rules, skills, hooks.json, mcp.json, cli-config.json)",
+                  "native:cursor-agent --version = 2026.09.15-d2fe57e (observed on this machine 2026-09-18)",
+                  "survey:~/.cursor 2026-09-18 (cli-config.json present; skills/hooks/mcp.json documented but absent here)"
+                ],
+                "catalog_revision": 11
+              }
+            },
+            {
+              "schema": "actuation.harness-detection/v1",
+              "document": "descriptor",
+              "slug": "deepseek-harness",
+              "native_kind": "harness",
+              "edition": "cli",
+              "native_owner": "DeepSeek AI",
+              "summary": "DeepSeek Harness (DSH) agent harness; Cordis plugin runtime, harness home $DSH_HOME or ~/.dsh",
+              "aliases": [
+                "dsh"
+              ],
+              "probe": {
+                "executable": {
+                  "names": [
+                    "dsh"
+                  ],
+                  "version_args": [
+                    "--version"
+                  ]
+                },
+                "config-dir": {
+                  "path": "~/.dsh"
+                },
+                "env": {
+                  "any_of": [
+                    "DSH_HOME"
+                  ]
+                }
+              },
+              "facets": {
+                "rules": {
+                  "path": "~/.dsh/AGENTS.md"
+                }
+              },
+              "provenance": {
+                "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+                "source_refs": [
+                  "aikit:clients/dsh.rs (ai-kit#186 round-2 migration; composition-managed census)",
+                  "doc:github.com/deepseek-ai/deepseek-harness README (dsh CLI; npx @deepseek-ai/dsh; MIT developer preview)",
+                  "doc:deepseek-harness docs/config-catalog.md (harness home $DSH_HOME or ~/.dsh; fixed user-global AGENTS.md)",
+                  "survey:which-dsh-2026-09-18 (not installed on this machine; probes report that honestly)"
+                ],
+                "catalog_revision": 11
+              }
+            },
+            {
+              "schema": "actuation.harness-detection/v1",
+              "document": "descriptor",
+              "slug": "goose",
+              "native_kind": "harness",
+              "edition": "cli",
+              "native_owner": "Goose",
+              "summary": "Goose general-purpose agent harness (CLI/desktop/API); user config ~/.config/goose, project hints via .goosehints",
+              "probe": {
+                "executable": {
+                  "names": [
+                    "goose"
+                  ],
+                  "version_args": [
+                    "--version"
+                  ]
+                },
+                "config-dir": {
+                  "path": "~/.config/goose"
+                }
+              },
+              "facets": {
+                "config": {
+                  "path": "~/.config/goose/config.yaml"
+                },
+                "skills": {
+                  "path": "~/.agents/skills"
+                }
+              },
+              "provenance": {
+                "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+                "source_refs": [
+                  "aikit:clients/goose.rs (ai-kit#186 round-2 migration)",
+                  "doc:aaif-goose/goose documentation/docs/guides/context-engineering/using-skills.md (global skills at ~/.agents/skills)",
+                  "survey:which-goose-2026-09-18 (not installed on this machine; probes report that honestly)"
+                ],
+                "catalog_revision": 11
+              }
+            },
+            {
+              "schema": "actuation.harness-detection/v1",
+              "document": "descriptor",
+              "slug": "qwen-code",
+              "native_kind": "harness",
+              "edition": "cli",
+              "native_owner": "QwenLM",
+              "summary": "Qwen Code terminal agent harness (Gemini CLI lineage); global memory ~/.qwen/QWEN.md, user settings ~/.qwen/settings.json",
+              "aliases": [
+                "qwen"
+              ],
+              "probe": {
+                "executable": {
+                  "names": [
+                    "qwen"
+                  ],
+                  "version_args": [
+                    "--version"
+                  ]
+                },
+                "config-dir": {
+                  "path": "~/.qwen"
+                }
+              },
+              "facets": {
+                "rules": {
+                  "path": "~/.qwen/QWEN.md"
+                },
+                "skills": {
+                  "path": "~/.qwen/skills"
+                },
+                "config": {
+                  "path": "~/.qwen/settings.json"
+                },
+                "mcp-config": {
+                  "path": "~/.qwen/settings.json",
+                  "inventory": {
+                    "kind": "mcp-servers",
+                    "source": "file",
+                    "collection": "mcpServers"
+                  }
+                }
+              },
+              "provenance": {
+                "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+                "source_refs": [
+                  "aikit:clients/qwen.rs (ai-kit#186 round-2 migration)",
+                  "doc:QwenLM/qwen-code docs/users/features/memory.md (global ~/.qwen/QWEN.md)",
+                  "doc:QwenLM/qwen-code docs/users/features/skills.md (personal skills ~/.qwen/skills/)",
+                  "doc:QwenLM/qwen-code docs/users/features/mcp.md (mcpServers in ~/.qwen/settings.json, user scope default)",
+                  "survey:which-qwen-2026-09-18 (not installed on this machine; probes report that honestly)"
+                ],
+                "catalog_revision": 11
+              }
             }
           ]
         },
@@ -6510,7 +7163,7 @@
         "stdout": {
           "schema": "actuation.harness-capability/v1",
           "document": "capability-catalog",
-          "catalog_revision": 10,
+          "catalog_revision": 11,
           "capabilities": [
             {
               "schema": "actuation.harness-capability/v1",
