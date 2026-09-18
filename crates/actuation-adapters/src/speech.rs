@@ -35,6 +35,16 @@
 //! reconnect support use the same kebab vocabulary as `aikit.model-modality/
 //! v1` (AIKit #317). Actuation consumes that resolution as data; it does not
 //! redefine the contract, and provider spellings travel only as provenance.
+//! The mirrored vocabulary is frozen in [`MIRRORED_MODALITY_VOCABULARY`] and
+//! pinned by test, so an upstream rename breaks loudly here instead of
+//! drifting silently.
+//!
+//! Ordering for upstream consumers: AIKit's raw `ModelRuntimeRelation` is not
+//! an admitted constitution shape. A consumer upstream of Actuation must
+//! reduce it to the Actuation-admitted `model_relation`/`access_profile`
+//! documents before building a constitution — and must leave the credential
+//! key the raw relation carries behind, because Actuation's secret scan
+//! refuses value-shaped material at admission.
 
 use crate::admission::{
     date, facts, one, optional_text, optional_texts, require, text, texts,
@@ -94,6 +104,65 @@ pub const RECONNECTS: &[&str] = &[
     "reconnect-without-session",
     "unsupported",
 ];
+/// Connection semantics kinds, in the same vocabulary.
+pub const CONNECTION_KINDS: &[&str] = &["stateless", "connected"];
+
+/// The frozen list of every kebab term Actuation mirrors from AIKit's
+/// `aikit.model-modality/v1` contract. Upstream source: ai-kit
+/// `crates/aikit-core/src/model_modality.rs` (`ModelModality`,
+/// `TransformCapability`, `InteractionCapability`, `TransportKind`,
+/// `ReconnectSupport`, `ConnectionSemantics`).
+///
+/// This is a tested fixture, not decoration: `speech_vocabulary` conformance
+/// asserts that the admission grammar above accepts exactly this list — no
+/// more, no less — and refuses an invented term in every category. If ai-kit
+/// renames or adds a term, update that source first, then this fixture and
+/// the grammar lists together; the test fails until all three agree, so the
+/// mirror cannot drift silently from the contract it consumes.
+pub const MIRRORED_MODALITY_VOCABULARY: &[&str] = &[
+    // ConnectionSemantics kinds.
+    "connected",
+    "stateless",
+    // InteractionCapability.
+    "barge-in",
+    "final-transcripts",
+    "full-duplex-realtime",
+    "partial-transcripts",
+    "request-response",
+    "structured-events",
+    "streaming-input",
+    "streaming-output",
+    "timestamps",
+    "tool-requests",
+    "vad-turn-detection",
+    // ModelModality.
+    "audio",
+    "speech",
+    "text",
+    // ReconnectSupport.
+    "not-applicable",
+    "reconnect-without-session",
+    "resumable",
+    "unsupported",
+    // TransformCapability.
+    "audio-understanding",
+    "multimodal-text-audio",
+    "speech-to-speech",
+    "speech-to-text",
+    "text-to-speech",
+    // TransportKind.
+    "cli",
+    "http",
+    "in-process",
+    "provider-native",
+    "sip",
+    "websocket",
+    "webrtc",
+];
+
+/// The four-state answer vocabulary mirrored from the same contract:
+/// proven, degraded, proven-absent and unproven stay four different facts.
+pub const MIRRORED_SUPPORT_STATES: &[&str] = &["degraded", "supported", "unknown", "unsupported"];
 
 /// The fully explicit answer to "can this body do X?". Mirrors the four-state
 /// answers of the AIKit modality contract: proven, degraded, proven-absent
@@ -289,13 +358,19 @@ pub fn validate_speech_constitution(v: &Value) -> Result<()> {
     support_map(&v["interaction"])?;
     one(&v["transport"], TRANSPORTS)?;
     require(v["connection"].is_object(), "connection semantics required")?;
+    require(
+        v["connection"]["kind"]
+            .as_str()
+            .is_some_and(|k| CONNECTION_KINDS.contains(&k)),
+        "connection kind must be stateless or connected",
+    )?;
     match v["connection"]["kind"].as_str() {
         Some("stateless") => require(
             v["connection"]["reconnect"].is_null(),
             "stateless connection cannot declare reconnect support",
         )?,
         Some("connected") => one(&v["connection"]["reconnect"], RECONNECTS)?,
-        _ => return Err(Error::new("connection kind must be stateless or connected")),
+        _ => unreachable!("connection kind guarded by CONNECTION_KINDS"),
     }
     // Interruption is a resolved capability, stated in the same four states.
     support_entry(&v["interruption"])?;
