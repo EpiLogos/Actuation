@@ -10,6 +10,7 @@ mod loop_runtime;
 mod nara;
 mod realised;
 mod speech_session;
+mod speech_stream;
 mod stream_observer;
 pub use actualisation::*;
 pub use actuation_core::{Error, Result};
@@ -18,6 +19,7 @@ pub use loop_runtime::*;
 pub use nara::*;
 pub use realised::*;
 pub use speech_session::*;
+pub use speech_stream::*;
 pub use stream_observer::*;
 
 pub type PortFuture<'a, T> =
