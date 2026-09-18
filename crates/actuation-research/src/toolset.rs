@@ -530,15 +530,11 @@ fn run_jev_close_check(synthesis: &str, success_conditions: Value) -> Result<Val
         })?;
     let scratch = tempfile::tempdir()
         .map_err(|e| Error::new(format!("jev close-check scratch unavailable: {e}")))?;
-    let request_path = scratch.path().join("request.json");
-    std::fs::write(
-        &request_path,
-        serde_json::to_vec(
-            &json!({"success_conditions": success_conditions, "synthesis": synthesis}),
-        )
-        .map_err(|e| Error::new(format!("jev close-check request not written: {e}")))?,
+    // The instrument reads one JSON request on stdin.
+    let input = serde_json::to_vec(
+        &json!({"success_conditions": success_conditions, "synthesis": synthesis}),
     )
-    .map_err(|e| Error::new(format!("jev close-check request not written: {}", e.kind())))?;
+    .map_err(|e| Error::new(format!("jev close-check request not built: {e}")))?;
     // The instrument is a Node script resolved through PATH: inherit the
     // host's PATH (an empty environment leaves `env node` unresolvable).
     let environment = [("PATH".to_owned(), std::env::var("PATH").unwrap_or_default())]
@@ -546,13 +542,13 @@ fn run_jev_close_check(synthesis: &str, success_conditions: Value) -> Result<Val
         .collect();
     let spec = crate::process::ProcessSpec {
         program: std::path::PathBuf::from(program),
-        args: vec![request_path.to_string_lossy().into_owned()],
+        args: vec![],
         cwd: scratch.path().to_owned(),
         environment,
         timeout_ms: 30_000,
         output_limit: 4 * 1024 * 1024,
     };
-    let r = spec.run(&[])?;
+    let r = spec.run(&input)?;
     if r.code != Some(0) {
         let why: String = r.stderr.chars().take(300).collect();
         return Err(Error::new(format!("instrument exited {:?}: {why}", r.code)));
