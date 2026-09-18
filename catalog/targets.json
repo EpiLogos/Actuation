@@ -122,6 +122,9 @@
       "edition": "cli",
       "native_owner": "Google",
       "summary": "Gemini CLI agent harness; antigravity ships inside its config tree",
+      "aliases": [
+        "gemini-cli"
+      ],
       "probe": {
         "executable": {
           "names": [
