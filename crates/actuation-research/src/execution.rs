@@ -247,10 +247,17 @@ pub struct ResearchHost<B: ModelBody> {
     pub observations: Vec<Value>,
     pub model_calls: u64,
     pub capability_calls: u64,
+    /// Capability supply override (e.g. the toolset paradigm's six described
+    /// tools). Absent: the default four-name list.
+    capability_supply: Option<Value>,
     max_calls: u64,
     secrets: Vec<String>,
 }
 impl<B: ModelBody> ResearchHost<B> {
+    /// Replace the capability supply the model sees on every model call.
+    pub fn set_capability_supply(&mut self, supply: Value) {
+        self.capability_supply = Some(supply);
+    }
     pub fn new(
         body: B,
         world: World,
@@ -268,6 +275,7 @@ impl<B: ModelBody> ResearchHost<B> {
             observations: vec![],
             model_calls: 0,
             capability_calls: 0,
+            capability_supply: None,
             max_calls,
             secrets,
         })
@@ -287,7 +295,11 @@ impl<B: ModelBody> ResearchHost<B> {
     }
     fn model(&mut self, call: HostCall) -> Result<Value> {
         self.budget(&call.cancellation)?;
-        let payload = json!({"request":call.request.wire(),"payload":call.payload,"capabilities":CAPABILITIES});
+        let capabilities = self
+            .capability_supply
+            .clone()
+            .unwrap_or_else(|| json!(CAPABILITIES));
+        let payload = json!({"request":call.request.wire(),"payload":call.payload,"capabilities":capabilities});
         candidate_boundary(&payload)?;
         self.model_calls += 1;
         self.record("model_requested", payload.clone());
@@ -395,6 +407,7 @@ pub enum RunMode {
     Classic,
     Direct,
     Deep,
+    Toolset,
 }
 impl RunMode {
     pub fn parse(name: &str) -> Result<Self> {
@@ -402,6 +415,7 @@ impl RunMode {
             "classic" => Ok(Self::Classic),
             "ql-direct" => Ok(Self::Direct),
             "ql-deep" => Ok(Self::Deep),
+            "ql-toolset" => Ok(Self::Toolset),
             _ => Err(Error::new("unknown research condition")),
         }
     }
@@ -410,6 +424,7 @@ impl RunMode {
             Self::Classic => "classic",
             Self::Direct => "ql-direct",
             Self::Deep => "ql-deep",
+            Self::Toolset => "ql-toolset",
         }
     }
 }
@@ -515,7 +530,7 @@ pub fn run_task_with_control<B: ModelBody>(
 ) -> Result<Value> {
     use crate::relational::{Engine, Mode, TaskInspector};
     limits.validate()?;
-    if mode != RunMode::Classic && owner.is_none() {
+    if matches!(mode, RunMode::Direct | RunMode::Deep) && owner.is_none() {
         return Err(Error::new(
             "relational execution requires an explicitly bound QL owner",
         ));
@@ -543,6 +558,25 @@ pub fn run_task_with_control<B: ModelBody>(
         if mode == RunMode::Classic {
             let run = block_on(ClassicRuntime.run(&request, host, &mut redacted, cancellation))?;
             return Ok(json!({"report":run.report,"evidence_refs":run.evidence_refs}));
+        }
+        if mode == RunMode::Toolset {
+            // The toolset paradigm: the six described tools replace the
+            // default capability list, and the loop owns the circuit ledger.
+            host.set_capability_supply(crate::toolset::toolset_capability_supply());
+            let outcome = block_on(crate::toolset::run_toolset(
+                crate::toolset::ToolsetContext {
+                    request: &request,
+                    task: task.clone(),
+                    world: host.world.clone(),
+                    node: host.node.clone(),
+                    before: before.clone(),
+                    close_check: crate::toolset::CloseCheck::from_env(),
+                },
+                host,
+                &mut redacted,
+                cancellation,
+            ));
+            return Ok(json!({"report":outcome.report,"evidence_refs":outcome.evidence_refs}));
         }
         let native_mode = if mode == RunMode::Direct {
             Mode::Direct
@@ -771,11 +805,132 @@ mod tests {
     }
 
     #[test]
-    fn run_mode_admits_only_the_three_native_conditions() {
+    fn toolset_mode_carries_the_ql_form_in_the_toolset_and_closes_through_the_return_condition() {
+        let task = crate::tasks::Task::get("S1-SKILL-001").unwrap();
+        let (_dir, world) = temp_world();
+        let body = ScriptedBody::classic(vec![
+            json!({"content":"seeing the field",
+                   "capabilityCalls":[{"name":"read_file","args":{"path":"SKILL.md"}}]}),
+            json!({"content":"the skill is absorbed; the effect comes next",
+                   "capabilityCalls":[{"name":"situate","args":{"position":"P2"}}]}),
+            json!({"content":"making the effect",
+                   "capabilityCalls":[{"name":"write_file","args":{"path":"deliverable.md","content":"the deliverable"}}]}),
+            json!({"content":"the bounded request is realised",
+                   "capabilityCalls":[{"name":"close","args":{"synthesis":"deliverable.md written from SKILL.md"}}]}),
+        ]);
+        let mut host = ResearchHost::new(body, world, None, 64, vec![]).unwrap();
+        let mut observer = RecordingObserver::default();
+        let result = run_task(
+            &task,
+            ExternalRef::new("trace:test:toolset-1").unwrap(),
+            RunMode::Toolset,
+            Limits::default(),
+            None,
+            &mut host,
+            &mut observer,
+            &CancellationToken::default(),
+        )
+        .expect("toolset run completes");
+        assert_eq!(result["runtime"], json!("ql-toolset"));
+        assert_eq!(result["status"], json!("completed"));
+        assert_eq!(result["verification"]["objective_checks_pass"], json!(true));
+        // The model saw the six described tools, not the four bare names.
+        let seen = result["observations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|o| o["event_type"] == json!("model_requested"))
+            .and_then(|o| o["value"]["capabilities"].as_array())
+            .unwrap();
+        assert_eq!(seen.len(), 6);
+        assert!(
+            seen[4]["description"].as_str().unwrap().contains("P"),
+            "situate carries the office law"
+        );
+        // situate and close are loop verbs: they never reach the world.
+        assert_eq!(result["model_calls"], json!(4));
+        assert_eq!(result["capability_calls"], json!(2));
+        let report = &result["execution"]["report"];
+        let circuit = &report["circuits"][0];
+        assert_eq!(circuit["closure_state"], json!("closed"));
+        let positions: Vec<u64> = circuit["residues"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|r| r["position"].as_u64().unwrap())
+            .collect();
+        assert_eq!(
+            positions,
+            vec![0, 1, 2, 2, 5],
+            "frame, material, effect, return-reading, determination"
+        );
+        assert_eq!(report["closure"]["success_state"], json!("true"));
+    }
+
+    #[test]
+    fn toolset_mode_refuses_to_complete_without_the_return_condition() {
+        let task = crate::tasks::Task::get("S1-SKILL-001").unwrap();
+        let (_dir, world) = temp_world();
+        // Bare content three times: the loop nudges twice, then fails honestly.
+        let body =
+            ScriptedBody::classic(vec![json!({"content":"the answer","capabilityCalls":[]})]);
+        let mut host = ResearchHost::new(body, world, None, 64, vec![]).unwrap();
+        let mut observer = RecordingObserver::default();
+        let result = run_task(
+            &task,
+            ExternalRef::new("trace:test:toolset-2").unwrap(),
+            RunMode::Toolset,
+            Limits::default(),
+            None,
+            &mut host,
+            &mut observer,
+            &CancellationToken::default(),
+        )
+        .expect("toolset run resolves");
+        assert_eq!(result["status"], json!("failed"));
+        assert!(result["execution"]["report"]["error"]
+            .as_str()
+            .unwrap()
+            .contains("return condition never ran"));
+    }
+
+    #[test]
+    fn toolset_mode_close_without_work_fails_the_objective_gate() {
+        let task = crate::tasks::Task::get("S1-SKILL-001").unwrap();
+        let (_dir, world) = temp_world();
+        let body = ScriptedBody::classic(vec![json!({"content":"closing immediately",
+                   "capabilityCalls":[{"name":"close","args":{"synthesis":"nothing was needed"}}]})]);
+        let mut host = ResearchHost::new(body, world, None, 64, vec![]).unwrap();
+        let mut observer = RecordingObserver::default();
+        let result = run_task(
+            &task,
+            ExternalRef::new("trace:test:toolset-3").unwrap(),
+            RunMode::Toolset,
+            Limits::default(),
+            None,
+            &mut host,
+            &mut observer,
+            &CancellationToken::default(),
+        )
+        .expect("toolset run resolves");
+        assert_eq!(result["status"], json!("failed"));
+        assert_eq!(
+            result["execution"]["report"]["closure"]["success_state"],
+            json!("false")
+        );
+        assert_eq!(
+            result["verification"]["objective_checks_pass"],
+            json!(false)
+        );
+    }
+
+    #[test]
+    fn run_mode_admits_the_native_conditions() {
         for (name, mode) in [
             ("classic", RunMode::Classic),
             ("ql-direct", RunMode::Direct),
             ("ql-deep", RunMode::Deep),
+            ("ql-toolset", RunMode::Toolset),
         ] {
             assert_eq!(RunMode::parse(name).unwrap(), mode);
             assert_eq!(mode.name(), name);
