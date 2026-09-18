@@ -93,7 +93,9 @@ fn difference_reading(
 ) -> (String, u8, &'static str, &'static str, Vec<String>) {
     let success = difference["operation_success"] == true;
     let kind = act.carrier["kind"].as_str().unwrap_or_default();
-    let content = difference["raw_result"]["content"].as_str().unwrap_or_default();
+    let content = difference["raw_result"]["content"]
+        .as_str()
+        .unwrap_or_default();
     let facts = |carrier_fact: &str| {
         vec![
             format!("circuit:{circuit_id}"),
@@ -108,40 +110,18 @@ fn difference_reading(
         if content.trim().is_empty() {
             ("+", 2, "N#", "!?", "carrier:model:content-empty".into())
         } else {
-            (
-                "=",
-                5,
-                "N#",
-                "!?",
-                "carrier:model:content-delivered".into(),
-            )
+            ("=", 5, "N#", "!?", "carrier:model:content-delivered".into())
         }
     } else if kind == "internal_control" {
-        (
-            "/",
-            4,
-            "##",
-            "!-",
-            "carrier:internal_control".into(),
-        )
+        ("/", 4, "##", "!-", "carrier:internal_control".into())
     } else {
         let name = act.carrier["name"].as_str().unwrap_or_default();
         match name {
-            "write_file" => (
-                "+",
-                2,
-                "R#",
-                "?-",
-                "carrier:capability:write_file".into(),
-            ),
-            "read_file" | "list_files" => ("-", 1, "R#", "?-", format!("carrier:capability:{name}")),
-            "run_tests" => (
-                "/",
-                4,
-                "R#",
-                "?-",
-                "carrier:capability:run_tests".into(),
-            ),
+            "write_file" => ("+", 2, "R#", "?-", "carrier:capability:write_file".into()),
+            "read_file" | "list_files" => {
+                ("-", 1, "R#", "?-", format!("carrier:capability:{name}"))
+            }
+            "run_tests" => ("/", 4, "R#", "?-", "carrier:capability:run_tests".into()),
             _ => ("x", 3, "R#", "?-", format!("carrier:capability:{name}")),
         }
     };
@@ -157,7 +137,6 @@ fn reading_language(
     position: u8,
     field: &str,
     self_other: &str,
-    evidence: &[String],
 ) -> Value {
     let id = &circuit.id;
     json!({"acceptedSyntaxRevision":AIKIT_OWNER_REVISION,"nativeNodeRef":act_ref,
@@ -170,7 +149,7 @@ fn reading_language(
         "reading":{"contract":READING_CONTRACT,"operator":glyph,"horizon":format!("@{position}"),
             "subjects":[{"native":format!("circuit:{id}")}],"relationRefs":[],"complementRefs":[],
             "worldRef":null,"projectRef":null,"focusRef":null,"expectedReturn":null,
-            "standing":"DERIVED","evidence":evidence}})
+            "standing":"DERIVED","evidence":[format!("actuation:vak-control:{id}"),act_ref]}})
 }
 
 /// Kernel-admitted reading of a returned difference: the destination office is
@@ -247,14 +226,15 @@ impl VakControl {
             timeout_ms: 10_000,
             output_limit: 16 * 1024 * 1024,
         };
-        let control = Self {
-            binary_digest: bytes_digest(&std::fs::read(&spec.program).map_err(|_| {
-                Error::new("vak control instrument is unavailable or unreadable")
-            })?),
-            spec,
-            scratch,
-            source_revision: String::new(),
-        };
+        let control =
+            Self {
+                binary_digest: bytes_digest(&std::fs::read(&spec.program).map_err(|_| {
+                    Error::new("vak control instrument is unavailable or unreadable")
+                })?),
+                spec,
+                scratch,
+                source_revision: String::new(),
+            };
         let probe = Self::bind_probe_request();
         let response = control.call(&probe)?;
         let whole = response["results"]
@@ -286,7 +266,14 @@ impl VakControl {
             frame: json!({"id":format!("{id}:frame")}),
             active_position: 0,
             closure_state: "open".into(),
-            residues: vec![],
+            residues: vec![crate::relational::Residue {
+                id: format!("{id}:res:frame"),
+                position: 0,
+                kind: "frame".into(),
+                value: json!({"id":format!("{id}:frame")}),
+                provenance: json!({"probe":true}),
+                invalidated: false,
+            }],
             trajectory: vec![],
             children: vec![],
             conjugates: vec![],
@@ -296,14 +283,18 @@ impl VakControl {
         json!({"contract":CONTRACT,"steps":[whole]})
     }
     fn call(&self, request: &Value) -> Result<Value> {
-        if bytes_digest(&std::fs::read(&self.spec.program).map_err(|_| {
-            Error::new("vak control instrument is unavailable or unreadable")
-        })?) != self.binary_digest
+        if bytes_digest(
+            &std::fs::read(&self.spec.program)
+                .map_err(|_| Error::new("vak control instrument is unavailable or unreadable"))?,
+        ) != self.binary_digest
         {
             return Err(Error::new("bound vak control instrument bytes changed"));
         }
-        std::fs::write(self.scratch.path().join("request.json"), serde_json::to_vec(request).map_err(|e| Error::new(e.to_string()))?)
-            .map_err(|e| Error::new(format!("vak control request not written: {}", e.kind())))?;
+        std::fs::write(
+            self.scratch.path().join("request.json"),
+            serde_json::to_vec(request).map_err(|e| Error::new(e.to_string()))?,
+        )
+        .map_err(|e| Error::new(format!("vak control request not written: {}", e.kind())))?;
         let r = self.spec.run(&[])?;
         if r.code != Some(0) {
             let why: String = r.stderr.chars().take(512).collect();
@@ -320,7 +311,9 @@ impl VakControl {
             ));
         }
         if v["sourceRevision"].as_str().map(str::is_empty) != Some(false) {
-            return Err(Error::new("vak composition kernel reply omits its source revision"));
+            return Err(Error::new(
+                "vak composition kernel reply omits its source revision",
+            ));
         }
         Ok(v)
     }
@@ -364,11 +357,11 @@ impl VakControl {
             circuit.trajectory.len()
         );
         let request = json!({"contract":CONTRACT,"steps":[
-            circuit_whole(circuit, run_id, act_ref),
+            circuit_whole(circuit, run_id, &last_return_ref(circuit)),
             {"op":"interpret","from":format!("circuit:{}:state",circuit.id),"into":into,
-             "language":reading_language(circuit, act_ref, &glyph, position, field, self_other, &evidence),
+             "language":reading_language(circuit, act_ref, &glyph, position, field, self_other),
              "basis":{"caller":CALLER,"source":act_ref,"revision":run_id,"standing":"DERIVED",
-                      "evidence":evidence}},
+                      "evidence":&evidence[..evidence.len()-1]}},
             {"op":"read","useRef":into,"lens":"L0"}]});
         let response = self.call(&request)?;
         Self::expected_ops(&response, &["whole", "interpret", "read"])?;
@@ -388,9 +381,8 @@ impl VakControl {
                 "vak read echoed operator {echoed} instead of the admitted {glyph}"
             )));
         }
-        let destination = glyph_position(admitted).ok_or_else(|| {
-            Error::new(format!("vak operator {admitted} names no office P0..P5"))
-        })?;
+        let destination = glyph_position(admitted)
+            .ok_or_else(|| Error::new(format!("vak operator {admitted} names no office P0..P5")))?;
         if destination != position {
             return Err(Error::new(format!(
                 "vak reading maps operator {glyph} to P{destination}, not the mapped P{position}"
@@ -401,7 +393,10 @@ impl VakControl {
             operator: glyph.to_owned(),
             request_digest: stable_digest(&request),
             result_digest: stable_digest(&response),
-            source_revision: response["sourceRevision"].as_str().unwrap_or_default().into(),
+            source_revision: response["sourceRevision"]
+                .as_str()
+                .unwrap_or_default()
+                .into(),
             harmonic_pitch: response["results"][2]["result"]["harmonicPitch"].clone(),
             focus_interval: response["results"][2]["result"]["focusInterval"].clone(),
         })
@@ -444,7 +439,7 @@ impl VakControl {
             {"op":"cpf","context":"ctx","into":format!("circuit:{}:cpf",circuit.id),
              "face":"direct","operators":candidates,
              "basis":circuit_basis(circuit, run_id, "OBSERVED",
-                                   &[format!("vacant-offices:{vacant_offices}")})]});
+                                   &[format!("vacant-offices:{vacant_offices}")])}]});
         let response = self.call(&request)?;
         Self::expected_ops(&response, &["whole", "enter", "cpf"])?;
         let allowed: Vec<String> = response["results"][2]["result"]["allowedOperators"]
@@ -458,9 +453,10 @@ impl VakControl {
             })
             .collect::<Result<_>>()?;
         // The kernel may only narrow the supplied vacancy set, never widen it.
-        if allowed.iter().any(|g| {
-            glyph_position(g).is_none_or(|p| !vacant.contains(&p))
-        }) {
+        if allowed
+            .iter()
+            .any(|g| glyph_position(g).is_none_or(|p| !vacant.contains(&p)))
+        {
             return Err(Error::new(format!(
                 "vak cpf admitted offices outside the supplied vacancy set: {allowed:?}"
             )));
@@ -514,7 +510,10 @@ impl VakControl {
             allowed_offices: allowed,
             request_digest: stable_digest(&request),
             result_digest: stable_digest(&response),
-            source_revision: response["sourceRevision"].as_str().unwrap_or_default().into(),
+            source_revision: response["sourceRevision"]
+                .as_str()
+                .unwrap_or_default()
+                .into(),
         })
     }
 }
@@ -534,13 +533,13 @@ mod tests {
     use crate::relational::Residue;
 
     fn fixture_dir() -> PathBuf {
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../experiments/native-research/vak-control-fixtures")
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../experiments/native-research/vak-control-fixtures")
     }
     fn fixture(name: &str) -> Value {
         serde_json::from_str(
-            &std::fs::read_to_string(fixture_dir().join(name)).unwrap_or_else(|e| {
-                panic!("fixture {name} unavailable: {e}")
-            }),
+            &std::fs::read_to_string(fixture_dir().join(name))
+                .unwrap_or_else(|e| panic!("fixture {name} unavailable: {e}")),
         )
         .unwrap()
     }
@@ -601,11 +600,11 @@ mod tests {
         assert_eq!(reading.1, 2);
         let (_, position, field, self_other, evidence) = reading;
         let request = json!({"contract":CONTRACT,"steps":[
-            circuit_whole(&circuit, RUN_ID, "trace:t1:c0:act:1:return"),
+            circuit_whole(&circuit, RUN_ID, &last_return_ref(&circuit)),
             {"op":"interpret","from":"circuit:trace:t1:c0:state","into":"circuit:trace:t1:c0:interpret:1",
-             "language":reading_language(&circuit, "trace:t1:c0:act:1:return", "+", position, field, self_other, &evidence),
+             "language":reading_language(&circuit, "trace:t1:c0:act:1:return", "+", position, field, self_other),
              "basis":{"caller":CALLER,"source":"trace:t1:c0:act:1:return","revision":RUN_ID,"standing":"DERIVED",
-                      "evidence":evidence}},
+                      "evidence":&evidence[..evidence.len()-1]}},
             {"op":"read","useRef":"circuit:trace:t1:c0:interpret:1","lens":"L0"}]});
         let fixture = fixture("interpret-return-affirm.request.json");
         assert_eq!(
@@ -629,30 +628,58 @@ mod tests {
             json!({"id":"trace:t1:c0:act:1:return","operation_success":success,
                 "raw_result":{"content":content}})
         };
-        let (glyph, position, ..) =
-            difference_reading(&circuit.id, &act_for(json!({"kind":"capability","name":"write_file"})), &diff(true, ""));
+        let (glyph, position, ..) = difference_reading(
+            &circuit.id,
+            &act_for(json!({"kind":"capability","name":"write_file"})),
+            &diff(true, ""),
+        );
         assert_eq!((glyph.as_str(), position), ("+", 2));
-        let (glyph, position, ..) =
-            difference_reading(&circuit.id, &act_for(json!({"kind":"capability","name":"read_file"})), &diff(true, ""));
+        let (glyph, position, ..) = difference_reading(
+            &circuit.id,
+            &act_for(json!({"kind":"capability","name":"read_file"})),
+            &diff(true, ""),
+        );
         assert_eq!((glyph.as_str(), position), ("-", 1));
-        let (glyph, position, ..) =
-            difference_reading(&circuit.id, &act_for(json!({"kind":"capability","name":"list_files"})), &diff(true, ""));
+        let (glyph, position, ..) = difference_reading(
+            &circuit.id,
+            &act_for(json!({"kind":"capability","name":"list_files"})),
+            &diff(true, ""),
+        );
         assert_eq!((glyph.as_str(), position), ("-", 1));
-        let (glyph, position, ..) =
-            difference_reading(&circuit.id, &act_for(json!({"kind":"capability","name":"run_tests"})), &diff(true, ""));
+        let (glyph, position, ..) = difference_reading(
+            &circuit.id,
+            &act_for(json!({"kind":"capability","name":"run_tests"})),
+            &diff(true, ""),
+        );
         assert_eq!((glyph.as_str(), position), ("/", 4));
-        let (glyph, position, ..) =
-            difference_reading(&circuit.id, &act_for(json!({"kind":"model"})), &diff(true, "the answer"));
+        let (glyph, position, ..) = difference_reading(
+            &circuit.id,
+            &act_for(json!({"kind":"model"})),
+            &diff(true, "the answer"),
+        );
         assert_eq!((glyph.as_str(), position), ("=", 5));
-        let (glyph, position, ..) =
-            difference_reading(&circuit.id, &act_for(json!({"kind":"model"})), &diff(true, "  "));
+        let (glyph, position, ..) = difference_reading(
+            &circuit.id,
+            &act_for(json!({"kind":"model"})),
+            &diff(true, "  "),
+        );
         assert_eq!((glyph.as_str(), position), ("+", 2));
-        let (glyph, position, ..) =
-            difference_reading(&circuit.id, &act_for(json!({"kind":"internal_control","name":"hold"})), &diff(true, ""));
+        let (glyph, position, ..) = difference_reading(
+            &circuit.id,
+            &act_for(json!({"kind":"internal_control","name":"hold"})),
+            &diff(true, ""),
+        );
         assert_eq!((glyph.as_str(), position), ("/", 4));
-        let (glyph, position, ..) =
-            difference_reading(&circuit.id, &act_for(json!({"kind":"capability","name":"write_file"})), &diff(false, ""));
-        assert_eq!((glyph.as_str(), position), ("-", 1), "failure returns to material");
+        let (glyph, position, ..) = difference_reading(
+            &circuit.id,
+            &act_for(json!({"kind":"capability","name":"write_file"})),
+            &diff(false, ""),
+        );
+        assert_eq!(
+            (glyph.as_str(), position),
+            ("-", 1),
+            "failure returns to material"
+        );
     }
 
     #[test]
@@ -676,7 +703,10 @@ mod tests {
             let admitted = response["results"][1]["result"]["language"]["reading"]["operator"]
                 .as_str()
                 .unwrap();
-            assert!(glyph_position(admitted).is_some(), "{name} admits an office");
+            assert!(
+                glyph_position(admitted).is_some(),
+                "{name} admits an office"
+            );
         }
         let express = fixture("interpret-return-express.response.json");
         assert_eq!(
@@ -701,7 +731,7 @@ mod tests {
             {"op":"cpf","context":"ctx","into":"circuit:trace:t1:c0:cpf","face":"direct",
              "operators":candidates,
              "basis":circuit_basis(&circuit, RUN_ID, "OBSERVED",
-                                   &["vacant-offices:2,3,4,5".to_owned()})]});
+                                   &["vacant-offices:2,3,4,5".to_owned()])}]});
         assert_eq!(
             request,
             fixture("next-act-material.request.json"),
