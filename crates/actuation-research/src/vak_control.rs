@@ -494,11 +494,18 @@ impl VakControl {
                     "+" => "Affirm",
                     _ => "unknown",
                 };
-                return Err(Error::new(format!(
-                    "vak next-act named the {name} faculty ({other}) at office P{lead_position}; \
-                     carrying it requires authored content no vak operation supplies — \
-                     refusing to invent a carrier"
-                )));
+                // Authored-content offices: the kernel names the office, the
+                // model authors the act inside it. The typed carrier kind
+                // tells the policy to run one bounded authoring turn; the
+                // office naming stays kernel-owned and rides the witness.
+                (
+                    false,
+                    Some(json!({"kind":"authored"})),
+                    format!(
+                        "Serve the {name} faculty ({other}) at P{lead_position}: \
+                         author the exterior act this office requires."
+                    ),
+                )
             }
         };
         Ok(VakNextAct {

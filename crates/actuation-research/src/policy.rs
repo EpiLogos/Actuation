@@ -373,10 +373,20 @@ impl Policy for ModelPolicy {
         }
         let d = if let Some(vak) = self.vak_control.as_ref() {
             // Kernel-native control: the composition contract names the next
-            // office's faculty over the circuit's own positional field. No
-            // model turn runs; a refused kernel turn fails the run closed.
+            // office's faculty over the circuit's own positional field. A
+            // refused kernel turn fails the run closed. Authored-content
+            // offices (Potential, Affirm) come back with a typed "authored"
+            // carrier: the office naming stays kernel-owned, and one bounded
+            // model turn authors the act inside the named office — content is
+            // the model's job, law is the kernel's.
             let run_id = cx.request.wire()["runId"].as_str().unwrap_or_default();
             let d = vak.next_act(cx.circuit, run_id)?;
+            let authored = d
+                .carrier
+                .as_ref()
+                .and_then(|c| c.get("kind"))
+                .and_then(Value::as_str)
+                == Some("authored");
             let mut metadata = json!({"vak_control":{
                 "operation":"next-act",
                 "request_digest":d.request_digest,
@@ -384,6 +394,36 @@ impl Policy for ModelPolicy {
             if d.closure {
                 metadata["closure_request"] = json!(true);
                 metadata["controller_rationale"] = json!(d.intent);
+            }
+            if authored {
+                let a = control(
+                    cx,
+                    host,
+                    "ql-vak-authored-act",
+                    &format!(
+                        "The vak composition's next-act walk named this office for the next act: {} Author the single exterior act that best serves the initiating intent from inside that office. Return exactly one JSON object of the form {{\"intent\": string, \"carrier\": {{\"kind\": \"model\"|\"capability\", \"name\": <capability id, required when kind is \"capability\">, \"args\": object}}, \"rationale\": string}}. Stipulations of kind \"exclusion\" forbid the entire class of action including creating new artifacts: check the carrier choice against every exclusion stipulation before returning.",
+                        d.intent
+                    ),
+                    json!({"task":cx.request.wire()["input"],"stipulations":stipulations,
+                           "success_conditions":cx.request.wire()["successConditions"],
+                           "capabilities":cx.circuit.frame["available_capabilities"],
+                           "circuit":cx.circuit.compact()}),
+                )?;
+                metadata["vak_control"]["authored_by_model"] = json!(true);
+                metadata["model_control"] = json!(true);
+                metadata["controller_rationale"] = a["rationale"].clone();
+                return Ok(Some(Act {
+                    source_position: Some(cx.circuit.active_position),
+                    intent: if a["intent"].is_null() {
+                        json!(d.intent)
+                    } else {
+                        a["intent"].clone()
+                    },
+                    carrier: normalise_carrier(&a)?,
+                    input_residue_refs: vec![],
+                    nested: None,
+                    metadata,
+                }));
             }
             return Ok(Some(Act {
                 source_position: Some(cx.circuit.active_position),
