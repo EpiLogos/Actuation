@@ -511,6 +511,67 @@
         ],
         "catalog_revision": 2
       }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "opencode",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "SST",
+      "summary": "OpenCode terminal agent harness; config lives under ~/.config/opencode",
+      "probe": {
+        "executable": {
+          "names": [
+            "opencode"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.config/opencode"
+        }
+      },
+      "facets": {
+        "skills": {
+          "path": "~/.config/opencode/skill"
+        },
+        "agents": {
+          "path": "~/.config/opencode/agents"
+        },
+        "commands": {
+          "path": "~/.config/opencode/commands"
+        },
+        "plugins": {
+          "path": "~/.config/opencode/plugins"
+        },
+        "rules": {
+          "path": "~/.config/opencode/AGENTS.md"
+        },
+        "config": {
+          "path": "~/.config/opencode/opencode.json"
+        },
+        "mcp-config": {
+          "path": "~/.config/opencode/opencode.json",
+          "inventory": {
+            "kind": "mcp-servers",
+            "source": "file",
+            "collection": "mcp"
+          }
+        }
+      },
+      "provenance": {
+        "authored_by": "Hermes-Nara session on this machine, 2026-09-17 (opencode strapping)",
+        "source_refs": [
+          "doc:opencode.ai/docs/config",
+          "doc:opencode.ai/docs/rules",
+          "doc:opencode.ai/docs/plugins",
+          "native:opencode --version = 1.18.30",
+          "aikit:clients/opencode.rs (ai-kit#186 round-2 migration)"
+        ],
+        "catalog_revision": 10
+      }
     }
   ],
   "capabilities": [
@@ -1039,6 +1100,26 @@
           "diagnosis:harness-capability-coverage-2026-09-14"
         ],
         "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "opencode",
+      "summary": "OpenCode agent harness; detected, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-17): OpenCode's plugin surface is documented (plugin modules export hooks over session and tool events, shell.env injection and experimental.session.compacting) but its blocking, context-injection and wake semantics have not been observed on this machine into descriptor form. The catalog carries a disclosed gap rather than an invented descriptor; authoring it from an observed plugin is Actuation-side work that has not happened.",
+      "evidence_refs": [
+        "doc:opencode.ai/docs/plugins",
+        "aikit:clients/opencode.rs (ai-kit#186 round-2 migration)",
+        "native:opencode --version = 1.18.30"
+      ],
+      "provenance": {
+        "authored_by": "Hermes-Nara session on this machine, 2026-09-17 (opencode strapping)",
+        "source_refs": [
+          "doc:opencode.ai/docs/plugins",
+          "doc:opencode.ai/docs/config"
+        ],
+        "catalog_revision": 10
       }
     }
   ],

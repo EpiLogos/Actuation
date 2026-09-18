@@ -519,6 +519,67 @@
               ],
               "catalog_revision": 2
             }
+          },
+          {
+            "schema": "actuation.harness-detection/v1",
+            "document": "descriptor",
+            "slug": "opencode",
+            "native_kind": "harness",
+            "edition": "cli",
+            "native_owner": "SST",
+            "summary": "OpenCode terminal agent harness; config lives under ~/.config/opencode",
+            "probe": {
+              "executable": {
+                "names": [
+                  "opencode"
+                ],
+                "version_args": [
+                  "--version"
+                ]
+              },
+              "config-dir": {
+                "path": "~/.config/opencode"
+              }
+            },
+            "facets": {
+              "skills": {
+                "path": "~/.config/opencode/skill"
+              },
+              "agents": {
+                "path": "~/.config/opencode/agents"
+              },
+              "commands": {
+                "path": "~/.config/opencode/commands"
+              },
+              "plugins": {
+                "path": "~/.config/opencode/plugins"
+              },
+              "rules": {
+                "path": "~/.config/opencode/AGENTS.md"
+              },
+              "config": {
+                "path": "~/.config/opencode/opencode.json"
+              },
+              "mcp-config": {
+                "path": "~/.config/opencode/opencode.json",
+                "inventory": {
+                  "kind": "mcp-servers",
+                  "source": "file",
+                  "collection": "mcp"
+                }
+              }
+            },
+            "provenance": {
+              "authored_by": "Hermes-Nara session on this machine, 2026-09-17 (opencode strapping)",
+              "source_refs": [
+                "doc:opencode.ai/docs/config",
+                "doc:opencode.ai/docs/rules",
+                "doc:opencode.ai/docs/plugins",
+                "native:opencode --version = 1.18.30",
+                "aikit:clients/opencode.rs (ai-kit#186 round-2 migration)"
+              ],
+              "catalog_revision": 10
+            }
           }
         ],
         "capabilities": [
@@ -3795,6 +3856,26 @@
                     "detail": "no marker set"
                   }
                 ]
+              },
+              {
+                "slug": "opencode",
+                "harness_ref": "harness/opencode",
+                "native_kind": "harness",
+                "state": "not-installed",
+                "probes": [
+                  {
+                    "kind": "executable",
+                    "result": "pass",
+                    "spec": "opencode",
+                    "detail": "not found on PATH"
+                  },
+                  {
+                    "kind": "config-dir",
+                    "result": "pass",
+                    "spec": "~/.config/opencode",
+                    "detail": "not found"
+                  }
+                ]
               }
             ],
             "absent": [
@@ -3809,7 +3890,8 @@
               "ollama",
               "openclaw",
               "kimi",
-              "zcode"
+              "zcode",
+              "opencode"
             ],
             "availability": "complete"
           }
@@ -4065,6 +4147,26 @@
                 "ZCODE_APP_VERSION",
                 "ZCODE_ENV"
               ]
+            ]
+          },
+          {
+            "effect": "expandHome",
+            "args": [
+              "~/.config/opencode"
+            ]
+          },
+          {
+            "effect": "resolveExecutable",
+            "args": [
+              [
+                "opencode"
+              ]
+            ]
+          },
+          {
+            "effect": "statProbe",
+            "args": [
+              "/home/oracle/.config/opencode"
             ]
           }
         ]
@@ -5815,7 +5917,7 @@
         "stdout": {
           "schema": "actuation.harness-detection/v1",
           "document": "catalog",
-          "catalog_revision": 9,
+          "catalog_revision": 10,
           "descriptors": [
             {
               "schema": "actuation.harness-detection/v1",
@@ -5864,13 +5966,20 @@
                     "source": "file",
                     "collection": "mcpServers"
                   }
+                },
+                "permissions": {
+                  "path": "~/.claude/settings.json"
+                },
+                "trusts": {
+                  "path": "~/.claude.json"
                 }
               },
               "provenance": {
                 "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
                 "source_refs": [
                   "survey:local-machine-2026-09-05",
-                  "survey:mcp-config-facet-2026-09-16"
+                  "survey:mcp-config-facet-2026-09-16",
+                  "survey:permissions-trusts-facet-2026-09-17"
                 ],
                 "catalog_revision": 1
               }
@@ -5905,12 +6014,19 @@
                 },
                 "config": {
                   "path": "~/.codex/config.toml"
+                },
+                "permissions": {
+                  "path": "~/.codex/config.toml"
+                },
+                "trusts": {
+                  "path": "~/.codex/config.toml"
                 }
               },
               "provenance": {
                 "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
                 "source_refs": [
-                  "survey:local-machine-2026-09-05"
+                  "survey:local-machine-2026-09-05",
+                  "survey:permissions-trusts-facet-2026-09-17"
                 ],
                 "catalog_revision": 1
               }
@@ -5923,6 +6039,9 @@
               "edition": "cli",
               "native_owner": "Google",
               "summary": "Gemini CLI agent harness; antigravity ships inside its config tree",
+              "aliases": [
+                "gemini-cli"
+              ],
               "probe": {
                 "executable": {
                   "names": [
@@ -6292,15 +6411,83 @@
                     "source": "file",
                     "collection": "mcp.servers"
                   }
+                },
+                "permissions": {
+                  "path": "~/.zcode/cli/config.json"
+                },
+                "trusts": {
+                  "path": "~/.zcode/cli/config.json"
                 }
               },
               "provenance": {
                 "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
                 "source_refs": [
                   "survey:local-machine-2026-09-05",
-                  "survey:mcp-config-facet-2026-09-16"
+                  "survey:mcp-config-facet-2026-09-16",
+                  "survey:permissions-trusts-facet-2026-09-17"
                 ],
                 "catalog_revision": 2
+              }
+            },
+            {
+              "schema": "actuation.harness-detection/v1",
+              "document": "descriptor",
+              "slug": "opencode",
+              "native_kind": "harness",
+              "edition": "cli",
+              "native_owner": "SST",
+              "summary": "OpenCode terminal agent harness; config lives under ~/.config/opencode",
+              "probe": {
+                "executable": {
+                  "names": [
+                    "opencode"
+                  ],
+                  "version_args": [
+                    "--version"
+                  ]
+                },
+                "config-dir": {
+                  "path": "~/.config/opencode"
+                }
+              },
+              "facets": {
+                "skills": {
+                  "path": "~/.config/opencode/skill"
+                },
+                "agents": {
+                  "path": "~/.config/opencode/agents"
+                },
+                "commands": {
+                  "path": "~/.config/opencode/commands"
+                },
+                "plugins": {
+                  "path": "~/.config/opencode/plugins"
+                },
+                "rules": {
+                  "path": "~/.config/opencode/AGENTS.md"
+                },
+                "config": {
+                  "path": "~/.config/opencode/opencode.json"
+                },
+                "mcp-config": {
+                  "path": "~/.config/opencode/opencode.json",
+                  "inventory": {
+                    "kind": "mcp-servers",
+                    "source": "file",
+                    "collection": "mcp"
+                  }
+                }
+              },
+              "provenance": {
+                "authored_by": "Hermes-Nara session on this machine, 2026-09-17 (opencode strapping)",
+                "source_refs": [
+                  "doc:opencode.ai/docs/config",
+                  "doc:opencode.ai/docs/rules",
+                  "doc:opencode.ai/docs/plugins",
+                  "native:opencode --version = 1.18.30",
+                  "aikit:clients/opencode.rs (ai-kit#186 round-2 migration)"
+                ],
+                "catalog_revision": 10
               }
             }
           ]
@@ -6323,7 +6510,7 @@
         "stdout": {
           "schema": "actuation.harness-capability/v1",
           "document": "capability-catalog",
-          "catalog_revision": 9,
+          "catalog_revision": 10,
           "capabilities": [
             {
               "schema": "actuation.harness-capability/v1",
