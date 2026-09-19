@@ -65,6 +65,37 @@ pub fn toolset_capability_supply() -> Value {
     )
 }
 
+/// Route one: the pure explicate four — the world tools with their office
+/// law, no loop verbs. The work ends the way classic ends.
+pub fn tagged_tools() -> &'static [(&'static str, &'static str)] {
+    &TOOLSET_TOOLS[..4]
+}
+
+pub fn tagged_capability_supply() -> Value {
+    Value::Array(
+        tagged_tools()
+            .iter()
+            .map(|(name, description)| json!({"name": name, "description": description}))
+            .collect(),
+    )
+}
+
+/// Which of the two routes the loop runs: the full return loop (4+2) or the
+/// tagged explicate four.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Route {
+    ReturnLoop,
+    Tagged,
+}
+impl Route {
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::ReturnLoop => "ql-toolset",
+            Self::Tagged => "ql-tagged",
+        }
+    }
+}
+
 /// The static office law: which office a world tool serves when it runs.
 /// The two loop verbs are settled by their own calls, not by this map.
 pub fn tool_office(name: &str) -> Option<u8> {
@@ -103,6 +134,8 @@ pub struct ToolsetContext<'a> {
     pub world: crate::world::World,
     pub node: Option<std::path::PathBuf>,
     pub before: Value,
+    /// Which route the loop runs: the full return loop or the tagged four.
+    pub route: Route,
     /// `self` (default), `model`, or `jev` (named seam, refuses).
     pub close_check: CloseCheck,
 }
@@ -158,6 +191,8 @@ pub async fn run_toolset(
     let mut outcome: Value = Value::Null;
     let mut closure: Value = Value::Null;
     let mut determination: Value = Value::Null;
+    let mut closed_via_close = false;
+    let runtime_name = ctx.route.name();
     let max_steps = ctx.request.wire()["maxSteps"].as_u64().unwrap_or(64);
 
     let mut record = |event_type: &str, mut payload: Value| {
@@ -170,7 +205,7 @@ pub async fn run_toolset(
             event_type: event_type.into(),
             run_id: trace.clone(),
             sequence,
-            runtime: "ql-toolset".into(),
+            runtime: runtime_name.into(),
             payload,
         };
         // Persistence failures cannot abort the ledger; the sink's own
@@ -252,6 +287,17 @@ pub async fn run_toolset(
             .cloned()
             .unwrap_or_default();
         if calls.is_empty() {
+            // Route one ends the way classic ends: bare content is a
+            // delivery. The ledger stays; no return condition exists to run.
+            if ctx.route != Route::ReturnLoop {
+                status = "completed";
+                outcome = model.get("content").cloned().unwrap_or(Value::Null);
+                record(
+                    "run_completed",
+                    json!({"outcome": outcome, "via": "bare-content"}),
+                );
+                break;
+            }
             // The return condition is a tool that must run: bare content
             // cannot close the work. Repair-nudge twice, then fail honestly.
             premature_deliveries += 1;
@@ -275,6 +321,13 @@ pub async fn run_toolset(
         for call in &calls {
             let name = call["name"].as_str().unwrap_or_default().to_owned();
             let args = call.get("args").cloned().unwrap_or(json!({}));
+            if ctx.route == Route::Tagged && matches!(name.as_str(), "close" | "situate") {
+                // Route one advertises neither verb; refuse rather than
+                // dispatch a capability the workspace does not have.
+                history.push(json!({"role": "capability", "name": name,
+                    "result": {"ok": false, "error": "no such tool in the tagged route"}}));
+                continue;
+            }
             if name == "close" {
                 let synthesis = args
                     .get("synthesis")
@@ -393,6 +446,7 @@ pub async fn run_toolset(
                 );
                 if accepted {
                     status = "completed";
+                    closed_via_close = true;
                     outcome = json!(synthesis);
                     record("circuit_closed", json!({"closed_at_position": 5}));
                     record("run_completed", json!({"outcome": outcome}));
@@ -480,17 +534,19 @@ pub async fn run_toolset(
     }
     if status != "completed" && status != "failed" && status != "cancelled" {
         status = "exhausted";
-        error = Some(format!(
-            "max_steps {max_steps} ran out before the return condition closed the work"
-        ));
+        error = Some(if ctx.route == Route::ReturnLoop {
+            format!("max_steps {max_steps} ran out before the return condition closed the work")
+        } else {
+            format!("max_steps {max_steps} ran out before the work was delivered")
+        });
         record("run_exhausted", json!({"max_steps": max_steps}));
     }
     drop(record);
     drop(settle);
     let report = json!({
         "status": status,
-        "runtime": "ql-toolset",
-        "runtimeVersion": "0.1.0-toolset",
+        "runtime": runtime_name,
+        "runtimeVersion": if ctx.route == Route::ReturnLoop { "0.1.0-toolset" } else { "0.1.0-tagged" },
         "trace_ref": trace,
         "iterations": iterations,
         "model_calls": model_calls,
@@ -502,13 +558,13 @@ pub async fn run_toolset(
             "id": circuit_id,
             "face": "direct",
             "active_position": active_position,
-            "closure_state": if status == "completed" {"closed"} else {"open"},
+            "closure_state": if closed_via_close {"closed"} else {"open"},
             "residues": residues,
             "trajectory": transitions,
         }],
         "closure": closure,
         "determination": determination,
-        "paradigm": "toolset",
+        "paradigm": if ctx.route == Route::ReturnLoop { "toolset" } else { "tagged" },
     });
     ToolsetOutcome {
         report,
@@ -581,6 +637,22 @@ mod tests {
             "the return condition must be a tool"
         );
         for (name, description) in TOOLSET_TOOLS {
+            assert!(
+                description.contains("(P"),
+                "{name}'s description must carry the Px/Px′ office law"
+            );
+        }
+    }
+
+    #[test]
+    fn tagged_route_is_the_explicate_four_with_their_office_law() {
+        assert_eq!(tagged_tools().len(), 4, "route one: the four world tools");
+        let names: Vec<&str> = tagged_tools().iter().map(|(n, _)| *n).collect();
+        assert_eq!(
+            names,
+            vec!["list_files", "read_file", "write_file", "run_tests"]
+        );
+        for (name, description) in tagged_tools() {
             assert!(
                 description.contains("(P"),
                 "{name}'s description must carry the Px/Px′ office law"

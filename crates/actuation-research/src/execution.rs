@@ -408,6 +408,7 @@ pub enum RunMode {
     Direct,
     Deep,
     Toolset,
+    Tagged,
 }
 impl RunMode {
     pub fn parse(name: &str) -> Result<Self> {
@@ -416,6 +417,7 @@ impl RunMode {
             "ql-direct" => Ok(Self::Direct),
             "ql-deep" => Ok(Self::Deep),
             "ql-toolset" => Ok(Self::Toolset),
+            "ql-tagged" => Ok(Self::Tagged),
             _ => Err(Error::new("unknown research condition")),
         }
     }
@@ -425,6 +427,7 @@ impl RunMode {
             Self::Direct => "ql-direct",
             Self::Deep => "ql-deep",
             Self::Toolset => "ql-toolset",
+            Self::Tagged => "ql-tagged",
         }
     }
 }
@@ -559,10 +562,23 @@ pub fn run_task_with_control<B: ModelBody>(
             let run = block_on(ClassicRuntime.run(&request, host, &mut redacted, cancellation))?;
             return Ok(json!({"report":run.report,"evidence_refs":run.evidence_refs}));
         }
-        if mode == RunMode::Toolset {
-            // The toolset paradigm: the six described tools replace the
-            // default capability list, and the loop owns the circuit ledger.
-            host.set_capability_supply(crate::toolset::toolset_capability_supply());
+        if matches!(mode, RunMode::Toolset | RunMode::Tagged) {
+            // The toolset family: described tools replace the default
+            // capability list, and the loop owns the circuit ledger. The
+            // return loop carries all six tools; route one carries the
+            // tagged four and ends the way classic ends.
+            let (supply, route) = if mode == RunMode::Toolset {
+                (
+                    crate::toolset::toolset_capability_supply(),
+                    crate::toolset::Route::ReturnLoop,
+                )
+            } else {
+                (
+                    crate::toolset::tagged_capability_supply(),
+                    crate::toolset::Route::Tagged,
+                )
+            };
+            host.set_capability_supply(supply);
             let outcome = block_on(crate::toolset::run_toolset(
                 crate::toolset::ToolsetContext {
                     request: &request,
@@ -570,6 +586,7 @@ pub fn run_task_with_control<B: ModelBody>(
                     world: host.world.clone(),
                     node: host.node.clone(),
                     before: before.clone(),
+                    route,
                     close_check: crate::toolset::CloseCheck::from_env(),
                 },
                 host,
@@ -925,12 +942,101 @@ mod tests {
     }
 
     #[test]
+    fn tagged_route_carries_the_explicate_four_and_ends_like_classic() {
+        let task = crate::tasks::Task::get("S1-SKILL-001").unwrap();
+        let (_dir, world) = temp_world();
+        let body = ScriptedBody::classic(vec![
+            json!({"content":"seeing the field",
+                   "capabilityCalls":[{"name":"read_file","args":{"path":"SKILL.md"}}]}),
+            json!({"content":"the deliverable, written from the material in hand",
+                   "capabilityCalls":[{"name":"write_file","args":{"path":"deliverable.md","content":"the deliverable"}}]}),
+            json!({"content":"the bounded request is realised from the material in hand"}),
+        ]);
+        let mut host = ResearchHost::new(body, world, None, 64, vec![]).unwrap();
+        let mut observer = RecordingObserver::default();
+        let result = run_task(
+            &task,
+            ExternalRef::new("trace:test:tagged-1").unwrap(),
+            RunMode::Tagged,
+            Limits::default(),
+            None,
+            &mut host,
+            &mut observer,
+            &CancellationToken::default(),
+        )
+        .expect("tagged run completes");
+        assert_eq!(result["runtime"], json!("ql-tagged"));
+        assert_eq!(result["status"], json!("completed"));
+        assert_eq!(result["verification"]["objective_checks_pass"], json!(true));
+        // The model saw the tagged four, never the loop verbs.
+        let seen = result["observations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|o| o["event_type"] == json!("model_requested"))
+            .and_then(|o| o["value"]["capabilities"].as_array())
+            .unwrap();
+        assert_eq!(seen.len(), 4);
+        assert!(
+            seen.iter()
+                .all(|c| c["description"].as_str().unwrap().contains("(P")),
+            "every tagged tool carries its office law"
+        );
+        let report = &result["execution"]["report"];
+        assert_eq!(report["paradigm"], json!("tagged"));
+        let circuit = &report["circuits"][0];
+        // No return condition ran: the circuit stays open, the ledger stays.
+        assert_eq!(circuit["closure_state"], json!("open"));
+        let positions: Vec<u64> = circuit["residues"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|r| r["position"].as_u64().unwrap())
+            .collect();
+        assert_eq!(positions, vec![0, 1, 2], "frame, material, effect");
+    }
+
+    #[test]
+    fn tagged_route_refuses_the_loop_verbs_and_still_delivers() {
+        let task = crate::tasks::Task::get("S1-SKILL-001").unwrap();
+        let (_dir, world) = temp_world();
+        let body = ScriptedBody::classic(vec![
+            json!({"content":"trying the verb",
+                   "capabilityCalls":[{"name":"close","args":{"synthesis":"not here"}}]}),
+            json!({"content":"then without it",
+                   "capabilityCalls":[{"name":"write_file","args":{"path":"deliverable.md","content":"the deliverable"}}]}),
+            json!({"content":"delivered"}),
+        ]);
+        let mut host = ResearchHost::new(body, world, None, 64, vec![]).unwrap();
+        let mut observer = RecordingObserver::default();
+        let result = run_task(
+            &task,
+            ExternalRef::new("trace:test:tagged-2").unwrap(),
+            RunMode::Tagged,
+            Limits::default(),
+            None,
+            &mut host,
+            &mut observer,
+            &CancellationToken::default(),
+        )
+        .expect("tagged run resolves");
+        assert_eq!(result["status"], json!("completed"));
+        assert_eq!(result["model_calls"], json!(3));
+        assert_eq!(result["capability_calls"], json!(1));
+        assert_eq!(
+            result["execution"]["report"]["circuits"][0]["closure_state"],
+            json!("open")
+        );
+    }
+
+    #[test]
     fn run_mode_admits_the_native_conditions() {
         for (name, mode) in [
             ("classic", RunMode::Classic),
             ("ql-direct", RunMode::Direct),
             ("ql-deep", RunMode::Deep),
             ("ql-toolset", RunMode::Toolset),
+            ("ql-tagged", RunMode::Tagged),
         ] {
             assert_eq!(RunMode::parse(name).unwrap(), mode);
             assert_eq!(mode.name(), name);

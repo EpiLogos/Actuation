@@ -13,18 +13,59 @@ use std::{collections::BTreeMap, path::Path};
 const TASKS: &str = include_str!("../../../experiments/native-research/tasks.json");
 const REVIEW: &str =
     include_str!("../../../experiments/native-research/human-review-reference.json");
+
+/// The workspace overlay (`QL_WORKSPACE_OVERLAY`): a JSON file mapping task
+/// id → { workspace path → replacement content }, applied when the task is
+/// constructed so `start()`, `setup()`, `verify()` and the revision digest
+/// all see the same variant start. Unset by default; the frozen catalogue is
+/// untouched.
+fn workspace_overlay() -> Result<Option<&'static Value>> {
+    static OVERLAY: std::sync::OnceLock<std::result::Result<Option<Value>, String>> =
+        std::sync::OnceLock::new();
+    match OVERLAY.get_or_init(|| {
+        let path = match std::env::var("QL_WORKSPACE_OVERLAY") {
+            Ok(p) if !p.is_empty() => p,
+            _ => return Ok(None),
+        };
+        let raw = std::fs::read_to_string(&path)
+            .map_err(|e| format!("QL_WORKSPACE_OVERLAY unreadable: {e}"))?;
+        let parsed: Value = serde_json::from_str(&raw)
+            .map_err(|e| format!("QL_WORKSPACE_OVERLAY invalid JSON: {e}"))?;
+        Ok(Some(parsed))
+    }) {
+        Ok(overlay) => Ok(overlay.as_ref()),
+        Err(why) => Err(Error::new(why.clone())),
+    }
+}
+
+fn apply_workspace_overlay(value: &mut Value, overlay: &Value, id: &str) {
+    if let Some(entries) = overlay.get(id).and_then(Value::as_object) {
+        if let Some(workspace) = value
+            .get_mut("starting_workspace")
+            .and_then(Value::as_object_mut)
+        {
+            for (path, content) in entries {
+                workspace.insert(path.clone(), content.clone());
+            }
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Task(Value);
 impl Task {
     pub fn get(id: &str) -> Result<Self> {
         let catalogue: Value = serde_json::from_str(TASKS).expect("checked task catalogue");
-        let value = catalogue["tasks"]
+        let mut value = catalogue["tasks"]
             .as_array()
             .unwrap()
             .iter()
             .find(|t| t["id"] == id)
             .cloned()
             .ok_or_else(|| Error::new("unknown research task"))?;
+        if let Some(overlay) = workspace_overlay()? {
+            apply_workspace_overlay(&mut value, overlay, id);
+        }
         candidate_boundary(&value)?;
         Ok(Self(value))
     }
@@ -419,5 +460,37 @@ mod tests {
                 }
             );
         }
+    }
+
+    #[test]
+    fn workspace_overlay_replaces_only_the_named_task_entries() {
+        let mut task = json!({
+            "id": "S1-TEST-001",
+            "starting_workspace": {"SKILL.md": "frozen content", "notes/a.md": "notes"}
+        });
+        let overlay = json!({
+            "S1-TEST-001": {"SKILL.md": "overlayed content", "extra.md": "added"},
+            "S1-OTHER-001": {"SKILL.md": "not applied"}
+        });
+        apply_workspace_overlay(&mut task, &overlay, "S1-TEST-001");
+        assert_eq!(
+            task["starting_workspace"]["SKILL.md"],
+            json!("overlayed content")
+        );
+        assert_eq!(task["starting_workspace"]["extra.md"], json!("added"));
+        assert_eq!(task["starting_workspace"]["notes/a.md"], json!("notes"));
+        let mut other = json!({
+            "id": "S1-OTHER-001",
+            "starting_workspace": {"SKILL.md": "frozen content"}
+        });
+        apply_workspace_overlay(&mut other, &overlay, "S1-OTHER-001");
+        assert_eq!(
+            other["starting_workspace"]["SKILL.md"],
+            json!("not applied"),
+            "the overlay is keyed by task id"
+        );
+        let mut absent = json!({"id": "S1-THIRD-001", "starting_workspace": {}});
+        apply_workspace_overlay(&mut absent, &overlay, "S1-THIRD-001");
+        assert!(absent["starting_workspace"].as_object().unwrap().is_empty());
     }
 }
