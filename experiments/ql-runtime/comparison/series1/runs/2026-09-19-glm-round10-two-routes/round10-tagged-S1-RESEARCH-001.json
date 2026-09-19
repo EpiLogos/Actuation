@@ -1,0 +1,1812 @@
+{
+  "schema": "ql-series1-run/0.3",
+  "trace_ref": "trace:actuation:round5accept:s1-research-001",
+  "task": {
+    "id": "S1-RESEARCH-001",
+    "category": "local-research",
+    "prompt": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge.",
+    "successConditions": [
+      "Use only local workspace sources.",
+      "Distinguish current evidence from superseded planning material.",
+      "Identify the genuinely unresolved comparison question.",
+      "Cite filenames for material claims.",
+      "Do not modify any file."
+    ],
+    "verificationProtocol": [
+      "Require byte-identical workspace before/after.",
+      "Preserve the complete answer and tool trace for human source-checking.",
+      "Provide a human-only reference sheet derived from the frozen source corpus.",
+      "Do not assign an automated semantic score."
+    ],
+    "reviewFocus": [
+      "prompt apprehension",
+      "tool/action selection",
+      "difference and recovery",
+      "closure/stopping",
+      "final intent fulfilment",
+      "unnecessary friction",
+      "source discovery",
+      "evidence selection",
+      "temporal/source discrimination",
+      "citation discipline"
+    ]
+  },
+  "benchmark_revision": "series1-round5-accept-2026-09-17",
+  "host": {
+    "id": "rust-native-acceptance",
+    "revision": "9f8e3e2"
+  },
+  "determination": "pending-human-review",
+  "provider_mode": "supplied-body",
+  "fixture_provider": false,
+  "records": [
+    {
+      "condition": "ql-tagged",
+      "repetition": 0,
+      "ordinal": 0,
+      "trace_ref": "trace:actuation:round5accept:s1-research-001:trial:0",
+      "status": "completed",
+      "error": null,
+      "prompt": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge.",
+      "success_conditions": [
+        "Use only local workspace sources.",
+        "Distinguish current evidence from superseded planning material.",
+        "Identify the genuinely unresolved comparison question.",
+        "Cite filenames for material claims.",
+        "Do not modify any file."
+      ],
+      "starting_workspace": {
+        "sources/01-architecture.md": "# Execution architecture\n\nCurrent supported execution surfaces are **local workstation** and **GitHub Actions**. A remote VM runner is not currently a supported Series 1 surface. Local runs obtain provider credentials from the process environment. GitHub runs obtain the same provider credential from an Actions secret.\n",
+        "sources/02-meeting-2026-07-12.md": "# Meeting note — 2026-07-12\n\nWe may add a remote VM runner later if repeated experiments need a long-lived host. This was discussed as a possible future extension; no acceptance or implementation decision was made.\n",
+        "sources/03-validation-2026-08-01.md": "# Validation log — 2026-08-01\n\nThe harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner. The remote VM path has not been tested. Functional records match structurally across the two validated surfaces. We have not yet established whether GitHub-hosted runner variance materially distorts latency comparisons against local runs.\n",
+        "sources/99-archive-early-plan.md": "# ARCHIVE — early plan\n\nInitial assumption: Series 1 will run locally only because CI cannot carry the required model configuration.\n\nThis file predates the Actions dispatcher and is retained only as planning history.\n"
+      },
+      "final_workspace": {
+        "sources/01-architecture.md": "# Execution architecture\n\nCurrent supported execution surfaces are **local workstation** and **GitHub Actions**. A remote VM runner is not currently a supported Series 1 surface. Local runs obtain provider credentials from the process environment. GitHub runs obtain the same provider credential from an Actions secret.\n",
+        "sources/02-meeting-2026-07-12.md": "# Meeting note — 2026-07-12\n\nWe may add a remote VM runner later if repeated experiments need a long-lived host. This was discussed as a possible future extension; no acceptance or implementation decision was made.\n",
+        "sources/03-validation-2026-08-01.md": "# Validation log — 2026-08-01\n\nThe harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner. The remote VM path has not been tested. Functional records match structurally across the two validated surfaces. We have not yet established whether GitHub-hosted runner variance materially distorts latency comparisons against local runs.\n",
+        "sources/99-archive-early-plan.md": "# ARCHIVE — early plan\n\nInitial assumption: Series 1 will run locally only because CI cannot carry the required model configuration.\n\nThis file predates the Actions dispatcher and is retained only as planning history.\n"
+      },
+      "verification": {
+        "protocol": "source-preservation-and-human-grounding-review",
+        "observations": {
+          "workspaceUnchanged": true
+        },
+        "objective_checks_pass": true
+      },
+      "outcome": {
+        "report": {
+          "status": "completed",
+          "runtime": "ql-tagged",
+          "runtimeVersion": "0.1.0-tagged",
+          "trace_ref": "trace:actuation:round5accept:s1-research-001:trial:0",
+          "iterations": 4,
+          "model_calls": 4,
+          "capability_calls": 6,
+          "outcome": "## Research Note: Execution Surfaces, Evidence, Superseded Claims, and Open Questions\n\n*(Based solely on files in `sources/`; no external knowledge, no workspace edits.)*\n\n**1) Currently supported execution surfaces**\nTwo surfaces are supported: the **local workstation** and **GitHub Actions**. A remote VM runner is explicitly *not* a supported Series 1 surface. (sources/01-architecture.md)\n\n**2) Evidence establishing support**\n- The architecture document names the two supported surfaces and describes credential handling: local runs draw provider credentials from the process environment, GitHub runs from an Actions secret. (sources/01-architecture.md)\n- The validation log confirms the harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner, and that functional records match structurally across the two validated surfaces. (sources/03-validation-2026-08-01.md)\n\n**3) Older statement that is superseded**\nThe archived early plan's initial assumption that \"Series 1 will run locally only because CI cannot carry the required model configuration\" is obsolete. (sources/99-archive-early-plan.md) That file predates the Actions dispatcher and is retained only as planning history (its own statement, sources/99-archive-early-plan.md); it is contradicted by the current architecture listing GitHub Actions as supported (sources/01-architecture.md) and by the successful clean-runner validation (sources/03-validation-2026-08-01.md).\n\n**4) Unresolved: comparing runs**\nIt has not yet been established whether **GitHub-hosted runner variance materially distorts latency comparisons against local runs**. (sources/03-validation-2026-08-01.md)\n\n**Related, but not yet a surface:** a remote VM runner was discussed on 2026-07-12 as a possible future extension if repeated experiments need a long-lived host; no acceptance or implementation decision was made (sources/02-meeting-2026-07-12.md), the remote VM path remains untested (sources/03-validation-2026-08-01.md), and it is not a supported surface (sources/01-architecture.md).",
+          "error": null,
+          "history": [
+            {
+              "role": "user",
+              "content": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge."
+            },
+            {
+              "role": "assistant",
+              "content": "I'll start by discovering what files are in the workspace, then read the relevant ones to build the research note.",
+              "capabilityCalls": [
+                {
+                  "name": "list_files",
+                  "args": {},
+                  "id": "list-1"
+                }
+              ],
+              "control": null,
+              "usage": {
+                "input_tokens": 447,
+                "output_tokens": 131,
+                "total_tokens": 578
+              },
+              "raw": {
+                "id": "20260920020524dc598e71bf184257",
+                "model": "glm-5.3-flash",
+                "finish_reason": "stop",
+                "adapter_attempts": 1
+              },
+              "repairs": 0
+            },
+            {
+              "role": "capability",
+              "name": "list_files",
+              "result": [
+                {
+                  "name": "sources",
+                  "type": "directory"
+                }
+              ]
+            },
+            {
+              "role": "assistant",
+              "content": "The workspace root contains a `sources` directory. Listing its contents next.",
+              "capabilityCalls": [
+                {
+                  "name": "list_files",
+                  "args": {
+                    "path": "sources"
+                  },
+                  "id": "list-2"
+                }
+              ],
+              "control": null,
+              "usage": {
+                "input_tokens": 667,
+                "output_tokens": 112,
+                "total_tokens": 779
+              },
+              "raw": {
+                "id": "20260920020529b5cefab993904596",
+                "model": "glm-5.3-flash",
+                "finish_reason": "stop",
+                "adapter_attempts": 1
+              },
+              "repairs": 0
+            },
+            {
+              "role": "capability",
+              "name": "list_files",
+              "result": [
+                {
+                  "name": "01-architecture.md",
+                  "type": "file"
+                },
+                {
+                  "name": "02-meeting-2026-07-12.md",
+                  "type": "file"
+                },
+                {
+                  "name": "03-validation-2026-08-01.md",
+                  "type": "file"
+                },
+                {
+                  "name": "99-archive-early-plan.md",
+                  "type": "file"
+                }
+              ]
+            },
+            {
+              "role": "assistant",
+              "content": "Reading all four source files in parallel to gather the evidence base.",
+              "capabilityCalls": [
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "sources/01-architecture.md"
+                  },
+                  "id": "read-1"
+                },
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "sources/02-meeting-2026-07-12.md"
+                  },
+                  "id": "read-2"
+                },
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "sources/03-validation-2026-08-01.md"
+                  },
+                  "id": "read-3"
+                },
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "sources/99-archive-early-plan.md"
+                  },
+                  "id": "read-4"
+                }
+              ],
+              "control": null,
+              "usage": {
+                "input_tokens": 1008,
+                "output_tokens": 179,
+                "total_tokens": 1187
+              },
+              "raw": {
+                "id": "20260920020548a03fd4da1e6b4995",
+                "model": "glm-5.3-flash",
+                "finish_reason": "stop",
+                "adapter_attempts": 3
+              },
+              "repairs": 1,
+              "failed_attempts": [
+                {
+                  "error": "model specimen returned invalid JSON"
+                }
+              ]
+            },
+            {
+              "role": "capability",
+              "name": "read_file",
+              "result": "# Execution architecture\n\nCurrent supported execution surfaces are **local workstation** and **GitHub Actions**. A remote VM runner is not currently a supported Series 1 surface. Local runs obtain provider credentials from the process environment. GitHub runs obtain the same provider credential from an Actions secret.\n"
+            },
+            {
+              "role": "capability",
+              "name": "read_file",
+              "result": "# Meeting note — 2026-07-12\n\nWe may add a remote VM runner later if repeated experiments need a long-lived host. This was discussed as a possible future extension; no acceptance or implementation decision was made.\n"
+            },
+            {
+              "role": "capability",
+              "name": "read_file",
+              "result": "# Validation log — 2026-08-01\n\nThe harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner. The remote VM path has not been tested. Functional records match structurally across the two validated surfaces. We have not yet established whether GitHub-hosted runner variance materially distorts latency comparisons against local runs.\n"
+            },
+            {
+              "role": "capability",
+              "name": "read_file",
+              "result": "# ARCHIVE — early plan\n\nInitial assumption: Series 1 will run locally only because CI cannot carry the required model configuration.\n\nThis file predates the Actions dispatcher and is retained only as planning history.\n"
+            },
+            {
+              "role": "assistant",
+              "content": "## Research Note: Execution Surfaces, Evidence, Superseded Claims, and Open Questions\n\n*(Based solely on files in `sources/`; no external knowledge, no workspace edits.)*\n\n**1) Currently supported execution surfaces**\nTwo surfaces are supported: the **local workstation** and **GitHub Actions**. A remote VM runner is explicitly *not* a supported Series 1 surface. (sources/01-architecture.md)\n\n**2) Evidence establishing support**\n- The architecture document names the two supported surfaces and describes credential handling: local runs draw provider credentials from the process environment, GitHub runs from an Actions secret. (sources/01-architecture.md)\n- The validation log confirms the harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner, and that functional records match structurally across the two validated surfaces. (sources/03-validation-2026-08-01.md)\n\n**3) Older statement that is superseded**\nThe archived early plan's initial assumption that \"Series 1 will run locally only because CI cannot carry the required model configuration\" is obsolete. (sources/99-archive-early-plan.md) That file predates the Actions dispatcher and is retained only as planning history (its own statement, sources/99-archive-early-plan.md); it is contradicted by the current architecture listing GitHub Actions as supported (sources/01-architecture.md) and by the successful clean-runner validation (sources/03-validation-2026-08-01.md).\n\n**4) Unresolved: comparing runs**\nIt has not yet been established whether **GitHub-hosted runner variance materially distorts latency comparisons against local runs**. (sources/03-validation-2026-08-01.md)\n\n**Related, but not yet a surface:** a remote VM runner was discussed on 2026-07-12 as a possible future extension if repeated experiments need a long-lived host; no acceptance or implementation decision was made (sources/02-meeting-2026-07-12.md), the remote VM path remains untested (sources/03-validation-2026-08-01.md), and it is not a supported surface (sources/01-architecture.md).",
+              "capabilityCalls": [],
+              "control": null,
+              "usage": {
+                "input_tokens": 1667,
+                "output_tokens": 968,
+                "total_tokens": 2635
+              },
+              "raw": {
+                "id": "20260920020615161a2ba5cf284a93",
+                "model": "glm-5.3-flash",
+                "finish_reason": "stop",
+                "adapter_attempts": 2
+              },
+              "repairs": 0
+            }
+          ],
+          "circuits": [
+            {
+              "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0",
+              "face": "direct",
+              "active_position": 1,
+              "closure_state": "open",
+              "residues": [
+                {
+                  "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:res:frame",
+                  "position": 0,
+                  "kind": "frame",
+                  "value": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge.",
+                  "invalidated": false
+                },
+                {
+                  "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:res:1",
+                  "position": 1,
+                  "kind": "material",
+                  "value": [
+                    {
+                      "name": "sources",
+                      "type": "directory"
+                    }
+                  ],
+                  "invalidated": false
+                },
+                {
+                  "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:res:2",
+                  "position": 1,
+                  "kind": "material",
+                  "value": [
+                    {
+                      "name": "01-architecture.md",
+                      "type": "file"
+                    },
+                    {
+                      "name": "02-meeting-2026-07-12.md",
+                      "type": "file"
+                    },
+                    {
+                      "name": "03-validation-2026-08-01.md",
+                      "type": "file"
+                    },
+                    {
+                      "name": "99-archive-early-plan.md",
+                      "type": "file"
+                    }
+                  ],
+                  "invalidated": false
+                },
+                {
+                  "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:res:3",
+                  "position": 1,
+                  "kind": "material",
+                  "value": "# Execution architecture\n\nCurrent supported execution surfaces are **local workstation** and **GitHub Actions**. A remote VM runner is not currently a supported Series 1 surface. Local runs obtain provider credentials from the process environment. GitHub runs obtain the same provider credential from an Actions secret.\n",
+                  "invalidated": false
+                },
+                {
+                  "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:res:4",
+                  "position": 1,
+                  "kind": "material",
+                  "value": "# Meeting note — 2026-07-12\n\nWe may add a remote VM runner later if repeated experiments need a long-lived host. This was discussed as a possible future extension; no acceptance or implementation decision was made.\n",
+                  "invalidated": false
+                },
+                {
+                  "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:res:5",
+                  "position": 1,
+                  "kind": "material",
+                  "value": "# Validation log — 2026-08-01\n\nThe harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner. The remote VM path has not been tested. Functional records match structurally across the two validated surfaces. We have not yet established whether GitHub-hosted runner variance materially distorts latency comparisons against local runs.\n",
+                  "invalidated": false
+                },
+                {
+                  "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:res:6",
+                  "position": 1,
+                  "kind": "material",
+                  "value": "# ARCHIVE — early plan\n\nInitial assumption: Series 1 will run locally only because CI cannot carry the required model configuration.\n\nThis file predates the Actions dispatcher and is retained only as planning history.\n",
+                  "invalidated": false
+                }
+              ],
+              "trajectory": [
+                {
+                  "from": 0,
+                  "to": 1,
+                  "by": "list_files"
+                },
+                {
+                  "from": 1,
+                  "to": 1,
+                  "by": "list_files"
+                },
+                {
+                  "from": 1,
+                  "to": 1,
+                  "by": "read_file"
+                },
+                {
+                  "from": 1,
+                  "to": 1,
+                  "by": "read_file"
+                },
+                {
+                  "from": 1,
+                  "to": 1,
+                  "by": "read_file"
+                },
+                {
+                  "from": 1,
+                  "to": 1,
+                  "by": "read_file"
+                }
+              ]
+            }
+          ],
+          "closure": null,
+          "determination": null,
+          "paradigm": "tagged"
+        },
+        "evidence_refs": [
+          "trace:actuation:round5accept:s1-research-001:trial:0:toolset:0",
+          "trace:actuation:round5accept:s1-research-001:trial:0:toolset:1",
+          "trace:actuation:round5accept:s1-research-001:trial:0:toolset:2",
+          "trace:actuation:round5accept:s1-research-001:trial:0:toolset:3",
+          "trace:actuation:round5accept:s1-research-001:trial:0:toolset:4",
+          "trace:actuation:round5accept:s1-research-001:trial:0:toolset:5",
+          "trace:actuation:round5accept:s1-research-001:trial:0:toolset:6",
+          "trace:actuation:round5accept:s1-research-001:trial:0:toolset:7",
+          "trace:actuation:round5accept:s1-research-001:trial:0:toolset:8",
+          "trace:actuation:round5accept:s1-research-001:trial:0:toolset:9",
+          "trace:actuation:round5accept:s1-research-001:trial:0:toolset:10",
+          "trace:actuation:round5accept:s1-research-001:trial:0:toolset:11",
+          "trace:actuation:round5accept:s1-research-001:trial:0:toolset:12"
+        ]
+      },
+      "model": {
+        "provider": "zai",
+        "model": "glm-5.3-flash"
+      },
+      "fixture_provider": false,
+      "provider_mode": "supplied-body",
+      "host": {
+        "id": "rust-native-acceptance",
+        "revision": "9f8e3e2"
+      },
+      "host_revision": "9f8e3e2",
+      "host_composition_fingerprint": null,
+      "benchmark_revision": "series1-round5-accept-2026-09-17",
+      "task_revision": "c86104049d28a9f96d82d23c7a45cfa078be5faa89fa8a5a0e29f1e2a2cc09df",
+      "runner_revision": "actuation-research-0.2.0",
+      "review_contract_revision": "ql-series1-run/0.3",
+      "prompt_digest": "c85e83ca8ddb771da5891ded57470fb169ded984398148883c875ec9242f30f0",
+      "success_constraints_digest": "64a066c4239d51c284a579ba1cc5e93984853fd8e818655891084187291c814a",
+      "start_state_digest": "e0742ae531ea86a2b129203ac6c227588d9d15638647c510980a0b9a2a57901e",
+      "capability_contract_digest": "1bca74b9082ea7490979012b56118c65892b6d9107719a1ed72e626ca3c5b864",
+      "verification_protocol_digest": "338a8305b3ebdde62a3b599cb6a04e2544760500d400543bdcbe3313bc1afa32",
+      "execution_budget_digest": "558d872ad8c951c6a6eea5e9f1b98b983e483366ad8001527c841057cf63bbba",
+      "network_policy_digest": "outbound-https-zai-only",
+      "elapsed_ms": 71936,
+      "model_calls": 4,
+      "capability_calls": 6,
+      "total_tokens": 5179,
+      "usage_partial": false,
+      "receipt_path": "trial-000-ql-tagged/receipt.json",
+      "record": {
+        "result": {
+          "schema": "actuation.research-run/v1",
+          "runtime": "ql-tagged",
+          "status": "completed",
+          "task": {
+            "id": "S1-RESEARCH-001",
+            "category": "local-research",
+            "prompt": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge.",
+            "successConditions": [
+              "Use only local workspace sources.",
+              "Distinguish current evidence from superseded planning material.",
+              "Identify the genuinely unresolved comparison question.",
+              "Cite filenames for material claims.",
+              "Do not modify any file."
+            ],
+            "verificationProtocol": [
+              "Require byte-identical workspace before/after.",
+              "Preserve the complete answer and tool trace for human source-checking.",
+              "Provide a human-only reference sheet derived from the frozen source corpus.",
+              "Do not assign an automated semantic score."
+            ],
+            "reviewFocus": [
+              "prompt apprehension",
+              "tool/action selection",
+              "difference and recovery",
+              "closure/stopping",
+              "final intent fulfilment",
+              "unnecessary friction",
+              "source discovery",
+              "evidence selection",
+              "temporal/source discrimination",
+              "citation discipline"
+            ]
+          },
+          "task_revision": "c86104049d28a9f96d82d23c7a45cfa078be5faa89fa8a5a0e29f1e2a2cc09df",
+          "trace_ref": "trace:actuation:round5accept:s1-research-001:trial:0",
+          "model_body": {
+            "source": {
+              "program": "/Users/admin/.cache/actuation/glm-body.mjs",
+              "adapter": "one-shot-json/glm-body.mjs",
+              "provider": "zai",
+              "model": "glm-5.3-flash"
+            },
+            "fixture_provider": false,
+            "provider_mode": "supplied-body",
+            "turn_repairs": {
+              "malformed_reask_max": 2,
+              "empty_act_reask": true
+            }
+          },
+          "workspace": {
+            "before": {
+              "sources/01-architecture.md": "# Execution architecture\n\nCurrent supported execution surfaces are **local workstation** and **GitHub Actions**. A remote VM runner is not currently a supported Series 1 surface. Local runs obtain provider credentials from the process environment. GitHub runs obtain the same provider credential from an Actions secret.\n",
+              "sources/02-meeting-2026-07-12.md": "# Meeting note — 2026-07-12\n\nWe may add a remote VM runner later if repeated experiments need a long-lived host. This was discussed as a possible future extension; no acceptance or implementation decision was made.\n",
+              "sources/03-validation-2026-08-01.md": "# Validation log — 2026-08-01\n\nThe harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner. The remote VM path has not been tested. Functional records match structurally across the two validated surfaces. We have not yet established whether GitHub-hosted runner variance materially distorts latency comparisons against local runs.\n",
+              "sources/99-archive-early-plan.md": "# ARCHIVE — early plan\n\nInitial assumption: Series 1 will run locally only because CI cannot carry the required model configuration.\n\nThis file predates the Actions dispatcher and is retained only as planning history.\n"
+            },
+            "after": {
+              "sources/01-architecture.md": "# Execution architecture\n\nCurrent supported execution surfaces are **local workstation** and **GitHub Actions**. A remote VM runner is not currently a supported Series 1 surface. Local runs obtain provider credentials from the process environment. GitHub runs obtain the same provider credential from an Actions secret.\n",
+              "sources/02-meeting-2026-07-12.md": "# Meeting note — 2026-07-12\n\nWe may add a remote VM runner later if repeated experiments need a long-lived host. This was discussed as a possible future extension; no acceptance or implementation decision was made.\n",
+              "sources/03-validation-2026-08-01.md": "# Validation log — 2026-08-01\n\nThe harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner. The remote VM path has not been tested. Functional records match structurally across the two validated surfaces. We have not yet established whether GitHub-hosted runner variance materially distorts latency comparisons against local runs.\n",
+              "sources/99-archive-early-plan.md": "# ARCHIVE — early plan\n\nInitial assumption: Series 1 will run locally only because CI cannot carry the required model configuration.\n\nThis file predates the Actions dispatcher and is retained only as planning history.\n"
+            }
+          },
+          "execution": {
+            "report": {
+              "status": "completed",
+              "runtime": "ql-tagged",
+              "runtimeVersion": "0.1.0-tagged",
+              "trace_ref": "trace:actuation:round5accept:s1-research-001:trial:0",
+              "iterations": 4,
+              "model_calls": 4,
+              "capability_calls": 6,
+              "outcome": "## Research Note: Execution Surfaces, Evidence, Superseded Claims, and Open Questions\n\n*(Based solely on files in `sources/`; no external knowledge, no workspace edits.)*\n\n**1) Currently supported execution surfaces**\nTwo surfaces are supported: the **local workstation** and **GitHub Actions**. A remote VM runner is explicitly *not* a supported Series 1 surface. (sources/01-architecture.md)\n\n**2) Evidence establishing support**\n- The architecture document names the two supported surfaces and describes credential handling: local runs draw provider credentials from the process environment, GitHub runs from an Actions secret. (sources/01-architecture.md)\n- The validation log confirms the harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner, and that functional records match structurally across the two validated surfaces. (sources/03-validation-2026-08-01.md)\n\n**3) Older statement that is superseded**\nThe archived early plan's initial assumption that \"Series 1 will run locally only because CI cannot carry the required model configuration\" is obsolete. (sources/99-archive-early-plan.md) That file predates the Actions dispatcher and is retained only as planning history (its own statement, sources/99-archive-early-plan.md); it is contradicted by the current architecture listing GitHub Actions as supported (sources/01-architecture.md) and by the successful clean-runner validation (sources/03-validation-2026-08-01.md).\n\n**4) Unresolved: comparing runs**\nIt has not yet been established whether **GitHub-hosted runner variance materially distorts latency comparisons against local runs**. (sources/03-validation-2026-08-01.md)\n\n**Related, but not yet a surface:** a remote VM runner was discussed on 2026-07-12 as a possible future extension if repeated experiments need a long-lived host; no acceptance or implementation decision was made (sources/02-meeting-2026-07-12.md), the remote VM path remains untested (sources/03-validation-2026-08-01.md), and it is not a supported surface (sources/01-architecture.md).",
+              "error": null,
+              "history": [
+                {
+                  "role": "user",
+                  "content": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge."
+                },
+                {
+                  "role": "assistant",
+                  "content": "I'll start by discovering what files are in the workspace, then read the relevant ones to build the research note.",
+                  "capabilityCalls": [
+                    {
+                      "name": "list_files",
+                      "args": {},
+                      "id": "list-1"
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 447,
+                    "output_tokens": 131,
+                    "total_tokens": 578
+                  },
+                  "raw": {
+                    "id": "20260920020524dc598e71bf184257",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 1
+                  },
+                  "repairs": 0
+                },
+                {
+                  "role": "capability",
+                  "name": "list_files",
+                  "result": [
+                    {
+                      "name": "sources",
+                      "type": "directory"
+                    }
+                  ]
+                },
+                {
+                  "role": "assistant",
+                  "content": "The workspace root contains a `sources` directory. Listing its contents next.",
+                  "capabilityCalls": [
+                    {
+                      "name": "list_files",
+                      "args": {
+                        "path": "sources"
+                      },
+                      "id": "list-2"
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 667,
+                    "output_tokens": 112,
+                    "total_tokens": 779
+                  },
+                  "raw": {
+                    "id": "20260920020529b5cefab993904596",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 1
+                  },
+                  "repairs": 0
+                },
+                {
+                  "role": "capability",
+                  "name": "list_files",
+                  "result": [
+                    {
+                      "name": "01-architecture.md",
+                      "type": "file"
+                    },
+                    {
+                      "name": "02-meeting-2026-07-12.md",
+                      "type": "file"
+                    },
+                    {
+                      "name": "03-validation-2026-08-01.md",
+                      "type": "file"
+                    },
+                    {
+                      "name": "99-archive-early-plan.md",
+                      "type": "file"
+                    }
+                  ]
+                },
+                {
+                  "role": "assistant",
+                  "content": "Reading all four source files in parallel to gather the evidence base.",
+                  "capabilityCalls": [
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "sources/01-architecture.md"
+                      },
+                      "id": "read-1"
+                    },
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "sources/02-meeting-2026-07-12.md"
+                      },
+                      "id": "read-2"
+                    },
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "sources/03-validation-2026-08-01.md"
+                      },
+                      "id": "read-3"
+                    },
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "sources/99-archive-early-plan.md"
+                      },
+                      "id": "read-4"
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 1008,
+                    "output_tokens": 179,
+                    "total_tokens": 1187
+                  },
+                  "raw": {
+                    "id": "20260920020548a03fd4da1e6b4995",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 3
+                  },
+                  "repairs": 1,
+                  "failed_attempts": [
+                    {
+                      "error": "model specimen returned invalid JSON"
+                    }
+                  ]
+                },
+                {
+                  "role": "capability",
+                  "name": "read_file",
+                  "result": "# Execution architecture\n\nCurrent supported execution surfaces are **local workstation** and **GitHub Actions**. A remote VM runner is not currently a supported Series 1 surface. Local runs obtain provider credentials from the process environment. GitHub runs obtain the same provider credential from an Actions secret.\n"
+                },
+                {
+                  "role": "capability",
+                  "name": "read_file",
+                  "result": "# Meeting note — 2026-07-12\n\nWe may add a remote VM runner later if repeated experiments need a long-lived host. This was discussed as a possible future extension; no acceptance or implementation decision was made.\n"
+                },
+                {
+                  "role": "capability",
+                  "name": "read_file",
+                  "result": "# Validation log — 2026-08-01\n\nThe harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner. The remote VM path has not been tested. Functional records match structurally across the two validated surfaces. We have not yet established whether GitHub-hosted runner variance materially distorts latency comparisons against local runs.\n"
+                },
+                {
+                  "role": "capability",
+                  "name": "read_file",
+                  "result": "# ARCHIVE — early plan\n\nInitial assumption: Series 1 will run locally only because CI cannot carry the required model configuration.\n\nThis file predates the Actions dispatcher and is retained only as planning history.\n"
+                },
+                {
+                  "role": "assistant",
+                  "content": "## Research Note: Execution Surfaces, Evidence, Superseded Claims, and Open Questions\n\n*(Based solely on files in `sources/`; no external knowledge, no workspace edits.)*\n\n**1) Currently supported execution surfaces**\nTwo surfaces are supported: the **local workstation** and **GitHub Actions**. A remote VM runner is explicitly *not* a supported Series 1 surface. (sources/01-architecture.md)\n\n**2) Evidence establishing support**\n- The architecture document names the two supported surfaces and describes credential handling: local runs draw provider credentials from the process environment, GitHub runs from an Actions secret. (sources/01-architecture.md)\n- The validation log confirms the harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner, and that functional records match structurally across the two validated surfaces. (sources/03-validation-2026-08-01.md)\n\n**3) Older statement that is superseded**\nThe archived early plan's initial assumption that \"Series 1 will run locally only because CI cannot carry the required model configuration\" is obsolete. (sources/99-archive-early-plan.md) That file predates the Actions dispatcher and is retained only as planning history (its own statement, sources/99-archive-early-plan.md); it is contradicted by the current architecture listing GitHub Actions as supported (sources/01-architecture.md) and by the successful clean-runner validation (sources/03-validation-2026-08-01.md).\n\n**4) Unresolved: comparing runs**\nIt has not yet been established whether **GitHub-hosted runner variance materially distorts latency comparisons against local runs**. (sources/03-validation-2026-08-01.md)\n\n**Related, but not yet a surface:** a remote VM runner was discussed on 2026-07-12 as a possible future extension if repeated experiments need a long-lived host; no acceptance or implementation decision was made (sources/02-meeting-2026-07-12.md), the remote VM path remains untested (sources/03-validation-2026-08-01.md), and it is not a supported surface (sources/01-architecture.md).",
+                  "capabilityCalls": [],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 1667,
+                    "output_tokens": 968,
+                    "total_tokens": 2635
+                  },
+                  "raw": {
+                    "id": "20260920020615161a2ba5cf284a93",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 2
+                  },
+                  "repairs": 0
+                }
+              ],
+              "circuits": [
+                {
+                  "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0",
+                  "face": "direct",
+                  "active_position": 1,
+                  "closure_state": "open",
+                  "residues": [
+                    {
+                      "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:res:frame",
+                      "position": 0,
+                      "kind": "frame",
+                      "value": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge.",
+                      "invalidated": false
+                    },
+                    {
+                      "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:res:1",
+                      "position": 1,
+                      "kind": "material",
+                      "value": [
+                        {
+                          "name": "sources",
+                          "type": "directory"
+                        }
+                      ],
+                      "invalidated": false
+                    },
+                    {
+                      "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:res:2",
+                      "position": 1,
+                      "kind": "material",
+                      "value": [
+                        {
+                          "name": "01-architecture.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "02-meeting-2026-07-12.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "03-validation-2026-08-01.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "99-archive-early-plan.md",
+                          "type": "file"
+                        }
+                      ],
+                      "invalidated": false
+                    },
+                    {
+                      "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:res:3",
+                      "position": 1,
+                      "kind": "material",
+                      "value": "# Execution architecture\n\nCurrent supported execution surfaces are **local workstation** and **GitHub Actions**. A remote VM runner is not currently a supported Series 1 surface. Local runs obtain provider credentials from the process environment. GitHub runs obtain the same provider credential from an Actions secret.\n",
+                      "invalidated": false
+                    },
+                    {
+                      "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:res:4",
+                      "position": 1,
+                      "kind": "material",
+                      "value": "# Meeting note — 2026-07-12\n\nWe may add a remote VM runner later if repeated experiments need a long-lived host. This was discussed as a possible future extension; no acceptance or implementation decision was made.\n",
+                      "invalidated": false
+                    },
+                    {
+                      "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:res:5",
+                      "position": 1,
+                      "kind": "material",
+                      "value": "# Validation log — 2026-08-01\n\nThe harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner. The remote VM path has not been tested. Functional records match structurally across the two validated surfaces. We have not yet established whether GitHub-hosted runner variance materially distorts latency comparisons against local runs.\n",
+                      "invalidated": false
+                    },
+                    {
+                      "id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:res:6",
+                      "position": 1,
+                      "kind": "material",
+                      "value": "# ARCHIVE — early plan\n\nInitial assumption: Series 1 will run locally only because CI cannot carry the required model configuration.\n\nThis file predates the Actions dispatcher and is retained only as planning history.\n",
+                      "invalidated": false
+                    }
+                  ],
+                  "trajectory": [
+                    {
+                      "from": 0,
+                      "to": 1,
+                      "by": "list_files"
+                    },
+                    {
+                      "from": 1,
+                      "to": 1,
+                      "by": "list_files"
+                    },
+                    {
+                      "from": 1,
+                      "to": 1,
+                      "by": "read_file"
+                    },
+                    {
+                      "from": 1,
+                      "to": 1,
+                      "by": "read_file"
+                    },
+                    {
+                      "from": 1,
+                      "to": 1,
+                      "by": "read_file"
+                    },
+                    {
+                      "from": 1,
+                      "to": 1,
+                      "by": "read_file"
+                    }
+                  ]
+                }
+              ],
+              "closure": null,
+              "determination": null,
+              "paradigm": "tagged"
+            },
+            "evidence_refs": [
+              "trace:actuation:round5accept:s1-research-001:trial:0:toolset:0",
+              "trace:actuation:round5accept:s1-research-001:trial:0:toolset:1",
+              "trace:actuation:round5accept:s1-research-001:trial:0:toolset:2",
+              "trace:actuation:round5accept:s1-research-001:trial:0:toolset:3",
+              "trace:actuation:round5accept:s1-research-001:trial:0:toolset:4",
+              "trace:actuation:round5accept:s1-research-001:trial:0:toolset:5",
+              "trace:actuation:round5accept:s1-research-001:trial:0:toolset:6",
+              "trace:actuation:round5accept:s1-research-001:trial:0:toolset:7",
+              "trace:actuation:round5accept:s1-research-001:trial:0:toolset:8",
+              "trace:actuation:round5accept:s1-research-001:trial:0:toolset:9",
+              "trace:actuation:round5accept:s1-research-001:trial:0:toolset:10",
+              "trace:actuation:round5accept:s1-research-001:trial:0:toolset:11",
+              "trace:actuation:round5accept:s1-research-001:trial:0:toolset:12"
+            ]
+          },
+          "body_evidence": {
+            "status": "not-applicable",
+            "session_evidence": null
+          },
+          "observations": [
+            {
+              "event_type": "model_requested",
+              "value": {
+                "request": {
+                  "id": "S1-RESEARCH-001",
+                  "taskId": "S1-RESEARCH-001",
+                  "runId": "trace:actuation:round5accept:s1-research-001:trial:0",
+                  "input": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge.",
+                  "successConditions": [
+                    "Use only local workspace sources.",
+                    "Distinguish current evidence from superseded planning material.",
+                    "Identify the genuinely unresolved comparison question.",
+                    "Cite filenames for material claims.",
+                    "Do not modify any file."
+                  ],
+                  "maxSteps": 64
+                },
+                "payload": {
+                  "history": [
+                    {
+                      "role": "user",
+                      "content": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge."
+                    }
+                  ],
+                  "iteration": 1
+                },
+                "capabilities": [
+                  {
+                    "name": "list_files",
+                    "description": "See what the workspace holds. This takes in the field as given material (P1); what comes back reads as discovery (P1')."
+                  },
+                  {
+                    "name": "read_file",
+                    "description": "Read one file's content into the work as material and evidence (P1). What comes back reads as the given (P1')."
+                  },
+                  {
+                    "name": "write_file",
+                    "description": "Transform the ground: create or change one file (P2). What comes back reads as the effect made (P2')."
+                  },
+                  {
+                    "name": "run_tests",
+                    "description": "Evaluate the built form against the whole: run the workspace test suite (P4). What comes back reads as whole-relative evaluation (P4')."
+                  }
+                ]
+              }
+            },
+            {
+              "event_type": "model_returned",
+              "value": {
+                "ok": true,
+                "result": {
+                  "content": "I'll start by discovering what files are in the workspace, then read the relevant ones to build the research note.",
+                  "capabilityCalls": [
+                    {
+                      "name": "list_files",
+                      "args": {},
+                      "id": "list-1"
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 447,
+                    "output_tokens": 131,
+                    "total_tokens": 578
+                  },
+                  "raw": {
+                    "id": "20260920020524dc598e71bf184257",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 1
+                  },
+                  "repairs": 0
+                }
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "list_files",
+                "args": {}
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "list_files",
+                "ok": true,
+                "result": [
+                  {
+                    "name": "sources",
+                    "type": "directory"
+                  }
+                ]
+              }
+            },
+            {
+              "event_type": "model_requested",
+              "value": {
+                "request": {
+                  "id": "S1-RESEARCH-001",
+                  "taskId": "S1-RESEARCH-001",
+                  "runId": "trace:actuation:round5accept:s1-research-001:trial:0",
+                  "input": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge.",
+                  "successConditions": [
+                    "Use only local workspace sources.",
+                    "Distinguish current evidence from superseded planning material.",
+                    "Identify the genuinely unresolved comparison question.",
+                    "Cite filenames for material claims.",
+                    "Do not modify any file."
+                  ],
+                  "maxSteps": 64
+                },
+                "payload": {
+                  "history": [
+                    {
+                      "role": "user",
+                      "content": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge."
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "I'll start by discovering what files are in the workspace, then read the relevant ones to build the research note.",
+                      "capabilityCalls": [
+                        {
+                          "name": "list_files",
+                          "args": {},
+                          "id": "list-1"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 447,
+                        "output_tokens": 131,
+                        "total_tokens": 578
+                      },
+                      "raw": {
+                        "id": "20260920020524dc598e71bf184257",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "name": "list_files",
+                      "result": [
+                        {
+                          "name": "sources",
+                          "type": "directory"
+                        }
+                      ]
+                    }
+                  ],
+                  "iteration": 2
+                },
+                "capabilities": [
+                  {
+                    "name": "list_files",
+                    "description": "See what the workspace holds. This takes in the field as given material (P1); what comes back reads as discovery (P1')."
+                  },
+                  {
+                    "name": "read_file",
+                    "description": "Read one file's content into the work as material and evidence (P1). What comes back reads as the given (P1')."
+                  },
+                  {
+                    "name": "write_file",
+                    "description": "Transform the ground: create or change one file (P2). What comes back reads as the effect made (P2')."
+                  },
+                  {
+                    "name": "run_tests",
+                    "description": "Evaluate the built form against the whole: run the workspace test suite (P4). What comes back reads as whole-relative evaluation (P4')."
+                  }
+                ]
+              }
+            },
+            {
+              "event_type": "model_returned",
+              "value": {
+                "ok": true,
+                "result": {
+                  "content": "The workspace root contains a `sources` directory. Listing its contents next.",
+                  "capabilityCalls": [
+                    {
+                      "name": "list_files",
+                      "args": {
+                        "path": "sources"
+                      },
+                      "id": "list-2"
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 667,
+                    "output_tokens": 112,
+                    "total_tokens": 779
+                  },
+                  "raw": {
+                    "id": "20260920020529b5cefab993904596",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 1
+                  },
+                  "repairs": 0
+                }
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "list_files",
+                "args": {
+                  "path": "sources"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "list_files",
+                "ok": true,
+                "result": [
+                  {
+                    "name": "01-architecture.md",
+                    "type": "file"
+                  },
+                  {
+                    "name": "02-meeting-2026-07-12.md",
+                    "type": "file"
+                  },
+                  {
+                    "name": "03-validation-2026-08-01.md",
+                    "type": "file"
+                  },
+                  {
+                    "name": "99-archive-early-plan.md",
+                    "type": "file"
+                  }
+                ]
+              }
+            },
+            {
+              "event_type": "model_requested",
+              "value": {
+                "request": {
+                  "id": "S1-RESEARCH-001",
+                  "taskId": "S1-RESEARCH-001",
+                  "runId": "trace:actuation:round5accept:s1-research-001:trial:0",
+                  "input": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge.",
+                  "successConditions": [
+                    "Use only local workspace sources.",
+                    "Distinguish current evidence from superseded planning material.",
+                    "Identify the genuinely unresolved comparison question.",
+                    "Cite filenames for material claims.",
+                    "Do not modify any file."
+                  ],
+                  "maxSteps": 64
+                },
+                "payload": {
+                  "history": [
+                    {
+                      "role": "user",
+                      "content": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge."
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "I'll start by discovering what files are in the workspace, then read the relevant ones to build the research note.",
+                      "capabilityCalls": [
+                        {
+                          "name": "list_files",
+                          "args": {},
+                          "id": "list-1"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 447,
+                        "output_tokens": 131,
+                        "total_tokens": 578
+                      },
+                      "raw": {
+                        "id": "20260920020524dc598e71bf184257",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "name": "list_files",
+                      "result": [
+                        {
+                          "name": "sources",
+                          "type": "directory"
+                        }
+                      ]
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "The workspace root contains a `sources` directory. Listing its contents next.",
+                      "capabilityCalls": [
+                        {
+                          "name": "list_files",
+                          "args": {
+                            "path": "sources"
+                          },
+                          "id": "list-2"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 667,
+                        "output_tokens": 112,
+                        "total_tokens": 779
+                      },
+                      "raw": {
+                        "id": "20260920020529b5cefab993904596",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "name": "list_files",
+                      "result": [
+                        {
+                          "name": "01-architecture.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "02-meeting-2026-07-12.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "03-validation-2026-08-01.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "99-archive-early-plan.md",
+                          "type": "file"
+                        }
+                      ]
+                    }
+                  ],
+                  "iteration": 3
+                },
+                "capabilities": [
+                  {
+                    "name": "list_files",
+                    "description": "See what the workspace holds. This takes in the field as given material (P1); what comes back reads as discovery (P1')."
+                  },
+                  {
+                    "name": "read_file",
+                    "description": "Read one file's content into the work as material and evidence (P1). What comes back reads as the given (P1')."
+                  },
+                  {
+                    "name": "write_file",
+                    "description": "Transform the ground: create or change one file (P2). What comes back reads as the effect made (P2')."
+                  },
+                  {
+                    "name": "run_tests",
+                    "description": "Evaluate the built form against the whole: run the workspace test suite (P4). What comes back reads as whole-relative evaluation (P4')."
+                  }
+                ]
+              }
+            },
+            {
+              "event_type": "model_returned",
+              "value": {
+                "ok": true,
+                "result": {
+                  "content": "Reading all four source files in parallel to gather the evidence base.",
+                  "capabilityCalls": [
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "sources/01-architecture.md"
+                      },
+                      "id": "read-1"
+                    },
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "sources/02-meeting-2026-07-12.md"
+                      },
+                      "id": "read-2"
+                    },
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "sources/03-validation-2026-08-01.md"
+                      },
+                      "id": "read-3"
+                    },
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "sources/99-archive-early-plan.md"
+                      },
+                      "id": "read-4"
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 1008,
+                    "output_tokens": 179,
+                    "total_tokens": 1187
+                  },
+                  "raw": {
+                    "id": "20260920020548a03fd4da1e6b4995",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 3
+                  },
+                  "repairs": 1,
+                  "failed_attempts": [
+                    {
+                      "error": "model specimen returned invalid JSON"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "read_file",
+                "args": {
+                  "path": "sources/01-architecture.md"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "read_file",
+                "ok": true,
+                "result": "# Execution architecture\n\nCurrent supported execution surfaces are **local workstation** and **GitHub Actions**. A remote VM runner is not currently a supported Series 1 surface. Local runs obtain provider credentials from the process environment. GitHub runs obtain the same provider credential from an Actions secret.\n"
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "read_file",
+                "args": {
+                  "path": "sources/02-meeting-2026-07-12.md"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "read_file",
+                "ok": true,
+                "result": "# Meeting note — 2026-07-12\n\nWe may add a remote VM runner later if repeated experiments need a long-lived host. This was discussed as a possible future extension; no acceptance or implementation decision was made.\n"
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "read_file",
+                "args": {
+                  "path": "sources/03-validation-2026-08-01.md"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "read_file",
+                "ok": true,
+                "result": "# Validation log — 2026-08-01\n\nThe harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner. The remote VM path has not been tested. Functional records match structurally across the two validated surfaces. We have not yet established whether GitHub-hosted runner variance materially distorts latency comparisons against local runs.\n"
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "read_file",
+                "args": {
+                  "path": "sources/99-archive-early-plan.md"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "read_file",
+                "ok": true,
+                "result": "# ARCHIVE — early plan\n\nInitial assumption: Series 1 will run locally only because CI cannot carry the required model configuration.\n\nThis file predates the Actions dispatcher and is retained only as planning history.\n"
+              }
+            },
+            {
+              "event_type": "model_requested",
+              "value": {
+                "request": {
+                  "id": "S1-RESEARCH-001",
+                  "taskId": "S1-RESEARCH-001",
+                  "runId": "trace:actuation:round5accept:s1-research-001:trial:0",
+                  "input": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge.",
+                  "successConditions": [
+                    "Use only local workspace sources.",
+                    "Distinguish current evidence from superseded planning material.",
+                    "Identify the genuinely unresolved comparison question.",
+                    "Cite filenames for material claims.",
+                    "Do not modify any file."
+                  ],
+                  "maxSteps": 64
+                },
+                "payload": {
+                  "history": [
+                    {
+                      "role": "user",
+                      "content": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge."
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "I'll start by discovering what files are in the workspace, then read the relevant ones to build the research note.",
+                      "capabilityCalls": [
+                        {
+                          "name": "list_files",
+                          "args": {},
+                          "id": "list-1"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 447,
+                        "output_tokens": 131,
+                        "total_tokens": 578
+                      },
+                      "raw": {
+                        "id": "20260920020524dc598e71bf184257",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "name": "list_files",
+                      "result": [
+                        {
+                          "name": "sources",
+                          "type": "directory"
+                        }
+                      ]
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "The workspace root contains a `sources` directory. Listing its contents next.",
+                      "capabilityCalls": [
+                        {
+                          "name": "list_files",
+                          "args": {
+                            "path": "sources"
+                          },
+                          "id": "list-2"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 667,
+                        "output_tokens": 112,
+                        "total_tokens": 779
+                      },
+                      "raw": {
+                        "id": "20260920020529b5cefab993904596",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "name": "list_files",
+                      "result": [
+                        {
+                          "name": "01-architecture.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "02-meeting-2026-07-12.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "03-validation-2026-08-01.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "99-archive-early-plan.md",
+                          "type": "file"
+                        }
+                      ]
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "Reading all four source files in parallel to gather the evidence base.",
+                      "capabilityCalls": [
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "sources/01-architecture.md"
+                          },
+                          "id": "read-1"
+                        },
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "sources/02-meeting-2026-07-12.md"
+                          },
+                          "id": "read-2"
+                        },
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "sources/03-validation-2026-08-01.md"
+                          },
+                          "id": "read-3"
+                        },
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "sources/99-archive-early-plan.md"
+                          },
+                          "id": "read-4"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 1008,
+                        "output_tokens": 179,
+                        "total_tokens": 1187
+                      },
+                      "raw": {
+                        "id": "20260920020548a03fd4da1e6b4995",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 3
+                      },
+                      "repairs": 1,
+                      "failed_attempts": [
+                        {
+                          "error": "model specimen returned invalid JSON"
+                        }
+                      ]
+                    },
+                    {
+                      "role": "capability",
+                      "name": "read_file",
+                      "result": "# Execution architecture\n\nCurrent supported execution surfaces are **local workstation** and **GitHub Actions**. A remote VM runner is not currently a supported Series 1 surface. Local runs obtain provider credentials from the process environment. GitHub runs obtain the same provider credential from an Actions secret.\n"
+                    },
+                    {
+                      "role": "capability",
+                      "name": "read_file",
+                      "result": "# Meeting note — 2026-07-12\n\nWe may add a remote VM runner later if repeated experiments need a long-lived host. This was discussed as a possible future extension; no acceptance or implementation decision was made.\n"
+                    },
+                    {
+                      "role": "capability",
+                      "name": "read_file",
+                      "result": "# Validation log — 2026-08-01\n\nThe harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner. The remote VM path has not been tested. Functional records match structurally across the two validated surfaces. We have not yet established whether GitHub-hosted runner variance materially distorts latency comparisons against local runs.\n"
+                    },
+                    {
+                      "role": "capability",
+                      "name": "read_file",
+                      "result": "# ARCHIVE — early plan\n\nInitial assumption: Series 1 will run locally only because CI cannot carry the required model configuration.\n\nThis file predates the Actions dispatcher and is retained only as planning history.\n"
+                    }
+                  ],
+                  "iteration": 4
+                },
+                "capabilities": [
+                  {
+                    "name": "list_files",
+                    "description": "See what the workspace holds. This takes in the field as given material (P1); what comes back reads as discovery (P1')."
+                  },
+                  {
+                    "name": "read_file",
+                    "description": "Read one file's content into the work as material and evidence (P1). What comes back reads as the given (P1')."
+                  },
+                  {
+                    "name": "write_file",
+                    "description": "Transform the ground: create or change one file (P2). What comes back reads as the effect made (P2')."
+                  },
+                  {
+                    "name": "run_tests",
+                    "description": "Evaluate the built form against the whole: run the workspace test suite (P4). What comes back reads as whole-relative evaluation (P4')."
+                  }
+                ]
+              }
+            },
+            {
+              "event_type": "model_returned",
+              "value": {
+                "ok": true,
+                "result": {
+                  "content": "## Research Note: Execution Surfaces, Evidence, Superseded Claims, and Open Questions\n\n*(Based solely on files in `sources/`; no external knowledge, no workspace edits.)*\n\n**1) Currently supported execution surfaces**\nTwo surfaces are supported: the **local workstation** and **GitHub Actions**. A remote VM runner is explicitly *not* a supported Series 1 surface. (sources/01-architecture.md)\n\n**2) Evidence establishing support**\n- The architecture document names the two supported surfaces and describes credential handling: local runs draw provider credentials from the process environment, GitHub runs from an Actions secret. (sources/01-architecture.md)\n- The validation log confirms the harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner, and that functional records match structurally across the two validated surfaces. (sources/03-validation-2026-08-01.md)\n\n**3) Older statement that is superseded**\nThe archived early plan's initial assumption that \"Series 1 will run locally only because CI cannot carry the required model configuration\" is obsolete. (sources/99-archive-early-plan.md) That file predates the Actions dispatcher and is retained only as planning history (its own statement, sources/99-archive-early-plan.md); it is contradicted by the current architecture listing GitHub Actions as supported (sources/01-architecture.md) and by the successful clean-runner validation (sources/03-validation-2026-08-01.md).\n\n**4) Unresolved: comparing runs**\nIt has not yet been established whether **GitHub-hosted runner variance materially distorts latency comparisons against local runs**. (sources/03-validation-2026-08-01.md)\n\n**Related, but not yet a surface:** a remote VM runner was discussed on 2026-07-12 as a possible future extension if repeated experiments need a long-lived host; no acceptance or implementation decision was made (sources/02-meeting-2026-07-12.md), the remote VM path remains untested (sources/03-validation-2026-08-01.md), and it is not a supported surface (sources/01-architecture.md).",
+                  "capabilityCalls": [],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 1667,
+                    "output_tokens": 968,
+                    "total_tokens": 2635
+                  },
+                  "raw": {
+                    "id": "20260920020615161a2ba5cf284a93",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 2
+                  },
+                  "repairs": 0
+                }
+              }
+            }
+          ],
+          "verification": {
+            "protocol": "source-preservation-and-human-grounding-review",
+            "observations": {
+              "workspaceUnchanged": true
+            },
+            "objective_checks_pass": true
+          },
+          "model_calls": 4,
+          "capability_calls": 6,
+          "elapsed_ms": 71746,
+          "budget": {
+            "limits": {
+              "max_steps": 64,
+              "max_depth": 2,
+              "max_contexts": 32,
+              "max_trace_bytes": 67108864,
+              "max_reentries": 0
+            },
+            "max_calls": 64
+          },
+          "evidence_standing": "D-unless-separately-exercised-and-attested",
+          "provider_evidence": "not-assessed",
+          "human_acceptance": false,
+          "factory_ancestry": "not-supplied"
+        },
+        "events": [
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-research-001:trial:0:toolset:0",
+            "event_type": "run_started",
+            "run_id": "trace:actuation:round5accept:s1-research-001:trial:0",
+            "sequence": 0,
+            "runtime": "ql-tagged",
+            "payload": {
+              "task_id": "S1-RESEARCH-001",
+              "paradigm": "toolset",
+              "circuit_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-research-001:trial:0:toolset:1",
+            "event_type": "circuit_started",
+            "run_id": "trace:actuation:round5accept:s1-research-001:trial:0",
+            "sequence": 1,
+            "runtime": "ql-tagged",
+            "payload": {
+              "frame": "Using only the files in this workspace, prepare a concise research note answering: (1) which execution surfaces are currently supported, (2) what evidence establishes that, (3) which older statement is superseded, and (4) what remains unresolved about comparing runs. Cite the filename supporting every material claim. Do not edit the workspace and do not import outside knowledge.",
+              "active_position": 0,
+              "circuit_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-research-001:trial:0:toolset:2",
+            "event_type": "act_created",
+            "run_id": "trace:actuation:round5accept:s1-research-001:trial:0",
+            "sequence": 2,
+            "runtime": "ql-tagged",
+            "payload": {
+              "act_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:act:1",
+              "carrier": "model",
+              "capability_calls": [
+                {
+                  "name": "list_files",
+                  "args": {},
+                  "id": "list-1"
+                }
+              ],
+              "circuit_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-research-001:trial:0:toolset:3",
+            "event_type": "return_interpreted",
+            "run_id": "trace:actuation:round5accept:s1-research-001:trial:0",
+            "sequence": 3,
+            "runtime": "ql-tagged",
+            "payload": {
+              "by": "tool office law",
+              "tool": "list_files",
+              "position": 1,
+              "circuit_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-research-001:trial:0:toolset:4",
+            "event_type": "act_created",
+            "run_id": "trace:actuation:round5accept:s1-research-001:trial:0",
+            "sequence": 4,
+            "runtime": "ql-tagged",
+            "payload": {
+              "act_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:act:2",
+              "carrier": "model",
+              "capability_calls": [
+                {
+                  "name": "list_files",
+                  "args": {
+                    "path": "sources"
+                  },
+                  "id": "list-2"
+                }
+              ],
+              "circuit_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-research-001:trial:0:toolset:5",
+            "event_type": "return_interpreted",
+            "run_id": "trace:actuation:round5accept:s1-research-001:trial:0",
+            "sequence": 5,
+            "runtime": "ql-tagged",
+            "payload": {
+              "by": "tool office law",
+              "tool": "list_files",
+              "position": 1,
+              "circuit_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-research-001:trial:0:toolset:6",
+            "event_type": "act_created",
+            "run_id": "trace:actuation:round5accept:s1-research-001:trial:0",
+            "sequence": 6,
+            "runtime": "ql-tagged",
+            "payload": {
+              "act_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:act:3",
+              "carrier": "model",
+              "capability_calls": [
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "sources/01-architecture.md"
+                  },
+                  "id": "read-1"
+                },
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "sources/02-meeting-2026-07-12.md"
+                  },
+                  "id": "read-2"
+                },
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "sources/03-validation-2026-08-01.md"
+                  },
+                  "id": "read-3"
+                },
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "sources/99-archive-early-plan.md"
+                  },
+                  "id": "read-4"
+                }
+              ],
+              "circuit_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-research-001:trial:0:toolset:7",
+            "event_type": "return_interpreted",
+            "run_id": "trace:actuation:round5accept:s1-research-001:trial:0",
+            "sequence": 7,
+            "runtime": "ql-tagged",
+            "payload": {
+              "by": "tool office law",
+              "tool": "read_file",
+              "position": 1,
+              "circuit_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-research-001:trial:0:toolset:8",
+            "event_type": "return_interpreted",
+            "run_id": "trace:actuation:round5accept:s1-research-001:trial:0",
+            "sequence": 8,
+            "runtime": "ql-tagged",
+            "payload": {
+              "by": "tool office law",
+              "tool": "read_file",
+              "position": 1,
+              "circuit_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-research-001:trial:0:toolset:9",
+            "event_type": "return_interpreted",
+            "run_id": "trace:actuation:round5accept:s1-research-001:trial:0",
+            "sequence": 9,
+            "runtime": "ql-tagged",
+            "payload": {
+              "by": "tool office law",
+              "tool": "read_file",
+              "position": 1,
+              "circuit_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-research-001:trial:0:toolset:10",
+            "event_type": "return_interpreted",
+            "run_id": "trace:actuation:round5accept:s1-research-001:trial:0",
+            "sequence": 10,
+            "runtime": "ql-tagged",
+            "payload": {
+              "by": "tool office law",
+              "tool": "read_file",
+              "position": 1,
+              "circuit_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-research-001:trial:0:toolset:11",
+            "event_type": "act_created",
+            "run_id": "trace:actuation:round5accept:s1-research-001:trial:0",
+            "sequence": 11,
+            "runtime": "ql-tagged",
+            "payload": {
+              "act_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0:act:4",
+              "carrier": "model",
+              "capability_calls": [],
+              "circuit_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-research-001:trial:0:toolset:12",
+            "event_type": "run_completed",
+            "run_id": "trace:actuation:round5accept:s1-research-001:trial:0",
+            "sequence": 12,
+            "runtime": "ql-tagged",
+            "payload": {
+              "outcome": "## Research Note: Execution Surfaces, Evidence, Superseded Claims, and Open Questions\n\n*(Based solely on files in `sources/`; no external knowledge, no workspace edits.)*\n\n**1) Currently supported execution surfaces**\nTwo surfaces are supported: the **local workstation** and **GitHub Actions**. A remote VM runner is explicitly *not* a supported Series 1 surface. (sources/01-architecture.md)\n\n**2) Evidence establishing support**\n- The architecture document names the two supported surfaces and describes credential handling: local runs draw provider credentials from the process environment, GitHub runs from an Actions secret. (sources/01-architecture.md)\n- The validation log confirms the harness was exercised successfully on a local workstation and on a clean GitHub-hosted runner, and that functional records match structurally across the two validated surfaces. (sources/03-validation-2026-08-01.md)\n\n**3) Older statement that is superseded**\nThe archived early plan's initial assumption that \"Series 1 will run locally only because CI cannot carry the required model configuration\" is obsolete. (sources/99-archive-early-plan.md) That file predates the Actions dispatcher and is retained only as planning history (its own statement, sources/99-archive-early-plan.md); it is contradicted by the current architecture listing GitHub Actions as supported (sources/01-architecture.md) and by the successful clean-runner validation (sources/03-validation-2026-08-01.md).\n\n**4) Unresolved: comparing runs**\nIt has not yet been established whether **GitHub-hosted runner variance materially distorts latency comparisons against local runs**. (sources/03-validation-2026-08-01.md)\n\n**Related, but not yet a surface:** a remote VM runner was discussed on 2026-07-12 as a possible future extension if repeated experiments need a long-lived host; no acceptance or implementation decision was made (sources/02-meeting-2026-07-12.md), the remote VM path remains untested (sources/03-validation-2026-08-01.md), and it is not a supported surface (sources/01-architecture.md).",
+              "via": "bare-content",
+              "circuit_id": "trace:actuation:round5accept:s1-research-001:trial:0:c0"
+            }
+          }
+        ],
+        "durable_stream": false
+      },
+      "human_acceptance": false,
+      "provider_evidence": "not-assessed"
+    }
+  ],
+  "held_constants": {
+    "prompt": true,
+    "success_constraints": true,
+    "start_state": true,
+    "model": true,
+    "capabilities": true,
+    "verification": true,
+    "budget": true,
+    "host_revision": true,
+    "host_composition": true,
+    "network_policy": true,
+    "benchmark_revision": true,
+    "task_revision": true,
+    "runner_revision": true,
+    "review_contract_revision": true,
+    "valid": true,
+    "mismatches": []
+  },
+  "provider_evidence": "not-assessed",
+  "human_acceptance": false
+}
