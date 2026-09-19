@@ -46,6 +46,8 @@ const FACETS: &[&str] = &[
     "config",
     "models",
     "mcp-config",
+    "permissions",
+    "trusts",
 ];
 const SECRET_PROBES: &[&str] = &["env", "file-pattern", "cli-presence", "vault-item"];
 const FORBIDDEN: &[&str] = &[
