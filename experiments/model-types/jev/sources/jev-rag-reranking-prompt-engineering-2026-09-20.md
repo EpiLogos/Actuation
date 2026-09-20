@@ -30,6 +30,10 @@ owning the workflow), stated from the outside.
 
 Read it as one practitioner's report, not as evidence.
 
+The classification-use proposal this reading prompted for our own development,
+planning and CI work is recorded in `../README.md` ("A named consideration") —
+not here, so that this file stays external material at a single standing.
+
 ## Description links (verbatim)
 
 ```text
