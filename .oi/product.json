@@ -2,22 +2,48 @@
   "schema": "oi.product-lifecycle/v1",
   "id": "actuation",
   "public_name": "Actuation",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "repository": "https://github.com/EpiLogos/Actuation",
   "source_checkout": "Actuation",
   "artifact": {
     "kind": "cli",
     "entry": "target/release/actuation",
-    "platforms": ["macos-arm64", "linux-x86_64"]
+    "platforms": [
+      "macos-arm64",
+      "linux-x86_64"
+    ]
   },
-  "build": {"command": ["cargo", "build", "--release", "--locked", "-p", "actuation-cli"]},
+  "build": {
+    "command": [
+      "cargo",
+      "build",
+      "--release",
+      "--locked",
+      "-p",
+      "actuation-cli"
+    ]
+  },
   "verify": {
-    "source_command": ["target/release/actuation", "verify", "--json"],
-    "installed_command": ["actuation", "verify", "--json"]
+    "source_command": [
+      "target/release/actuation",
+      "verify",
+      "--json"
+    ],
+    "installed_command": [
+      "actuation",
+      "verify",
+      "--json"
+    ]
   },
-  "install": {"mode": "oi-managed-native-cli"},
-  "update": {"mode": "suite-manifest"},
-  "remove": {"mode": "oi-managed-only"},
+  "install": {
+    "mode": "oi-managed-native-cli"
+  },
+  "update": {
+    "mode": "suite-manifest"
+  },
+  "remove": {
+    "mode": "oi-managed-only"
+  },
   "release": {
     "host": "github-releases",
     "tag_prefix": "actuation-v",

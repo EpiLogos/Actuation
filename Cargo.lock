@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "actuation-adapters"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "actuation-core",
  "actuation-stream",
@@ -20,7 +20,7 @@ dependencies = [
 
 [[package]]
 name = "actuation-cli"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "actuation-adapters",
  "actuation-core",
@@ -36,7 +36,7 @@ dependencies = [
 
 [[package]]
 name = "actuation-core"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -44,7 +44,7 @@ dependencies = [
 
 [[package]]
 name = "actuation-gateway"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "actuation-core",
  "actuation-stream",
@@ -56,7 +56,7 @@ dependencies = [
 
 [[package]]
 name = "actuation-migration-gate"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -65,7 +65,7 @@ dependencies = [
 
 [[package]]
 name = "actuation-research"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "actuation-core",
  "actuation-runtime",
@@ -81,7 +81,7 @@ dependencies = [
 
 [[package]]
 name = "actuation-runtime"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "actuation-adapters",
  "actuation-core",
@@ -93,7 +93,7 @@ dependencies = [
 
 [[package]]
 name = "actuation-stream"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "actuation-core",
  "getrandom 0.4.3",
