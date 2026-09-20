@@ -15,8 +15,10 @@
 //! Closure-check options (env `QL_CLOSE_CHECK`): `self` (default — the
 //! model's own synthesis in the close call, gated by the task's objective
 //! checks), `model` (one separate control-style model turn evaluates the
-//! synthesis against the success conditions first), `jev` (named seam for
-//! the jev+vak classification thread; refuses until wired).
+//! synthesis against the success conditions first). Jev is not a closure
+//! option: its role is fast classification — the lens-reading instrument
+//! behind the `lens_reading` cognitive tool, and the batch classification
+//! harnesses in the model-types thread.
 use crate::tasks::Task;
 use crate::{Error, Result};
 use actuation_runtime::{
@@ -96,6 +98,25 @@ impl Route {
     }
 }
 
+/// The cognitive tool: a lens reading of a subject the model names, served
+/// by the jev classification instrument. The description carries the whole
+/// contract — the law stays in the toolset, never in prose to the model.
+pub const LENS_TOOL: (&str, &str) = (
+    "lens_reading",
+    "A lens reading of a subject you name: how that subject reads through twelve lenses right now, returned as a distribution with the strongest lens named. The reading is taken fresh on each call; it is a reading of the subject, never an identity assigned to it. Args: {\"subject\": string} — name the subject concretely (the task, a decision, a file, the work as it stands).",
+);
+
+/// The ql-lens capability supply: the founding six plus the cognitive tool.
+pub fn lens_capability_supply() -> Value {
+    Value::Array(
+        TOOLSET_TOOLS
+            .iter()
+            .chain(std::iter::once(&LENS_TOOL))
+            .map(|(name, description)| json!({"name": name, "description": description}))
+            .collect(),
+    )
+}
+
 /// The static office law: which office a world tool serves when it runs.
 /// The two loop verbs are settled by their own calls, not by this map.
 pub fn tool_office(name: &str) -> Option<u8> {
@@ -136,7 +157,10 @@ pub struct ToolsetContext<'a> {
     pub before: Value,
     /// Which route the loop runs: the full return loop or the tagged four.
     pub route: Route,
-    /// `self` (default), `model`, or `jev` (named seam, refuses).
+    /// The cognitive lens-reading tool rides the supply when true (the
+    /// `ql-lens` condition).
+    pub lens_tool: bool,
+    /// `self` (default) or `model`.
     pub close_check: CloseCheck,
 }
 
@@ -144,13 +168,11 @@ pub struct ToolsetContext<'a> {
 pub enum CloseCheck {
     Self_,
     Model,
-    Jev,
 }
 impl CloseCheck {
     pub fn from_env() -> Self {
         match std::env::var("QL_CLOSE_CHECK").as_deref() {
             Ok("model") => Self::Model,
-            Ok("jev") => Self::Jev,
             _ => Self::Self_,
         }
     }
@@ -186,13 +208,18 @@ pub async fn run_toolset(
     let mut capability_calls: u64 = 0;
     let mut iterations: u64 = 0;
     let mut premature_deliveries: u64 = 0;
+    let mut lens_calls: u64 = 0;
     let mut status = "failed";
     let mut error: Option<String> = None;
     let mut outcome: Value = Value::Null;
     let mut closure: Value = Value::Null;
     let mut determination: Value = Value::Null;
     let mut closed_via_close = false;
-    let runtime_name = ctx.route.name();
+    let runtime_name = if ctx.lens_tool {
+        "ql-lens"
+    } else {
+        ctx.route.name()
+    };
     let max_steps = ctx.request.wire()["maxSteps"].as_u64().unwrap_or(64);
 
     let mut record = |event_type: &str, mut payload: Value| {
@@ -328,6 +355,46 @@ pub async fn run_toolset(
                     "result": {"ok": false, "error": "no such tool in the tagged route"}}));
                 continue;
             }
+            if name == "lens_reading" {
+                // A cognitive tool: the reading is served by the jev
+                // classification instrument and returned to the model. It
+                // records as a residue without moving the active position —
+                // a reading is not a position change. An unavailable
+                // instrument is an ordinary tool error, not a trial failure.
+                lens_calls += 1;
+                let subject = args
+                    .get("subject")
+                    .and_then(Value::as_str)
+                    .unwrap_or_default();
+                let reading = if subject.trim().is_empty() {
+                    Err(Error::new("lens_reading requires a subject string"))
+                } else {
+                    run_lens_reading(subject)
+                };
+                match reading {
+                    Ok(reading) => {
+                        residues.push(json!({
+                            "id": format!("{circuit_id}:res:{}", residues.len()),
+                            "position": active_position, "kind": "lens-reading",
+                            "value": reading, "invalidated": false}));
+                        history
+                            .push(json!({"role": "capability", "name": name, "result": reading}));
+                        record(
+                            "lens_reading_taken",
+                            json!({
+                            "subject": subject,
+                            "lens": reading["lens"],
+                            "latency_ms": reading["latency_ms"]}),
+                        );
+                    }
+                    Err(e) => {
+                        history.push(json!({"role": "capability", "name": name,
+                            "result": {"ok": false, "error": e.to_string()}}));
+                        record("lens_reading_failed", json!({"error": e.to_string()}));
+                    }
+                }
+                continue;
+            }
             if name == "close" {
                 let synthesis = args
                     .get("synthesis")
@@ -364,36 +431,6 @@ pub async fn run_toolset(
                 let mut checks = verification["objective_checks_pass"] == true;
                 let mut refusal: Option<String> = None;
                 match ctx.close_check {
-                    CloseCheck::Jev => {
-                        // The jev+vak pairing: jev-latest judges the synthesis
-                        // against the success conditions through the
-                        // TypeSafe System One instrument named by QL_JEV_BIN.
-                        // Fail-closed: an unavailable or undecided instrument
-                        // refuses the closure and the refusal rides the record.
-                        let check = run_jev_close_check(
-                            &synthesis,
-                            ctx.request.wire()["successConditions"].clone(),
-                        );
-                        model_calls += 0; // instrument call, not a model-body call
-                        let evaluated = match check {
-                            Ok(v) => v,
-                            Err(e) => {
-                                checks = false;
-                                refusal = Some(format!("jev close-check unavailable: {e}"));
-                                json!({"verdict": "reopen", "rationale": e.to_string()})
-                            }
-                        };
-                        if evaluated["verdict"] == json!("reopen") {
-                            checks = false;
-                            refusal = Some(format!(
-                                "jev close-check refused the synthesis: {}",
-                                evaluated["rationale"].as_str().unwrap_or_default()
-                            ));
-                            record("closure_refused", json!({"evaluation": evaluated}));
-                        } else {
-                            record("closure_evaluated", json!({"evaluation": evaluated}));
-                        }
-                    }
                     CloseCheck::Model => {
                         let check = dispatch_host_carrier(
                             host,
@@ -546,11 +583,12 @@ pub async fn run_toolset(
     let report = json!({
         "status": status,
         "runtime": runtime_name,
-        "runtimeVersion": if ctx.route == Route::ReturnLoop { "0.1.0-toolset" } else { "0.1.0-tagged" },
+        "runtimeVersion": if ctx.lens_tool { "0.1.0-lens" } else if ctx.route == Route::ReturnLoop { "0.1.0-toolset" } else { "0.1.0-tagged" },
         "trace_ref": trace,
         "iterations": iterations,
         "model_calls": model_calls,
         "capability_calls": capability_calls,
+        "lens_calls": lens_calls,
         "outcome": outcome,
         "error": error,
         "history": history,
@@ -572,25 +610,23 @@ pub async fn run_toolset(
     }
 }
 
-/// Run the jev close-check instrument (QL_JEV_BIN) against one proposed
-/// closure. The instrument is a process, like the owner instrument: request
-/// JSON in a scratch file, one JSON verdict on stdout, fail-closed.
-fn run_jev_close_check(synthesis: &str, success_conditions: Value) -> Result<Value> {
-    let program = std::env::var("QL_JEV_BIN")
+/// Run the lens-reading instrument (QL_LENS_BIN) against one subject. The
+/// instrument is a process, like the owner instrument: request JSON on
+/// stdin, one JSON reading on stdout, fail-closed.
+fn run_lens_reading(subject: &str) -> Result<Value> {
+    let program = std::env::var("QL_LENS_BIN")
         .ok()
         .filter(|p| !p.is_empty())
         .ok_or_else(|| {
             Error::new(
-                "QL_CLOSE_CHECK=jev requires QL_JEV_BIN (path to the close-check instrument)",
+                "the lens_reading tool requires QL_LENS_BIN (path to the lens-reading instrument)",
             )
         })?;
     let scratch = tempfile::tempdir()
-        .map_err(|e| Error::new(format!("jev close-check scratch unavailable: {e}")))?;
+        .map_err(|e| Error::new(format!("lens-reading scratch unavailable: {e}")))?;
     // The instrument reads one JSON request on stdin.
-    let input = serde_json::to_vec(
-        &json!({"success_conditions": success_conditions, "synthesis": synthesis}),
-    )
-    .map_err(|e| Error::new(format!("jev close-check request not built: {e}")))?;
+    let input = serde_json::to_vec(&json!({"subject": subject}))
+        .map_err(|e| Error::new(format!("lens-reading request not built: {e}")))?;
     // The instrument is a Node script resolved through PATH: inherit the
     // host's PATH (an empty environment leaves `env node` unresolvable).
     let environment = [("PATH".to_owned(), std::env::var("PATH").unwrap_or_default())]
@@ -609,7 +645,8 @@ fn run_jev_close_check(synthesis: &str, success_conditions: Value) -> Result<Val
         let why: String = r.stderr.chars().take(300).collect();
         return Err(Error::new(format!("instrument exited {:?}: {why}", r.code)));
     }
-    serde_json::from_str(&r.stdout).map_err(|_| Error::new("jev close-check returned invalid JSON"))
+    serde_json::from_str(&r.stdout)
+        .map_err(|_| Error::new("lens-reading instrument returned invalid JSON"))
 }
 
 #[cfg(test)]
@@ -658,6 +695,21 @@ mod tests {
                 "{name}'s description must carry the Px/Px′ office law"
             );
         }
+    }
+
+    #[test]
+    fn lens_condition_adds_the_cognitive_tool() {
+        let supply = lens_capability_supply();
+        let arr = supply.as_array().unwrap();
+        assert_eq!(arr.len(), 7, "the founding six plus the lens reading");
+        assert_eq!(arr[6]["name"], json!("lens_reading"));
+        assert!(
+            arr[6]["description"]
+                .as_str()
+                .unwrap()
+                .contains("twelve lenses"),
+            "the description states what comes back"
+        );
     }
 
     #[test]

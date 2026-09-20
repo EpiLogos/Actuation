@@ -409,6 +409,7 @@ pub enum RunMode {
     Deep,
     Toolset,
     Tagged,
+    Lens,
 }
 impl RunMode {
     pub fn parse(name: &str) -> Result<Self> {
@@ -418,6 +419,7 @@ impl RunMode {
             "ql-deep" => Ok(Self::Deep),
             "ql-toolset" => Ok(Self::Toolset),
             "ql-tagged" => Ok(Self::Tagged),
+            "ql-lens" => Ok(Self::Lens),
             _ => Err(Error::new("unknown research condition")),
         }
     }
@@ -428,6 +430,7 @@ impl RunMode {
             Self::Deep => "ql-deep",
             Self::Toolset => "ql-toolset",
             Self::Tagged => "ql-tagged",
+            Self::Lens => "ql-lens",
         }
     }
 }
@@ -562,21 +565,28 @@ pub fn run_task_with_control<B: ModelBody>(
             let run = block_on(ClassicRuntime.run(&request, host, &mut redacted, cancellation))?;
             return Ok(json!({"report":run.report,"evidence_refs":run.evidence_refs}));
         }
-        if matches!(mode, RunMode::Toolset | RunMode::Tagged) {
+        if matches!(mode, RunMode::Toolset | RunMode::Tagged | RunMode::Lens) {
             // The toolset family: described tools replace the default
             // capability list, and the loop owns the circuit ledger. The
             // return loop carries all six tools; route one carries the
-            // tagged four and ends the way classic ends.
-            let (supply, route) = if mode == RunMode::Toolset {
-                (
-                    crate::toolset::toolset_capability_supply(),
-                    crate::toolset::Route::ReturnLoop,
-                )
-            } else {
-                (
+            // tagged four and ends the way classic ends; the lens condition
+            // adds the cognitive lens-reading tool.
+            let (supply, route, lens_tool) = match mode {
+                RunMode::Tagged => (
                     crate::toolset::tagged_capability_supply(),
                     crate::toolset::Route::Tagged,
-                )
+                    false,
+                ),
+                RunMode::Lens => (
+                    crate::toolset::lens_capability_supply(),
+                    crate::toolset::Route::ReturnLoop,
+                    true,
+                ),
+                _ => (
+                    crate::toolset::toolset_capability_supply(),
+                    crate::toolset::Route::ReturnLoop,
+                    false,
+                ),
             };
             host.set_capability_supply(supply);
             let outcome = block_on(crate::toolset::run_toolset(
@@ -587,6 +597,7 @@ pub fn run_task_with_control<B: ModelBody>(
                     node: host.node.clone(),
                     before: before.clone(),
                     route,
+                    lens_tool,
                     close_check: crate::toolset::CloseCheck::from_env(),
                 },
                 host,
@@ -1030,6 +1041,68 @@ mod tests {
     }
 
     #[test]
+    fn lens_condition_serves_the_cognitive_tool_and_records_the_reading() {
+        let script_dir = tempfile::tempdir().unwrap();
+        let script = script_dir.path().join("fake-lens.sh");
+        std::fs::write(
+            &script,
+            "#!/bin/sh\nprintf '%s' '{\"lens\":\"L2\",\"rationale\":\"scripted reading\",\"probabilities\":{\"L2\":0.5,\"L1\":0.3},\"latency_ms\":1}'\n",
+        )
+        .unwrap();
+        std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+            .unwrap();
+        std::env::set_var("QL_LENS_BIN", &script);
+        let task = crate::tasks::Task::get("S1-SKILL-001").unwrap();
+        let (_dir, world) = temp_world();
+        let body = ScriptedBody::classic(vec![
+            json!({"content":"reading the subject",
+                   "capabilityCalls":[{"name":"lens_reading","args":{"subject":"the handoff work as it stands"}}]}),
+            json!({"content":"making the effect",
+                   "capabilityCalls":[{"name":"write_file","args":{"path":"deliverable.md","content":"the deliverable"}}]}),
+            json!({"content":"the bounded request is realised",
+                   "capabilityCalls":[{"name":"close","args":{"synthesis":"deliverable.md written from SKILL.md"}}]}),
+        ]);
+        let mut host = ResearchHost::new(body, world, None, 64, vec![]).unwrap();
+        let mut observer = RecordingObserver::default();
+        let result = run_task(
+            &task,
+            ExternalRef::new("trace:test:lens-1").unwrap(),
+            RunMode::Lens,
+            Limits::default(),
+            None,
+            &mut host,
+            &mut observer,
+            &CancellationToken::default(),
+        )
+        .expect("lens run completes");
+        assert_eq!(result["runtime"], json!("ql-lens"));
+        assert_eq!(result["status"], json!("completed"));
+        // The model saw the founding six plus the cognitive tool.
+        let seen = result["observations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|o| o["event_type"] == json!("model_requested"))
+            .and_then(|o| o["value"]["capabilities"].as_array())
+            .unwrap();
+        assert_eq!(seen.len(), 7);
+        assert_eq!(seen[6]["name"], json!("lens_reading"));
+        let report = &result["execution"]["report"];
+        assert_eq!(report["lens_calls"], json!(1));
+        let kinds: Vec<&str> = report["circuits"][0]["residues"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter_map(|r| r["kind"].as_str())
+            .collect();
+        assert!(
+            kinds.contains(&"lens-reading"),
+            "the reading rides the circuit record"
+        );
+        assert_eq!(result["verification"]["objective_checks_pass"], json!(true));
+    }
+
+    #[test]
     fn run_mode_admits_the_native_conditions() {
         for (name, mode) in [
             ("classic", RunMode::Classic),
@@ -1037,6 +1110,7 @@ mod tests {
             ("ql-deep", RunMode::Deep),
             ("ql-toolset", RunMode::Toolset),
             ("ql-tagged", RunMode::Tagged),
+            ("ql-lens", RunMode::Lens),
         ] {
             assert_eq!(RunMode::parse(name).unwrap(), mode);
             assert_eq!(mode.name(), name);
