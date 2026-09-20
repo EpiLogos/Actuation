@@ -147,7 +147,7 @@ contract versions and the git revision the binary was served from.
 actuation capabilities [--json]
 actuation contract list [--json]
 actuation agency [file|-] [--json]
-actuation agency actualise [file|-] [--json]
+actuation agency actualise <file|-> [--schema] [--json]
 actuation authority issue [--store <dir>] [--now <ts>] [file|-] [--json]
 actuation authority resolve [--store <dir>] [--now <ts>] [file|-] [--json]
 actuation authority revoke <authority_source_ref> [--reason <text>] [--store <dir>] [--now <ts>] [--json]
@@ -208,7 +208,9 @@ An executed idempotency key (owner, changeset, setting, scope, plan digest)
 replays as outcome `no_op` naming the original receipt instead of
 re-executing.
 `instantiation record --out <file>` appends bound receipts as JSONL.
-`agency actualise` accepts one complete semantic request and fails closed unless
+`agency actualise` accepts one complete semantic request — the same envelope
+`actuation authority resolve` assembles; `--schema` prints a filled example — and
+fails closed unless
 its `MetagencyGrant` matches the exact governing Agency and WorldBinding,
 authorises determination (and, for derivation, actualisation), and covers the
 declared bounds. Its receipt preserves Agent/Agency identity, WorldBinding,

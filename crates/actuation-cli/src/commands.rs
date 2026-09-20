@@ -48,14 +48,90 @@ pub fn agency_read(command: &Command) -> Result<Output> {
 }
 
 pub fn agency_actualise(command: &Command) -> Result<Output> {
-    let input = read_json_input(command.args.first().map(String::as_str), &command.stdin)?;
-    let request: ActualisationRequest = serde_json::from_value(input)
-        .map_err(|e| Error::new(format!("invalid agency actualisation request: {e}")))?;
+    let mut args = command.args.clone();
+    if remove_flag(&mut args, "--schema") {
+        return output(example_actualisation_request(), command.json, |value| {
+            serde_json::to_string_pretty(value).unwrap_or_default()
+        });
+    }
+    let input = read_json_input(args.first().map(String::as_str), &command.stdin)?;
+    let request: ActualisationRequest = serde_json::from_value(input).map_err(|e| {
+        Error::new(format!(
+            "invalid agency actualisation request: {e}; the request must be one complete \
+             envelope — as assembled by `actuation authority resolve`, or run \
+             `actuation agency actualise --schema` for a filled example"
+        ))
+    })?;
     output(
         request.admit()?.receipt(),
         command.json,
         render::agency_actualisation,
     )
+}
+
+/// The complete request envelope `agency actualise` deserialises. `--schema`
+/// prints it so a caller never has to recover the shape from refusals; the
+/// same envelope is what `actuation authority resolve` assembles and passes
+/// through unchanged. Compact string shorthands are refused by design:
+/// delegated_autonomy and return_policy are records, not enums.
+fn example_actualisation_request() -> Value {
+    json!({
+        "schema": "actuation.agency-actualisation/v1",
+        "request_ref": "request:example-actualisation",
+        "requester_ref": "human:owner",
+        "governing_binding": {
+            "schema": "actuation.agency/v1",
+            "binding_ref": "binding:governing",
+            "agent_ref": "agent:governor",
+            "agency_ref": "agency:governing",
+            "world_ref": "world:personal",
+            "scope_ref": "scope:personal",
+            "bounds_refs": ["bound:observation"],
+            "authority_refs": ["authority:owner"],
+            "return_relation_ref": "return-relation:owner"
+        },
+        "metagency_grant": {
+            "schema": "actuation.agency/v1",
+            "grant_ref": "grant:delegation",
+            "agency_ref": "agency:governing",
+            "world_binding_ref": "binding:governing",
+            "authority_ref": "authority:owner",
+            "operations": ["determine-agency"],
+            "bounds_refs": ["bound:observation"]
+        },
+        "determination": {
+            "schema": "actuation.agency/v1",
+            "determination_ref": "determination:delegation",
+            "kind": "delegation",
+            "determining_agency_ref": "agency:governing",
+            "differentiated_agency_ref": "agency:delegated-work",
+            "world_binding_ref": "binding:delegated-work",
+            "bounds_refs": ["bound:observation"],
+            "delegated_autonomy": { "may_determine_within_bounds": true },
+            "return_policy": {
+                "mode": "required",
+                "return_relation_ref": "return-relation:owner"
+            },
+            "authority_refs": ["authority:owner"]
+        },
+        "differentiated_binding": {
+            "schema": "actuation.agency/v1",
+            "binding_ref": "binding:delegated-work",
+            "agent_ref": "agent:governor",
+            "agency_ref": "agency:delegated-work",
+            "world_ref": "world:personal",
+            "scope_ref": "scope:personal",
+            "determining_agency_ref": "agency:governing",
+            "bounds_refs": ["bound:observation"],
+            "authority_refs": ["authority:owner"],
+            "return_relation_ref": "return-relation:owner"
+        },
+        "agent_identity": {
+            "standing": "existing",
+            "evidence_refs": ["evidence:identity-registry"]
+        },
+        "provenance": { "source_refs": ["source:owner-commission"] }
+    })
 }
 
 pub fn realised_read(command: &Command) -> Result<Output> {

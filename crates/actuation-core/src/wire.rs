@@ -148,11 +148,22 @@ impl<'de, T: Invariant + DeserializeOwned> Deserialize<'de> for Record<T> {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> std::result::Result<Self, D::Error> {
         let value = Value::deserialize(deserializer)?;
         if !value.is_object() {
-            return Err(serde::de::Error::custom("record must be an object"));
+            return Err(serde::de::Error::custom(format!(
+                "expected a JSON object for {}",
+                record_type_name::<T>()
+            )));
         }
         let fields = serde_json::from_value(value).map_err(serde::de::Error::custom)?;
         Self::new(fields).map_err(serde::de::Error::custom)
     }
+}
+
+/// Names the record's field type in refusals, so a caller learns which part
+/// of the envelope was malformed instead of only that "a record" was not an
+/// object.
+fn record_type_name<T>() -> &'static str {
+    let full = std::any::type_name::<T>();
+    full.rsplit("::").next().unwrap_or(full)
 }
 impl<T: Invariant + DeserializeOwned> TryFrom<Value> for Record<T> {
     type Error = Error;
