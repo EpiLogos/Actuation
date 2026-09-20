@@ -1,0 +1,116 @@
+{
+  "schema": "actuation.model-types-specimens/v1",
+  "purpose": "Machine-readable register of the non-autoregressive model specimens this experiment class uses: identity, access, integration seam, and the standing of every vendor claim.",
+  "created": "2026-09-17",
+  "claim_policy": "vendor-claims-are-recorded-not-adopted; performance numbers marked vendor-claim require independent measurement before use in any argument",
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "research"
+  },
+  "specimens": [
+    {
+      "id": "jev",
+      "family": "typed-judgement",
+      "identity": {
+        "name": "Jev",
+        "vendor": "TypeSafe AI",
+        "model_ref": "jev-latest",
+        "access_path": "TypeSafe System One API — POST https://api.typesafe.ai/v1/systemone, Bearer credential. Key held in the macOS login keychain (TYPESAFE_API_KEY, owner-supplied 2026-09-17, owner will rotate). Alternative route: Vercel AI Gateway evaluation via AI SDK 7 (typesafe-ai/jev). Official agent skill vendored at jev/skill/typesafe-ai (github.com/typesafe-ai/skills rev 65a39f3).",
+        "credential_env": "TYPESAFE_API_KEY (env override) or macOS login keychain"
+      },
+      "native_output": {
+        "question_types": ["noul->probability-of-yes", "choice->selected+per-option-probabilities+confidence", "score->interpolated-score+legend+confidence"],
+        "batching": "independent questions over one state answered together in one round trip",
+        "state_input": "string | structured object | array"
+      },
+      "vendor_claims": [
+        {"claim": "193.6x speed advantage on its own workflow tests", "standing": "vendor-claim", "verified": false},
+        {"claim": "444.6x cost advantage on its own workflow tests", "standing": "vendor-claim", "verified": false},
+        {"claim": "responses in 70-500ms", "standing": "vendor-claim", "verified": true, "our_measurement": "p50 238ms, p90 325ms, max 914ms over 200 questions (run 2026-09-17)"}
+      ],
+      "first_live_result": {
+        "date": "2026-09-17",
+        "ql_position_accuracy": 0.92,
+        "ql_position_chance": 0.167,
+        "standing_refraction_pair_mass": 0.867,
+        "note": "92% is against loop-recorded positions, not human-verified truth; lens mass is agreement-of-readings, not accuracy"
+      },
+      "integration_seam": "policy-side referee at named decision points (see jev/question-catalogue.json); instrument reading, never the determination",
+      "experiments": ["E-MT-1", "E-MT-2", "E-MT-4"]
+    },
+    {
+      "id": "eb-jepa",
+      "family": "world-formation",
+      "identity": {
+        "name": "EB-JEPA",
+        "vendor": "Meta / FAIR (facebookresearch/eb_jepa)",
+        "model_ref": "arXiv:2602.03604 companion library",
+        "access_path": "open-source Python library, Apache-2.0, uv-managed, single-GPU training (configs target CUDA H100; untested on MPS)",
+        "credential_env": "none (local compute; GPU availability unverified on the Mac; Omarchy NVIDIA status unverified)"
+      },
+      "native_output": {
+        "question_types": ["latent-representation-prediction", "action-conditioned-latent-prediction", "energy-based-planning-over-latents"],
+        "evidence_point": {"claim": "97% planning success on its Two Rooms navigation world", "standing": "published-paper-claim", "verified": false}
+      },
+      "integration_seam": "trace-side representation learner over loop event records (jepa/); energy treatment shared with the EBM faculty",
+      "experiments": ["E-MT-3", "E-MT-4"]
+    },
+    {
+      "id": "ebm-bimba-field",
+      "family": "compatibility",
+      "identity": {
+        "name": "EBM over the bimba grounding field",
+        "vendor": "none — this programme's own construction",
+        "model_ref": "experiments/model-types/ebm/README.md",
+        "access_path": "live graph at the bimba-portable Neo4j (bolt, credentials per Work/epi/bimba-portable/.env); embeddings via text-embedding-004 if present in-graph",
+        "credential_env": "none required for Phase 1"
+      },
+      "native_output": {
+        "question_types": ["energy-of-a-candidate-state", "separation-of-viable-from-incoherent-configurations"],
+        "honesty_law": "low energy means compatibility with declared or learned structure, never moral or epistemic value"
+      },
+      "vendor_claims": [],
+      "integration_seam": "compatibility gate on candidate acts/transitions in the composed loop (E-MT-4); Phase 1 is evaluative, no training",
+      "experiments": ["E-MT-4"],
+      "experiments_own": ["E-MT-EBM-FIELD"]
+    },
+    {
+      "id": "mercury-2-5",
+      "family": "possibility-generation",
+      "identity": {
+        "name": "Mercury 2.5",
+        "vendor": "Inception Labs",
+        "model_ref": "mercury-2.5",
+        "access_path": "OpenAI-compatible chat completions at https://api.inceptionlabs.ai/v1; key held in the macOS login keychain (INCEPTION_API_KEY, owner-supplied 2026-09-17, owner will rotate). Smoke-verified live 2026-09-17: request surface works; set reasoning_effort \"low\" or budget generous max_tokens — completion tokens otherwise go to reasoning and content returns null.",
+        "credential_env": "INCEPTION_API_KEY (env override) or macOS login keychain"
+      },
+      "native_output": {
+        "question_types": ["fast-parallel-text-generation", "tool-calling", "structured-outputs", "block-diffusion-streaming", "tunable-reasoning"],
+        "limits": {"context_tokens": 260000, "max_output_tokens": 65536}
+      },
+      "vendor_claims": [
+        {"claim": "1107 tokens/sec on widely-available NVIDIA GPUs", "standing": "vendor-claim", "verified": false},
+        {"claim": "$0.20 / $0.75 per million input / output tokens (standard rate)", "standing": "vendor-claim", "verified": false}
+      ],
+      "integration_seam": "ModelBody specimen over the existing OpenAI-compatible transport (sdk.rs pattern) — candidate generation faculty in the composed loop",
+      "experiments": ["E-MT-4"]
+    },
+    {
+      "id": "glm-5-3-flash",
+      "family": "reflective-explanation",
+      "identity": {
+        "name": "GLM (glm-5.3-flash)",
+        "vendor": "zai",
+        "model_ref": "glm-5.3-flash",
+        "access_path": "existing Series-1 stipulation: https://api.z.ai/api/coding/paas/v4 with ZAI_API_KEY, temperature 0, fail-closed",
+        "credential_env": "ZAI_API_KEY"
+      },
+      "native_output": {
+        "question_types": ["free-text-synthesis", "json-protocol-decisions (incumbent behaviour)"]
+      },
+      "vendor_claims": [],
+      "integration_seam": "incumbent: all five loop decision points + reflection today; in the composed loop, reflective explanation only",
+      "experiments": ["E-MT-2", "E-MT-4"]
+    }
+  ]
+}

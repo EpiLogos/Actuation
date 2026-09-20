@@ -1,0 +1,10 @@
+{
+  "schema": "actuation.model-types-embed-text-provenance/v2",
+  "created": "2026-09-19T16:30:57+0100",
+  "source": "live bimba graph properties (current tagged schema) \u2014 no vault, no datasets, no sync",
+  "nodes": 1992,
+  "mean_text_chars": 1423.3,
+  "nodes_under_120_chars": 66,
+  "composition": "essential common set first, then all content-family keys in key order; bounded 6000 chars",
+  "sources_digest": "2d9fe46afb9fc554"
+}

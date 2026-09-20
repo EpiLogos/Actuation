@@ -1,0 +1,86 @@
+{
+  "schema": "actuation.model-types-ebm-energy-head/v1",
+  "created": "2026-09-18T03:03:52+0100",
+  "experiment": "E-MT-EBM-FIELD phase-2 (learned energy head)",
+  "model": {
+    "kind": "mlp-1x32-bce",
+    "features": "lineage, semantic(cos)+mask, lcp, directed ancestor flags, sibling/root/family one-hots, depths, prime flags, 32-dim signed hash of live relation type",
+    "feature_dim": 71,
+    "negatives": "corruption ladder on train edges",
+    "split": "held-out edges by sha256 digest bucket (mod 5), corruptions drawn only from train edges for fitting; eval negatives from held-out edges"
+  },
+  "data": {
+    "vector_key": "embedding",
+    "edges_valid": 8708,
+    "train_edges": 6997,
+    "test_edges": 1711,
+    "m0_test_edges": 123
+  },
+  "results_full": {
+    "endpoint-rewire": {
+      "n_pos": 1711,
+      "learned": 0.9768264812444128,
+      "baseline_lineage": 0.8763023913997087,
+      "baseline_semantic": 0.7802405680666695,
+      "baseline_combined": 0.8975914631416999
+    },
+    "hard-rewire": {
+      "n_pos": 1711,
+      "learned": 0.8409115258522788,
+      "baseline_lineage": 0.6561835701318383,
+      "baseline_semantic": 0.7036981279014867,
+      "baseline_combined": 0.678245952234408
+    },
+    "sibling-rewire": {
+      "n_pos": 1711,
+      "learned": 0.522422784696309,
+      "baseline_lineage": 0.5163611309140239,
+      "baseline_semantic": 0.5386388726540684,
+      "baseline_combined": 0.5209379230419557
+    },
+    "direction-reversal": {
+      "n_pos": 1711,
+      "learned": 0.7323821075920548,
+      "baseline_lineage": 0.5,
+      "baseline_semantic": 0.5,
+      "baseline_combined": 0.5
+    }
+  },
+  "results_m0_focus": {
+    "endpoint-rewire": {
+      "n_pos": 0
+    },
+    "hard-rewire": {
+      "n_pos": 123,
+      "learned": 0.7195452442329301,
+      "baseline_lineage": 0.6796880163923591,
+      "baseline_semantic": 0.6979641747636989,
+      "baseline_combined": 0.7206358648952343
+    },
+    "sibling-rewire": {
+      "n_pos": 123,
+      "learned": 0.5722596019063639,
+      "baseline_lineage": 0.5950378469301935,
+      "baseline_semantic": 0.6097210541070928,
+      "baseline_combined": 0.6286445192038127
+    },
+    "direction-reversal": {
+      "n_pos": 123,
+      "learned": 0.5925375107409611,
+      "baseline_lineage": 0.5,
+      "baseline_semantic": 0.5,
+      "baseline_combined": 0.5
+    }
+  },
+  "honest_limits": [
+    "learned readings are semantic-stochastic; never promoted, never the determination",
+    "negatives are synthetic corruptions; AUC measures separation from the ladder, not value or correctness",
+    "loop-proposed transitions (Phase 3 gate) remain untested until the composed loop runs"
+  ],
+  "runtime_seconds": 21.1,
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "semantic-stochastic"
+  },
+  "artifact": "/Users/admin/Central/Work/Actuation/experiments/model-types/ebm/evidence/energy-head-weights.npz"
+}

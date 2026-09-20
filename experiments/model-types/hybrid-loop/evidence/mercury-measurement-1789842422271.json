@@ -1,0 +1,129 @@
+{
+  "schema": "actuation.model-types-mercury-measurement/v1",
+  "created": "2026-09-19T18:27:02.266Z",
+  "model": "mercury-2.5",
+  "n_requests": 5,
+  "max_tokens_each": 700,
+  "results": [
+    {
+      "i": 0,
+      "wall_ms": 1405,
+      "content_nonempty": true,
+      "content_chars": 410,
+      "tok_s_usage": 244.12811387900356,
+      "usage": {
+        "prompt_tokens": 19,
+        "completion_tokens": 343,
+        "total_tokens": 362,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 259
+        }
+      }
+    },
+    {
+      "i": 1,
+      "wall_ms": 807,
+      "content_nonempty": true,
+      "content_chars": 254,
+      "tok_s_usage": 379.182156133829,
+      "usage": {
+        "prompt_tokens": 17,
+        "completion_tokens": 306,
+        "total_tokens": 323,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 260
+        }
+      }
+    },
+    {
+      "i": 2,
+      "wall_ms": 1106,
+      "content_nonempty": true,
+      "content_chars": 885,
+      "tok_s_usage": 354.4303797468354,
+      "usage": {
+        "prompt_tokens": 20,
+        "completion_tokens": 392,
+        "total_tokens": 412,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 238
+        }
+      }
+    },
+    {
+      "i": 3,
+      "wall_ms": 1240,
+      "content_nonempty": true,
+      "content_chars": 493,
+      "tok_s_usage": 313.7096774193548,
+      "usage": {
+        "prompt_tokens": 21,
+        "completion_tokens": 389,
+        "total_tokens": 410,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 261
+        }
+      }
+    },
+    {
+      "i": 4,
+      "wall_ms": 1135,
+      "content_nonempty": true,
+      "content_chars": 1233,
+      "tok_s_usage": 422.02643171806164,
+      "usage": {
+        "prompt_tokens": 12,
+        "completion_tokens": 479,
+        "total_tokens": 491,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 255
+        }
+      }
+    }
+  ],
+  "measured": {
+    "tok_s_median": 354,
+    "tok_s_min": 244,
+    "tok_s_max": 422,
+    "wall_ms_total": 5693,
+    "completion_tokens_total": 1909,
+    "prompt_tokens_total": 89,
+    "cost_usd_at_vendor_rates": 0.00145
+  },
+  "vendor_claims_checked": [
+    {
+      "claim": "1107 tokens/sec",
+      "standing": "vendor-claim",
+      "our_measurement": "354 tok/s median over 5 short completions (usage.completion_tokens / wall time)"
+    },
+    {
+      "claim": "$0.20/$0.75 per M tokens",
+      "standing": "vendor-claim",
+      "our_measurement": "usage-derived cost at those rates: $0.001450 for 89 in / 1909 out tokens (rates not independently verified)"
+    }
+  ],
+  "honest_limits": [
+    "small-N short-completion measurement; not a streaming benchmark, not a throughput-at-scale claim",
+    "wall time includes network round trip; vendor tok/s claims may measure decode only",
+    "rates are vendor claims; only the usage token counts are this programme's measurements"
+  ],
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "research"
+  }
+}

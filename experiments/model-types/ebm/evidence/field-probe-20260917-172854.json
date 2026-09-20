@@ -1,0 +1,132 @@
+{
+  "schema": "actuation.model-types-ebm-field-probe/v1",
+  "created": "2026-09-17T17:28:54+0100",
+  "experiment": "E-MT-EBM-FIELD phase-1",
+  "uri": "bolt://100.92.62.101:7687",
+  "graph": {
+    "nodes_total": 2141,
+    "nodes_with_position": 2101,
+    "edges_total": 11774,
+    "edges_scoreable": 10958,
+    "distinct_relation_types": 1378,
+    "pos_typed_relation_types": [],
+    "graph_capture_sha256": "aca2a5aedcd94bd5a470fa949e5206371bbe766a2162f9afd0d4486a10632114"
+  },
+  "semantic_readout": {
+    "mode": "lexical-baseline-fixture-grade"
+  },
+  "corruption_operators": {
+    "endpoint-rewire": "target replaced with a random different-position node",
+    "type-shuffle": "endpoints kept, relation type replaced with a random type from the live vocabulary",
+    "hard-rewire": "target replaced with a random same-position node (position classes preserved)",
+    "direction-reversal": "endpoints swapped: (b, r, a) \u2014 identical unordered pair, direction only"
+  },
+  "energy_weights": {
+    "grammar": 1.0,
+    "semantic": 1.0,
+    "declared_not_fitted": true
+  },
+  "results": {
+    "endpoint-rewire": {
+      "n_pairs": 2000,
+      "separation_auc_real_lower_energy": {
+        "grammar": 0.5,
+        "semantic": 0.591515375,
+        "combined": 0.591515375
+      },
+      "mean_energy": {
+        "grammar": {
+          "real": 0.0,
+          "corrupted": 0.0
+        },
+        "semantic": {
+          "real": 0.9135700396825397,
+          "corrupted": 0.9986404761904762
+        },
+        "combined": {
+          "real": 0.9135700396825397,
+          "corrupted": 0.9986404761904762
+        }
+      }
+    },
+    "type-shuffle": {
+      "n_pairs": 2000,
+      "separation_auc_real_lower_energy": {
+        "grammar": 0.5,
+        "semantic": 0.5,
+        "combined": 0.5
+      },
+      "mean_energy": {
+        "grammar": {
+          "real": 0.0,
+          "corrupted": 0.0
+        },
+        "semantic": {
+          "real": 0.9052027777777778,
+          "corrupted": 0.9052027777777778
+        },
+        "combined": {
+          "real": 0.9052027777777778,
+          "corrupted": 0.9052027777777778
+        }
+      }
+    },
+    "hard-rewire": {
+      "n_pairs": 2000,
+      "separation_auc_real_lower_energy": {
+        "grammar": 0.5,
+        "semantic": 0.55943525,
+        "combined": 0.55943525
+      },
+      "mean_energy": {
+        "grammar": {
+          "real": 0.0,
+          "corrupted": 0.0
+        },
+        "semantic": {
+          "real": 0.9155079365079365,
+          "corrupted": 0.9747396464646465
+        },
+        "combined": {
+          "real": 0.9155079365079365,
+          "corrupted": 0.9747396464646465
+        }
+      }
+    },
+    "direction-reversal": {
+      "n_pairs": 2000,
+      "separation_auc_real_lower_energy": {
+        "grammar": 0.5,
+        "semantic": 0.5,
+        "combined": 0.5
+      },
+      "mean_energy": {
+        "grammar": {
+          "real": 0.0,
+          "corrupted": 0.0
+        },
+        "semantic": {
+          "real": 0.9123640873015874,
+          "corrupted": 0.9123640873015874
+        },
+        "combined": {
+          "real": 0.9123640873015874,
+          "corrupted": 0.9123640873015874
+        }
+      }
+    }
+  },
+  "honest_limits": [
+    "grammar potential is the owner-declared relation vocabulary, not a fitted model",
+    "separation AUC reads P(real energy < corrupted energy); 0.5 is no separation",
+    "AUC here is not a claim that the field models value or correctness",
+    "the live graph contains zero POSk_* relation types \u2014 the schema-declared position grammar is not materialized in live edges, so the grammar potential is vacuous on this graph (declared-vs-live vocabulary drift is itself a finding)",
+    "direction-reversal negatives share the unordered pair with their real positive, so pair-potentials separate them only through direction-sensitive structure",
+    "lexical-baseline semantic readout is fixture-grade and supports no claim on its own"
+  ],
+  "runtime_seconds": 9.9,
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "research"
+  }
+}

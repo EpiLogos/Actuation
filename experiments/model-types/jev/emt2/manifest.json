@@ -1,0 +1,98 @@
+{
+  "schema": "actuation.model-types-jev-states/v1",
+  "created": "2026-09-18",
+  "experiment": "E-MT-2 loop decision refereeing",
+  "sources": {
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/deeplane-S1-RESTRAINT-001.json": "0499115fba58bb0be9cd0087d52612d57914ae8f8866ec158b5e416afc29ecf1",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/deeplane-S1-SKILL-001.json": "4837ffaa4831e92f4901bd45b98799187052af5b88dfd7af11fd17c6d4827648",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-AGENCY-001.json": "4d8d64a76829ef8c262a7dcc9adbe1136738988d3c066d7a80ad2a4b047dd30f",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-CODE-001.json": "0655ff8782b7e1bb80036d90ac55c472a9d50aba3857fb5670bd49bec5b5ed19",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-EPISTEMIC-001.json": "6a6bf6f141b4aa4cdc78ea691caf3f7fcba77fd19e02267bd2434c57bfd08147",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-RESEARCH-001.json": "832fa06a516cc8982862e3d78bacd053b396650dcbf88391cc795e445e00772f",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-RESTRAINT-001.json": "ad57043ff808dfcc625cc9ade7a7664778a560130b8a3d3ae11b89b736565c80",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-SKILL-001-r2.json": "d653a15485dc4d68978a580cb342f536fd315e60417262da3badb1b18e86af3b",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-SKILL-001.json": "a134f497d22c1019a91cc766c76d3b2d105000250ef0c4189ff52a8141c021d9",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/staged-S1-AGENCY-001.json": "3f58fa34d9681d3a0ad0dc5a6b772d4a9381f102710d8af63a6deea9da8e476c",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/staged-S1-CODE-001.json": "6050e048d57936769662f60e630af8097d0a71239a4e2dda2ab7f9eb7f944a3b",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/staged-S1-EPISTEMIC-001.json": "97dace3d7fdec8af719f42550e4fd18a57d7b7a9cba8d36a092aa20807f5e38c",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/staged-S1-RESEARCH-001.json": "93b68c2d5b959f0444f3880c788c6dad2d3ed7eb446a0e0e71d1feb17957cd74",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/staged-S1-RESTRAINT-001.json": "91c0ec61e788bb6b6412258391fdca841dbf84d3048de9e2370699f512b0f968",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/staged-S1-SKILL-001.json": "6d42c9aef137175c1e8b0105103b949ca4b9a8f4006425cf76f5978bf02df13c",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-smoke-restraint/run-fixed.json": "463de93d58dfd28c385c0c4c4d8e1b84566123588ea25fe3b9ec3809b3410e91",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-smoke-restraint/run.json": "c227b3a135e7650b31bf85a85cada10c4759fa729cb6bc526e4158a3d8bbe428",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round5/round5-S1-CODE-001.json": "4479ba15a5dd6736041c370e18f4016f0b505b8ecf6cd4e5efeaf7e05f19d2cd",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round5/round5-S1-EPISTEMIC-001.json": "5d14b9438638a5b6b19aad8b414668e89c79768aab8b38be1b59f8c428aae6dd",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round5/round5-S1-RESEARCH-001.json": "da95f5fb4ca17cd0c1e58cb12aa15e968cf9a36cb1e5510ee2ec8ec888d94492",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round5/round5-S1-RESTRAINT-001.json": "e093cbd4ccbb4558635c1ae7da137fa88253037d8430680f6d6c1b65eb401741",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round5/round5-S1-SKILL-001.json": "b9f3e6f55c163515a1d11da04686177f44d7c5107945186598f08e60cf6e4980",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/compressed-S1-CODE-001.json": "9383ad5de0f19937a4865c5ecad2026b5930cbf24a7d963662f33e2953b044c0",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/compressed-S1-EPISTEMIC-001.json": "eedf517aaa4c751de10c578cc3523addcaf0c6a2ae90aa412c62e1e212f2367d",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/compressed-S1-RESEARCH-001.json": "27b6376d4a9e683af76820bfd842051c0c7c5489d41891a7690ce2b82e558e0d",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/compressed-S1-RESTRAINT-001.json": "37d89068d3c61045005ce0e193b8547e2db9c3c0e49e72c12a36aead86c65b31",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/compressed-S1-SKILL-001.json": "ee981634d11de8d414afa663eabc18253898480c28d8fcf871a2856f305d57ca",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/deep-S1-CODE-001.json": "994eb7d61089c329d60064b8262a7f770e3cc8de7f8ab304f6a5664dce163555",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/deep-S1-EPISTEMIC-001.json": "831f4aff3d9de6ab6a5eb3afebd7c06b273e1d4c7aee5fdf27289c254f27d169",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/deep-S1-RESEARCH-001.json": "a53b2fab169c787ce99d12a8daad80776fdb19e3fa4d53c889ec89bf99b8b18a",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/deep-S1-RESTRAINT-001.json": "0c21be4f2a128f402612eff0541149642d16740ab31c56d96aaf6f38bc6ac722",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/deep-S1-SKILL-001.json": "8a1fdd7565fc66c97d29ea18df59bb7505e7353ff74b44e387ed898be26f8915",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/failed-S1-SKILL-001.json": "ffb4924845dd7b568af5b62526ac2ba3a97de0038ad67f24d7045213f7f4a468"
+  },
+  "selection": "deterministic round-robin over question ids ['next-carrier', 'next-position', 'requested-outcome', 'intent-already-achieved', 'subject-verifiable', 'stipulation-violated', 'genuinely-local-whole', 'act-adequacy'], cap 150",
+  "counts": {
+    "next-carrier": {
+      "generated": 211,
+      "selected": 21,
+      "with_truth": 21
+    },
+    "next-position": {
+      "generated": 218,
+      "selected": 21,
+      "with_truth": 21
+    },
+    "requested-outcome": {
+      "generated": 49,
+      "selected": 20,
+      "with_truth": 20
+    },
+    "intent-already-achieved": {
+      "generated": 208,
+      "selected": 20,
+      "with_truth": 20
+    },
+    "subject-verifiable": {
+      "generated": 29,
+      "selected": 20,
+      "with_truth": 20
+    },
+    "stipulation-violated": {
+      "generated": 60,
+      "selected": 20,
+      "with_truth": 0
+    },
+    "genuinely-local-whole": {
+      "generated": 8,
+      "selected": 8,
+      "with_truth": 0
+    },
+    "act-adequacy": {
+      "generated": 213,
+      "selected": 20,
+      "with_truth": 0
+    }
+  },
+  "truth_standing": {
+    "next-carrier": "loop-recorded carrier kind (the incumbent's own decision); agreement, not ground truth",
+    "next-position": "loop-recorded transition destination; agreement, not ground truth",
+    "requested-outcome": "derived from the record's closure state (closureState/closure objects)",
+    "intent-already-achieved": "derived: exterior act -> false; internal_control on completed+closed+objective_checks_pass -> true; otherwise omitted",
+    "subject-verifiable": "derived mechanically: claimed_subject == task_id and objective_checks_pass; omitted where claimed_subject absent",
+    "stipulation-violated": "none \u2014 instrument reading only (recorded verdicts are the incumbent's own evaluations)",
+    "genuinely-local-whole": "none \u2014 instrument reading only",
+    "act-adequacy": "none \u2014 instrument reading only"
+  },
+  "determination": "pending-human-review",
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "semantic-stochastic"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "schema": "actuation.model-types-jev-destination-basis/v1",
+  "note": "mechanical-* = destination set by a routing rule (closure-request law, reopen routing, allowance exhaustion, compressed/vak control): Rust-owned, not a model question. model-interpretation = incumbent ql-interpret-return decided; the semantic remainder.",
+  "basis": {
+    "next-position|deeplane-S1-RESTRAINT-001|run_938fde3eb7a9107e:c0|run_938fde3eb7a9107e:c0:transition:0": "model-interpretation",
+    "next-position|deeplane-S1-RESTRAINT-001|run_938fde3eb7a9107e:c0|run_938fde3eb7a9107e:c0:transition:1": "mechanical-closure-request",
+    "next-position|deeplane-S1-SKILL-001|run_8a29d9492cf5eb04:c0|run_8a29d9492cf5eb04:c0:transition:0": "model-interpretation",
+    "next-position|deeplane-S1-SKILL-001|run_8a29d9492cf5eb04:c0|run_8a29d9492cf5eb04:c0:transition:1": "model-interpretation",
+    "next-position|deeplane-S1-SKILL-001|run_8a29d9492cf5eb04:c0|run_8a29d9492cf5eb04:c0:transition:2": "model-interpretation",
+    "next-position|deeplane-S1-SKILL-001|run_8a29d9492cf5eb04:c0|run_8a29d9492cf5eb04:c0:transition:3": "model-interpretation",
+    "next-position|deeplane-S1-SKILL-001|run_8a29d9492cf5eb04:c0|run_8a29d9492cf5eb04:c0:transition:4": "model-interpretation",
+    "next-position|deeplane-S1-SKILL-001|run_8a29d9492cf5eb04:c0|run_8a29d9492cf5eb04:c0:transition:5": "model-interpretation",
+    "next-position|deeplane-S1-SKILL-001|run_8a29d9492cf5eb04:c0|run_8a29d9492cf5eb04:c0:transition:6": "model-interpretation",
+    "next-position|deeplane-S1-SKILL-001|run_8a29d9492cf5eb04:c0|run_8a29d9492cf5eb04:c0:transition:7": "mechanical-closure-request",
+    "next-position|deeplane-S1-SKILL-001|run_8a29d9492cf5eb04:c0|run_8a29d9492cf5eb04:c0:transition:8": "mechanical-reopen-routing",
+    "next-position|deeplane-S1-SKILL-001|run_8a29d9492cf5eb04:c0|run_8a29d9492cf5eb04:c0:transition:9": "model-interpretation",
+    "next-position|deeplane-S1-SKILL-001|run_8a29d9492cf5eb04:c0|run_8a29d9492cf5eb04:c0:transition:10": "model-interpretation",
+    "next-position|native-S1-AGENCY-001|run_058005d0294e1c59:c0|run_058005d0294e1c59:c0:transition:0": "model-interpretation",
+    "next-position|native-S1-AGENCY-001|run_058005d0294e1c59:c0|run_058005d0294e1c59:c0:transition:1": "model-interpretation",
+    "next-position|native-S1-AGENCY-001|run_058005d0294e1c59:c0|run_058005d0294e1c59:c0:transition:2": "model-interpretation",
+    "next-position|native-S1-AGENCY-001|run_058005d0294e1c59:c0|run_058005d0294e1c59:c0:transition:3": "model-interpretation",
+    "next-position|native-S1-AGENCY-001|run_058005d0294e1c59:c0|run_058005d0294e1c59:c0:transition:4": "model-interpretation",
+    "next-position|native-S1-AGENCY-001|run_058005d0294e1c59:c0|run_058005d0294e1c59:c0:transition:5": "model-interpretation",
+    "next-position|native-S1-AGENCY-001|run_058005d0294e1c59:c0|run_058005d0294e1c59:c0:transition:6": "mechanical-closure-request",
+    "next-position|native-S1-AGENCY-001|run_89d89a2dde22926c:c0|run_89d89a2dde22926c:c0:transition:0": "model-interpretation"
+  }
+}
