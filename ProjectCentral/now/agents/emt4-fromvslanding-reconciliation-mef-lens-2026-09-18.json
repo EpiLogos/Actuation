@@ -1,0 +1,11 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "emt4-fromvslanding-reconciliation-mef-lens-2026-09-18",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "zcode-subagent-jev-mef-lenses",
+  "kind": "note",
+  "recorded_at_unix_seconds": 1789751001,
+  "subject": "E-MT-4: from-vs-landing reconciliation + MEF lens expansion for jev classification",
+  "result": "On branch agent/jev-mef-lenses-2026-09-18 (acceptance single tree, commits f67c2e9+a427de4, not pushed; predecessor branch untouched). (1) RECONCILIATION: landing truth derived from outcome.report.circuits[].trajectory via interpretation_ref join, first transition wins (validated: incumbent destination vs landing 143/150=95.3%, trajectory.from vs source_position 147/150=98.0%); prior 150-act run re-scored with zero API calls: jev vs from 65/150=43.3%, jev vs landing 87/150=58.0%, code table vs from 82/150=54.7%, vs landing 111/150=74.0%; residual: jev misses late (24 successor of 63), table early (31 predecessor of 39); prior 60-of-85 successor finding reproduces exactly. (2) MEF LENSES: fresh 105-act sample (75 classic round5/6/7 + 30 round9 toolset), one call per act carrying both office and 12-lens questions; 107 calls total (2 smoke), 0 API errors, p50 282ms, ~116K in / ~20K out tokens; lens mass L4-prime 0.563 and L1 0.223 dominate, argmax L4-prime 85/105; standing-pair L1+L4-prime mean mass 0.786 (classic 0.783, toolset 0.795) - the lens reading concentrates on the runtime standing pair. (3) TOOLSET: by-tagged recorded landings (list_files/read_file->P1, write_file->P2; run_tests->P4 unsampled in the round-robin, close emits no return_interpreted event); jev vs recorded landing 11/30=36.7%, structured failure: read/list results proposed P2 (effect) 19 of 28 vs law P1 (material); write_file 2/2. Evidence: experiments/model-types/jev/{landing-truth.mjs,extract_corpus2.mjs,jev_mef_harness.mjs,corpus2-acts.jsonl,corpus2-manifest.json,runs/landing-reconciliation-2026-09-18T16-57-12-489Z.json,runs/jev-mef-run-2026-09-18T17-01-18-782Z.json,EXPERIMENT-README-ADDENDUM.md}. OPEN: per-tool toolset sampling, transition-aware from+to question probe, human-labelled lens subset, round9 arms C/D were still running at extraction time.",
+  "status": "active"
+}
