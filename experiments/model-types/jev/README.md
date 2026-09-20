@@ -139,3 +139,7 @@ owns it; (3) re-measure on the semantic remainder only.
   (`node harness.mjs --limit 200`); keychain-aware credential; writes
   digest-pinned run records.
 - `skill/typesafe-ai/` — the vendored official TypeSafe agent skill.
+- `sources/` — external third-party material kept as recorded, never asserted:
+  `jev-rag-reranking-prompt-engineering-2026-09-20.md` (a use-perspective
+  reranking walkthrough, with its auto-caption decode and the presenter's claims
+  quoted per timestamp) and the raw transcript it was built from.
