@@ -1,6 +1,6 @@
 {
   "schema": "actuation.native-catalog/v1",
-  "catalog_revision": 11,
+  "catalog_revision": 12,
   "descriptors": [
     {
       "schema": "actuation.harness-detection/v1",
@@ -930,58 +930,106 @@
       "schema": "actuation.harness-capability/v1",
       "document": "capability",
       "harness_slug": "codex",
-      "summary": "Per-project hooks.json covers session_start / pre_tool_use / post_tool_use; config.toml notify invokes an external program at turn completion; no declared context-injection channel, no deny-and-block, no harness wake.",
+      "summary": "Per-project hooks.json covers SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop, PreCompact, SessionEnd and the subagent/permission events; hook JSON output carries hookSpecificOutput.additionalContext; PreToolUse permissionDecision deny vetoes the tool call; config.toml notify still invokes an external program at turn completion.",
       "native_events": [
         {
           "event": "session-start",
-          "native_name": "session_start",
+          "native_name": "SessionStart",
           "transport": "hooks-json-file",
           "can_block": false,
-          "context_channel": "none",
-          "notes": "hook entry observed as .codex/hooks.json state ([hooks.state.\"<path>:session_start:0:0\"]); no context-injection behaviour is declared for it."
+          "context_channel": "stdout-additional-context",
+          "notes": "shipped 0.155.1 hook output wire schema declares SessionStartHookSpecificOutputWire.additionalContext (default null)."
+        },
+        {
+          "event": "user-prompt-submit",
+          "native_name": "UserPromptSubmit",
+          "transport": "hooks-json-file",
+          "can_block": false,
+          "context_channel": "stdout-additional-context",
+          "notes": "UserPromptSubmitHookSpecificOutputWire.additionalContext declared in the shipped schema; no deny channel observed for this event."
         },
         {
           "event": "pre-tool-use",
-          "native_name": "pre_tool_use",
+          "native_name": "PreToolUse",
           "transport": "hooks-json-file",
-          "can_block": false,
-          "context_channel": "none",
-          "notes": "observed entry shape as for session_start; no deny semantics declared."
+          "can_block": true,
+          "context_channel": "stdout-additional-context",
+          "notes": "PreToolUseHookSpecificOutputWire declares additionalContext and permissionDecision; the engine refuses permissionDecision:deny without a non-empty permissionDecisionReason, so deny blocks the tool call."
         },
         {
           "event": "post-tool-use",
-          "native_name": "post_tool_use",
+          "native_name": "PostToolUse",
+          "transport": "hooks-json-file",
+          "can_block": false,
+          "context_channel": "stdout-additional-context",
+          "notes": "PostToolUseHookSpecificOutputWire declares additionalContext and updatedMCPToolOutput; no veto observed."
+        },
+        {
+          "event": "stop",
+          "native_name": "Stop",
           "transport": "hooks-json-file",
           "can_block": false,
           "context_channel": "none",
-          "notes": "observed entry shape as for session_start."
+          "notes": "Stop is a declared hook event in the shipped schema; no continuation-forcing output channel is evidenced."
         },
         {
-          "event": "notification",
-          "native_name": "notify: agent-turn-complete",
-          "transport": "toml-notify",
+          "event": "session-end",
+          "native_name": "SessionEnd",
+          "transport": "hooks-json-file",
           "can_block": false,
           "context_channel": "none",
-          "notes": "config.toml notify = [<program>, ...args] invoked at turn completion; outbound only. This is the closest native boundary to stop."
+          "notes": "declared hook event in the shipped schema; cleanup-side."
+        },
+        {
+          "event": "pre-compact",
+          "native_name": "PreCompact",
+          "transport": "hooks-json-file",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "declared hook event in the shipped schema; no injection behaviour evidenced."
+        },
+        {
+          "event": "custom",
+          "native_name": "SubagentStart",
+          "transport": "hooks-json-file",
+          "can_block": false,
+          "context_channel": "stdout-additional-context",
+          "notes": "SubagentStartHookSpecificOutputWire.additionalContext declared in the shipped schema."
+        },
+        {
+          "event": "custom",
+          "native_name": "SubagentStop",
+          "transport": "hooks-json-file",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "declared hook event in the shipped schema."
+        },
+        {
+          "event": "custom",
+          "native_name": "PermissionRequest",
+          "transport": "hooks-json-file",
+          "can_block": true,
+          "context_channel": "none",
+          "notes": "the hook engine records a denied approval ('PermissionRequest hook denied approval'); the event gates approvals, not context."
         }
       ],
       "injection_channel": {
-        "kind": "none",
-        "mechanism": "no context-injection channel is declared on codex-cli 0.153.0: hooks and notify are observed as invocations, not as context providers. Projections must treat injected content as unavailable rather than print to stdout and hope.",
-        "notes": "re-declare this descriptor when a codex release grows an additional-context channel."
+        "kind": "stdout-additional-context",
+        "mechanism": "the hook process returns a JSON document on stdout whose hookSpecificOutput.additionalContext is added to context on SessionStart, UserPromptSubmit, PreToolUse, PostToolUse and SubagentStart (shipped hook output wire schema, codex-cli 0.155.1).",
+        "notes": "correction of the 0.153.0 declared absence: 0.155.1 grows the additional-context channel this descriptor said to re-declare against."
       },
       "blocking_semantics": {
-        "kind": "none",
-        "notes": "no deny-and-block channel is declared; a hook cannot veto a tool call on this surface."
+        "kind": "deny-and-block",
+        "notes": "PreToolUse permissionDecision:deny (with non-empty permissionDecisionReason) vetoes the tool call; PermissionRequest can deny an approval. A dispatch gate rides the hook decision."
       },
       "wake_capability": {
         "kind": "none",
-        "notes": "notify wakes the listener program at turn completion, never the harness itself. A relay sender must not pretend codex can be woken."
+        "notes": "unchanged by the correction: hooks and notify execute inside or beside a running session; nothing observed wakes the harness from outside. A relay sender must not pretend codex can be woken."
       },
       "install_seam": {
         "config_path": ".codex/hooks.json",
         "format": "json",
-        "entry_shape": "per-event hook command entries (session_start / pre_tool_use / post_tool_use); notify listener configured separately in config.toml",
+        "entry_shape": "per-event hook command entries under camelCase event names (SessionStart / UserPromptSubmit / PreToolUse / PostToolUse / Stop / PreCompact / SessionEnd / SubagentStart / SubagentStop / PermissionRequest); notify listener configured separately in config.toml; hook trust state recorded in hooks.state",
         "ownership_marker": "hook command resolves to the AIKit dispatch executable",
         "preserves_foreign_entries": true
       },
@@ -1010,13 +1058,15 @@
         ]
       },
       "provenance": {
-        "authored_by": "O:I capability descriptor programme (codex-cli 0.153.0 observed on this machine: config.toml notify + [hooks.state] entries, 2026-09-06)",
+        "authored_by": "O:I capability descriptor programme (corrected 2026-09-21 against codex-cli 0.155.1 installed on this machine: shipped hook output wire schema and hook-engine refusal strings; supersedes the 0.153.0 surface)",
         "source_refs": [
           "survey:local-machine-2026-09-06",
+          "survey:local-machine-2026-09-21",
           "upstream:openai-codex-cli-0.153.0",
+          "upstream:openai-codex-cli-0.155.1",
           "upstream:openai-codex-cli-config-reference"
         ],
-        "catalog_revision": 6
+        "catalog_revision": 12
       }
     },
     {
