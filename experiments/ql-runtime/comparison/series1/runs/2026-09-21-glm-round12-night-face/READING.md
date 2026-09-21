@@ -87,3 +87,24 @@ Determination remains `pending-human-review`. Next seams: T1-v3 (argmax-first
 instrument question form), repeats of the composing task for stability of the
 reflexive signature, and the batch thread adopting the reflect instrument as
 its wording.
+
+## Addendum (same session): the classic baseline and the relational-contract prompt
+
+Two more arms on the same composing overlay, both completed/ok:
+
+| arm | result | calls | tokens | wall | night calls |
+|-----|--------|------:|-------:|-----:|------------:|
+| **classic** (the real baseline: four plain tools, no QL anything) | completed/ok | 5 | 9,979 | 110 s | — |
+| **ql-twelve + relational-contract prompt** (68 words via QL_SYSTEM_FILE) | completed/ok | 6 | 27,688 | 250 s | 1 (full_text) |
+
+**The baseline.** Classic composed "The Bond of Need" — need/entanglement as the bond, named from a declared vantage ("I read politics from a particular vantage, and I name it as mine"). Jev's blind reading peaks L3 Community integration (0.88), then **L4 Thrownness (0.75)** — the text opens on exactly that ("No one chose their society") — plus L4′ Insight, L0′ Three/Triad. The floor is cheap (5 calls / 10k tokens) and its product is genuinely good; quality-of-tooling claims have to beat this, not just the Day-six control.
+
+**The contract prompt.** To answer "does the test carry the QL relational system prompt": until now, no — the toolset conditions run with no system prompt by design. This arm adds a 68-word relational contract to the system envelope: the P/P′ positions are purely relational responsibilities with no inherent manifest content; the twelve lenses are their refraction media; a lens reading is of a position's responsibility, never of the thing itself.
+
+What changed with 68 words:
+- The composition is a **different philosophy**: "The Republic of Kept Promises" — the bond as reliance, law as the public form of the promise, the constitution as custodian of the capacity to promise. (n=1: composition variance and prompt effect are confounded.)
+- The tool pattern tightened: one full_text call (no right_frame), with an **expectation-setting disclosure** — "I expect the text to hold, or fail, as one argument from the single claim that the social bond is reliance."
+- The post-reading narration is the deepest tie-in yet, and it reads the Night-lens cells as *relations to its own text*, per the contract: "One/Unity (0.55) — one argument from one claim; Final cause (0.67) and Arche (0.51) — governance by an end; **Salt (0.5) — the custodial, preservative function**; Zeit (0.67) and Life/Aufhebung (0.59) — promises binding future selves… **Even the NEITHER (0.29) is the text's own defining negations.**" That is the refraction-media reading: sublens articulations interpreted as positions read through, not as content.
+- Blind full-72 of the product peaks L3 Community integration (0.87), L4′ Insight (0.82), L1 **Final cause (0.76)** — governance by an end, the position's own claim about itself — and L0′ Three/Triad.
+
+Open for next round: prompt-arm repeats to separate prompt effect from composition variance; a token-lighter contract variant to find the floor; the same contract on ql-eight.
