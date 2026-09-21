@@ -11,13 +11,30 @@ use std::{
 #[test]
 fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     let original = NativeCatalog::bundled().unwrap();
-    assert_eq!(original.revision(), 9);
-    assert_eq!(original.descriptors().len(), 12);
+    assert_eq!(original.revision(), 11);
+    assert_eq!(original.descriptors().len(), 18);
     assert_eq!(original.capabilities().len(), 4);
-    assert_eq!(original.capability_gaps().len(), 8);
-    for slug in ["claude-code", "codex", "pi", "ollama", "zcode"] {
+    assert_eq!(original.capability_gaps().len(), 14);
+    for slug in [
+        "claude-code",
+        "codex",
+        "pi",
+        "ollama",
+        "zcode",
+        "opencode",
+        "aider",
+        "cursor-cli",
+        "deepseek-harness",
+        "goose",
+        "qwen-code",
+    ] {
         assert!(original.descriptor(slug).is_some());
     }
+    assert!(
+        original.capability("opencode").is_none(),
+        "opencode ships detected with a declared capability gap, not a guessed descriptor"
+    );
+    assert!(original.capability_gap("opencode").is_some());
     assert_eq!(
         original.descriptor("ollama").unwrap().native_kind(),
         "model-provider"
@@ -506,4 +523,60 @@ fn catalogue_boundary_uses_capability_provenance_not_the_later_whole_catalog_rev
     let wire = serde_json::to_value(recorded).unwrap();
     assert!(wire.to_string().contains("PreToolUse"));
     assert!(catalog.boundary("pi", "guessed").is_err());
+}
+
+#[test]
+fn permissions_and_trusts_facets_declare_and_observe() {
+    // The per-harness permissions/trusts facts (owner commission 2026-09-17,
+    // Control/agents/governance + Work/harness-profiles-trusts) are ordinary
+    // declared facets: the descriptor names the harness's own config file and
+    // detection reports its observed existence like any other facet kind.
+    let catalog = NativeCatalog::bundled().unwrap();
+    let mut d = catalog.descriptor("codex").unwrap().as_value().clone();
+    d["facets"]["permissions"] = json!({"path": "~/.codex/config.toml"});
+    d["facets"]["trusts"] = json!({"path": "~/.codex/config.toml"});
+    let mut effects = support::FixtureEffects::new(json!({
+        "statProbe": {"value": {"exists": true, "isDir": false}}
+    }));
+    let read = run_detection(
+        &[HarnessDescriptor::try_from(d).unwrap()],
+        &mut effects,
+        &options(&catalog),
+    )
+    .unwrap();
+    let entry = &read.as_value()["harnesses"][0];
+    for kind in ["permissions", "trusts"] {
+        let facet = entry["facets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|f| f["kind"] == kind)
+            .unwrap_or_else(|| panic!("{kind} facet observed"));
+        assert_eq!(facet["exists"], true, "{kind} existence observed");
+    }
+
+    // The bundled catalog itself carries the observed trust facts for the
+    // three harnessed harnesses on this machine.
+    for slug in ["claude-code", "codex", "zcode"] {
+        let descriptor = catalog.descriptor(slug).unwrap().as_value().clone();
+        for kind in ["permissions", "trusts"] {
+            let facet = &descriptor["facets"][kind];
+            assert!(
+                !facet["path"].is_null(),
+                "{slug} declares a {kind} facet path"
+            );
+        }
+    }
+}
+
+#[test]
+fn unknown_facet_kind_is_refused() {
+    let catalog = NativeCatalog::bundled().unwrap();
+    let mut d = catalog.descriptor("codex").unwrap().as_value().clone();
+    d["facets"]["telepathy"] = json!({"path": "~/.codex/config.toml"});
+    let err = HarnessDescriptor::try_from(d).unwrap_err().to_string();
+    assert!(
+        err.contains("unsupported facet kind"),
+        "refusal names the failure: {err}"
+    );
 }

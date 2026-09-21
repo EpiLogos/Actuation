@@ -13,7 +13,10 @@ use actuation_runtime::{
 };
 use serde_json::{json, Value};
 
-pub const ACTUATION_CLI_VERSION: &str = "0.2.0";
+/// Always the crate's own Cargo version. A hardcoded copy here is what made
+/// the packaged 0.2.0 release, the workflows' workspace-version gates and the
+/// product manifest disagree with each other.
+pub const ACTUATION_CLI_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const ACTUATION_CLI_CONTRACT: &str = "actuation.cli/v1";
 
 /// Frozen Wave 5 System disclosure identity, kept beside the surface it

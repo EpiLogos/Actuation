@@ -1,6 +1,6 @@
 {
   "schema": "actuation.native-catalog/v1",
-  "catalog_revision": 9,
+  "catalog_revision": 11,
   "descriptors": [
     {
       "schema": "actuation.harness-detection/v1",
@@ -49,13 +49,20 @@
             "source": "file",
             "collection": "mcpServers"
           }
+        },
+        "permissions": {
+          "path": "~/.claude/settings.json"
+        },
+        "trusts": {
+          "path": "~/.claude.json"
         }
       },
       "provenance": {
         "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
         "source_refs": [
           "survey:local-machine-2026-09-05",
-          "survey:mcp-config-facet-2026-09-16"
+          "survey:mcp-config-facet-2026-09-16",
+          "survey:permissions-trusts-facet-2026-09-17"
         ],
         "catalog_revision": 1
       }
@@ -90,12 +97,19 @@
         },
         "config": {
           "path": "~/.codex/config.toml"
+        },
+        "permissions": {
+          "path": "~/.codex/config.toml"
+        },
+        "trusts": {
+          "path": "~/.codex/config.toml"
         }
       },
       "provenance": {
         "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
         "source_refs": [
-          "survey:local-machine-2026-09-05"
+          "survey:local-machine-2026-09-05",
+          "survey:permissions-trusts-facet-2026-09-17"
         ],
         "catalog_revision": 1
       }
@@ -108,6 +122,9 @@
       "edition": "cli",
       "native_owner": "Google",
       "summary": "Gemini CLI agent harness; antigravity ships inside its config tree",
+      "aliases": [
+        "gemini-cli"
+      ],
       "probe": {
         "executable": {
           "names": [
@@ -477,15 +494,309 @@
             "source": "file",
             "collection": "mcp.servers"
           }
+        },
+        "permissions": {
+          "path": "~/.zcode/cli/config.json"
+        },
+        "trusts": {
+          "path": "~/.zcode/cli/config.json"
         }
       },
       "provenance": {
         "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
         "source_refs": [
           "survey:local-machine-2026-09-05",
-          "survey:mcp-config-facet-2026-09-16"
+          "survey:mcp-config-facet-2026-09-16",
+          "survey:permissions-trusts-facet-2026-09-17"
         ],
         "catalog_revision": 2
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "opencode",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "SST",
+      "summary": "OpenCode terminal agent harness; config lives under ~/.config/opencode",
+      "probe": {
+        "executable": {
+          "names": [
+            "opencode"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.config/opencode"
+        }
+      },
+      "facets": {
+        "skills": {
+          "path": "~/.config/opencode/skill"
+        },
+        "agents": {
+          "path": "~/.config/opencode/agents"
+        },
+        "commands": {
+          "path": "~/.config/opencode/commands"
+        },
+        "plugins": {
+          "path": "~/.config/opencode/plugins"
+        },
+        "rules": {
+          "path": "~/.config/opencode/AGENTS.md"
+        },
+        "config": {
+          "path": "~/.config/opencode/opencode.json"
+        },
+        "mcp-config": {
+          "path": "~/.config/opencode/opencode.json",
+          "inventory": {
+            "kind": "mcp-servers",
+            "source": "file",
+            "collection": "mcp"
+          }
+        }
+      },
+      "provenance": {
+        "authored_by": "Hermes-Nara session on this machine, 2026-09-17 (opencode strapping)",
+        "source_refs": [
+          "doc:opencode.ai/docs/config",
+          "doc:opencode.ai/docs/rules",
+          "doc:opencode.ai/docs/plugins",
+          "native:opencode --version = 1.18.30",
+          "aikit:clients/opencode.rs (ai-kit#186 round-2 migration)"
+        ],
+        "catalog_revision": 10
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "aider",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Aider-AI",
+      "summary": "Aider terminal AI pair-programming CLI; process-per-invocation, reads user-level ~/.aider.conf.yml at startup",
+      "probe": {
+        "executable": {
+          "names": [
+            "aider"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        }
+      },
+      "facets": {
+        "config": {
+          "path": "~/.aider.conf.yml"
+        }
+      },
+      "provenance": {
+        "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+        "source_refs": [
+          "aikit:clients/aider.rs (ai-kit#186 round-2 migration)",
+          "doc:aider.chat/docs/config/aider_conf.html (user-level ~/.aider.conf.yml read at startup)",
+          "survey:which-aider-2026-09-18 (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 11
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "cursor-cli",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Anysphere",
+      "summary": "Cursor CLI agent harness; user surface under ~/.cursor, binary ships as cursor-agent",
+      "aliases": [
+        "cursor-agent"
+      ],
+      "probe": {
+        "executable": {
+          "names": [
+            "cursor-agent"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.cursor"
+        }
+      },
+      "facets": {
+        "skills": {
+          "path": "~/.cursor/skills"
+        },
+        "hooks": {
+          "path": "~/.cursor/hooks.json"
+        },
+        "mcp-config": {
+          "path": "~/.cursor/mcp.json",
+          "inventory": {
+            "kind": "mcp-servers",
+            "source": "file",
+            "collection": "mcpServers"
+          }
+        },
+        "config": {
+          "path": "~/.cursor/cli-config.json"
+        }
+      },
+      "provenance": {
+        "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+        "source_refs": [
+          "aikit:clients/cursor.rs (ai-kit#186 round-2 migration)",
+          "doc:cursor.com/docs/cli/overview (rules, skills, hooks.json, mcp.json, cli-config.json)",
+          "native:cursor-agent --version = 2026.09.15-d2fe57e (observed on this machine 2026-09-18)",
+          "survey:~/.cursor 2026-09-18 (cli-config.json present; skills/hooks/mcp.json documented but absent here)"
+        ],
+        "catalog_revision": 11
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "deepseek-harness",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "DeepSeek AI",
+      "summary": "DeepSeek Harness (DSH) agent harness; Cordis plugin runtime, harness home $DSH_HOME or ~/.dsh",
+      "aliases": [
+        "dsh"
+      ],
+      "probe": {
+        "executable": {
+          "names": [
+            "dsh"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.dsh"
+        },
+        "env": {
+          "any_of": [
+            "DSH_HOME"
+          ]
+        }
+      },
+      "facets": {
+        "rules": {
+          "path": "~/.dsh/AGENTS.md"
+        }
+      },
+      "provenance": {
+        "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+        "source_refs": [
+          "aikit:clients/dsh.rs (ai-kit#186 round-2 migration; composition-managed census)",
+          "doc:github.com/deepseek-ai/deepseek-harness README (dsh CLI; npx @deepseek-ai/dsh; MIT developer preview)",
+          "doc:deepseek-harness docs/config-catalog.md (harness home $DSH_HOME or ~/.dsh; fixed user-global AGENTS.md)",
+          "survey:which-dsh-2026-09-18 (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 11
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "goose",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Goose",
+      "summary": "Goose general-purpose agent harness (CLI/desktop/API); user config ~/.config/goose, project hints via .goosehints",
+      "probe": {
+        "executable": {
+          "names": [
+            "goose"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.config/goose"
+        }
+      },
+      "facets": {
+        "config": {
+          "path": "~/.config/goose/config.yaml"
+        },
+        "skills": {
+          "path": "~/.agents/skills"
+        }
+      },
+      "provenance": {
+        "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+        "source_refs": [
+          "aikit:clients/goose.rs (ai-kit#186 round-2 migration)",
+          "doc:aaif-goose/goose documentation/docs/guides/context-engineering/using-skills.md (global skills at ~/.agents/skills)",
+          "survey:which-goose-2026-09-18 (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 11
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "qwen-code",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "QwenLM",
+      "summary": "Qwen Code terminal agent harness (Gemini CLI lineage); global memory ~/.qwen/QWEN.md, user settings ~/.qwen/settings.json",
+      "aliases": [
+        "qwen"
+      ],
+      "probe": {
+        "executable": {
+          "names": [
+            "qwen"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.qwen"
+        }
+      },
+      "facets": {
+        "rules": {
+          "path": "~/.qwen/QWEN.md"
+        },
+        "skills": {
+          "path": "~/.qwen/skills"
+        },
+        "config": {
+          "path": "~/.qwen/settings.json"
+        },
+        "mcp-config": {
+          "path": "~/.qwen/settings.json",
+          "inventory": {
+            "kind": "mcp-servers",
+            "source": "file",
+            "collection": "mcpServers"
+          }
+        }
+      },
+      "provenance": {
+        "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+        "source_refs": [
+          "aikit:clients/qwen.rs (ai-kit#186 round-2 migration)",
+          "doc:QwenLM/qwen-code docs/users/features/memory.md (global ~/.qwen/QWEN.md)",
+          "doc:QwenLM/qwen-code docs/users/features/skills.md (personal skills ~/.qwen/skills/)",
+          "doc:QwenLM/qwen-code docs/users/features/mcp.md (mcpServers in ~/.qwen/settings.json, user scope default)",
+          "survey:which-qwen-2026-09-18 (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 11
       }
     }
   ],
@@ -774,7 +1085,7 @@
       "injection_channel": {
         "kind": "stdout-additional-context",
         "mechanism": "hook stdout is parsed as a strict JSON schema; additionalContext is injected into the conversation. Exit codes carry the deny channel: 0 pass, 2 block, other non-zero error.",
-        "notes": "the schema is strict — any extra key fails validation, so a projection must emit exactly the admitted fields."
+        "notes": "the schema is strict \u2014 any extra key fails validation, so a projection must emit exactly the admitted fields."
       },
       "blocking_semantics": {
         "kind": "deny-and-block",
@@ -800,7 +1111,7 @@
       },
       "model_dispatch": {
         "kind": "none",
-        "notes": "neither zcode's detection descriptor nor its shipped hook documentation evidences a model-provider binding in this repo — no service probe, no provider config key, no upstream reference naming one. Declaring a provider here would be a guess, not a reading. Re-declare when zcode's own config or plugin surface names one."
+        "notes": "neither zcode's detection descriptor nor its shipped hook documentation evidences a model-provider binding in this repo \u2014 no service probe, no provider config key, no upstream reference naming one. Declaring a provider here would be a guess, not a reading. Re-declare when zcode's own config or plugin surface names one."
       },
       "provenance": {
         "authored_by": "O:I capability descriptor programme (zcode hook grammar read from the shipped zcode-guide plugin's diagnosing-hooks documentation; config surfaces observed on this machine, 2026-09-06)",
@@ -821,7 +1132,7 @@
       "native_events": [],
       "injection_channel": {
         "kind": "none",
-        "mechanism": "no stdout/JSON context-injection channel is observed on pi 0.84.4. Additional context travels as skill capsules projected into the skills tree — ~/.pi/agent/skills globally, .pi/skills project-relative — and read at session start; a running TUI picks changes up with /reload, and a fresh invocation is the guaranteed pickup. Dispatch projections must use the skills seam declared in install_seam, never stdout.",
+        "mechanism": "no stdout/JSON context-injection channel is observed on pi 0.84.4. Additional context travels as skill capsules projected into the skills tree \u2014 ~/.pi/agent/skills globally, .pi/skills project-relative \u2014 and read at session start; a running TUI picks changes up with /reload, and a fresh invocation is the guaranteed pickup. Dispatch projections must use the skills seam declared in install_seam, never stdout.",
         "notes": "pi also carries an extension surface (pi install writes into settings.json); no extension event grammar is observed in Actuation's receipts, so none is declared here. Re-declare this descriptor when a pi release grows an additional-context channel."
       },
       "blocking_semantics": {
@@ -945,7 +1256,7 @@
       "document": "capability-gap",
       "harness_slug": "grok-bot",
       "summary": "grok-bot harness; detected only, daemon wake unobserved",
-      "reason": "No capability descriptor authored at diagnosis (2026-09-14): AIKit's admission rides the detection record only, and the native surface — including whether the background daemon admits a wake — is unobserved. Wake optimism is not a transport, so nothing is declared.",
+      "reason": "No capability descriptor authored at diagnosis (2026-09-14): AIKit's admission rides the detection record only, and the native surface \u2014 including whether the background daemon admits a wake \u2014 is unobserved. Wake optimism is not a transport, so nothing is declared.",
       "evidence_refs": [
         "aikit:clients/grokbot.rs admission (ai-kit#186, closed 2026-09-08)",
         "survey:local-machine-2026-09-05",
@@ -1015,6 +1326,139 @@
           "diagnosis:harness-capability-coverage-2026-09-14"
         ],
         "catalog_revision": 7
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "opencode",
+      "summary": "OpenCode agent harness; detected, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-17): OpenCode's plugin surface is documented (plugin modules export hooks over session and tool events, shell.env injection and experimental.session.compacting) but its blocking, context-injection and wake semantics have not been observed on this machine into descriptor form. The catalog carries a disclosed gap rather than an invented descriptor; authoring it from an observed plugin is Actuation-side work that has not happened.",
+      "evidence_refs": [
+        "doc:opencode.ai/docs/plugins",
+        "aikit:clients/opencode.rs (ai-kit#186 round-2 migration)",
+        "native:opencode --version = 1.18.30"
+      ],
+      "provenance": {
+        "authored_by": "Hermes-Nara session on this machine, 2026-09-17 (opencode strapping)",
+        "source_refs": [
+          "doc:opencode.ai/docs/plugins",
+          "doc:opencode.ai/docs/config"
+        ],
+        "catalog_revision": 10
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "aider",
+      "summary": "Aider CLI; process-per-invocation, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-18): aider is a process-per-invocation CLI that reads .aider.conf.yml and --read files at startup and exits; it declares no hook/event, blocking, context-injection or wake surface in its own docs or in the AIKit census, and it is not installed on this machine to observe. The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "aikit:clients/aider.rs (ai-kit#186 round-2 migration)",
+        "doc:aider.chat/docs/config/aider_conf.html (user-level ~/.aider.conf.yml read at startup)",
+        "survey:which-aider-2026-09-18 (not installed on this machine; probes report that honestly)"
+      ],
+      "provenance": {
+        "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+        "source_refs": [
+          "aikit:clients/aider.rs (ai-kit#186 round-2 migration)",
+          "doc:aider.chat/docs/config/aider_conf.html (user-level ~/.aider.conf.yml read at startup)",
+          "survey:which-aider-2026-09-18 (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 11
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "cursor-cli",
+      "summary": "Cursor CLI agent harness; detected on this machine, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-18): cursor-agent is installed here (2026.09.15-d2fe57e) but the CLI-native loading of hooks.json is not documented (hooks are an editor/cloud surface per the AIKit census), so blocking, context-injection and wake semantics have not been observed on this machine into descriptor form. The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "aikit:clients/cursor.rs (ai-kit#186 round-2 migration)",
+        "doc:cursor.com/docs/cli/overview (rules, skills, hooks.json, mcp.json, cli-config.json)",
+        "native:cursor-agent --version = 2026.09.15-d2fe57e (observed on this machine 2026-09-18)",
+        "survey:~/.cursor 2026-09-18 (cli-config.json present; skills/hooks/mcp.json documented but absent here)"
+      ],
+      "provenance": {
+        "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+        "source_refs": [
+          "aikit:clients/cursor.rs (ai-kit#186 round-2 migration)",
+          "doc:cursor.com/docs/cli/overview (rules, skills, hooks.json, mcp.json, cli-config.json)",
+          "native:cursor-agent --version = 2026.09.15-d2fe57e (observed on this machine 2026-09-18)",
+          "survey:~/.cursor 2026-09-18 (cli-config.json present; skills/hooks/mcp.json documented but absent here)"
+        ],
+        "catalog_revision": 11
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "deepseek-harness",
+      "summary": "DeepSeek Harness (DSH); composition-managed, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-18): DSH is a Cordis plugin runtime whose faculties are composition-managed (Host/Client plugins, agent presets, model tools); there is no fixed event surface observed into descriptor form, and DSH is not installed on this machine (no executable observed on any suite machine). The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "aikit:clients/dsh.rs (ai-kit#186 round-2 migration; composition-managed census)",
+        "doc:github.com/deepseek-ai/deepseek-harness README (dsh CLI; npx @deepseek-ai/dsh; MIT developer preview)",
+        "doc:deepseek-harness docs/config-catalog.md (harness home $DSH_HOME or ~/.dsh; fixed user-global AGENTS.md)",
+        "survey:which-dsh-2026-09-18 (not installed on this machine; probes report that honestly)"
+      ],
+      "provenance": {
+        "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+        "source_refs": [
+          "aikit:clients/dsh.rs (ai-kit#186 round-2 migration; composition-managed census)",
+          "doc:github.com/deepseek-ai/deepseek-harness README (dsh CLI; npx @deepseek-ai/dsh; MIT developer preview)",
+          "doc:deepseek-harness docs/config-catalog.md (harness home $DSH_HOME or ~/.dsh; fixed user-global AGENTS.md)",
+          "survey:which-dsh-2026-09-18 (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 11
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "goose",
+      "summary": "Goose agent harness; detected-not on this machine, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-18): goose ships lifecycle hooks as plugin hooks/hooks.json and skills via its skills extension, but its blocking, context-injection and wake semantics have not been observed on this machine into descriptor form (goose is not installed here). The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "aikit:clients/goose.rs (ai-kit#186 round-2 migration)",
+        "doc:aaif-goose/goose documentation/docs/guides/context-engineering/using-skills.md (global skills at ~/.agents/skills)",
+        "survey:which-goose-2026-09-18 (not installed on this machine; probes report that honestly)"
+      ],
+      "provenance": {
+        "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+        "source_refs": [
+          "aikit:clients/goose.rs (ai-kit#186 round-2 migration)",
+          "doc:aaif-goose/goose documentation/docs/guides/context-engineering/using-skills.md (global skills at ~/.agents/skills)",
+          "survey:which-goose-2026-09-18 (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 11
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "qwen-code",
+      "summary": "Qwen Code agent harness; detected-not on this machine, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-18): qwen documents SessionStart/PreToolUse/PostToolUse hooks in settings.json and mcpServers user scope, but its blocking, context-injection and wake semantics have not been observed on this machine into descriptor form (qwen is not installed here). The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "aikit:clients/qwen.rs (ai-kit#186 round-2 migration)",
+        "doc:QwenLM/qwen-code docs/users/features/memory.md (global ~/.qwen/QWEN.md)",
+        "doc:QwenLM/qwen-code docs/users/features/skills.md (personal skills ~/.qwen/skills/)",
+        "doc:QwenLM/qwen-code docs/users/features/mcp.md (mcpServers in ~/.qwen/settings.json, user scope default)",
+        "survey:which-qwen-2026-09-18 (not installed on this machine; probes report that honestly)"
+      ],
+      "provenance": {
+        "authored_by": "oi-adapters-sortout cleanup Thread B (detection-sourced client list), on this machine, 2026-09-18",
+        "source_refs": [
+          "aikit:clients/qwen.rs (ai-kit#186 round-2 migration)",
+          "doc:QwenLM/qwen-code docs/users/features/memory.md (global ~/.qwen/QWEN.md)",
+          "doc:QwenLM/qwen-code docs/users/features/skills.md (personal skills ~/.qwen/skills/)",
+          "doc:QwenLM/qwen-code docs/users/features/mcp.md (mcpServers in ~/.qwen/settings.json, user scope default)",
+          "survey:which-qwen-2026-09-18 (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 11
       }
     }
   ],
