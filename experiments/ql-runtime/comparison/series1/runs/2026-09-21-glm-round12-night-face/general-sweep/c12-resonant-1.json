@@ -1,0 +1,75 @@
+{
+  "entry": "C12",
+  "title": "Probability as degree of belief — Ramsey (1926), Truth and Probability",
+  "subject_chars": 338,
+  "mode": "resonant",
+  "reading": {
+    "shape": "ranked frame relation (full ordering, topk=12)",
+    "selected": "L2",
+    "ranking": [
+      {
+        "lens": "L2",
+        "name": "Logical",
+        "mass": 0.62
+      },
+      {
+        "lens": "L4'",
+        "name": "Scientific",
+        "mass": 0.17
+      },
+      {
+        "lens": "L1",
+        "name": "Causal",
+        "mass": 0.09
+      },
+      {
+        "lens": "L4",
+        "name": "Phenomenological",
+        "mass": 0.03
+      },
+      {
+        "lens": "L1'",
+        "name": "Phenomenal",
+        "mass": 0.03
+      },
+      {
+        "lens": "L0",
+        "name": "Quaternal",
+        "mass": 0.02
+      },
+      {
+        "lens": "L5",
+        "name": "Para Vāk",
+        "mass": 0.01
+      },
+      {
+        "lens": "L0'",
+        "name": "Archetypal-Numerical",
+        "mass": 0.01
+      },
+      {
+        "lens": "L3",
+        "name": "Processual",
+        "mass": 0.01
+      },
+      {
+        "lens": "L5'",
+        "name": "Divine Logos",
+        "mass": 0.01
+      },
+      {
+        "lens": "L3'",
+        "name": "Chronological",
+        "mass": 0
+      },
+      {
+        "lens": "L2'",
+        "name": "Alchemical-Elemental",
+        "mass": 0
+      }
+    ],
+    "rationale": null
+  },
+  "latency_ms": 640,
+  "wall_ms": 741
+}
