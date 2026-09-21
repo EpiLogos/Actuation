@@ -1,0 +1,9 @@
+Sense and reference — Frege (1892), Über Sinn und Bedeutung
+
+> "The morning star and the evening star are the same body — and yet the
+> thought expressed by 'the morning star is the morning star' differs from
+> that expressed by 'the morning star is the evening star.'"
+
+Core move: meaning (Sinn) and reference (Bedeutung) come apart; identity
+statements can be informative because a term carries more than what it
+points at.

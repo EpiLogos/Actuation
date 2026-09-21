@@ -158,8 +158,7 @@
           "label": "Why-so/Why-not (./?)",
           "meaning": "pros hen homonymy, analogia; question questioning itself"
         }
-      ],
-      "function": "exhaustive"
+      ]
     },
     {
       "id": "L1",
@@ -197,8 +196,7 @@
           "label": "Icchā Śakti / Will",
           "meaning": "ultimate causation — divine will / blind Will"
         }
-      ],
-      "function": "select"
+      ]
     },
     {
       "id": "L2",
@@ -236,8 +234,7 @@
           "label": "SILENCE",
           "meaning": "irrepresentable / unprovable truth"
         }
-      ],
-      "function": "exhaustive"
+      ]
     },
     {
       "id": "L3",
@@ -275,8 +272,7 @@
           "label": "Satisfaction / Perishing",
           "meaning": "jouissance — objective immortality"
         }
-      ],
-      "function": "locate"
+      ]
     },
     {
       "id": "L4",
@@ -314,8 +310,7 @@
           "label": "Gelassenheit",
           "meaning": "releasement — letting-be, openness"
         }
-      ],
-      "function": "select"
+      ]
     },
     {
       "id": "L5",
@@ -353,8 +348,7 @@
           "label": "Mātṛkā",
           "meaning": "letters — measuring power of consciousness"
         }
-      ],
-      "function": "locate"
+      ]
     },
     {
       "id": "L0'",
@@ -392,8 +386,7 @@
           "label": "Six",
           "meaning": "hexad, completion, perfect number"
         }
-      ],
-      "function": "select"
+      ]
     },
     {
       "id": "L1'",
@@ -431,8 +424,7 @@
           "label": "Extroversion",
           "meaning": "toward-conscious-pole"
         }
-      ],
-      "function": "select"
+      ]
     },
     {
       "id": "L2'",
@@ -470,8 +462,7 @@
           "label": "Salt",
           "meaning": "crystallized result of transformation — the fixed body (formerly tabulated as Mineral)"
         }
-      ],
-      "function": "select"
+      ]
     },
     {
       "id": "L3'",
@@ -509,8 +500,7 @@
           "label": "Life",
           "meaning": "the full cycle renewed"
         }
-      ],
-      "function": "locate"
+      ]
     },
     {
       "id": "L4'",
@@ -548,8 +538,7 @@
           "label": "Insight",
           "meaning": "synthesis crystallization"
         }
-      ],
-      "function": "locate"
+      ]
     },
     {
       "id": "L5'",
@@ -587,9 +576,7 @@
           "label": "Epi-Logos (ἐπί-λόγος)",
           "meaning": "word beyond words / Anastasis"
         }
-      ],
-      "function": "select"
+      ]
     }
-  ],
-  "function_note": "exhaustive lenses must be mapped fully across all slots (never peak-selected); locate lenses place the subject in a directed progression; select lenses admit a dominant-member reading. Night conjugates default to select pending the owner's typing."
+  ]
 }

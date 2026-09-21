@@ -52,22 +52,18 @@ const fullGiving = (lensId, probs, strongest) => {
 
 let questions, shape;
 if (mode === 'full_text') {
-  // Every lens run at its machinery, in its own functional form: exhaustive
-  // lenses are MAPPED across all slots (never peak-selected); locate lenses
-  // place the subject in a progression; select lenses admit a dominant member.
-  shape = 'machinery-first, function-typed: exhaustive lenses mapped across all sub-slots; locate lenses placed in their progression; select lenses read for the dominant member';
-  questions = Object.fromEntries(GIVING.lenses.map((l) => {
-    const fn = l.function ?? 'select';
-    let instructions;
-    if (fn === 'exhaustive') {
-      instructions = `Map the subject fully across ${l.name} (${l.ground}). Its machinery: ${l.sublens.map(slotLine).join('; ')}. This lens is exhaustive — the subject must be located at EVERY sub-slot: state where the subject stands at each. The distribution is the map; do not collapse it to a single winner.`;
-    } else if (fn === 'locate') {
-      instructions = `Locate the subject within ${l.name} (${l.ground}). Its machinery is a progression: ${l.sublens.map(slotLine).join('; ')}. At which sub-slot does the subject presently sit — and the distribution carries how far it reaches across the others.`;
-    } else {
-      instructions = `Read the subject through ${l.name} (${l.ground}). Its machinery: ${l.sublens.map(slotLine).join('; ')}. Which sub-slot dominates the subject under this lens — where does the weight most strongly sit? The subject is pre-lens data; the sub-slot is where the lens refracts it.`;
-    }
-    return [l.id, { type: 'choice', instructions, criteria: slotCriteria(l) }];
-  }));
+  // Every lens applied as its machinery defines: the distribution states
+  // where the subject stands at each sub-slot — no peak language, no meta
+  // types. The machinery is the application.
+  shape = 'machinery applied as given: each lens run across its defined sub-slots, the distribution stating where the subject stands at each';
+  questions = Object.fromEntries(GIVING.lenses.map((l) => [
+    l.id,
+    {
+      type: 'choice',
+      instructions: `Apply ${l.name} (${l.ground}) to the subject as a presented whole. Its machinery: ${l.sublens.map(slotLine).join('; ')}. Apply it as it is defined: state where the subject stands at each sub-slot — the distribution is the statement, covering all of them.`,
+      criteria: slotCriteria(l),
+    },
+  ]));
 } else if (mode === 'right_frame') {
   shape = 'single-lens selection (12-lens distribution, machinery summarised)';
   questions = {
@@ -129,7 +125,7 @@ if (mode === 'full_text') {
     cells: GIVING.lenses.map((l) => {
       const a = result.answers?.[l.id] ?? {};
       const strongest = a.choice ?? Object.entries(a.probabilities ?? {}).sort((x, y) => y[1] - x[1])[0]?.[0] ?? null;
-      return { ...fullGiving(l.id, a.probabilities ?? null, strongest), function: l.function ?? 'select' };
+      return fullGiving(l.id, a.probabilities ?? null, strongest);
     }),
   };
 } else if (mode === 'right_frame' || mode === 'resonant') {
