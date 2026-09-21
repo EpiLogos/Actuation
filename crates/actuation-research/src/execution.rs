@@ -1172,6 +1172,70 @@ mod tests {
     }
 
     #[test]
+    fn right_frame_is_gated_on_coverage_and_then_admitted() {
+        let script_dir = tempfile::tempdir().unwrap();
+        let script = script_dir.path().join("fake-reflect-gate.sh");
+        std::fs::write(
+            &script,
+            "#!/bin/sh\nprintf '%s' '{\"mode\":\"x\",\"reading\":{\"shape\":\"fake\"},\"latency_ms\":1}'\n",
+        )
+        .unwrap();
+        std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+            .unwrap();
+        std::env::set_var("QL_REFLECT_BIN", &script);
+        let task = crate::tasks::Task::get("S1-SKILL-001").unwrap();
+        let (_dir, world) = temp_world();
+        let body = ScriptedBody::classic(vec![
+            // Frame selection before any coverage: refused as a tool error.
+            json!({"content":"selecting a frame first",
+                   "capabilityCalls":[{"name":"reflect_right_frame","args":{"subject":"the work"}}]}),
+            // Coverage: the full reading.
+            json!({"content":"taking the full reading",
+                   "capabilityCalls":[{"name":"reflect_full_text","args":{"subject":"the work as a whole"}}]}),
+            // Now the selection is admitted.
+            json!({"content":"selecting the frame",
+                   "capabilityCalls":[{"name":"reflect_right_frame","args":{"subject":"the work"}}]}),
+            json!({"content":"making the effect",
+                   "capabilityCalls":[{"name":"write_file","args":{"path":"deliverable.md","content":"the deliverable"}}]}),
+            json!({"content":"the bounded request is realised",
+                   "capabilityCalls":[{"name":"close","args":{"synthesis":"deliverable.md written from SKILL.md"}}]}),
+        ]);
+        let mut host = ResearchHost::new(body, world, None, 64, vec![]).unwrap();
+        let mut observer = RecordingObserver::default();
+        let result = run_task(
+            &task,
+            ExternalRef::new("trace:test:gate-1").unwrap(),
+            RunMode::Twelve,
+            Limits::default(),
+            None,
+            &mut host,
+            &mut observer,
+            &CancellationToken::default(),
+        )
+        .expect("gated run completes");
+        assert_eq!(result["status"], json!("completed"));
+        let history = &result["execution"]["report"]["history"];
+        let entries = history.as_array().unwrap();
+        // The first right_frame call was refused; the retried one returned a reading.
+        let first = entries
+            .iter()
+            .find(|h| h["role"] == json!("capability") && h["name"] == json!("reflect_right_frame"))
+            .expect("the first right_frame call is on the record");
+        assert!(
+            first["result"]["error"].is_string(),
+            "the pre-coverage selection is refused with a reason"
+        );
+        let admitted = entries
+            .iter()
+            .filter(|h| h["role"] == json!("capability") && h["name"] == json!("reflect_right_frame"))
+            .any(|h| h["result"]["error"].is_null());
+        assert!(admitted, "the post-coverage selection is admitted");
+        // Refusals are not readings: the counter counts what was taken.
+        assert_eq!(result["execution"]["report"]["night_calls"], json!(2));
+        assert_eq!(result["verification"]["objective_checks_pass"], json!(true));
+    }
+
+    #[test]
     fn run_mode_admits_the_native_conditions() {
         for (name, mode) in [
             ("classic", RunMode::Classic),
