@@ -1227,7 +1227,9 @@ mod tests {
         );
         let admitted = entries
             .iter()
-            .filter(|h| h["role"] == json!("capability") && h["name"] == json!("reflect_right_frame"))
+            .filter(|h| {
+                h["role"] == json!("capability") && h["name"] == json!("reflect_right_frame")
+            })
             .any(|h| h["result"]["error"].is_null());
         assert!(admitted, "the post-coverage selection is admitted");
         // Refusals are not readings: the counter counts what was taken.
