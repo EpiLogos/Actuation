@@ -1,0 +1,167 @@
+[
+  {
+    "entry": "C1",
+    "title": "Utilitarianism — Bentham (1789), IPML ch. I",
+    "jev": {
+      "latency_ms": 787,
+      "subject_chars": 291,
+      "cells": 12
+    },
+    "analyse": {
+      "latency_ms": 261257,
+      "chars": 7420
+    },
+    "failures": []
+  },
+  {
+    "entry": "C2",
+    "title": "The invisible hand — Smith (1776), Wealth of Nations IV.2",
+    "jev": {
+      "latency_ms": 670,
+      "subject_chars": 378,
+      "cells": 12
+    },
+    "analyse": {
+      "latency_ms": 327117,
+      "chars": 9888
+    },
+    "failures": []
+  },
+  {
+    "entry": "C3",
+    "title": "Entitlement theory — Nozick (1974), Anarchy, State, and Utopia ch. 7",
+    "jev": {
+      "latency_ms": 665,
+      "subject_chars": 411,
+      "cells": 12
+    },
+    "analyse": {
+      "latency_ms": 282005,
+      "chars": 10245
+    },
+    "failures": []
+  },
+  {
+    "entry": "C4",
+    "title": "The partnership of generations — Burke (1790), Reflections",
+    "jev": {
+      "latency_ms": 693,
+      "subject_chars": 475,
+      "cells": 12
+    },
+    "analyse": {
+      "latency_ms": 280955,
+      "chars": 8459
+    },
+    "failures": []
+  },
+  {
+    "entry": "C5",
+    "title": "Government by consent — Locke (1689), Second Treatise §§87, 95, 124",
+    "jev": {
+      "latency_ms": 660,
+      "subject_chars": 428,
+      "cells": 12
+    },
+    "analyse": {
+      "latency_ms": 272803,
+      "chars": 12691
+    },
+    "failures": []
+  },
+  {
+    "entry": "C6",
+    "title": "Historical materialism — Marx (1859), Preface to A Contribution",
+    "jev": {
+      "latency_ms": 734,
+      "subject_chars": 437,
+      "cells": 12
+    },
+    "analyse": {
+      "latency_ms": 346344,
+      "chars": 10419
+    },
+    "failures": []
+  },
+  {
+    "entry": "C7",
+    "title": "The tragedy of the commons — Hardin (1968), Science",
+    "jev": {
+      "latency_ms": 685,
+      "subject_chars": 349,
+      "cells": 12
+    },
+    "analyse": {
+      "latency_ms": 202121,
+      "chars": 8218
+    },
+    "failures": []
+  },
+  {
+    "entry": "C8",
+    "title": "Two systems of thinking — Kahneman (2011), Thinking, Fast and Slow",
+    "jev": {
+      "latency_ms": 664,
+      "subject_chars": 401,
+      "cells": 12
+    },
+    "analyse": {
+      "latency_ms": 223373,
+      "chars": 7250
+    },
+    "failures": []
+  },
+  {
+    "entry": "C9",
+    "title": "Linguistic relativity — Whorf (1940)",
+    "jev": {
+      "latency_ms": 674,
+      "subject_chars": 384,
+      "cells": 12
+    },
+    "analyse": {
+      "latency_ms": 245501,
+      "chars": 8866
+    },
+    "failures": []
+  },
+  {
+    "entry": "C10",
+    "title": "Sense and reference — Frege (1892), Über Sinn und Bedeutung",
+    "jev": {
+      "latency_ms": 707,
+      "subject_chars": 358,
+      "cells": 12
+    },
+    "analyse": {
+      "latency_ms": 343268,
+      "chars": 9863
+    },
+    "failures": []
+  },
+  {
+    "entry": "C11",
+    "title": "The unconscious — Freud (1915), The Unconscious",
+    "jev": {
+      "reused": true
+    },
+    "analyse": {
+      "latency_ms": 255761,
+      "chars": 10513
+    },
+    "failures": []
+  },
+  {
+    "entry": "C12",
+    "title": "Probability as degree of belief — Ramsey (1926), Truth and Probability",
+    "jev": {
+      "latency_ms": 781,
+      "subject_chars": 338
+    },
+    "analyse": {
+      "latency_ms": 215090,
+      "chars": 8121
+    },
+    "failures": []
+  }
+]
