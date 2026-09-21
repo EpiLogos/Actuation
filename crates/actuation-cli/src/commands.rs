@@ -48,14 +48,90 @@ pub fn agency_read(command: &Command) -> Result<Output> {
 }
 
 pub fn agency_actualise(command: &Command) -> Result<Output> {
-    let input = read_json_input(command.args.first().map(String::as_str), &command.stdin)?;
-    let request: ActualisationRequest = serde_json::from_value(input)
-        .map_err(|e| Error::new(format!("invalid agency actualisation request: {e}")))?;
+    let mut args = command.args.clone();
+    if remove_flag(&mut args, "--schema") {
+        return output(example_actualisation_request(), command.json, |value| {
+            serde_json::to_string_pretty(value).unwrap_or_default()
+        });
+    }
+    let input = read_json_input(args.first().map(String::as_str), &command.stdin)?;
+    let request: ActualisationRequest = serde_json::from_value(input).map_err(|e| {
+        Error::new(format!(
+            "invalid agency actualisation request: {e}; the request must be one complete \
+             envelope — as assembled by `actuation authority resolve`, or run \
+             `actuation agency actualise --schema` for a filled example"
+        ))
+    })?;
     output(
         request.admit()?.receipt(),
         command.json,
         render::agency_actualisation,
     )
+}
+
+/// The complete request envelope `agency actualise` deserialises. `--schema`
+/// prints it so a caller never has to recover the shape from refusals; the
+/// same envelope is what `actuation authority resolve` assembles and passes
+/// through unchanged. Compact string shorthands are refused by design:
+/// delegated_autonomy and return_policy are records, not enums.
+fn example_actualisation_request() -> Value {
+    json!({
+        "schema": "actuation.agency-actualisation/v1",
+        "request_ref": "request:example-actualisation",
+        "requester_ref": "human:owner",
+        "governing_binding": {
+            "schema": "actuation.agency/v1",
+            "binding_ref": "binding:governing",
+            "agent_ref": "agent:governor",
+            "agency_ref": "agency:governing",
+            "world_ref": "world:personal",
+            "scope_ref": "scope:personal",
+            "bounds_refs": ["bound:observation"],
+            "authority_refs": ["authority:owner"],
+            "return_relation_ref": "return-relation:owner"
+        },
+        "metagency_grant": {
+            "schema": "actuation.agency/v1",
+            "grant_ref": "grant:delegation",
+            "agency_ref": "agency:governing",
+            "world_binding_ref": "binding:governing",
+            "authority_ref": "authority:owner",
+            "operations": ["determine-agency"],
+            "bounds_refs": ["bound:observation"]
+        },
+        "determination": {
+            "schema": "actuation.agency/v1",
+            "determination_ref": "determination:delegation",
+            "kind": "delegation",
+            "determining_agency_ref": "agency:governing",
+            "differentiated_agency_ref": "agency:delegated-work",
+            "world_binding_ref": "binding:delegated-work",
+            "bounds_refs": ["bound:observation"],
+            "delegated_autonomy": { "may_determine_within_bounds": true },
+            "return_policy": {
+                "mode": "required",
+                "return_relation_ref": "return-relation:owner"
+            },
+            "authority_refs": ["authority:owner"]
+        },
+        "differentiated_binding": {
+            "schema": "actuation.agency/v1",
+            "binding_ref": "binding:delegated-work",
+            "agent_ref": "agent:governor",
+            "agency_ref": "agency:delegated-work",
+            "world_ref": "world:personal",
+            "scope_ref": "scope:personal",
+            "determining_agency_ref": "agency:governing",
+            "bounds_refs": ["bound:observation"],
+            "authority_refs": ["authority:owner"],
+            "return_relation_ref": "return-relation:owner"
+        },
+        "agent_identity": {
+            "standing": "existing",
+            "evidence_refs": ["evidence:identity-registry"]
+        },
+        "provenance": { "source_refs": ["source:owner-commission"] }
+    })
 }
 
 pub fn realised_read(command: &Command) -> Result<Output> {
@@ -382,6 +458,27 @@ pub fn harness_capability(command: &Command) -> Result<Output> {
     match slug {
         Some(slug) => {
             let capability: &HarnessCapability = catalog.capability(&slug).ok_or_else(|| {
+                if let Some(gap) = catalog.capability_gap(&slug) {
+                    // A declared absence is an authored answer, not a bare
+                    // refusal: the coverage-closure law authors a reason and
+                    // evidence for exactly this slug, so the refusal carries
+                    // them instead of leaving the consumer with an unnamed gap.
+                    let value = gap.as_value();
+                    let reason = value["reason"].as_str().unwrap_or("undeclared reason");
+                    let evidence = value["evidence_refs"]
+                        .as_array()
+                        .map(|refs| {
+                            refs.iter()
+                                .filter_map(|r| r.as_str())
+                                .collect::<Vec<_>>()
+                                .join(", ")
+                        })
+                        .unwrap_or_default();
+                    return Error::new(format!(
+                        "no capability descriptor declared for harness {slug}: \
+                         declared capability gap — {reason} (evidence: {evidence})"
+                    ));
+                }
                 Error::new(format!(
                     "no capability descriptor declared for harness {slug}; declared: {}",
                     catalog
@@ -531,4 +628,55 @@ pub fn verify(command: &Command) -> Result<Output> {
         },
         stderr: String::new(),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn capability_refusal(slug: &str) -> String {
+        harness_capability(&Command {
+            args: vec![slug.to_owned()],
+            json: false,
+            stdin: String::new(),
+        })
+        .unwrap_err()
+        .to_string()
+    }
+
+    #[test]
+    fn a_declared_gap_answers_with_its_authored_reason() {
+        let catalog = NativeCatalog::bundled().expect("bundled catalog");
+        let gapped = catalog
+            .capability_gaps()
+            .first()
+            .map(|g| {
+                g.as_value()["harness_slug"]
+                    .as_str()
+                    .expect("admitted slug")
+                    .to_owned()
+            })
+            .expect("the shipped catalog declares capability gaps");
+        let error = capability_refusal(&gapped);
+        assert!(
+            error.contains("declared capability gap"),
+            "a gap slug's refusal must name the gap: {error}"
+        );
+        let reason = catalog.capability_gap(&gapped).unwrap().as_value()["reason"]
+            .as_str()
+            .expect("admitted gap reason")
+            .to_owned();
+        assert!(
+            error.contains(&reason),
+            "a gap slug's refusal must carry the authored reason: {error}"
+        );
+    }
+
+    #[test]
+    fn an_undeclared_slug_still_lists_the_declared_capabilities() {
+        let error = capability_refusal("not-a-harness");
+        assert!(error.contains("declared:"), "{error}");
+        assert!(error.contains("claude-code"), "{error}");
+        assert!(!error.contains("declared capability gap"), "{error}");
+    }
 }

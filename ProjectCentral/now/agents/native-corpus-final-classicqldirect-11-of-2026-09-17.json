@@ -1,0 +1,18 @@
+{
+ "schema": "central.project-now.handoff/v1",
+ "id": "native-corpus-final-classicqldirect-11-of-2026-09-17",
+ "provenance": "agent-authored-bounded-return",
+ "actor": "zcode-corpus-final",
+ "kind": "handoff",
+ "recorded_at_unix_seconds": 1789662903,
+ "subject": "Native corpus final (classic+ql-direct): 11 of 12 runs completed with objective verification; AGENCY pair failed on the known checker defect (plus one ql-direct failure to diagnose); Deep deferred to conjugate-allowance change",
+ "result": "The five-task continuation run completed. Final classic+ql-direct native corpus in /Users/admin/.cache/actuation/round5-experiments/: CODE classic 5c/7k ok + direct 14c/75k ok; RESEARCH 4c/4k + 15c/84k both ok; EPISTEMIC 4c/5k + 15c/73k both ok; SKILL 6c/9k + 22c/133k both ok; RESTRAINT 2c/1k + 7c/27k both ok (deep budget-failed as known, 63c/475k); AGENCY classic completed but objective_checks FALSE and ql-direct failed/false - the known staleClaimRemoved quoting-vs-asserting checker defect is the prime suspect for classic (it writes correction notes quoting BROKEN); the ql-direct failure needs one diagnostic pass next session. QL cost ratio stable at 8-19x classic tokens with correct closures across five of six families. Next session order stands per the orientation handoff (session-handoff-harness-is-settled-the-2026-09-17): read these results, fix the AGENCY checker (quoting-aware) plus diagnose the ql-direct AGENCY failure, Deep conjugate allowance, compressed arm, vak-control branch assessment. Next condition: the AGENCY checker gets its quoting-aware fix and the ql-direct AGENCY failure gets one diagnostic pass, then the session-handoff order continues (deep conjugate allowance, compressed arm, vak assessment).",
+ "status": "active",
+ "source_refs": [
+  "/Users/admin/.cache/actuation/round5-experiments",
+  "/Users/admin/.cache/actuation/acceptance-run.mjs"
+ ],
+ "evidence_refs": [
+  "trace:actuation:round5accept:s1-restraint-001"
+ ]
+}

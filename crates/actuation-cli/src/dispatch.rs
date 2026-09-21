@@ -59,7 +59,6 @@ pub fn commands() -> &'static [CommandDescriptor] {
 }
 
 /// Longest route first so operation routes win over their read-model parents.
-/// Longest route first so operation routes win over their read-model parents.
 fn route_order() -> Vec<usize> {
     let mut order: Vec<usize> = (0..COMMANDS.len()).collect();
     order.sort_by(|left, right| {
@@ -75,7 +74,7 @@ static COMMANDS: &[CommandDescriptor] = &[
     command!("capabilities", &["capabilities"], "actuation capabilities [--json]", false, commands::capabilities),
     command!("contract.list", &["contract", "list"], "actuation contract list [--json]", false, commands::contract_list),
     command!("agency.read", &["agency"], "actuation agency [file|-] [--json]", true, commands::agency_read),
-    command!("agency.actualise", &["agency", "actualise"], "actuation agency actualise [file|-] [--json]", true, commands::agency_actualise),
+    command!("agency.actualise", &["agency", "actualise"], "actuation agency actualise <file|-> [--schema] [--json]", true, commands::agency_actualise),
     command!("realised.read", &["realised"], "actuation realised [file|-] [--json]", true, commands::realised_read),
     command!("authority.issue", &["authority", "issue"], "actuation authority issue [--store <dir>] [--now <ts>] [file|-] [--json]", true, authority::authority_issue),
     command!("authority.resolve", &["authority", "resolve"], "actuation authority resolve [--store <dir>] [--now <ts>] [file|-] [--json]", true, authority::authority_resolve),

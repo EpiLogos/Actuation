@@ -185,15 +185,13 @@ fn the_actuation_now_horizon_represents_every_reconciled_live_owner_carrier() {
         )
     });
 
-    // Floor closed at the 2026-09-12 day close: every live carrier —
-    // including the R7 cutover return (PR #69 merged, main at bf53997) —
-    // moved to carried with its day lineage stamped. Statuses move only
-    // through a day close, and 2026-09-12 is already closed, so the two
-    // live carriers stay active until the next boundary: the R8/R9
-    // harmonisation return (its continuation has executed) and the Wayfinder
-    // #58 closure return (main at 70e9006), whose named continuation is the
-    // owner's human walk (H), the claude-code auth refresh and the
-    // desktop-flow/install-law integration decision.
+    // Floor reconciled at the research-line merge (PR #102, 2026-09-21,
+    // main merged at 4ba531d): the deep-conjugate-allowance and model-types
+    // session returns for 2026-09-13..21 landed live between day closes, so
+    // the horizon is reconciled to them here. Statuses move only through a
+    // day close (projectcentral.now.rollover); the next Actuation day close
+    // carries these records with their day lineage, and this list is
+    // reconciled again at that boundary.
     assert_eq!(
         live,
         [
@@ -202,15 +200,119 @@ fn the_actuation_now_horizon_represents_every_reconciled_live_owner_carrier() {
                 "carried".to_owned()
             ),
             (
+                "anuttara-syntax-computes-jev-round-2026-09-20".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "architecture-v2-corrected-frame-role-table-2026-09-21".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "bimba-embedded-1777-ml-nodes-after-2026-09-18".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "bimba-fixes-committed-keys-rotated-phase2-2026-09-18".to_owned(),
+                "active".to_owned()
+            ),
+            (
                 "branch-hygiene-report-remains-scheduler-owned-2026-09-09".to_owned(),
                 "carried".to_owned()
+            ),
+            (
+                "classic-repaired-and-verified-live-relational-2026-09-13".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "clean-state-landed-pr-82-merged-2026-09-14".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "clean-state-reached-r12-pr-82-2026-09-14".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "defects-fixed-and-full-glm-matched-2026-09-13".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "docker-situation-fixed-graph-served-from-2026-09-19".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "embedding-starvation-found-and-fixed-graph-2026-09-18".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "emt3-jevvak-chain-run-live-kernel-2026-09-18".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "emt4-fromvslanding-reconciliation-mef-lens-2026-09-18".to_owned(),
+                "active".to_owned()
             ),
             (
                 "epistemic-cultivation-research-ground-and-record-2026-09-09".to_owned(),
                 "carried".to_owned()
             ),
             (
+                "full-architecture-designed-map-verified-questions-posed-2026-09-20".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "full-campaign-dispatched-three-parallel-tracks-2026-09-15".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "full-rust-move-complete-pr-83-2026-09-14".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "handoff-queue-executed-conjugate-allowance-2026-09-17".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "jev-lens-tool-round11-zero-invocations-2026-09-20".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "m0-symbol-granularity-and-amplify-loop-live-2026-09-19".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "mjs-retirement-commissioned-and-halted-on-2026-09-13".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "modeltype-corrections-landed-coordinateled-ebm-2026-09-17".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "modeltype-experiment-class-set-up-in-2026-09-17".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "native-agent-harness-direction-and-research-merge-2026-09-21".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "native-corpus-final-classicqldirect-11-of-2026-09-17".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "night-face-to-spec-round12-invitation-answered-2026-09-21".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "owner-corrections-applied-sync-untouched-2026-09-19".to_owned(),
+                "active".to_owned()
+            ),
+            (
                 "pr-h-r8r9-harmonisation-and-prelocal-2026-09-12".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "prime-campaign-live-on-glm-p0p3-2026-09-13".to_owned(),
                 "active".to_owned()
             ),
             (
@@ -220,6 +322,14 @@ fn the_actuation_now_horizon_represents_every_reconciled_live_owner_carrier() {
             (
                 "public-determination-and-agency-actualisation-operation-2026-09-09".to_owned(),
                 "carried".to_owned()
+            ),
+            (
+                "ql-form-validity-floor-and-concrescence-instrument-2026-09-19".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "r11-acceptance-evidence-native-ql-circuit-2026-09-17".to_owned(),
+                "active".to_owned()
             ),
             (
                 "r6-dispositions-recorded-and-branch-gates-2026-09-12".to_owned(),
@@ -246,11 +356,64 @@ fn the_actuation_now_horizon_represents_every_reconciled_live_owner_carrier() {
                 "carried".to_owned()
             ),
             (
+                "relation-embeddings-m0-m1-live-tests-2026-09-21".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "round-3-stagedloop-corpus-complete-classic-2026-09-13".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "round-4-complete-first-live-native-2026-09-15".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "round-5-corpus-complete-correctness-invariant-2026-09-17".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "round-9-toolset-matrix-complete-implicit-2026-09-18".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "series-1-experiment-thread-activated-live-2026-09-13".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "session-handoff-harness-is-settled-the-2026-09-17".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "sibling-frontier-raised-and-head-beats-cosine-in-m0-jev-remeasured-2026-09-19"
+                    .to_owned(),
+                "active".to_owned()
+            ),
+            (
                 "supply-actuation-intent-and-grant-integration-handoff-2026-09-09".to_owned(),
                 "carried".to_owned()
             ),
             (
+                "toolset-paradigm-landed-qltoolset-condition-2026-09-18".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "track-a-complete-qlmef-185-merged-2026-09-15".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "two-routes-round10-tagged-propagation-jev-refined-2026-09-19".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "vak-arm-ran-the-corpus-live-2026-09-18".to_owned(),
+                "active".to_owned()
+            ),
+            (
                 "wayfinder-58-closed-native-rust-product-2026-09-12".to_owned(),
+                "active".to_owned()
+            ),
+            (
+                "wayfinder-58-finishup-done-on-this-2026-09-12".to_owned(),
                 "active".to_owned()
             ),
         ],

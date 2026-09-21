@@ -1,0 +1,2018 @@
+{
+  "schema": "ql-series1-run/0.3",
+  "trace_ref": "trace:actuation:round5accept:s1-skill-001",
+  "task": {
+    "id": "S1-SKILL-001",
+    "category": "skill-agency",
+    "prompt": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`.",
+    "successConditions": [
+      "Discover and use SKILL.md as the governing local procedure.",
+      "Create deliverable.md addressing the actual incoming request.",
+      "Preserve all source/request/skill files.",
+      "Use relevant evidence and do not turn optional procedure into ceremony."
+    ],
+    "verificationProtocol": [
+      "Check deliverable.md exists after the run.",
+      "Require SKILL.md, inbox/request.md and all notes to remain byte-identical.",
+      "Preserve full process trace so procedural judgement can be reviewed.",
+      "Do not score writing automatically."
+    ],
+    "reviewFocus": [
+      "prompt apprehension",
+      "tool/action selection",
+      "difference and recovery",
+      "closure/stopping",
+      "final intent fulfilment",
+      "unnecessary friction",
+      "skill discovery",
+      "procedure-as-judgement",
+      "relevant evidence selection",
+      "artifact completion"
+    ]
+  },
+  "benchmark_revision": "series1-round5-accept-office-overlay-2026-09-19",
+  "host": {
+    "id": "rust-native-acceptance",
+    "revision": "9f8e3e2"
+  },
+  "determination": "pending-human-review",
+  "provider_mode": "supplied-body",
+  "fixture_provider": false,
+  "records": [
+    {
+      "condition": "classic",
+      "repetition": 0,
+      "ordinal": 0,
+      "trace_ref": "trace:actuation:round5accept:s1-skill-001:trial:0",
+      "status": "completed",
+      "error": null,
+      "prompt": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`.",
+      "success_conditions": [
+        "Discover and use SKILL.md as the governing local procedure.",
+        "Create deliverable.md addressing the actual incoming request.",
+        "Preserve all source/request/skill files.",
+        "Use relevant evidence and do not turn optional procedure into ceremony."
+      ],
+      "starting_workspace": {
+        "SKILL.md": "# Handoff synthesis skill\n\nThe work below moves from the given to the realised: take in the material as it is given (P1), let the deliverable be the effect made (P2), and let the closing read as what is actually realised (P5′) — no more than that.\n\n1. Take in the field: read the incoming request and identify its requested scope (P1; what comes back reads as discovery, P1′).\n2. Receive the relevant notes as material and evidence (P1).\n3. Settle each relevant piece as **decision**, **next action**, or **risk/open point** — the given sorted, not changed.\n4. If relevant sources conflict, resolve or explicitly surface the contradiction. This step is conditional; do not invent a contradiction search when the relevant evidence is already coherent.\n5. Make the effect: create `deliverable.md` with a concise handoff and cite the filenames actually used (P2; what comes back reads as the effect made, P2′).\n6. Never edit the incoming request, this skill, or source notes — the given is not the worker’s to transform.\n",
+        "inbox/request.md": "# Request\n\nPrepare a short Project Atlas handoff for the next engineer. What is asked for: the current decision, the next owned action, and the main implementation risk. Keep it concise and grounded in the material these files hold — cite what you actually took in.\n",
+        "notes/action.md": "# Atlas action\n\nSam owns the parser-v2 migration test plan and will have the first runnable version by Friday.\n",
+        "notes/decision.md": "# Atlas decision\n\nThe team selected parser v2 for the next integration slice. Parser v1 remains only for legacy compatibility during migration.\n",
+        "notes/risk.md": "# Atlas risk\n\nThe main known risk is that legacy import paths may break when callers move to parser v2. Compatibility coverage is therefore important during migration.\n",
+        "notes/social.md": "# Team social\n\nThe Friday lunch venue is still undecided.\n"
+      },
+      "final_workspace": {
+        "SKILL.md": "# Handoff synthesis skill\n\nThe work below moves from the given to the realised: take in the material as it is given (P1), let the deliverable be the effect made (P2), and let the closing read as what is actually realised (P5′) — no more than that.\n\n1. Take in the field: read the incoming request and identify its requested scope (P1; what comes back reads as discovery, P1′).\n2. Receive the relevant notes as material and evidence (P1).\n3. Settle each relevant piece as **decision**, **next action**, or **risk/open point** — the given sorted, not changed.\n4. If relevant sources conflict, resolve or explicitly surface the contradiction. This step is conditional; do not invent a contradiction search when the relevant evidence is already coherent.\n5. Make the effect: create `deliverable.md` with a concise handoff and cite the filenames actually used (P2; what comes back reads as the effect made, P2′).\n6. Never edit the incoming request, this skill, or source notes — the given is not the worker’s to transform.\n",
+        "deliverable.md": "# Project Atlas — Handoff\n\nConcise handoff for the next engineer, per inbox/request.md.\n\n- **Decision:** Parser v2 is selected for the next integration slice; parser v1 remains legacy-compatibility only during migration. (notes/decision.md)\n- **Next owned action:** Sam owns the parser-v2 migration test plan and will have the first runnable version by Friday. (notes/action.md)\n- **Main implementation risk:** Legacy import paths may break as callers move to parser v2, so compatibility coverage is important during migration. (notes/risk.md)\n\nSources taken in: inbox/request.md, notes/decision.md, notes/action.md, notes/risk.md.\n",
+        "inbox/request.md": "# Request\n\nPrepare a short Project Atlas handoff for the next engineer. What is asked for: the current decision, the next owned action, and the main implementation risk. Keep it concise and grounded in the material these files hold — cite what you actually took in.\n",
+        "notes/action.md": "# Atlas action\n\nSam owns the parser-v2 migration test plan and will have the first runnable version by Friday.\n",
+        "notes/decision.md": "# Atlas decision\n\nThe team selected parser v2 for the next integration slice. Parser v1 remains only for legacy compatibility during migration.\n",
+        "notes/risk.md": "# Atlas risk\n\nThe main known risk is that legacy import paths may break when callers move to parser v2. Compatibility coverage is therefore important during migration.\n",
+        "notes/social.md": "# Team social\n\nThe Friday lunch venue is still undecided.\n"
+      },
+      "verification": {
+        "protocol": "required-artifact-and-source-preservation",
+        "observations": {
+          "deliverableExists": true,
+          "protectedSourcesUnchanged": {
+            "SKILL.md": true,
+            "inbox/request.md": true,
+            "notes/decision.md": true,
+            "notes/action.md": true,
+            "notes/risk.md": true,
+            "notes/social.md": true
+          }
+        },
+        "objective_checks_pass": true
+      },
+      "outcome": {
+        "report": {
+          "status": "completed",
+          "runtime": "classic",
+          "runtimeVersion": "0.1.0-foundation",
+          "runId": "trace:actuation:round5accept:s1-skill-001:trial:0",
+          "iterations": 5,
+          "modelCalls": 5,
+          "capabilityCalls": 10,
+          "outcome": "Task complete. `deliverable.md` has been created with a concise Project Atlas handoff for the next engineer, containing:\n\n- **Decision:** Parser v2 selected for the next integration slice; parser v1 remains legacy-compatibility only during migration (notes/decision.md).\n- **Next owned action:** Sam owns the parser-v2 migration test plan, with the first runnable version due by Friday (notes/action.md).\n- **Main implementation risk:** Legacy import paths may break when callers move to parser v2, so compatibility coverage is important during migration (notes/risk.md).\n\nThe skill procedure was applied as follows: the incoming request (inbox/request.md) was read to establish scope (P1); the relevant notes were received as material and evidence; each relevant piece was settled as decision, next action, or risk/open point; no contradiction search was manufactured since the relevant evidence was already coherent; and the effect was made by writing `deliverable.md` citing the filenames actually used. The team social note (notes/social.md) was excluded as outside the requested scope, and no source files were edited.",
+          "history": [
+            {
+              "role": "user",
+              "content": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`."
+            },
+            {
+              "role": "assistant",
+              "content": "I'll start by exploring the workspace to find the `SKILL.md` and any related files.",
+              "capabilityCalls": [
+                {
+                  "name": "list_files",
+                  "args": {},
+                  "id": "call-1"
+                }
+              ],
+              "control": null,
+              "usage": {
+                "input_tokens": 262,
+                "output_tokens": 139,
+                "total_tokens": 401
+              },
+              "raw": {
+                "id": "20260920021628abc97c06757a4ef6",
+                "model": "glm-5.3-flash",
+                "finish_reason": "stop",
+                "adapter_attempts": 1
+              },
+              "repairs": 0
+            },
+            {
+              "role": "capability",
+              "callId": "call-1",
+              "result": [
+                {
+                  "name": "SKILL.md",
+                  "type": "file"
+                },
+                {
+                  "name": "inbox",
+                  "type": "directory"
+                },
+                {
+                  "name": "notes",
+                  "type": "directory"
+                }
+              ],
+              "name": "list_files"
+            },
+            {
+              "role": "assistant",
+              "content": "I found `SKILL.md` plus `inbox` and `notes` directories. Let me read the skill instructions and explore those directories.",
+              "capabilityCalls": [
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "SKILL.md"
+                  },
+                  "id": "call-2"
+                },
+                {
+                  "name": "list_files",
+                  "args": {
+                    "path": "inbox"
+                  },
+                  "id": "call-3"
+                },
+                {
+                  "name": "list_files",
+                  "args": {
+                    "path": "notes"
+                  },
+                  "id": "call-4"
+                }
+              ],
+              "control": null,
+              "usage": {
+                "input_tokens": 528,
+                "output_tokens": 171,
+                "total_tokens": 699
+              },
+              "raw": {
+                "id": "2026092002163237341eb125db4209",
+                "model": "glm-5.3-flash",
+                "finish_reason": "stop",
+                "adapter_attempts": 1
+              },
+              "repairs": 0
+            },
+            {
+              "role": "capability",
+              "callId": "call-2",
+              "result": "# Handoff synthesis skill\n\nThe work below moves from the given to the realised: take in the material as it is given (P1), let the deliverable be the effect made (P2), and let the closing read as what is actually realised (P5′) — no more than that.\n\n1. Take in the field: read the incoming request and identify its requested scope (P1; what comes back reads as discovery, P1′).\n2. Receive the relevant notes as material and evidence (P1).\n3. Settle each relevant piece as **decision**, **next action**, or **risk/open point** — the given sorted, not changed.\n4. If relevant sources conflict, resolve or explicitly surface the contradiction. This step is conditional; do not invent a contradiction search when the relevant evidence is already coherent.\n5. Make the effect: create `deliverable.md` with a concise handoff and cite the filenames actually used (P2; what comes back reads as the effect made, P2′).\n6. Never edit the incoming request, this skill, or source notes — the given is not the worker’s to transform.\n",
+              "name": "read_file"
+            },
+            {
+              "role": "capability",
+              "callId": "call-3",
+              "result": [
+                {
+                  "name": "request.md",
+                  "type": "file"
+                }
+              ],
+              "name": "list_files"
+            },
+            {
+              "role": "capability",
+              "callId": "call-4",
+              "result": [
+                {
+                  "name": "action.md",
+                  "type": "file"
+                },
+                {
+                  "name": "decision.md",
+                  "type": "file"
+                },
+                {
+                  "name": "risk.md",
+                  "type": "file"
+                },
+                {
+                  "name": "social.md",
+                  "type": "file"
+                }
+              ],
+              "name": "list_files"
+            },
+            {
+              "role": "assistant",
+              "content": "The skill directs me to read the incoming request and relevant notes, sort each relevant piece as decision, next action, or risk/open point, and create a concise `deliverable.md` citing the files actually used — without editing any source material. Next I'll take in the request and all four notes as material.",
+              "capabilityCalls": [
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "inbox/request.md"
+                  },
+                  "id": "call-5"
+                },
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "notes/decision.md"
+                  },
+                  "id": "call-6"
+                },
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "notes/action.md"
+                  },
+                  "id": "call-7"
+                },
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "notes/risk.md"
+                  },
+                  "id": "call-8"
+                },
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "notes/social.md"
+                  },
+                  "id": "call-9"
+                }
+              ],
+              "control": null,
+              "usage": {
+                "input_tokens": 1272,
+                "output_tokens": 326,
+                "total_tokens": 1598
+              },
+              "raw": {
+                "id": "20260920021639ee39e16d0d574e11",
+                "model": "glm-5.3-flash",
+                "finish_reason": "stop",
+                "adapter_attempts": 2
+              },
+              "repairs": 0
+            },
+            {
+              "role": "capability",
+              "callId": "call-5",
+              "result": "# Request\n\nPrepare a short Project Atlas handoff for the next engineer. What is asked for: the current decision, the next owned action, and the main implementation risk. Keep it concise and grounded in the material these files hold — cite what you actually took in.\n",
+              "name": "read_file"
+            },
+            {
+              "role": "capability",
+              "callId": "call-6",
+              "result": "# Atlas decision\n\nThe team selected parser v2 for the next integration slice. Parser v1 remains only for legacy compatibility during migration.\n",
+              "name": "read_file"
+            },
+            {
+              "role": "capability",
+              "callId": "call-7",
+              "result": "# Atlas action\n\nSam owns the parser-v2 migration test plan and will have the first runnable version by Friday.\n",
+              "name": "read_file"
+            },
+            {
+              "role": "capability",
+              "callId": "call-8",
+              "result": "# Atlas risk\n\nThe main known risk is that legacy import paths may break when callers move to parser v2. Compatibility coverage is therefore important during migration.\n",
+              "name": "read_file"
+            },
+            {
+              "role": "capability",
+              "callId": "call-9",
+              "result": "# Team social\n\nThe Friday lunch venue is still undecided.\n",
+              "name": "read_file"
+            },
+            {
+              "role": "assistant",
+              "content": "Creating `deliverable.md` with the concise Project Atlas handoff, grounded in the request and the three relevant notes (decision, action, risk). The social note falls outside the requested scope and the material is coherent, so no extra steps are needed.",
+              "capabilityCalls": [
+                {
+                  "name": "write_file",
+                  "args": {
+                    "path": "deliverable.md",
+                    "content": "# Project Atlas — Handoff\n\nConcise handoff for the next engineer, per inbox/request.md.\n\n- **Decision:** Parser v2 is selected for the next integration slice; parser v1 remains legacy-compatibility only during migration. (notes/decision.md)\n- **Next owned action:** Sam owns the parser-v2 migration test plan and will have the first runnable version by Friday. (notes/action.md)\n- **Main implementation risk:** Legacy import paths may break as callers move to parser v2, so compatibility coverage is important during migration. (notes/risk.md)\n\nSources taken in: inbox/request.md, notes/decision.md, notes/action.md, notes/risk.md.\n"
+                  },
+                  "id": "call-10"
+                }
+              ],
+              "control": null,
+              "usage": {
+                "input_tokens": 1941,
+                "output_tokens": 591,
+                "total_tokens": 2532
+              },
+              "raw": {
+                "id": "20260920021649aba6d74c5d624211",
+                "model": "glm-5.3-flash",
+                "finish_reason": "stop",
+                "adapter_attempts": 1
+              },
+              "repairs": 0
+            },
+            {
+              "role": "capability",
+              "callId": "call-10",
+              "result": {
+                "path": "deliverable.md",
+                "written": true
+              },
+              "name": "write_file"
+            },
+            {
+              "role": "assistant",
+              "content": "Task complete. `deliverable.md` has been created with a concise Project Atlas handoff for the next engineer, containing:\n\n- **Decision:** Parser v2 selected for the next integration slice; parser v1 remains legacy-compatibility only during migration (notes/decision.md).\n- **Next owned action:** Sam owns the parser-v2 migration test plan, with the first runnable version due by Friday (notes/action.md).\n- **Main implementation risk:** Legacy import paths may break when callers move to parser v2, so compatibility coverage is important during migration (notes/risk.md).\n\nThe skill procedure was applied as follows: the incoming request (inbox/request.md) was read to establish scope (P1); the relevant notes were received as material and evidence; each relevant piece was settled as decision, next action, or risk/open point; no contradiction search was manufactured since the relevant evidence was already coherent; and the effect was made by writing `deliverable.md` citing the filenames actually used. The team social note (notes/social.md) was excluded as outside the requested scope, and no source files were edited.",
+              "capabilityCalls": [],
+              "control": null,
+              "usage": {
+                "input_tokens": 2401,
+                "output_tokens": 276,
+                "total_tokens": 2677
+              },
+              "raw": {
+                "id": "20260920021717946235185cca40b5",
+                "model": "glm-5.3-flash",
+                "finish_reason": "stop",
+                "adapter_attempts": 2
+              },
+              "repairs": 0
+            }
+          ]
+        },
+        "evidence_refs": [
+          "trace:actuation:round5accept:s1-skill-001:trial:0:classic:0",
+          "trace:actuation:round5accept:s1-skill-001:trial:0:classic:1"
+        ]
+      },
+      "model": {
+        "provider": "zai",
+        "model": "glm-5.3-flash"
+      },
+      "fixture_provider": false,
+      "provider_mode": "supplied-body",
+      "host": {
+        "id": "rust-native-acceptance",
+        "revision": "9f8e3e2"
+      },
+      "host_revision": "9f8e3e2",
+      "host_composition_fingerprint": null,
+      "benchmark_revision": "series1-round5-accept-office-overlay-2026-09-19",
+      "task_revision": "310e0e15f860d8e120cb4420a8dbcab4217b288152725fc252c0cda6803eae2e",
+      "runner_revision": "actuation-research-0.2.0",
+      "review_contract_revision": "ql-series1-run/0.3",
+      "prompt_digest": "04612939ccc0af438269cb45fecc25780225e99bb3e14dc847ed6ecd62dec3c6",
+      "success_constraints_digest": "b4db32a9ff1292f359b6d7cca61d9ac7ee9c1c74cbd15431242cce5142152e05",
+      "start_state_digest": "cb3d363ef254121c6128335967016ec27a2c241a807233d7e08245cb4ea7d586",
+      "capability_contract_digest": "1bca74b9082ea7490979012b56118c65892b6d9107719a1ed72e626ca3c5b864",
+      "verification_protocol_digest": "648caf22bca2e23b1913ab27231acf063b171d5106776c38e71c4b48638a720f",
+      "execution_budget_digest": "558d872ad8c951c6a6eea5e9f1b98b983e483366ad8001527c841057cf63bbba",
+      "network_policy_digest": "outbound-https-zai-only",
+      "elapsed_ms": 57260,
+      "model_calls": 5,
+      "capability_calls": 10,
+      "total_tokens": 7907,
+      "usage_partial": false,
+      "receipt_path": "trial-000-classic/receipt.json",
+      "record": {
+        "result": {
+          "schema": "actuation.research-run/v1",
+          "runtime": "classic",
+          "status": "completed",
+          "task": {
+            "id": "S1-SKILL-001",
+            "category": "skill-agency",
+            "prompt": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`.",
+            "successConditions": [
+              "Discover and use SKILL.md as the governing local procedure.",
+              "Create deliverable.md addressing the actual incoming request.",
+              "Preserve all source/request/skill files.",
+              "Use relevant evidence and do not turn optional procedure into ceremony."
+            ],
+            "verificationProtocol": [
+              "Check deliverable.md exists after the run.",
+              "Require SKILL.md, inbox/request.md and all notes to remain byte-identical.",
+              "Preserve full process trace so procedural judgement can be reviewed.",
+              "Do not score writing automatically."
+            ],
+            "reviewFocus": [
+              "prompt apprehension",
+              "tool/action selection",
+              "difference and recovery",
+              "closure/stopping",
+              "final intent fulfilment",
+              "unnecessary friction",
+              "skill discovery",
+              "procedure-as-judgement",
+              "relevant evidence selection",
+              "artifact completion"
+            ]
+          },
+          "task_revision": "310e0e15f860d8e120cb4420a8dbcab4217b288152725fc252c0cda6803eae2e",
+          "trace_ref": "trace:actuation:round5accept:s1-skill-001:trial:0",
+          "model_body": {
+            "source": {
+              "program": "/Users/admin/.cache/actuation/glm-body.mjs",
+              "adapter": "one-shot-json/glm-body.mjs",
+              "provider": "zai",
+              "model": "glm-5.3-flash"
+            },
+            "fixture_provider": false,
+            "provider_mode": "supplied-body",
+            "turn_repairs": {
+              "malformed_reask_max": 2,
+              "empty_act_reask": true
+            }
+          },
+          "workspace": {
+            "before": {
+              "SKILL.md": "# Handoff synthesis skill\n\nThe work below moves from the given to the realised: take in the material as it is given (P1), let the deliverable be the effect made (P2), and let the closing read as what is actually realised (P5′) — no more than that.\n\n1. Take in the field: read the incoming request and identify its requested scope (P1; what comes back reads as discovery, P1′).\n2. Receive the relevant notes as material and evidence (P1).\n3. Settle each relevant piece as **decision**, **next action**, or **risk/open point** — the given sorted, not changed.\n4. If relevant sources conflict, resolve or explicitly surface the contradiction. This step is conditional; do not invent a contradiction search when the relevant evidence is already coherent.\n5. Make the effect: create `deliverable.md` with a concise handoff and cite the filenames actually used (P2; what comes back reads as the effect made, P2′).\n6. Never edit the incoming request, this skill, or source notes — the given is not the worker’s to transform.\n",
+              "inbox/request.md": "# Request\n\nPrepare a short Project Atlas handoff for the next engineer. What is asked for: the current decision, the next owned action, and the main implementation risk. Keep it concise and grounded in the material these files hold — cite what you actually took in.\n",
+              "notes/action.md": "# Atlas action\n\nSam owns the parser-v2 migration test plan and will have the first runnable version by Friday.\n",
+              "notes/decision.md": "# Atlas decision\n\nThe team selected parser v2 for the next integration slice. Parser v1 remains only for legacy compatibility during migration.\n",
+              "notes/risk.md": "# Atlas risk\n\nThe main known risk is that legacy import paths may break when callers move to parser v2. Compatibility coverage is therefore important during migration.\n",
+              "notes/social.md": "# Team social\n\nThe Friday lunch venue is still undecided.\n"
+            },
+            "after": {
+              "SKILL.md": "# Handoff synthesis skill\n\nThe work below moves from the given to the realised: take in the material as it is given (P1), let the deliverable be the effect made (P2), and let the closing read as what is actually realised (P5′) — no more than that.\n\n1. Take in the field: read the incoming request and identify its requested scope (P1; what comes back reads as discovery, P1′).\n2. Receive the relevant notes as material and evidence (P1).\n3. Settle each relevant piece as **decision**, **next action**, or **risk/open point** — the given sorted, not changed.\n4. If relevant sources conflict, resolve or explicitly surface the contradiction. This step is conditional; do not invent a contradiction search when the relevant evidence is already coherent.\n5. Make the effect: create `deliverable.md` with a concise handoff and cite the filenames actually used (P2; what comes back reads as the effect made, P2′).\n6. Never edit the incoming request, this skill, or source notes — the given is not the worker’s to transform.\n",
+              "deliverable.md": "# Project Atlas — Handoff\n\nConcise handoff for the next engineer, per inbox/request.md.\n\n- **Decision:** Parser v2 is selected for the next integration slice; parser v1 remains legacy-compatibility only during migration. (notes/decision.md)\n- **Next owned action:** Sam owns the parser-v2 migration test plan and will have the first runnable version by Friday. (notes/action.md)\n- **Main implementation risk:** Legacy import paths may break as callers move to parser v2, so compatibility coverage is important during migration. (notes/risk.md)\n\nSources taken in: inbox/request.md, notes/decision.md, notes/action.md, notes/risk.md.\n",
+              "inbox/request.md": "# Request\n\nPrepare a short Project Atlas handoff for the next engineer. What is asked for: the current decision, the next owned action, and the main implementation risk. Keep it concise and grounded in the material these files hold — cite what you actually took in.\n",
+              "notes/action.md": "# Atlas action\n\nSam owns the parser-v2 migration test plan and will have the first runnable version by Friday.\n",
+              "notes/decision.md": "# Atlas decision\n\nThe team selected parser v2 for the next integration slice. Parser v1 remains only for legacy compatibility during migration.\n",
+              "notes/risk.md": "# Atlas risk\n\nThe main known risk is that legacy import paths may break when callers move to parser v2. Compatibility coverage is therefore important during migration.\n",
+              "notes/social.md": "# Team social\n\nThe Friday lunch venue is still undecided.\n"
+            }
+          },
+          "execution": {
+            "report": {
+              "status": "completed",
+              "runtime": "classic",
+              "runtimeVersion": "0.1.0-foundation",
+              "runId": "trace:actuation:round5accept:s1-skill-001:trial:0",
+              "iterations": 5,
+              "modelCalls": 5,
+              "capabilityCalls": 10,
+              "outcome": "Task complete. `deliverable.md` has been created with a concise Project Atlas handoff for the next engineer, containing:\n\n- **Decision:** Parser v2 selected for the next integration slice; parser v1 remains legacy-compatibility only during migration (notes/decision.md).\n- **Next owned action:** Sam owns the parser-v2 migration test plan, with the first runnable version due by Friday (notes/action.md).\n- **Main implementation risk:** Legacy import paths may break when callers move to parser v2, so compatibility coverage is important during migration (notes/risk.md).\n\nThe skill procedure was applied as follows: the incoming request (inbox/request.md) was read to establish scope (P1); the relevant notes were received as material and evidence; each relevant piece was settled as decision, next action, or risk/open point; no contradiction search was manufactured since the relevant evidence was already coherent; and the effect was made by writing `deliverable.md` citing the filenames actually used. The team social note (notes/social.md) was excluded as outside the requested scope, and no source files were edited.",
+              "history": [
+                {
+                  "role": "user",
+                  "content": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`."
+                },
+                {
+                  "role": "assistant",
+                  "content": "I'll start by exploring the workspace to find the `SKILL.md` and any related files.",
+                  "capabilityCalls": [
+                    {
+                      "name": "list_files",
+                      "args": {},
+                      "id": "call-1"
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 262,
+                    "output_tokens": 139,
+                    "total_tokens": 401
+                  },
+                  "raw": {
+                    "id": "20260920021628abc97c06757a4ef6",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 1
+                  },
+                  "repairs": 0
+                },
+                {
+                  "role": "capability",
+                  "callId": "call-1",
+                  "result": [
+                    {
+                      "name": "SKILL.md",
+                      "type": "file"
+                    },
+                    {
+                      "name": "inbox",
+                      "type": "directory"
+                    },
+                    {
+                      "name": "notes",
+                      "type": "directory"
+                    }
+                  ],
+                  "name": "list_files"
+                },
+                {
+                  "role": "assistant",
+                  "content": "I found `SKILL.md` plus `inbox` and `notes` directories. Let me read the skill instructions and explore those directories.",
+                  "capabilityCalls": [
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "SKILL.md"
+                      },
+                      "id": "call-2"
+                    },
+                    {
+                      "name": "list_files",
+                      "args": {
+                        "path": "inbox"
+                      },
+                      "id": "call-3"
+                    },
+                    {
+                      "name": "list_files",
+                      "args": {
+                        "path": "notes"
+                      },
+                      "id": "call-4"
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 528,
+                    "output_tokens": 171,
+                    "total_tokens": 699
+                  },
+                  "raw": {
+                    "id": "2026092002163237341eb125db4209",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 1
+                  },
+                  "repairs": 0
+                },
+                {
+                  "role": "capability",
+                  "callId": "call-2",
+                  "result": "# Handoff synthesis skill\n\nThe work below moves from the given to the realised: take in the material as it is given (P1), let the deliverable be the effect made (P2), and let the closing read as what is actually realised (P5′) — no more than that.\n\n1. Take in the field: read the incoming request and identify its requested scope (P1; what comes back reads as discovery, P1′).\n2. Receive the relevant notes as material and evidence (P1).\n3. Settle each relevant piece as **decision**, **next action**, or **risk/open point** — the given sorted, not changed.\n4. If relevant sources conflict, resolve or explicitly surface the contradiction. This step is conditional; do not invent a contradiction search when the relevant evidence is already coherent.\n5. Make the effect: create `deliverable.md` with a concise handoff and cite the filenames actually used (P2; what comes back reads as the effect made, P2′).\n6. Never edit the incoming request, this skill, or source notes — the given is not the worker’s to transform.\n",
+                  "name": "read_file"
+                },
+                {
+                  "role": "capability",
+                  "callId": "call-3",
+                  "result": [
+                    {
+                      "name": "request.md",
+                      "type": "file"
+                    }
+                  ],
+                  "name": "list_files"
+                },
+                {
+                  "role": "capability",
+                  "callId": "call-4",
+                  "result": [
+                    {
+                      "name": "action.md",
+                      "type": "file"
+                    },
+                    {
+                      "name": "decision.md",
+                      "type": "file"
+                    },
+                    {
+                      "name": "risk.md",
+                      "type": "file"
+                    },
+                    {
+                      "name": "social.md",
+                      "type": "file"
+                    }
+                  ],
+                  "name": "list_files"
+                },
+                {
+                  "role": "assistant",
+                  "content": "The skill directs me to read the incoming request and relevant notes, sort each relevant piece as decision, next action, or risk/open point, and create a concise `deliverable.md` citing the files actually used — without editing any source material. Next I'll take in the request and all four notes as material.",
+                  "capabilityCalls": [
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "inbox/request.md"
+                      },
+                      "id": "call-5"
+                    },
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "notes/decision.md"
+                      },
+                      "id": "call-6"
+                    },
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "notes/action.md"
+                      },
+                      "id": "call-7"
+                    },
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "notes/risk.md"
+                      },
+                      "id": "call-8"
+                    },
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "notes/social.md"
+                      },
+                      "id": "call-9"
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 1272,
+                    "output_tokens": 326,
+                    "total_tokens": 1598
+                  },
+                  "raw": {
+                    "id": "20260920021639ee39e16d0d574e11",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 2
+                  },
+                  "repairs": 0
+                },
+                {
+                  "role": "capability",
+                  "callId": "call-5",
+                  "result": "# Request\n\nPrepare a short Project Atlas handoff for the next engineer. What is asked for: the current decision, the next owned action, and the main implementation risk. Keep it concise and grounded in the material these files hold — cite what you actually took in.\n",
+                  "name": "read_file"
+                },
+                {
+                  "role": "capability",
+                  "callId": "call-6",
+                  "result": "# Atlas decision\n\nThe team selected parser v2 for the next integration slice. Parser v1 remains only for legacy compatibility during migration.\n",
+                  "name": "read_file"
+                },
+                {
+                  "role": "capability",
+                  "callId": "call-7",
+                  "result": "# Atlas action\n\nSam owns the parser-v2 migration test plan and will have the first runnable version by Friday.\n",
+                  "name": "read_file"
+                },
+                {
+                  "role": "capability",
+                  "callId": "call-8",
+                  "result": "# Atlas risk\n\nThe main known risk is that legacy import paths may break when callers move to parser v2. Compatibility coverage is therefore important during migration.\n",
+                  "name": "read_file"
+                },
+                {
+                  "role": "capability",
+                  "callId": "call-9",
+                  "result": "# Team social\n\nThe Friday lunch venue is still undecided.\n",
+                  "name": "read_file"
+                },
+                {
+                  "role": "assistant",
+                  "content": "Creating `deliverable.md` with the concise Project Atlas handoff, grounded in the request and the three relevant notes (decision, action, risk). The social note falls outside the requested scope and the material is coherent, so no extra steps are needed.",
+                  "capabilityCalls": [
+                    {
+                      "name": "write_file",
+                      "args": {
+                        "path": "deliverable.md",
+                        "content": "# Project Atlas — Handoff\n\nConcise handoff for the next engineer, per inbox/request.md.\n\n- **Decision:** Parser v2 is selected for the next integration slice; parser v1 remains legacy-compatibility only during migration. (notes/decision.md)\n- **Next owned action:** Sam owns the parser-v2 migration test plan and will have the first runnable version by Friday. (notes/action.md)\n- **Main implementation risk:** Legacy import paths may break as callers move to parser v2, so compatibility coverage is important during migration. (notes/risk.md)\n\nSources taken in: inbox/request.md, notes/decision.md, notes/action.md, notes/risk.md.\n"
+                      },
+                      "id": "call-10"
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 1941,
+                    "output_tokens": 591,
+                    "total_tokens": 2532
+                  },
+                  "raw": {
+                    "id": "20260920021649aba6d74c5d624211",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 1
+                  },
+                  "repairs": 0
+                },
+                {
+                  "role": "capability",
+                  "callId": "call-10",
+                  "result": {
+                    "path": "deliverable.md",
+                    "written": true
+                  },
+                  "name": "write_file"
+                },
+                {
+                  "role": "assistant",
+                  "content": "Task complete. `deliverable.md` has been created with a concise Project Atlas handoff for the next engineer, containing:\n\n- **Decision:** Parser v2 selected for the next integration slice; parser v1 remains legacy-compatibility only during migration (notes/decision.md).\n- **Next owned action:** Sam owns the parser-v2 migration test plan, with the first runnable version due by Friday (notes/action.md).\n- **Main implementation risk:** Legacy import paths may break when callers move to parser v2, so compatibility coverage is important during migration (notes/risk.md).\n\nThe skill procedure was applied as follows: the incoming request (inbox/request.md) was read to establish scope (P1); the relevant notes were received as material and evidence; each relevant piece was settled as decision, next action, or risk/open point; no contradiction search was manufactured since the relevant evidence was already coherent; and the effect was made by writing `deliverable.md` citing the filenames actually used. The team social note (notes/social.md) was excluded as outside the requested scope, and no source files were edited.",
+                  "capabilityCalls": [],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 2401,
+                    "output_tokens": 276,
+                    "total_tokens": 2677
+                  },
+                  "raw": {
+                    "id": "20260920021717946235185cca40b5",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 2
+                  },
+                  "repairs": 0
+                }
+              ]
+            },
+            "evidence_refs": [
+              "trace:actuation:round5accept:s1-skill-001:trial:0:classic:0",
+              "trace:actuation:round5accept:s1-skill-001:trial:0:classic:1"
+            ]
+          },
+          "body_evidence": {
+            "status": "not-applicable",
+            "session_evidence": null
+          },
+          "observations": [
+            {
+              "event_type": "model_requested",
+              "value": {
+                "request": {
+                  "id": "S1-SKILL-001",
+                  "taskId": "S1-SKILL-001",
+                  "runId": "trace:actuation:round5accept:s1-skill-001:trial:0",
+                  "input": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`.",
+                  "successConditions": [
+                    "Discover and use SKILL.md as the governing local procedure.",
+                    "Create deliverable.md addressing the actual incoming request.",
+                    "Preserve all source/request/skill files.",
+                    "Use relevant evidence and do not turn optional procedure into ceremony."
+                  ],
+                  "maxSteps": 64
+                },
+                "payload": {
+                  "history": [
+                    {
+                      "role": "user",
+                      "content": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`."
+                    }
+                  ],
+                  "iteration": 1
+                },
+                "capabilities": [
+                  "list_files",
+                  "read_file",
+                  "write_file",
+                  "run_tests"
+                ]
+              }
+            },
+            {
+              "event_type": "model_returned",
+              "value": {
+                "ok": true,
+                "result": {
+                  "content": "I'll start by exploring the workspace to find the `SKILL.md` and any related files.",
+                  "capabilityCalls": [
+                    {
+                      "name": "list_files",
+                      "args": {},
+                      "id": "call-1"
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 262,
+                    "output_tokens": 139,
+                    "total_tokens": 401
+                  },
+                  "raw": {
+                    "id": "20260920021628abc97c06757a4ef6",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 1
+                  },
+                  "repairs": 0
+                }
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "list_files",
+                "args": {}
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "list_files",
+                "ok": true,
+                "result": [
+                  {
+                    "name": "SKILL.md",
+                    "type": "file"
+                  },
+                  {
+                    "name": "inbox",
+                    "type": "directory"
+                  },
+                  {
+                    "name": "notes",
+                    "type": "directory"
+                  }
+                ]
+              }
+            },
+            {
+              "event_type": "model_requested",
+              "value": {
+                "request": {
+                  "id": "S1-SKILL-001",
+                  "taskId": "S1-SKILL-001",
+                  "runId": "trace:actuation:round5accept:s1-skill-001:trial:0",
+                  "input": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`.",
+                  "successConditions": [
+                    "Discover and use SKILL.md as the governing local procedure.",
+                    "Create deliverable.md addressing the actual incoming request.",
+                    "Preserve all source/request/skill files.",
+                    "Use relevant evidence and do not turn optional procedure into ceremony."
+                  ],
+                  "maxSteps": 64
+                },
+                "payload": {
+                  "history": [
+                    {
+                      "role": "user",
+                      "content": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`."
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "I'll start by exploring the workspace to find the `SKILL.md` and any related files.",
+                      "capabilityCalls": [
+                        {
+                          "name": "list_files",
+                          "args": {},
+                          "id": "call-1"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 262,
+                        "output_tokens": 139,
+                        "total_tokens": 401
+                      },
+                      "raw": {
+                        "id": "20260920021628abc97c06757a4ef6",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-1",
+                      "result": [
+                        {
+                          "name": "SKILL.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "inbox",
+                          "type": "directory"
+                        },
+                        {
+                          "name": "notes",
+                          "type": "directory"
+                        }
+                      ],
+                      "name": "list_files"
+                    }
+                  ],
+                  "iteration": 2
+                },
+                "capabilities": [
+                  "list_files",
+                  "read_file",
+                  "write_file",
+                  "run_tests"
+                ]
+              }
+            },
+            {
+              "event_type": "model_returned",
+              "value": {
+                "ok": true,
+                "result": {
+                  "content": "I found `SKILL.md` plus `inbox` and `notes` directories. Let me read the skill instructions and explore those directories.",
+                  "capabilityCalls": [
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "SKILL.md"
+                      },
+                      "id": "call-2"
+                    },
+                    {
+                      "name": "list_files",
+                      "args": {
+                        "path": "inbox"
+                      },
+                      "id": "call-3"
+                    },
+                    {
+                      "name": "list_files",
+                      "args": {
+                        "path": "notes"
+                      },
+                      "id": "call-4"
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 528,
+                    "output_tokens": 171,
+                    "total_tokens": 699
+                  },
+                  "raw": {
+                    "id": "2026092002163237341eb125db4209",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 1
+                  },
+                  "repairs": 0
+                }
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "read_file",
+                "args": {
+                  "path": "SKILL.md"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "read_file",
+                "ok": true,
+                "result": "# Handoff synthesis skill\n\nThe work below moves from the given to the realised: take in the material as it is given (P1), let the deliverable be the effect made (P2), and let the closing read as what is actually realised (P5′) — no more than that.\n\n1. Take in the field: read the incoming request and identify its requested scope (P1; what comes back reads as discovery, P1′).\n2. Receive the relevant notes as material and evidence (P1).\n3. Settle each relevant piece as **decision**, **next action**, or **risk/open point** — the given sorted, not changed.\n4. If relevant sources conflict, resolve or explicitly surface the contradiction. This step is conditional; do not invent a contradiction search when the relevant evidence is already coherent.\n5. Make the effect: create `deliverable.md` with a concise handoff and cite the filenames actually used (P2; what comes back reads as the effect made, P2′).\n6. Never edit the incoming request, this skill, or source notes — the given is not the worker’s to transform.\n"
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "list_files",
+                "args": {
+                  "path": "inbox"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "list_files",
+                "ok": true,
+                "result": [
+                  {
+                    "name": "request.md",
+                    "type": "file"
+                  }
+                ]
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "list_files",
+                "args": {
+                  "path": "notes"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "list_files",
+                "ok": true,
+                "result": [
+                  {
+                    "name": "action.md",
+                    "type": "file"
+                  },
+                  {
+                    "name": "decision.md",
+                    "type": "file"
+                  },
+                  {
+                    "name": "risk.md",
+                    "type": "file"
+                  },
+                  {
+                    "name": "social.md",
+                    "type": "file"
+                  }
+                ]
+              }
+            },
+            {
+              "event_type": "model_requested",
+              "value": {
+                "request": {
+                  "id": "S1-SKILL-001",
+                  "taskId": "S1-SKILL-001",
+                  "runId": "trace:actuation:round5accept:s1-skill-001:trial:0",
+                  "input": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`.",
+                  "successConditions": [
+                    "Discover and use SKILL.md as the governing local procedure.",
+                    "Create deliverable.md addressing the actual incoming request.",
+                    "Preserve all source/request/skill files.",
+                    "Use relevant evidence and do not turn optional procedure into ceremony."
+                  ],
+                  "maxSteps": 64
+                },
+                "payload": {
+                  "history": [
+                    {
+                      "role": "user",
+                      "content": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`."
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "I'll start by exploring the workspace to find the `SKILL.md` and any related files.",
+                      "capabilityCalls": [
+                        {
+                          "name": "list_files",
+                          "args": {},
+                          "id": "call-1"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 262,
+                        "output_tokens": 139,
+                        "total_tokens": 401
+                      },
+                      "raw": {
+                        "id": "20260920021628abc97c06757a4ef6",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-1",
+                      "result": [
+                        {
+                          "name": "SKILL.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "inbox",
+                          "type": "directory"
+                        },
+                        {
+                          "name": "notes",
+                          "type": "directory"
+                        }
+                      ],
+                      "name": "list_files"
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "I found `SKILL.md` plus `inbox` and `notes` directories. Let me read the skill instructions and explore those directories.",
+                      "capabilityCalls": [
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "SKILL.md"
+                          },
+                          "id": "call-2"
+                        },
+                        {
+                          "name": "list_files",
+                          "args": {
+                            "path": "inbox"
+                          },
+                          "id": "call-3"
+                        },
+                        {
+                          "name": "list_files",
+                          "args": {
+                            "path": "notes"
+                          },
+                          "id": "call-4"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 528,
+                        "output_tokens": 171,
+                        "total_tokens": 699
+                      },
+                      "raw": {
+                        "id": "2026092002163237341eb125db4209",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-2",
+                      "result": "# Handoff synthesis skill\n\nThe work below moves from the given to the realised: take in the material as it is given (P1), let the deliverable be the effect made (P2), and let the closing read as what is actually realised (P5′) — no more than that.\n\n1. Take in the field: read the incoming request and identify its requested scope (P1; what comes back reads as discovery, P1′).\n2. Receive the relevant notes as material and evidence (P1).\n3. Settle each relevant piece as **decision**, **next action**, or **risk/open point** — the given sorted, not changed.\n4. If relevant sources conflict, resolve or explicitly surface the contradiction. This step is conditional; do not invent a contradiction search when the relevant evidence is already coherent.\n5. Make the effect: create `deliverable.md` with a concise handoff and cite the filenames actually used (P2; what comes back reads as the effect made, P2′).\n6. Never edit the incoming request, this skill, or source notes — the given is not the worker’s to transform.\n",
+                      "name": "read_file"
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-3",
+                      "result": [
+                        {
+                          "name": "request.md",
+                          "type": "file"
+                        }
+                      ],
+                      "name": "list_files"
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-4",
+                      "result": [
+                        {
+                          "name": "action.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "decision.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "risk.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "social.md",
+                          "type": "file"
+                        }
+                      ],
+                      "name": "list_files"
+                    }
+                  ],
+                  "iteration": 3
+                },
+                "capabilities": [
+                  "list_files",
+                  "read_file",
+                  "write_file",
+                  "run_tests"
+                ]
+              }
+            },
+            {
+              "event_type": "model_returned",
+              "value": {
+                "ok": true,
+                "result": {
+                  "content": "The skill directs me to read the incoming request and relevant notes, sort each relevant piece as decision, next action, or risk/open point, and create a concise `deliverable.md` citing the files actually used — without editing any source material. Next I'll take in the request and all four notes as material.",
+                  "capabilityCalls": [
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "inbox/request.md"
+                      },
+                      "id": "call-5"
+                    },
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "notes/decision.md"
+                      },
+                      "id": "call-6"
+                    },
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "notes/action.md"
+                      },
+                      "id": "call-7"
+                    },
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "notes/risk.md"
+                      },
+                      "id": "call-8"
+                    },
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "notes/social.md"
+                      },
+                      "id": "call-9"
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 1272,
+                    "output_tokens": 326,
+                    "total_tokens": 1598
+                  },
+                  "raw": {
+                    "id": "20260920021639ee39e16d0d574e11",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 2
+                  },
+                  "repairs": 0
+                }
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "read_file",
+                "args": {
+                  "path": "inbox/request.md"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "read_file",
+                "ok": true,
+                "result": "# Request\n\nPrepare a short Project Atlas handoff for the next engineer. What is asked for: the current decision, the next owned action, and the main implementation risk. Keep it concise and grounded in the material these files hold — cite what you actually took in.\n"
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "read_file",
+                "args": {
+                  "path": "notes/decision.md"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "read_file",
+                "ok": true,
+                "result": "# Atlas decision\n\nThe team selected parser v2 for the next integration slice. Parser v1 remains only for legacy compatibility during migration.\n"
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "read_file",
+                "args": {
+                  "path": "notes/action.md"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "read_file",
+                "ok": true,
+                "result": "# Atlas action\n\nSam owns the parser-v2 migration test plan and will have the first runnable version by Friday.\n"
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "read_file",
+                "args": {
+                  "path": "notes/risk.md"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "read_file",
+                "ok": true,
+                "result": "# Atlas risk\n\nThe main known risk is that legacy import paths may break when callers move to parser v2. Compatibility coverage is therefore important during migration.\n"
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "read_file",
+                "args": {
+                  "path": "notes/social.md"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "read_file",
+                "ok": true,
+                "result": "# Team social\n\nThe Friday lunch venue is still undecided.\n"
+              }
+            },
+            {
+              "event_type": "model_requested",
+              "value": {
+                "request": {
+                  "id": "S1-SKILL-001",
+                  "taskId": "S1-SKILL-001",
+                  "runId": "trace:actuation:round5accept:s1-skill-001:trial:0",
+                  "input": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`.",
+                  "successConditions": [
+                    "Discover and use SKILL.md as the governing local procedure.",
+                    "Create deliverable.md addressing the actual incoming request.",
+                    "Preserve all source/request/skill files.",
+                    "Use relevant evidence and do not turn optional procedure into ceremony."
+                  ],
+                  "maxSteps": 64
+                },
+                "payload": {
+                  "history": [
+                    {
+                      "role": "user",
+                      "content": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`."
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "I'll start by exploring the workspace to find the `SKILL.md` and any related files.",
+                      "capabilityCalls": [
+                        {
+                          "name": "list_files",
+                          "args": {},
+                          "id": "call-1"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 262,
+                        "output_tokens": 139,
+                        "total_tokens": 401
+                      },
+                      "raw": {
+                        "id": "20260920021628abc97c06757a4ef6",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-1",
+                      "result": [
+                        {
+                          "name": "SKILL.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "inbox",
+                          "type": "directory"
+                        },
+                        {
+                          "name": "notes",
+                          "type": "directory"
+                        }
+                      ],
+                      "name": "list_files"
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "I found `SKILL.md` plus `inbox` and `notes` directories. Let me read the skill instructions and explore those directories.",
+                      "capabilityCalls": [
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "SKILL.md"
+                          },
+                          "id": "call-2"
+                        },
+                        {
+                          "name": "list_files",
+                          "args": {
+                            "path": "inbox"
+                          },
+                          "id": "call-3"
+                        },
+                        {
+                          "name": "list_files",
+                          "args": {
+                            "path": "notes"
+                          },
+                          "id": "call-4"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 528,
+                        "output_tokens": 171,
+                        "total_tokens": 699
+                      },
+                      "raw": {
+                        "id": "2026092002163237341eb125db4209",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-2",
+                      "result": "# Handoff synthesis skill\n\nThe work below moves from the given to the realised: take in the material as it is given (P1), let the deliverable be the effect made (P2), and let the closing read as what is actually realised (P5′) — no more than that.\n\n1. Take in the field: read the incoming request and identify its requested scope (P1; what comes back reads as discovery, P1′).\n2. Receive the relevant notes as material and evidence (P1).\n3. Settle each relevant piece as **decision**, **next action**, or **risk/open point** — the given sorted, not changed.\n4. If relevant sources conflict, resolve or explicitly surface the contradiction. This step is conditional; do not invent a contradiction search when the relevant evidence is already coherent.\n5. Make the effect: create `deliverable.md` with a concise handoff and cite the filenames actually used (P2; what comes back reads as the effect made, P2′).\n6. Never edit the incoming request, this skill, or source notes — the given is not the worker’s to transform.\n",
+                      "name": "read_file"
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-3",
+                      "result": [
+                        {
+                          "name": "request.md",
+                          "type": "file"
+                        }
+                      ],
+                      "name": "list_files"
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-4",
+                      "result": [
+                        {
+                          "name": "action.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "decision.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "risk.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "social.md",
+                          "type": "file"
+                        }
+                      ],
+                      "name": "list_files"
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "The skill directs me to read the incoming request and relevant notes, sort each relevant piece as decision, next action, or risk/open point, and create a concise `deliverable.md` citing the files actually used — without editing any source material. Next I'll take in the request and all four notes as material.",
+                      "capabilityCalls": [
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "inbox/request.md"
+                          },
+                          "id": "call-5"
+                        },
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "notes/decision.md"
+                          },
+                          "id": "call-6"
+                        },
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "notes/action.md"
+                          },
+                          "id": "call-7"
+                        },
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "notes/risk.md"
+                          },
+                          "id": "call-8"
+                        },
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "notes/social.md"
+                          },
+                          "id": "call-9"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 1272,
+                        "output_tokens": 326,
+                        "total_tokens": 1598
+                      },
+                      "raw": {
+                        "id": "20260920021639ee39e16d0d574e11",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 2
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-5",
+                      "result": "# Request\n\nPrepare a short Project Atlas handoff for the next engineer. What is asked for: the current decision, the next owned action, and the main implementation risk. Keep it concise and grounded in the material these files hold — cite what you actually took in.\n",
+                      "name": "read_file"
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-6",
+                      "result": "# Atlas decision\n\nThe team selected parser v2 for the next integration slice. Parser v1 remains only for legacy compatibility during migration.\n",
+                      "name": "read_file"
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-7",
+                      "result": "# Atlas action\n\nSam owns the parser-v2 migration test plan and will have the first runnable version by Friday.\n",
+                      "name": "read_file"
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-8",
+                      "result": "# Atlas risk\n\nThe main known risk is that legacy import paths may break when callers move to parser v2. Compatibility coverage is therefore important during migration.\n",
+                      "name": "read_file"
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-9",
+                      "result": "# Team social\n\nThe Friday lunch venue is still undecided.\n",
+                      "name": "read_file"
+                    }
+                  ],
+                  "iteration": 4
+                },
+                "capabilities": [
+                  "list_files",
+                  "read_file",
+                  "write_file",
+                  "run_tests"
+                ]
+              }
+            },
+            {
+              "event_type": "model_returned",
+              "value": {
+                "ok": true,
+                "result": {
+                  "content": "Creating `deliverable.md` with the concise Project Atlas handoff, grounded in the request and the three relevant notes (decision, action, risk). The social note falls outside the requested scope and the material is coherent, so no extra steps are needed.",
+                  "capabilityCalls": [
+                    {
+                      "name": "write_file",
+                      "args": {
+                        "path": "deliverable.md",
+                        "content": "# Project Atlas — Handoff\n\nConcise handoff for the next engineer, per inbox/request.md.\n\n- **Decision:** Parser v2 is selected for the next integration slice; parser v1 remains legacy-compatibility only during migration. (notes/decision.md)\n- **Next owned action:** Sam owns the parser-v2 migration test plan and will have the first runnable version by Friday. (notes/action.md)\n- **Main implementation risk:** Legacy import paths may break as callers move to parser v2, so compatibility coverage is important during migration. (notes/risk.md)\n\nSources taken in: inbox/request.md, notes/decision.md, notes/action.md, notes/risk.md.\n"
+                      },
+                      "id": "call-10"
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 1941,
+                    "output_tokens": 591,
+                    "total_tokens": 2532
+                  },
+                  "raw": {
+                    "id": "20260920021649aba6d74c5d624211",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 1
+                  },
+                  "repairs": 0
+                }
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "write_file",
+                "args": {
+                  "path": "deliverable.md",
+                  "content": "# Project Atlas — Handoff\n\nConcise handoff for the next engineer, per inbox/request.md.\n\n- **Decision:** Parser v2 is selected for the next integration slice; parser v1 remains legacy-compatibility only during migration. (notes/decision.md)\n- **Next owned action:** Sam owns the parser-v2 migration test plan and will have the first runnable version by Friday. (notes/action.md)\n- **Main implementation risk:** Legacy import paths may break as callers move to parser v2, so compatibility coverage is important during migration. (notes/risk.md)\n\nSources taken in: inbox/request.md, notes/decision.md, notes/action.md, notes/risk.md.\n"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "write_file",
+                "ok": true,
+                "result": {
+                  "path": "deliverable.md",
+                  "written": true
+                }
+              }
+            },
+            {
+              "event_type": "model_requested",
+              "value": {
+                "request": {
+                  "id": "S1-SKILL-001",
+                  "taskId": "S1-SKILL-001",
+                  "runId": "trace:actuation:round5accept:s1-skill-001:trial:0",
+                  "input": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`.",
+                  "successConditions": [
+                    "Discover and use SKILL.md as the governing local procedure.",
+                    "Create deliverable.md addressing the actual incoming request.",
+                    "Preserve all source/request/skill files.",
+                    "Use relevant evidence and do not turn optional procedure into ceremony."
+                  ],
+                  "maxSteps": 64
+                },
+                "payload": {
+                  "history": [
+                    {
+                      "role": "user",
+                      "content": "Complete the incoming request using the local `SKILL.md`. Apply the procedure with judgement: perform the steps that are relevant, do not manufacture work merely because a step is optional, preserve the source notes, and create the requested `deliverable.md`."
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "I'll start by exploring the workspace to find the `SKILL.md` and any related files.",
+                      "capabilityCalls": [
+                        {
+                          "name": "list_files",
+                          "args": {},
+                          "id": "call-1"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 262,
+                        "output_tokens": 139,
+                        "total_tokens": 401
+                      },
+                      "raw": {
+                        "id": "20260920021628abc97c06757a4ef6",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-1",
+                      "result": [
+                        {
+                          "name": "SKILL.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "inbox",
+                          "type": "directory"
+                        },
+                        {
+                          "name": "notes",
+                          "type": "directory"
+                        }
+                      ],
+                      "name": "list_files"
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "I found `SKILL.md` plus `inbox` and `notes` directories. Let me read the skill instructions and explore those directories.",
+                      "capabilityCalls": [
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "SKILL.md"
+                          },
+                          "id": "call-2"
+                        },
+                        {
+                          "name": "list_files",
+                          "args": {
+                            "path": "inbox"
+                          },
+                          "id": "call-3"
+                        },
+                        {
+                          "name": "list_files",
+                          "args": {
+                            "path": "notes"
+                          },
+                          "id": "call-4"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 528,
+                        "output_tokens": 171,
+                        "total_tokens": 699
+                      },
+                      "raw": {
+                        "id": "2026092002163237341eb125db4209",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-2",
+                      "result": "# Handoff synthesis skill\n\nThe work below moves from the given to the realised: take in the material as it is given (P1), let the deliverable be the effect made (P2), and let the closing read as what is actually realised (P5′) — no more than that.\n\n1. Take in the field: read the incoming request and identify its requested scope (P1; what comes back reads as discovery, P1′).\n2. Receive the relevant notes as material and evidence (P1).\n3. Settle each relevant piece as **decision**, **next action**, or **risk/open point** — the given sorted, not changed.\n4. If relevant sources conflict, resolve or explicitly surface the contradiction. This step is conditional; do not invent a contradiction search when the relevant evidence is already coherent.\n5. Make the effect: create `deliverable.md` with a concise handoff and cite the filenames actually used (P2; what comes back reads as the effect made, P2′).\n6. Never edit the incoming request, this skill, or source notes — the given is not the worker’s to transform.\n",
+                      "name": "read_file"
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-3",
+                      "result": [
+                        {
+                          "name": "request.md",
+                          "type": "file"
+                        }
+                      ],
+                      "name": "list_files"
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-4",
+                      "result": [
+                        {
+                          "name": "action.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "decision.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "risk.md",
+                          "type": "file"
+                        },
+                        {
+                          "name": "social.md",
+                          "type": "file"
+                        }
+                      ],
+                      "name": "list_files"
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "The skill directs me to read the incoming request and relevant notes, sort each relevant piece as decision, next action, or risk/open point, and create a concise `deliverable.md` citing the files actually used — without editing any source material. Next I'll take in the request and all four notes as material.",
+                      "capabilityCalls": [
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "inbox/request.md"
+                          },
+                          "id": "call-5"
+                        },
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "notes/decision.md"
+                          },
+                          "id": "call-6"
+                        },
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "notes/action.md"
+                          },
+                          "id": "call-7"
+                        },
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "notes/risk.md"
+                          },
+                          "id": "call-8"
+                        },
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "notes/social.md"
+                          },
+                          "id": "call-9"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 1272,
+                        "output_tokens": 326,
+                        "total_tokens": 1598
+                      },
+                      "raw": {
+                        "id": "20260920021639ee39e16d0d574e11",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 2
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-5",
+                      "result": "# Request\n\nPrepare a short Project Atlas handoff for the next engineer. What is asked for: the current decision, the next owned action, and the main implementation risk. Keep it concise and grounded in the material these files hold — cite what you actually took in.\n",
+                      "name": "read_file"
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-6",
+                      "result": "# Atlas decision\n\nThe team selected parser v2 for the next integration slice. Parser v1 remains only for legacy compatibility during migration.\n",
+                      "name": "read_file"
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-7",
+                      "result": "# Atlas action\n\nSam owns the parser-v2 migration test plan and will have the first runnable version by Friday.\n",
+                      "name": "read_file"
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-8",
+                      "result": "# Atlas risk\n\nThe main known risk is that legacy import paths may break when callers move to parser v2. Compatibility coverage is therefore important during migration.\n",
+                      "name": "read_file"
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-9",
+                      "result": "# Team social\n\nThe Friday lunch venue is still undecided.\n",
+                      "name": "read_file"
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "Creating `deliverable.md` with the concise Project Atlas handoff, grounded in the request and the three relevant notes (decision, action, risk). The social note falls outside the requested scope and the material is coherent, so no extra steps are needed.",
+                      "capabilityCalls": [
+                        {
+                          "name": "write_file",
+                          "args": {
+                            "path": "deliverable.md",
+                            "content": "# Project Atlas — Handoff\n\nConcise handoff for the next engineer, per inbox/request.md.\n\n- **Decision:** Parser v2 is selected for the next integration slice; parser v1 remains legacy-compatibility only during migration. (notes/decision.md)\n- **Next owned action:** Sam owns the parser-v2 migration test plan and will have the first runnable version by Friday. (notes/action.md)\n- **Main implementation risk:** Legacy import paths may break as callers move to parser v2, so compatibility coverage is important during migration. (notes/risk.md)\n\nSources taken in: inbox/request.md, notes/decision.md, notes/action.md, notes/risk.md.\n"
+                          },
+                          "id": "call-10"
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 1941,
+                        "output_tokens": 591,
+                        "total_tokens": 2532
+                      },
+                      "raw": {
+                        "id": "20260920021649aba6d74c5d624211",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "callId": "call-10",
+                      "result": {
+                        "path": "deliverable.md",
+                        "written": true
+                      },
+                      "name": "write_file"
+                    }
+                  ],
+                  "iteration": 5
+                },
+                "capabilities": [
+                  "list_files",
+                  "read_file",
+                  "write_file",
+                  "run_tests"
+                ]
+              }
+            },
+            {
+              "event_type": "model_returned",
+              "value": {
+                "ok": true,
+                "result": {
+                  "content": "Task complete. `deliverable.md` has been created with a concise Project Atlas handoff for the next engineer, containing:\n\n- **Decision:** Parser v2 selected for the next integration slice; parser v1 remains legacy-compatibility only during migration (notes/decision.md).\n- **Next owned action:** Sam owns the parser-v2 migration test plan, with the first runnable version due by Friday (notes/action.md).\n- **Main implementation risk:** Legacy import paths may break when callers move to parser v2, so compatibility coverage is important during migration (notes/risk.md).\n\nThe skill procedure was applied as follows: the incoming request (inbox/request.md) was read to establish scope (P1); the relevant notes were received as material and evidence; each relevant piece was settled as decision, next action, or risk/open point; no contradiction search was manufactured since the relevant evidence was already coherent; and the effect was made by writing `deliverable.md` citing the filenames actually used. The team social note (notes/social.md) was excluded as outside the requested scope, and no source files were edited.",
+                  "capabilityCalls": [],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 2401,
+                    "output_tokens": 276,
+                    "total_tokens": 2677
+                  },
+                  "raw": {
+                    "id": "20260920021717946235185cca40b5",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 2
+                  },
+                  "repairs": 0
+                }
+              }
+            }
+          ],
+          "verification": {
+            "protocol": "required-artifact-and-source-preservation",
+            "observations": {
+              "deliverableExists": true,
+              "protectedSourcesUnchanged": {
+                "SKILL.md": true,
+                "inbox/request.md": true,
+                "notes/decision.md": true,
+                "notes/action.md": true,
+                "notes/risk.md": true,
+                "notes/social.md": true
+              }
+            },
+            "objective_checks_pass": true
+          },
+          "model_calls": 5,
+          "capability_calls": 10,
+          "elapsed_ms": 56682,
+          "budget": {
+            "limits": {
+              "max_steps": 64,
+              "max_depth": 2,
+              "max_contexts": 32,
+              "max_trace_bytes": 67108864,
+              "max_reentries": 0
+            },
+            "max_calls": 64
+          },
+          "evidence_standing": "D-unless-separately-exercised-and-attested",
+          "provider_evidence": "not-assessed",
+          "human_acceptance": false,
+          "factory_ancestry": "not-supplied"
+        },
+        "events": [
+          {
+            "channel": "runtime",
+            "event_id": "trace:actuation:round5accept:s1-skill-001:trial:0:classic:0",
+            "event_type": "run_started",
+            "run_id": "trace:actuation:round5accept:s1-skill-001:trial:0",
+            "sequence": 0,
+            "runtime": "classic",
+            "payload": {
+              "task_id": "S1-SKILL-001"
+            }
+          },
+          {
+            "channel": "runtime",
+            "event_id": "trace:actuation:round5accept:s1-skill-001:trial:0:classic:1",
+            "event_type": "run_completed",
+            "run_id": "trace:actuation:round5accept:s1-skill-001:trial:0",
+            "sequence": 1,
+            "runtime": "classic",
+            "payload": {
+              "iteration": 5,
+              "outcome": "Task complete. `deliverable.md` has been created with a concise Project Atlas handoff for the next engineer, containing:\n\n- **Decision:** Parser v2 selected for the next integration slice; parser v1 remains legacy-compatibility only during migration (notes/decision.md).\n- **Next owned action:** Sam owns the parser-v2 migration test plan, with the first runnable version due by Friday (notes/action.md).\n- **Main implementation risk:** Legacy import paths may break when callers move to parser v2, so compatibility coverage is important during migration (notes/risk.md).\n\nThe skill procedure was applied as follows: the incoming request (inbox/request.md) was read to establish scope (P1); the relevant notes were received as material and evidence; each relevant piece was settled as decision, next action, or risk/open point; no contradiction search was manufactured since the relevant evidence was already coherent; and the effect was made by writing `deliverable.md` citing the filenames actually used. The team social note (notes/social.md) was excluded as outside the requested scope, and no source files were edited."
+            }
+          }
+        ],
+        "durable_stream": false
+      },
+      "human_acceptance": false,
+      "provider_evidence": "not-assessed"
+    }
+  ],
+  "held_constants": {
+    "prompt": true,
+    "success_constraints": true,
+    "start_state": true,
+    "model": true,
+    "capabilities": true,
+    "verification": true,
+    "budget": true,
+    "host_revision": true,
+    "host_composition": true,
+    "network_policy": true,
+    "benchmark_revision": true,
+    "task_revision": true,
+    "runner_revision": true,
+    "review_contract_revision": true,
+    "valid": true,
+    "mismatches": []
+  },
+  "provider_evidence": "not-assessed",
+  "human_acceptance": false
+}

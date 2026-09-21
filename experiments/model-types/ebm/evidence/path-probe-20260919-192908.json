@@ -1,0 +1,170 @@
+{
+  "schema": "actuation.model-types-ebm-path-probe/v1",
+  "created": "2026-09-19T19:29:08+0100",
+  "experiment": "E-MT-EBM-FIELD phase-3-preview (path-level energies, R3)",
+  "state": "2-hop traversal a->b->c from consecutive real edges; corruption operators replace the last hop, the middle node, or reverse the traversal",
+  "scorers": {
+    "cosine": "sum of 1-cos per hop (3072-dim in-graph embeddings)",
+    "lineage": "sum of coordinate lineage potential per hop (probe convention weights)",
+    "combined": "lineage + cosine per hop",
+    "head": "phase-2.6b head (semantic channel + typed + mining) energy per hop, energy = -log p_compatible"
+  },
+  "seeds": {
+    "probe": 20260917,
+    "head": 20260918
+  },
+  "results": {
+    "endpoint-rewire": {
+      "n_paths": 2000,
+      "n_excluded": 123,
+      "separation_auc_real_lower_energy": {
+        "cosine": 0.81637375,
+        "lineage": 0.84170075,
+        "combined": 0.859313,
+        "head": 0.98587575
+      },
+      "mean_energy": {
+        "cosine": {
+          "real": 0.3524576865136623,
+          "corrupted": 0.5419212323725223
+        },
+        "lineage": {
+          "real": 0.7128738095238095,
+          "corrupted": 1.4544690476190476
+        },
+        "combined": {
+          "real": 1.0653314960374718,
+          "corrupted": 1.99639027999157
+        },
+        "head": {
+          "real": 1.5011863923398778,
+          "corrupted": 6.971471687512472
+        }
+      }
+    },
+    "hard-rewire": {
+      "n_paths": 2000,
+      "n_excluded": 245,
+      "separation_auc_real_lower_energy": {
+        "cosine": 0.69185725,
+        "lineage": 0.603559375,
+        "combined": 0.628773375,
+        "head": 0.91750725
+      },
+      "mean_energy": {
+        "cosine": {
+          "real": 0.35349653294682504,
+          "corrupted": 0.4276375293135643
+        },
+        "lineage": {
+          "real": 0.7111702380952382,
+          "corrupted": 0.8910654761904762
+        },
+        "combined": {
+          "real": 1.0646667710420632,
+          "corrupted": 1.3187030055040405
+        },
+        "head": {
+          "real": 1.5071615022458136,
+          "corrupted": 4.386708216389641
+        }
+      }
+    },
+    "sibling-rewire": {
+      "n_paths": 2000,
+      "n_excluded": 365,
+      "separation_auc_real_lower_energy": {
+        "cosine": 0.54599175,
+        "lineage": 0.509876125,
+        "combined": 0.51791675,
+        "head": 0.65781775
+      },
+      "mean_energy": {
+        "cosine": {
+          "real": 0.3494405162036419,
+          "corrupted": 0.3679591736793518
+        },
+        "lineage": {
+          "real": 0.7073440476190476,
+          "corrupted": 0.726427380952381
+        },
+        "combined": {
+          "real": 1.0567845638226896,
+          "corrupted": 1.0943865546317326
+        },
+        "head": {
+          "real": 1.4755931311165913,
+          "corrupted": 1.9890668142084031
+        }
+      }
+    },
+    "mid-rewire": {
+      "n_paths": 2000,
+      "n_excluded": 489,
+      "separation_auc_real_lower_energy": {
+        "cosine": 0.9115435,
+        "lineage": 0.854214125,
+        "combined": 0.884791,
+        "head": 0.98188675
+      },
+      "mean_energy": {
+        "cosine": {
+          "real": 0.35376637256145477,
+          "corrupted": 0.6365190798044205
+        },
+        "lineage": {
+          "real": 0.7166535714285714,
+          "corrupted": 1.7759416666666665
+        },
+        "combined": {
+          "real": 1.0704199439900262,
+          "corrupted": 2.412460746471087
+        },
+        "head": {
+          "real": 1.503079177286476,
+          "corrupted": 9.417878879809752
+        }
+      }
+    },
+    "direction-reversal": {
+      "n_paths": 2000,
+      "n_excluded": 605,
+      "separation_auc_real_lower_energy": {
+        "cosine": 0.5,
+        "lineage": 0.5,
+        "combined": 0.5,
+        "head": 0.92044925
+      },
+      "mean_energy": {
+        "cosine": {
+          "real": 0.3537491648197174,
+          "corrupted": 0.3537491648197174
+        },
+        "lineage": {
+          "real": 0.7066511904761904,
+          "corrupted": 0.7066511904761904
+        },
+        "combined": {
+          "real": 1.060400355295908,
+          "corrupted": 1.060400355295908
+        },
+        "head": {
+          "real": 1.4756138542369008,
+          "corrupted": 4.463288801960647
+        }
+      }
+    }
+  },
+  "honest_limits": [
+    "readings are instrument output; promotion none; low energy is compatibility, nothing else",
+    "corruptions are synthetic; AUC measures separation from the corruption ladder, not correctness of real traversals",
+    "pairwise-summed path energy is the simplest path readout; joint 3-node features are future work",
+    "the head was retrained inline with the v2b protocol (typed features 1x32 + sibling mining) so path and pair results share one scorer",
+    "direction-reversal negatives reuse the same edges reversed; per-hop pair potentials are blind there by construction"
+  ],
+  "runtime_seconds": 39.8,
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "research"
+  }
+}

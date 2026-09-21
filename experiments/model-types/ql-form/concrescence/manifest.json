@@ -1,0 +1,23 @@
+{
+  "schema": "actuation.model-types-concrescence-states/v1",
+  "created": "2026-09-19",
+  "experiment": "E-MT-CONCRESCENCE",
+  "circuits": 28,
+  "states": 420,
+  "variants": [
+    "intact",
+    "strip-P1",
+    "strip-P4",
+    "strip-middle",
+    "shallow-determination"
+  ],
+  "truth_standing": {
+    "closure-appropriate|intact": "the circuit's recorded closure \u2014 the incumbent's own outcome, agreement not ground truth, pending-human-review",
+    "all degraded variants": "no truth by design: the degradation curve is the instrument validation",
+    "determination-warranted": "no truth by design: warrantedness of a determination is exactly what human review exists to judge"
+  },
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "semantic-stochastic"
+  }
+}

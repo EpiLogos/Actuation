@@ -247,10 +247,17 @@ pub struct ResearchHost<B: ModelBody> {
     pub observations: Vec<Value>,
     pub model_calls: u64,
     pub capability_calls: u64,
+    /// Capability supply override (e.g. the toolset paradigm's six described
+    /// tools). Absent: the default four-name list.
+    capability_supply: Option<Value>,
     max_calls: u64,
     secrets: Vec<String>,
 }
 impl<B: ModelBody> ResearchHost<B> {
+    /// Replace the capability supply the model sees on every model call.
+    pub fn set_capability_supply(&mut self, supply: Value) {
+        self.capability_supply = Some(supply);
+    }
     pub fn new(
         body: B,
         world: World,
@@ -268,6 +275,7 @@ impl<B: ModelBody> ResearchHost<B> {
             observations: vec![],
             model_calls: 0,
             capability_calls: 0,
+            capability_supply: None,
             max_calls,
             secrets,
         })
@@ -287,7 +295,11 @@ impl<B: ModelBody> ResearchHost<B> {
     }
     fn model(&mut self, call: HostCall) -> Result<Value> {
         self.budget(&call.cancellation)?;
-        let payload = json!({"request":call.request.wire(),"payload":call.payload,"capabilities":CAPABILITIES});
+        let capabilities = self
+            .capability_supply
+            .clone()
+            .unwrap_or_else(|| json!(CAPABILITIES));
+        let payload = json!({"request":call.request.wire(),"payload":call.payload,"capabilities":capabilities});
         candidate_boundary(&payload)?;
         self.model_calls += 1;
         self.record("model_requested", payload.clone());
@@ -395,6 +407,10 @@ pub enum RunMode {
     Classic,
     Direct,
     Deep,
+    Toolset,
+    Tagged,
+    Eight,
+    Twelve,
 }
 impl RunMode {
     pub fn parse(name: &str) -> Result<Self> {
@@ -402,6 +418,10 @@ impl RunMode {
             "classic" => Ok(Self::Classic),
             "ql-direct" => Ok(Self::Direct),
             "ql-deep" => Ok(Self::Deep),
+            "ql-toolset" => Ok(Self::Toolset),
+            "ql-tagged" => Ok(Self::Tagged),
+            "ql-eight" => Ok(Self::Eight),
+            "ql-twelve" => Ok(Self::Twelve),
             _ => Err(Error::new("unknown research condition")),
         }
     }
@@ -410,6 +430,10 @@ impl RunMode {
             Self::Classic => "classic",
             Self::Direct => "ql-direct",
             Self::Deep => "ql-deep",
+            Self::Toolset => "ql-toolset",
+            Self::Tagged => "ql-tagged",
+            Self::Eight => "ql-eight",
+            Self::Twelve => "ql-twelve",
         }
     }
 }
@@ -428,6 +452,55 @@ impl RuntimeObserver for CheckedObserver<'_> {
         result
     }
 }
+/// Which authority answers the loop's control turns. Selection is explicit:
+/// the environment at the run seam (QL_COMPRESSED_CONTROL, QL_VAK_CONTROL plus
+/// QL_VAK_BIN), never a silent default inside the loop. Model control remains
+/// the unchanged baseline.
+pub enum ControlArm {
+    /// Free English model control — the original lane.
+    Model,
+    /// Hand-ruled compression of interpret-return.
+    Compressed,
+    /// Kernel-native vak composition control over the QL-MEF `ql vak compose`
+    /// instrument named by QL_VAK_BIN.
+    Vak(crate::vak_control::VakControl),
+}
+impl ControlArm {
+    pub fn from_env() -> Result<Self> {
+        let compressed = std::env::var("QL_COMPRESSED_CONTROL").as_deref() == Ok("1");
+        let vak = std::env::var("QL_VAK_CONTROL").as_deref() == Ok("1");
+        if compressed && vak {
+            return Err(Error::new(
+                "QL_COMPRESSED_CONTROL and QL_VAK_CONTROL select different control arms; enable exactly one",
+            ));
+        }
+        if !vak {
+            return Ok(if compressed {
+                Self::Compressed
+            } else {
+                Self::Model
+            });
+        }
+        let program = std::env::var("QL_VAK_BIN")
+            .ok()
+            .map(std::path::PathBuf::from)
+            .filter(|p| !p.as_os_str().is_empty())
+            .ok_or_else(|| {
+                Error::new("QL_VAK_CONTROL=1 requires an explicit QL_VAK_BIN path to the ql binary")
+            })?;
+        Ok(Self::Vak(crate::vak_control::VakControl::bind(program)?))
+    }
+    /// Run-record disclosure of the armed control lane. Absent for the
+    /// unchanged model lane so ordinary runs keep their record shape.
+    fn disclosure(&self) -> Option<Value> {
+        match self {
+            Self::Model => None,
+            Self::Compressed => Some(json!({"compressed_control":true,"vak_control":null})),
+            Self::Vak(v) => Some(json!({"compressed_control":false,"vak_control":v.basis()})),
+        }
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn run_task<B: ModelBody>(
     task: &tasks::Task,
@@ -439,13 +512,39 @@ pub fn run_task<B: ModelBody>(
     observer: &mut dyn RuntimeObserver,
     cancellation: &CancellationToken,
 ) -> Result<Value> {
+    run_task_with_control(
+        task,
+        trace,
+        mode,
+        limits,
+        owner,
+        host,
+        observer,
+        cancellation,
+        ControlArm::from_env()?,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn run_task_with_control<B: ModelBody>(
+    task: &tasks::Task,
+    trace: ExternalRef,
+    mode: RunMode,
+    limits: crate::relational::Limits,
+    owner: Option<&dyn crate::relational::FormalOwner>,
+    host: &mut ResearchHost<B>,
+    observer: &mut dyn RuntimeObserver,
+    cancellation: &CancellationToken,
+    arm: ControlArm,
+) -> Result<Value> {
     use crate::relational::{Engine, Mode, TaskInspector};
     limits.validate()?;
-    if mode != RunMode::Classic && owner.is_none() {
+    if matches!(mode, RunMode::Direct | RunMode::Deep) && owner.is_none() {
         return Err(Error::new(
             "relational execution requires an explicitly bound QL owner",
         ));
     }
+    let disclosure = arm.disclosure();
     let candidate = task.candidate();
     let request = LoopRequest::from_legacy(
         json!({"id":task.id(),"taskId":task.id(),"runId":trace,"input":candidate["prompt"],
@@ -469,6 +568,59 @@ pub fn run_task<B: ModelBody>(
             let run = block_on(ClassicRuntime.run(&request, host, &mut redacted, cancellation))?;
             return Ok(json!({"report":run.report,"evidence_refs":run.evidence_refs}));
         }
+        if matches!(
+            mode,
+            RunMode::Toolset | RunMode::Tagged | RunMode::Eight | RunMode::Twelve
+        ) {
+            // The toolset family: described tools replace the default
+            // capability list, and the loop owns the circuit ledger. The
+            // return loop carries all six tools; route one carries the
+            // tagged four and ends the way classic ends; the lens condition
+            // adds the cognitive lens-reading tool.
+            let (supply, route, night) = match mode {
+                // Route one: the tagged explicate four, ends like classic.
+                RunMode::Tagged => (
+                    crate::toolset::tagged_capability_supply(),
+                    crate::toolset::Route::Tagged,
+                    false,
+                ),
+                // The explicate eight: P-world four + Night middle, ends
+                // like classic (no return verbs).
+                RunMode::Eight => (
+                    crate::toolset::eight_capability_supply(),
+                    crate::toolset::Route::Tagged,
+                    true,
+                ),
+                // The full P+P' twelve: both return conditions ride.
+                RunMode::Twelve => (
+                    crate::toolset::night_capability_supply(),
+                    crate::toolset::Route::ReturnLoop,
+                    true,
+                ),
+                _ => (
+                    crate::toolset::toolset_capability_supply(),
+                    crate::toolset::Route::ReturnLoop,
+                    false,
+                ),
+            };
+            host.set_capability_supply(supply);
+            let outcome = block_on(crate::toolset::run_toolset(
+                crate::toolset::ToolsetContext {
+                    request: &request,
+                    task: task.clone(),
+                    world: host.world.clone(),
+                    node: host.node.clone(),
+                    before: before.clone(),
+                    route,
+                    night,
+                    close_check: crate::toolset::CloseCheck::from_env(),
+                },
+                host,
+                &mut redacted,
+                cancellation,
+            ));
+            return Ok(json!({"report":outcome.report,"evidence_refs":outcome.evidence_refs}));
+        }
         let native_mode = if mode == RunMode::Direct {
             Mode::Direct
         } else {
@@ -478,8 +630,10 @@ pub fn run_task<B: ModelBody>(
             native_mode,
             crate::policy::schedule_for_category(task.category()),
         );
-        if std::env::var("QL_COMPRESSED_CONTROL").as_deref() == Ok("1") {
-            policy = policy.with_compressed_control();
+        match arm {
+            ControlArm::Model => {}
+            ControlArm::Compressed => policy = policy.with_compressed_control(),
+            ControlArm::Vak(vak) => policy = policy.with_vak_control(vak),
         }
         let mut inspector = TaskInspector {
             task: task.clone(),
@@ -551,7 +705,7 @@ pub fn run_task<B: ModelBody>(
     } else {
         execution["report"]["status"].clone()
     };
-    let record = json!({"schema":"actuation.research-run/v1","runtime":mode.name(),"status":status,
+    let mut record = json!({"schema":"actuation.research-run/v1","runtime":mode.name(),"status":status,
         "task":candidate,"task_revision":task.revision(),"trace_ref":trace,"model_body":host.body.basis(),
         "workspace":{"before":before,"after":after},"execution":execution,"body_evidence":body_evidence,
         "observations":host.observations,"verification":verification,"model_calls":host.model_calls,
@@ -559,6 +713,9 @@ pub fn run_task<B: ModelBody>(
         "budget":{"limits":limits,"max_calls":host.max_calls},
         "evidence_standing":"D-unless-separately-exercised-and-attested","provider_evidence":"not-assessed",
         "human_acceptance":false,"factory_ancestry":"not-supplied"});
+    if let (Some(m), Some(d)) = (record.as_object_mut(), disclosure) {
+        m.insert("control".into(), d);
+    }
     Ok(sanitize(&record, &secrets))
 }
 /// Backwards-compatible library entry, using the same lifecycle as Direct/Deep.
@@ -691,11 +848,339 @@ mod tests {
     }
 
     #[test]
-    fn run_mode_admits_only_the_three_native_conditions() {
+    fn toolset_mode_carries_the_ql_form_in_the_toolset_and_closes_through_the_return_condition() {
+        let task = crate::tasks::Task::get("S1-SKILL-001").unwrap();
+        let (_dir, world) = temp_world();
+        let body = ScriptedBody::classic(vec![
+            json!({"content":"seeing the field",
+                   "capabilityCalls":[{"name":"read_file","args":{"path":"SKILL.md"}}]}),
+            json!({"content":"the skill is absorbed; the effect comes next",
+                   "capabilityCalls":[{"name":"situate","args":{"position":"P2"}}]}),
+            json!({"content":"making the effect",
+                   "capabilityCalls":[{"name":"write_file","args":{"path":"deliverable.md","content":"the deliverable"}}]}),
+            json!({"content":"the bounded request is realised",
+                   "capabilityCalls":[{"name":"close","args":{"synthesis":"deliverable.md written from SKILL.md"}}]}),
+        ]);
+        let mut host = ResearchHost::new(body, world, None, 64, vec![]).unwrap();
+        let mut observer = RecordingObserver::default();
+        let result = run_task(
+            &task,
+            ExternalRef::new("trace:test:toolset-1").unwrap(),
+            RunMode::Toolset,
+            Limits::default(),
+            None,
+            &mut host,
+            &mut observer,
+            &CancellationToken::default(),
+        )
+        .expect("toolset run completes");
+        assert_eq!(result["runtime"], json!("ql-toolset"));
+        assert_eq!(result["status"], json!("completed"));
+        assert_eq!(result["verification"]["objective_checks_pass"], json!(true));
+        // The model saw the six described tools, not the four bare names.
+        let seen = result["observations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|o| o["event_type"] == json!("model_requested"))
+            .and_then(|o| o["value"]["capabilities"].as_array())
+            .unwrap();
+        assert_eq!(seen.len(), 6);
+        assert!(
+            seen[4]["description"].as_str().unwrap().contains("P"),
+            "situate carries the office law"
+        );
+        // situate and close are loop verbs: they never reach the world.
+        assert_eq!(result["model_calls"], json!(4));
+        assert_eq!(result["capability_calls"], json!(2));
+        let report = &result["execution"]["report"];
+        let circuit = &report["circuits"][0];
+        assert_eq!(circuit["closure_state"], json!("closed"));
+        let positions: Vec<u64> = circuit["residues"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|r| r["position"].as_u64().unwrap())
+            .collect();
+        assert_eq!(
+            positions,
+            vec![0, 1, 2, 2, 5],
+            "frame, material, effect, return-reading, determination"
+        );
+        assert_eq!(report["closure"]["success_state"], json!("true"));
+    }
+
+    #[test]
+    fn toolset_mode_refuses_to_complete_without_the_return_condition() {
+        let task = crate::tasks::Task::get("S1-SKILL-001").unwrap();
+        let (_dir, world) = temp_world();
+        // Bare content three times: the loop nudges twice, then fails honestly.
+        let body =
+            ScriptedBody::classic(vec![json!({"content":"the answer","capabilityCalls":[]})]);
+        let mut host = ResearchHost::new(body, world, None, 64, vec![]).unwrap();
+        let mut observer = RecordingObserver::default();
+        let result = run_task(
+            &task,
+            ExternalRef::new("trace:test:toolset-2").unwrap(),
+            RunMode::Toolset,
+            Limits::default(),
+            None,
+            &mut host,
+            &mut observer,
+            &CancellationToken::default(),
+        )
+        .expect("toolset run resolves");
+        assert_eq!(result["status"], json!("failed"));
+        assert!(result["execution"]["report"]["error"]
+            .as_str()
+            .unwrap()
+            .contains("return condition never ran"));
+    }
+
+    #[test]
+    fn toolset_mode_close_without_work_fails_the_objective_gate() {
+        let task = crate::tasks::Task::get("S1-SKILL-001").unwrap();
+        let (_dir, world) = temp_world();
+        let body = ScriptedBody::classic(vec![json!({"content":"closing immediately",
+                   "capabilityCalls":[{"name":"close","args":{"synthesis":"nothing was needed"}}]})]);
+        let mut host = ResearchHost::new(body, world, None, 64, vec![]).unwrap();
+        let mut observer = RecordingObserver::default();
+        let result = run_task(
+            &task,
+            ExternalRef::new("trace:test:toolset-3").unwrap(),
+            RunMode::Toolset,
+            Limits::default(),
+            None,
+            &mut host,
+            &mut observer,
+            &CancellationToken::default(),
+        )
+        .expect("toolset run resolves");
+        assert_eq!(result["status"], json!("failed"));
+        assert_eq!(
+            result["execution"]["report"]["closure"]["success_state"],
+            json!("false")
+        );
+        assert_eq!(
+            result["verification"]["objective_checks_pass"],
+            json!(false)
+        );
+    }
+
+    #[test]
+    fn tagged_route_carries_the_explicate_four_and_ends_like_classic() {
+        let task = crate::tasks::Task::get("S1-SKILL-001").unwrap();
+        let (_dir, world) = temp_world();
+        let body = ScriptedBody::classic(vec![
+            json!({"content":"seeing the field",
+                   "capabilityCalls":[{"name":"read_file","args":{"path":"SKILL.md"}}]}),
+            json!({"content":"the deliverable, written from the material in hand",
+                   "capabilityCalls":[{"name":"write_file","args":{"path":"deliverable.md","content":"the deliverable"}}]}),
+            json!({"content":"the bounded request is realised from the material in hand"}),
+        ]);
+        let mut host = ResearchHost::new(body, world, None, 64, vec![]).unwrap();
+        let mut observer = RecordingObserver::default();
+        let result = run_task(
+            &task,
+            ExternalRef::new("trace:test:tagged-1").unwrap(),
+            RunMode::Tagged,
+            Limits::default(),
+            None,
+            &mut host,
+            &mut observer,
+            &CancellationToken::default(),
+        )
+        .expect("tagged run completes");
+        assert_eq!(result["runtime"], json!("ql-tagged"));
+        assert_eq!(result["status"], json!("completed"));
+        assert_eq!(result["verification"]["objective_checks_pass"], json!(true));
+        // The model saw the tagged four, never the loop verbs.
+        let seen = result["observations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|o| o["event_type"] == json!("model_requested"))
+            .and_then(|o| o["value"]["capabilities"].as_array())
+            .unwrap();
+        assert_eq!(seen.len(), 4);
+        assert!(
+            seen.iter()
+                .all(|c| c["description"].as_str().unwrap().contains("(P")),
+            "every tagged tool carries its office law"
+        );
+        let report = &result["execution"]["report"];
+        assert_eq!(report["paradigm"], json!("tagged"));
+        let circuit = &report["circuits"][0];
+        // No return condition ran: the circuit stays open, the ledger stays.
+        assert_eq!(circuit["closure_state"], json!("open"));
+        let positions: Vec<u64> = circuit["residues"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|r| r["position"].as_u64().unwrap())
+            .collect();
+        assert_eq!(positions, vec![0, 1, 2], "frame, material, effect");
+    }
+
+    #[test]
+    fn tagged_route_refuses_the_loop_verbs_and_still_delivers() {
+        let task = crate::tasks::Task::get("S1-SKILL-001").unwrap();
+        let (_dir, world) = temp_world();
+        let body = ScriptedBody::classic(vec![
+            json!({"content":"trying the verb",
+                   "capabilityCalls":[{"name":"close","args":{"synthesis":"not here"}}]}),
+            json!({"content":"then without it",
+                   "capabilityCalls":[{"name":"write_file","args":{"path":"deliverable.md","content":"the deliverable"}}]}),
+            json!({"content":"delivered"}),
+        ]);
+        let mut host = ResearchHost::new(body, world, None, 64, vec![]).unwrap();
+        let mut observer = RecordingObserver::default();
+        let result = run_task(
+            &task,
+            ExternalRef::new("trace:test:tagged-2").unwrap(),
+            RunMode::Tagged,
+            Limits::default(),
+            None,
+            &mut host,
+            &mut observer,
+            &CancellationToken::default(),
+        )
+        .expect("tagged run resolves");
+        assert_eq!(result["status"], json!("completed"));
+        assert_eq!(result["model_calls"], json!(3));
+        assert_eq!(result["capability_calls"], json!(1));
+        assert_eq!(
+            result["execution"]["report"]["circuits"][0]["closure_state"],
+            json!("open")
+        );
+    }
+
+    #[test]
+    fn twelve_condition_serves_the_night_face_and_records_full_readings() {
+        let script_dir = tempfile::tempdir().unwrap();
+        let script = script_dir.path().join("fake-reflect.sh");
+        std::fs::write(
+            &script,
+            "#!/bin/sh\nprintf '%s' '{\"mode\":\"resonant\",\"reading\":{\"shape\":\"ranked\",\"selected\":\"L2\",\"ranking\":[{\"lens\":\"L2\",\"name\":\"Logical\",\"mass\":0.5}]},\"own_disclosure\":\"my candidate\",\"latency_ms\":1}'\n",
+        )
+        .unwrap();
+        std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+            .unwrap();
+        std::env::set_var("QL_REFLECT_BIN", &script);
+        let task = crate::tasks::Task::get("S1-SKILL-001").unwrap();
+        let (_dir, world) = temp_world();
+        let body = ScriptedBody::classic(vec![
+            json!({"content":"reading the subject's frame",
+                   "capabilityCalls":[{"name":"reflect_resonant_frames","args":{"subject":"the handoff work as it stands","own_disclosure":"my candidate: it reads Logical"}}]}),
+            json!({"content":"making the effect",
+                   "capabilityCalls":[{"name":"write_file","args":{"path":"deliverable.md","content":"the deliverable"}}]}),
+            json!({"content":"the bounded request is realised",
+                   "capabilityCalls":[{"name":"close","args":{"synthesis":"deliverable.md written from SKILL.md"}}]}),
+        ]);
+        let mut host = ResearchHost::new(body, world, None, 64, vec![]).unwrap();
+        let mut observer = RecordingObserver::default();
+        let result = run_task(
+            &task,
+            ExternalRef::new("trace:test:twelve-1").unwrap(),
+            RunMode::Twelve,
+            Limits::default(),
+            None,
+            &mut host,
+            &mut observer,
+            &CancellationToken::default(),
+        )
+        .expect("twelve run completes");
+        assert_eq!(result["runtime"], json!("ql-twelve"));
+        assert_eq!(result["status"], json!("completed"));
+        // The model saw the full P+P' twelve.
+        let seen = result["observations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|o| o["event_type"] == json!("model_requested"))
+            .and_then(|o| o["value"]["capabilities"].as_array())
+            .unwrap();
+        assert_eq!(seen.len(), 12);
+        assert_eq!(seen[6]["name"], json!("reflect_full_text"));
+        assert_eq!(seen[11]["name"], json!("reflect_resonant_frames"));
+        let report = &result["execution"]["report"];
+        assert_eq!(report["night_calls"], json!(1));
+        let kinds: Vec<&str> = report["circuits"][0]["residues"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter_map(|r| r["kind"].as_str())
+            .collect();
+        assert!(
+            kinds.contains(&"night-reading"),
+            "the reading rides the circuit record"
+        );
+        assert_eq!(result["verification"]["objective_checks_pass"], json!(true));
+    }
+
+    #[test]
+    fn eight_condition_is_explicate_with_the_night_middle_and_ends_like_classic() {
+        let script_dir = tempfile::tempdir().unwrap();
+        let script = script_dir.path().join("fake-reflect-eight.sh");
+        std::fs::write(
+            &script,
+            "#!/bin/sh\nprintf '%s' '{\"mode\":\"being\",\"reading\":{\"shape\":\"square A\"},\"latency_ms\":1}'\n",
+        )
+        .unwrap();
+        std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+            .unwrap();
+        std::env::set_var("QL_REFLECT_BIN", &script);
+        let task = crate::tasks::Task::get("S1-SKILL-001").unwrap();
+        let (_dir, world) = temp_world();
+        let body = ScriptedBody::classic(vec![
+            json!({"content":"reading through square A",
+                   "capabilityCalls":[{"name":"reflect_being","args":{"subject":"the work as it stands"}}]}),
+            json!({"content":"making the effect",
+                   "capabilityCalls":[{"name":"write_file","args":{"path":"deliverable.md","content":"the deliverable"}}]}),
+            json!({"content":"the bounded request is realised from the material in hand"}),
+        ]);
+        let mut host = ResearchHost::new(body, world, None, 64, vec![]).unwrap();
+        let mut observer = RecordingObserver::default();
+        let result = run_task(
+            &task,
+            ExternalRef::new("trace:test:eight-1").unwrap(),
+            RunMode::Eight,
+            Limits::default(),
+            None,
+            &mut host,
+            &mut observer,
+            &CancellationToken::default(),
+        )
+        .expect("eight run completes");
+        assert_eq!(result["runtime"], json!("ql-eight"));
+        assert_eq!(result["status"], json!("completed"));
+        let seen = result["observations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|o| o["event_type"] == json!("model_requested"))
+            .and_then(|o| o["value"]["capabilities"].as_array())
+            .unwrap();
+        assert_eq!(seen.len(), 8);
+        let names: Vec<&str> = seen.iter().map(|c| c["name"].as_str().unwrap()).collect();
+        assert!(!names.contains(&"situate") && !names.contains(&"close"));
+        assert!(!names.contains(&"reflect_full_text"));
+        assert!(names.contains(&"reflect_being") && names.contains(&"reflect_resonant_frames"));
+        let report = &result["execution"]["report"];
+        assert_eq!(report["night_calls"], json!(1));
+        assert_eq!(report["circuits"][0]["closure_state"], json!("open"));
+    }
+
+    #[test]
+    fn run_mode_admits_the_native_conditions() {
         for (name, mode) in [
             ("classic", RunMode::Classic),
             ("ql-direct", RunMode::Direct),
             ("ql-deep", RunMode::Deep),
+            ("ql-toolset", RunMode::Toolset),
+            ("ql-tagged", RunMode::Tagged),
+            ("ql-eight", RunMode::Eight),
+            ("ql-twelve", RunMode::Twelve),
         ] {
             assert_eq!(RunMode::parse(name).unwrap(), mode);
             assert_eq!(mode.name(), name);

@@ -1,0 +1,54 @@
+{
+  "schema": "actuation.model-types-mercury-mef-lensing/v1",
+  "created": "2026-09-19T21:26:15.833Z",
+  "corpus": "same 100 mef-lens-refraction act states as E-MT-1 (jev/states.jsonl)",
+  "standing": "agreement-of-readings only; MEF has no ground truth by design; semantic-stochastic, promotion none",
+  "A_width": {
+    "n": 100,
+    "api_failures": 0,
+    "parse_rate": 1,
+    "mean_lens_mass_on_standing_pair_L1_L4prime": 0.7875,
+    "jev_same_corpus_reference": 0.87,
+    "mean_lens_covered_per_reading": 12,
+    "latency_ms_p50": 951,
+    "tokens_in_out": [
+      36319,
+      42332
+    ],
+    "cost_usd_at_vendor_rates": 0.03901
+  },
+  "B_parallel": {
+    "concurrency": 10,
+    "wall_ms_total": 10941,
+    "aggregate_tok_s": 416,
+    "note": "aggregate throughput at concurrency 10 - the parallel multi-analysis use case"
+  },
+  "C_depth_one_go": {
+    "ok": true,
+    "wall_ms": 1417,
+    "usage": {
+      "prompt_tokens": 450,
+      "completion_tokens": 794,
+      "total_tokens": 1244,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 251
+      }
+    },
+    "lenses_with_substantive_reading": "12/12",
+    "completeness": 1,
+    "note": "single diffusion pass asked for a per-lens prose reading of every lens on one full circuit"
+  },
+  "honest_limits": [
+    "no truth exists for MEF readings by design; the standing-pair mass is agreement between readings, not accuracy",
+    "Jev reference 0.870 is from the same corpus but a different question shape (choice vs mass distribution)",
+    "one depth subject only; C is a feasibility reading, not a benchmark",
+    "rates are vendor claims; usage counts are ours"
+  ],
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "semantic-stochastic"
+  }
+}

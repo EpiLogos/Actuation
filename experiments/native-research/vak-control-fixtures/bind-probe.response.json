@@ -1,0 +1,170 @@
+{
+  "contract": "ql.vak-composition/v1",
+  "results": [
+    {
+      "op": "whole",
+      "result": {
+        "basis": [
+          {
+            "caller": "actuation:vak-control",
+            "evidence": [
+              "circuit:vak-bind-probe",
+              "trace:trace:bind-probe"
+            ],
+            "revision": "trace:bind-probe",
+            "source": "vak-bind-probe",
+            "standing": "OBSERVED"
+          }
+        ],
+        "binding": {
+          "basisRefs": [
+            "circuit:vak-bind-probe:p0",
+            "circuit:vak-bind-probe:p1:vacant",
+            "circuit:vak-bind-probe:p2:vacant",
+            "circuit:vak-bind-probe:p3:vacant",
+            "circuit:vak-bind-probe:p4:vacant",
+            "circuit:vak-bind-probe:p5:vacant"
+          ],
+          "derivationRef": null,
+          "members": [
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 0
+              },
+              "subjectRef": "circuit:vak-bind-probe:p0"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 1
+              },
+              "subjectRef": "circuit:vak-bind-probe:p1:vacant"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 2
+              },
+              "subjectRef": "circuit:vak-bind-probe:p2:vacant"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 3
+              },
+              "subjectRef": "circuit:vak-bind-probe:p3:vacant"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 4
+              },
+              "subjectRef": "circuit:vak-bind-probe:p4:vacant"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 5
+              },
+              "subjectRef": "circuit:vak-bind-probe:p5:vacant"
+            }
+          ],
+          "operatorRef": null,
+          "provenance": {
+            "caller": "actuation:vak-control",
+            "source": "vak-bind-probe",
+            "standing": "OBSERVED"
+          },
+          "relations": [],
+          "returnRefs": [
+            "ql:structural:2.0.0:return:through-anchor:own"
+          ],
+          "shapeRef": "ql:shape:1.0.0:constellation:sixfold",
+          "subjectRef": "circuit:vak-bind-probe",
+          "wholeRef": "anchor:circuit:vak-bind-probe"
+        },
+        "body": {
+          "anchorRef": "anchor:circuit:vak-bind-probe",
+          "grain": "sixfold",
+          "kind": "constellation",
+          "members": [
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 0
+              },
+              "subjectRef": "circuit:vak-bind-probe:p0"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 1
+              },
+              "subjectRef": "circuit:vak-bind-probe:p1:vacant"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 2
+              },
+              "subjectRef": "circuit:vak-bind-probe:p2:vacant"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 3
+              },
+              "subjectRef": "circuit:vak-bind-probe:p3:vacant"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 4
+              },
+              "subjectRef": "circuit:vak-bind-probe:p4:vacant"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 5
+              },
+              "subjectRef": "circuit:vak-bind-probe:p5:vacant"
+            }
+          ],
+          "returns": [
+            {
+              "anchorRef": "anchor:circuit:vak-bind-probe",
+              "face": "direct",
+              "fromRef": "circuit:vak-bind-probe:origin",
+              "groundPosition": 0,
+              "groundRef": "ground:circuit:vak-bind-probe",
+              "kind": "own",
+              "operatorRef": "ql:structural:2.0.0:return:through-anchor:own"
+            }
+          ]
+        },
+        "category": "M",
+        "frame": {
+          "absolutePosition": 0,
+          "basis": "chromatic",
+          "expression": "(00/00)",
+          "face": "direct",
+          "grain": "outer-two",
+          "id": "CF1",
+          "lens": "L0",
+          "localPosition": 0,
+          "positions": "local",
+          "unitFace": "Name"
+        },
+        "groundFace": "direct",
+        "groundRef": "ground:circuit:vak-bind-probe",
+        "language": null,
+        "producingRefs": [],
+        "transitions": [],
+        "useRef": "circuit:vak-bind-probe:state"
+      }
+    }
+  ],
+  "sourceRevision": "daa660cbc1b8c5da83828698665a753852cb0287"
+}

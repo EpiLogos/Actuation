@@ -1,0 +1,126 @@
+{
+  "schema": "actuation.model-types-ebm-energy-head-v2b/v1",
+  "created": "2026-09-19T19:17:32+0100",
+  "experiment": "E-MT-EBM-FIELD phase-2.6b (mining on the typed 1x32 rung)",
+  "config": "typed features (semantic channel + 128-dim type hash + incident-type profiles), 1x32, then sibling hard-negative mining x3, 15 epochs lr 1e-3",
+  "mined_hard_train_negatives": 2635,
+  "full": {
+    "endpoint-rewire": {
+      "n_pos": 2185,
+      "learned": 0.9874611128812676,
+      "calibration": {
+        "brier": 0.101,
+        "ece_10bin": 0.1943,
+        "mean_p_real": 0.6014,
+        "mean_p_corrupted": 0.0473,
+        "youden_threshold": 0.2218,
+        "recall_at_threshold": 0.9822,
+        "false_positive_rate_at_threshold": 0.0582
+      },
+      "baseline_cosine": 0.9264253975610462,
+      "baseline_combined": 0.9448954030646236
+    },
+    "hard-rewire": {
+      "n_pos": 2185,
+      "learned": 0.9215162670381056,
+      "calibration": {
+        "brier": 0.1289,
+        "ece_10bin": 0.1368,
+        "mean_p_real": 0.6014,
+        "mean_p_corrupted": 0.1847,
+        "youden_threshold": 0.3793,
+        "recall_at_threshold": 0.941,
+        "false_positive_rate_at_threshold": 0.1872
+      },
+      "baseline_cosine": 0.7674548225104598,
+      "baseline_combined": 0.7048363870575852
+    },
+    "sibling-rewire": {
+      "n_pos": 2185,
+      "learned": 0.6538239759833545,
+      "calibration": {
+        "brier": 0.2287,
+        "ece_10bin": 0.0481,
+        "mean_p_real": 0.6014,
+        "mean_p_corrupted": 0.4899,
+        "youden_threshold": 0.5318,
+        "recall_at_threshold": 0.7757,
+        "false_positive_rate_at_threshold": 0.552
+      },
+      "baseline_cosine": 0.5470324172805647,
+      "baseline_combined": 0.51864123405415
+    },
+    "direction-reversal": {
+      "n_pos": 2185,
+      "learned": 0.8476324429619467,
+      "calibration": {
+        "brier": 0.1591,
+        "ece_10bin": 0.0816,
+        "mean_p_real": 0.6014,
+        "mean_p_corrupted": 0.283,
+        "youden_threshold": 0.4428,
+        "recall_at_threshold": 0.903,
+        "false_positive_rate_at_threshold": 0.3295
+      },
+      "baseline_cosine": 0.5,
+      "baseline_combined": 0.5
+    }
+  },
+  "m0": {
+    "hard-rewire": {
+      "n_pos": 121,
+      "learned": 0.8429752066115702,
+      "calibration": {
+        "brier": 0.1755,
+        "ece_10bin": 0.1093,
+        "mean_p_real": 0.5583,
+        "mean_p_corrupted": 0.3286,
+        "youden_threshold": 0.5207,
+        "recall_at_threshold": 0.686,
+        "false_positive_rate_at_threshold": 0.1322
+      },
+      "baseline_cosine": 0.8107369715183389,
+      "baseline_combined": 0.7891537463288026
+    },
+    "sibling-rewire": {
+      "n_pos": 121,
+      "learned": 0.7106340963943538,
+      "calibration": {
+        "brier": 0.2179,
+        "ece_10bin": 0.0437,
+        "mean_p_real": 0.5583,
+        "mean_p_corrupted": 0.4418,
+        "youden_threshold": 0.5438,
+        "recall_at_threshold": 0.6281,
+        "false_positive_rate_at_threshold": 0.292
+      },
+      "baseline_cosine": 0.6565859723542748,
+      "baseline_combined": 0.6431287939735245
+    },
+    "direction-reversal": {
+      "n_pos": 121,
+      "learned": 0.6572979987705758,
+      "calibration": {
+        "brier": 0.2288,
+        "ece_10bin": 0.0602,
+        "mean_p_real": 0.5583,
+        "mean_p_corrupted": 0.451,
+        "youden_threshold": 0.4419,
+        "recall_at_threshold": 0.8099,
+        "false_positive_rate_at_threshold": 0.5455
+      },
+      "baseline_cosine": 0.5,
+      "baseline_combined": 0.5
+    }
+  },
+  "honest_limits": [
+    "learned readings are semantic-stochastic; never promoted, never the determination",
+    "negatives are synthetic corruptions; AUC measures separation from the ladder, not value or correctness",
+    "mining uses train edges only; held-out negatives stay untouched by mining"
+  ],
+  "runtime_seconds": 69.2,
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "semantic-stochastic"
+  }
+}

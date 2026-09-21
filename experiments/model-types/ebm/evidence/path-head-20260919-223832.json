@@ -1,0 +1,108 @@
+{
+  "schema": "actuation.model-types-ebm-path-head/v1",
+  "created": "2026-09-19T22:38:32+0100",
+  "experiment": "E-MT-EBM-FIELD phase-3 (joint traversal head vs summed scoring)",
+  "features": {
+    "joint": "structure over all three coordinates (per-hop lineage, pairwise+triple LCP, directed ancestor flags, depths/families/roots/primes), PCA-64 of e_a/e_b/e_c and e_a*e_c, cos(a,b), cos(b,c), chord cos(a,c), both hop types hashed 128, endpoint type profiles",
+    "feature_dim": 701,
+    "arch": "1x32 (capacity lesson of phase 2.6: small generalises)",
+    "pair_baseline": "v2b summed pairwise head (semantic channel + typed + mining), identical protocol"
+  },
+  "data": {
+    "traversals": 10675,
+    "train": 8553,
+    "test": 2122
+  },
+  "results": {
+    "endpoint-rewire": {
+      "n_paths": 2122,
+      "joint_head": 0.9823970593068798,
+      "summed_pair_head": 0.9873800879614043,
+      "summed_cosine": 0.8226143511580578,
+      "summed_combined": 0.8584134079403334,
+      "calibration_joint": {
+        "brier": 0.3392,
+        "ece_10bin": 0.402,
+        "mean_p_real": 0.181,
+        "mean_p_corrupted": 0.0151,
+        "youden_threshold": 0.0633,
+        "recall_at_threshold": 0.934,
+        "false_positive_rate_at_threshold": 0.0462
+      }
+    },
+    "hard-rewire": {
+      "n_paths": 2122,
+      "joint_head": 0.8720368990184957,
+      "summed_pair_head": 0.9193592373243459,
+      "summed_cosine": 0.6802047310123912,
+      "summed_combined": 0.621752414674684,
+      "calibration_joint": {
+        "brier": 0.343,
+        "ece_10bin": 0.3772,
+        "mean_p_real": 0.181,
+        "mean_p_corrupted": 0.0645,
+        "youden_threshold": 0.1115,
+        "recall_at_threshold": 0.8181,
+        "false_positive_rate_at_threshold": 0.2088
+      }
+    },
+    "sibling-rewire": {
+      "n_paths": 2122,
+      "joint_head": 0.6026088641528559,
+      "summed_pair_head": 0.6673311226841501,
+      "summed_cosine": 0.5399182701899461,
+      "summed_combined": 0.5145509561516358,
+      "calibration_joint": {
+        "brier": 0.358,
+        "ece_10bin": 0.3419,
+        "mean_p_real": 0.181,
+        "mean_p_corrupted": 0.1509,
+        "youden_threshold": 0.1423,
+        "recall_at_threshold": 0.6767,
+        "false_positive_rate_at_threshold": 0.5299
+      }
+    },
+    "mid-rewire": {
+      "n_paths": 2122,
+      "joint_head": 0.9548447172967369,
+      "summed_pair_head": 0.9844521866430492,
+      "summed_cosine": 0.9189583831162428,
+      "summed_combined": 0.888553757991545,
+      "calibration_joint": {
+        "brier": 0.3402,
+        "ece_10bin": 0.3957,
+        "mean_p_real": 0.181,
+        "mean_p_corrupted": 0.0276,
+        "youden_threshold": 0.0677,
+        "recall_at_threshold": 0.927,
+        "false_positive_rate_at_threshold": 0.1126
+      }
+    },
+    "direction-reversal": {
+      "n_paths": 2122,
+      "joint_head": 0.8451997653059683,
+      "summed_pair_head": 0.9158292774142083,
+      "summed_cosine": 0.5,
+      "summed_combined": 0.5,
+      "calibration_joint": {
+        "brier": 0.3439,
+        "ece_10bin": 0.3714,
+        "mean_p_real": 0.181,
+        "mean_p_corrupted": 0.0762,
+        "youden_threshold": 0.1132,
+        "recall_at_threshold": 0.811,
+        "false_positive_rate_at_threshold": 0.2625
+      }
+    }
+  },
+  "honest_limits": [
+    "negatives are synthetic corruptions; AUC measures separation from the ladder, not correctness of real transitions",
+    "loop-proposed transitions remain untested until the composed loop runs (EBM-GATE-DESIGN.md, shadow mode first)",
+    "calibration describes agreement with the real-vs-corrupted traversal label, not with human judgement"
+  ],
+  "runtime_seconds": 207.3,
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "semantic-stochastic"
+  }
+}

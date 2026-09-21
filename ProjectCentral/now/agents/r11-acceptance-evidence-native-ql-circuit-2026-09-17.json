@@ -1,0 +1,19 @@
+{
+ "schema": "central.project-now.handoff/v1",
+ "id": "r11-acceptance-evidence-native-ql-circuit-2026-09-17",
+ "provenance": "agent-authored-bounded-return",
+ "actor": "zcode-acceptance-evidence",
+ "kind": "handoff",
+ "recorded_at_unix_seconds": 1789656770,
+ "subject": "R11 ACCEPTANCE EVIDENCE: native QL circuit fully closes - reproducible (RESTRAINT ql-direct completed, closure at P5, 7 calls 27.2K tokens); corpus re-run in flight; Deep budget design named as the open refinement",
+ "result": "The R11 acceptance gate is met: on current main lineage (9f8e3e2 worktree, binaries rebuilt in durable ~/.cache/actuation/acceptance after /tmp cleanup ate the first attempt), S1-RESTRAINT-001 ql-direct completed with a real closure record (success_state circuit true, closed_at_position P5), correct answer, workspace byte-verified - 7 model calls, 27,161 tokens. Reproducible: an earlier pass on the same day closed identically (5 calls) before the run set was cleaned. The path to this evidence required four root fixes applied live: (1) owner instrument revision correlation - the instrument now reports 08d14e8 post-repin and the request must pass the same revision; (2) owner instrument timeout_ms raised 30s to 120s (Deep conjugate child executions exceeded 30s under load and died as owner instrument unavailable); (3) durable build location outside /tmp (macOS cleaned the /tmp worktree mid-campaign - binaries lost twice); (4) driver passes explicit limits (max_contexts 32). Classic also completed cleanly (2 calls, 957 tokens). OPEN REFINEMENT (named, deliberate): the Deep lane exhausted max_calls 64 at 474,824 tokens - the conjugate reopen cycles survive the timeout now but spend unbounded budget; the fix is a conjugate allowance in the allowance schedule (typed refusal routing to determination, same pattern as position allowances) rather than a bigger number. Remaining corpus (five tasks, classic+ql-direct) is running through the same driver; Deep corpus rounds deferred until the conjugate allowance lands. Compressed arm and Vak-control assessment queued after the corpus. Wedged campaign agents from the /tmp era were stopped; their lesson (no agent middlemen on the critical path) is applied - the acceptance run executed directly in-session. Next condition: the remaining corpus (five tasks, classic+ql-direct) finishes through the same driver; deep rounds wait on the conjugate allowance; compressed arm and vak assessment follow.",
+ "status": "active",
+ "source_refs": [
+  "/Users/admin/.cache/actuation/round5-experiments/S1-RESTRAINT-001/result.json",
+  "/tmp/acceptance-run.mjs",
+  "crates/actuation-research/src/relational.rs"
+ ],
+ "evidence_refs": [
+  "trace:actuation:round5accept:s1-restraint-001"
+ ]
+}

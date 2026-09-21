@@ -1,0 +1,141 @@
+{
+  "schema": "actuation.model-types-jev-states/v1",
+  "created": "2026-09-19",
+  "experiment": "E-MT-2 loop decision refereeing",
+  "sources": {
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/deeplane-S1-RESTRAINT-001.json": "0499115fba58bb0be9cd0087d52612d57914ae8f8866ec158b5e416afc29ecf1",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/deeplane-S1-SKILL-001.json": "4837ffaa4831e92f4901bd45b98799187052af5b88dfd7af11fd17c6d4827648",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-AGENCY-001.json": "4d8d64a76829ef8c262a7dcc9adbe1136738988d3c066d7a80ad2a4b047dd30f",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-CODE-001.json": "0655ff8782b7e1bb80036d90ac55c472a9d50aba3857fb5670bd49bec5b5ed19",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-EPISTEMIC-001.json": "6a6bf6f141b4aa4cdc78ea691caf3f7fcba77fd19e02267bd2434c57bfd08147",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-RESEARCH-001.json": "832fa06a516cc8982862e3d78bacd053b396650dcbf88391cc795e445e00772f",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-RESTRAINT-001.json": "ad57043ff808dfcc625cc9ade7a7664778a560130b8a3d3ae11b89b736565c80",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-SKILL-001-r2.json": "d653a15485dc4d68978a580cb342f536fd315e60417262da3badb1b18e86af3b",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/native-S1-SKILL-001.json": "a134f497d22c1019a91cc766c76d3b2d105000250ef0c4189ff52a8141c021d9",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/staged-S1-AGENCY-001.json": "3f58fa34d9681d3a0ad0dc5a6b772d4a9381f102710d8af63a6deea9da8e476c",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/staged-S1-CODE-001.json": "6050e048d57936769662f60e630af8097d0a71239a4e2dda2ab7f9eb7f944a3b",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/staged-S1-EPISTEMIC-001.json": "97dace3d7fdec8af719f42550e4fd18a57d7b7a9cba8d36a092aa20807f5e38c",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/staged-S1-RESEARCH-001.json": "93b68c2d5b959f0444f3880c788c6dad2d3ed7eb446a0e0e71d1feb17957cd74",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/staged-S1-RESTRAINT-001.json": "91c0ec61e788bb6b6412258391fdca841dbf84d3048de9e2370699f512b0f968",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-glm/staged-S1-SKILL-001.json": "6d42c9aef137175c1e8b0105103b949ca4b9a8f4006425cf76f5978bf02df13c",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-smoke-restraint/run-fixed.json": "463de93d58dfd28c385c0c4c4d8e1b84566123588ea25fe3b9ec3809b3410e91",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-13-smoke-restraint/run.json": "c227b3a135e7650b31bf85a85cada10c4759fa729cb6bc526e4158a3d8bbe428",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round5/round5-S1-CODE-001.json": "4479ba15a5dd6736041c370e18f4016f0b505b8ecf6cd4e5efeaf7e05f19d2cd",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round5/round5-S1-EPISTEMIC-001.json": "5d14b9438638a5b6b19aad8b414668e89c79768aab8b38be1b59f8c428aae6dd",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round5/round5-S1-RESEARCH-001.json": "da95f5fb4ca17cd0c1e58cb12aa15e968cf9a36cb1e5510ee2ec8ec888d94492",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round5/round5-S1-RESTRAINT-001.json": "e093cbd4ccbb4558635c1ae7da137fa88253037d8430680f6d6c1b65eb401741",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round5/round5-S1-SKILL-001.json": "b9f3e6f55c163515a1d11da04686177f44d7c5107945186598f08e60cf6e4980",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/compressed-S1-CODE-001.json": "9383ad5de0f19937a4865c5ecad2026b5930cbf24a7d963662f33e2953b044c0",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/compressed-S1-EPISTEMIC-001.json": "eedf517aaa4c751de10c578cc3523addcaf0c6a2ae90aa412c62e1e212f2367d",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/compressed-S1-RESEARCH-001.json": "27b6376d4a9e683af76820bfd842051c0c7c5489d41891a7690ce2b82e558e0d",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/compressed-S1-RESTRAINT-001.json": "37d89068d3c61045005ce0e193b8547e2db9c3c0e49e72c12a36aead86c65b31",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/compressed-S1-SKILL-001.json": "ee981634d11de8d414afa663eabc18253898480c28d8fcf871a2856f305d57ca",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/deep-S1-CODE-001.json": "994eb7d61089c329d60064b8262a7f770e3cc8de7f8ab304f6a5664dce163555",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/deep-S1-EPISTEMIC-001.json": "831f4aff3d9de6ab6a5eb3afebd7c06b273e1d4c7aee5fdf27289c254f27d169",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/deep-S1-RESEARCH-001.json": "a53b2fab169c787ce99d12a8daad80776fdb19e3fa4d53c889ec89bf99b8b18a",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/deep-S1-RESTRAINT-001.json": "0c21be4f2a128f402612eff0541149642d16740ab31c56d96aaf6f38bc6ac722",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/deep-S1-SKILL-001.json": "8a1fdd7565fc66c97d29ea18df59bb7505e7353ff74b44e387ed898be26f8915",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round6/failed-S1-SKILL-001.json": "ffb4924845dd7b568af5b62526ac2ba3a97de0038ad67f24d7045213f7f4a468",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round7-vak/vak-S1-CODE-001.json": "eb8155a228934b2bacb0df55b39bf88c491b68d03a4726572fba31dbaf08af09",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round7-vak/vak-S1-EPISTEMIC-001.json": "8c3a1aa56596b4bccdbeffae8d03c4929611bd1aa45f6d4c11b7b38af4973c86",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round7-vak/vak-S1-RESEARCH-001.json": "1cdd5106a001f108ea8dbb68c2092cc5082ed08c6c416432141a5102ca7d107f",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round7-vak/vak-S1-RESTRAINT-001.json": "6ca67bb4053585cc66aedaf006d38e48fcff18a5e1dfdec35974e0dcbbb1ce81",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round7-vak/vak-S1-SKILL-001.json": "19fa0a9cdd4dcd57fd2196ecfe09b74ea8abbf0d7f650abcdbd0180f54d92500",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round7-vak/vak-attempt1-failed-S1-RESTRAINT-001-authored-refusal.json": "7de46ee893e8d26bbc250711e53b31ddb5339304418bd3638be24c6108fffbd1",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round7-vak/vak-failed-S1-SKILL-001-closure-parse.json": "f9bd66a1aab0ac23760e83740ae3b09a4218046db233c4b845a1136c08a86dd1",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round8-toolset/toolset-smoke-S1-RESTRAINT-001.json": "839852aca7bfa76d557244f57be561be162ac461de96b9a6b31483a546b4d1ee",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round8-toolset/toolset-smoke-manifest.json": "6504dc039557a58b74d2c63eec6b3441b8074ab6f92e0e5f4fcc7dbaea5516c7",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armA-self-S1-CODE-001.json": "2f0f6aedc7274e36759f49589d1d8803a0b087ed8e58ea0edff5a11df56c3e30",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armA-self-S1-EPISTEMIC-001.json": "b458bbbc9109e0cbf2e34a6b9b27bb946797740fc23827ed28fa29083a3d2012",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armA-self-S1-RESEARCH-001.json": "816e260595fcc83640ecb0543a296cc15d58dbf29f7cceb619fbc156a37c30ee",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armA-self-S1-RESTRAINT-001.json": "1a56f1b2e8e074eb520e03f27507ebdbfb0daafc93fb7f6f6afcdecaa1759820",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armA-self-S1-SKILL-001.json": "0c0104ed11d339236ba52a7df70f435755a08ac66929004a3eeea70e7ede8336",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armB-explicit-S1-CODE-001.json": "280d3999ad1ee32f95233d8ed2e87cb0ddab1e5d80247fbbc08ca21fc55700a7",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armB-explicit-S1-EPISTEMIC-001.json": "78313bb5aa6ccce4f7791f0dcd9ee8a5c5c7ddd7fe555dfecf31fdf574238d13",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armB-explicit-S1-RESEARCH-001.json": "3659076fdf2e1e28d93ea1e90897b8ccfb2067f82d01601469a63978bf50fe09",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armB-explicit-S1-RESTRAINT-001.json": "0c24a994bfd12a45b011b273f93ceb2750e8084b0080af0185fb788c03d0872b",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armB-explicit-S1-SKILL-001.json": "2e6667a3be4d3173ef9131015fe7cd22da12c1cfc0e6efba625a8850ae8e128f",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armB-variance-fail-S1-RESTRAINT-001.json": "b1f01daef4a69f0785ce3fc804647244c6ef65ac8a14b5e947af5e13b52daa8c",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armC-close-model-S1-CODE-001.json": "28d93ae18516095e58eb13a1689b085d307fa3739edb13fc7b102d627a2783ef",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armC-close-model-S1-EPISTEMIC-001.json": "5ca5fef1cb22c2ff4b264cfcfb7f271848241e60bb8bf901e34320d5aa38b575",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armC-close-model-S1-RESEARCH-001.json": "e30a52b44f4c85539c0ae266281fdcdf1fd652d7298056fbb480914fa667cf57",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armC-close-model-S1-RESTRAINT-001.json": "7ecdaa5eb2d686807f206c443fa082fdf7088539d4aebb534e87a53fc9095629",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armC-close-model-S1-SKILL-001.json": "215680b8418d8ed3a2513870a566235491af4a51816d008eb5469098aaea78d1",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armC-variance-fail-S1-RESEARCH-001.json": "fe99befc7227a1c85daf68d1a0007f2b26615ba72ea658c450ded5bbda0ca27c",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armD-close-jev-S1-CODE-001.json": "440fd2cf77b960d30dee3b193cdb4ef634e9b985ba594da5135c0a886f6a5843",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armD-close-jev-S1-EPISTEMIC-001.json": "1694eb06e913b125e61603bfc782547e3c6c7d9d478c93a06cde31a2cc51741d",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armD-close-jev-S1-RESEARCH-001.json": "8fd02094f0fdae7933711ff1cd98fc1d1e80e73a3f09c4606f360204717984b1",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armD-close-jev-S1-RESTRAINT-001.json": "b7dc9217378c3db10a463245aa3e53823c8e3b1400bb5edeed1b3e9707a60d71",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armD-close-jev-S1-SKILL-001.json": "d50f6dd157d9f1cf4a534d52ac6f8c2192814add80eb34af40dc8edcdbe66c51",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-18-glm-round9-toolset/armD-jev-refusal-S1-RESTRAINT-001.json": "b7dc9217378c3db10a463245aa3e53823c8e3b1400bb5edeed1b3e9707a60d71",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-19-glm-round10-two-routes/round10-tagged-S1-CODE-001.json": "104e3a52b13ac85d2234fe74864e9d6f9be6be31a0cb306d70d5f2e44b766bba",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-19-glm-round10-two-routes/round10-tagged-S1-EPISTEMIC-001.json": "0b8927066fdfd17a355473ba341742632ea46e78531ab230aafd020f6f6c732f",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-19-glm-round10-two-routes/round10-tagged-S1-RESEARCH-001.json": "f79b4740b82dbe7903b69e0bb8fd1561012996133a819de4ac9aa26b928864dc",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-19-glm-round10-two-routes/round10-tagged-S1-RESTRAINT-001.json": "4e49adba8724ca9d7adc4457cf4b9978bc7e4bd7d78e7dbbb8918f66de83e235",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-19-glm-round10-two-routes/round10-tagged-S1-SKILL-001-variance-fail-invalid-json.json": "5514ffabea46f7931c0c22f04533480086b6c9dd0a3f05ca6772373cda7e9e64",
+    "/Users/admin/Central/Work/Actuation/experiments/ql-runtime/comparison/series1/runs/2026-09-19-glm-round10-two-routes/round10-tagged-S1-SKILL-001.json": "a55b4bd8a9f042c994be439fc80ae7dcfc513023c3e1e0c4c9eb92f42cedf96e"
+  },
+  "selection": "deterministic round-robin over question ids ['next-carrier', 'next-position', 'requested-outcome', 'intent-already-achieved', 'subject-verifiable', 'stipulation-violated', 'genuinely-local-whole', 'act-adequacy'], cap 150",
+  "counts": {
+    "next-carrier": {
+      "generated": 211,
+      "selected": 21,
+      "with_truth": 21
+    },
+    "next-position": {
+      "generated": 218,
+      "selected": 21,
+      "with_truth": 21,
+      "destination_basis": {
+        "model-interpretation": 17,
+        "mechanical-closure-request": 3,
+        "mechanical-reopen-routing": 1
+      }
+    },
+    "requested-outcome": {
+      "generated": 87,
+      "selected": 20,
+      "with_truth": 20
+    },
+    "intent-already-achieved": {
+      "generated": 208,
+      "selected": 20,
+      "with_truth": 20
+    },
+    "subject-verifiable": {
+      "generated": 29,
+      "selected": 20,
+      "with_truth": 20
+    },
+    "stipulation-violated": {
+      "generated": 60,
+      "selected": 20,
+      "with_truth": 0
+    },
+    "genuinely-local-whole": {
+      "generated": 8,
+      "selected": 8,
+      "with_truth": 0
+    },
+    "act-adequacy": {
+      "generated": 213,
+      "selected": 20,
+      "with_truth": 0
+    }
+  },
+  "truth_standing": {
+    "next-carrier": "loop-recorded carrier kind (the incumbent's own decision); agreement, not ground truth",
+    "next-position": "loop-recorded transition destination; agreement, not ground truth. R4: state now carries allowance_state; transitions are classified mechanical-* vs model-interpretation in destination-basis.json \u2014 the semantic remainder is the fair re-measure set",
+    "requested-outcome": "derived from the record's closure state (closureState/closure objects)",
+    "intent-already-achieved": "derived: exterior act -> false; internal_control on completed+closed+objective_checks_pass -> true; otherwise omitted",
+    "subject-verifiable": "derived mechanically: claimed_subject == task_id and objective_checks_pass; omitted where claimed_subject absent",
+    "stipulation-violated": "none \u2014 instrument reading only (recorded verdicts are the incumbent's own evaluations)",
+    "genuinely-local-whole": "none \u2014 instrument reading only",
+    "act-adequacy": "none \u2014 instrument reading only"
+  },
+  "determination": "pending-human-review",
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "semantic-stochastic"
+  }
+}

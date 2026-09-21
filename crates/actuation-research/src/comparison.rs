@@ -8,7 +8,18 @@ use crate::{
 };
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet};
-pub const CONDITIONS: &[&str] = &["classic", "ql-direct", "ql-deep"];
+/// The admitted conditions. A comparison run names 1..3 of them explicitly;
+/// the default (absent request field) stays the original native trio.
+pub const CONDITIONS: &[&str] = &[
+    "classic",
+    "ql-direct",
+    "ql-deep",
+    "ql-toolset",
+    "ql-tagged",
+    "ql-eight",
+    "ql-twelve",
+];
+pub const DEFAULT_CONDITIONS: &[&str] = &["classic", "ql-direct", "ql-deep"];
 pub const HELD_CONSTANTS: &[&str] = &[
     "prompt",
     "success_constraints",
@@ -140,6 +151,10 @@ pub fn assess(manifest: &Value) -> Value {
         reasons.push("no executed comparison records".into());
     }
     let mut completeness = vec![];
+    let named_conditions = manifest["conditions"]
+        .as_array()
+        .map(|a| a.len())
+        .unwrap_or(0);
     let mut repeats: BTreeMap<u64, BTreeSet<String>> = BTreeMap::new();
     for record in records {
         let mut missing = vec![];
@@ -218,9 +233,9 @@ pub fn assess(manifest: &Value) -> Value {
         completeness.push(json!({"condition":condition,"repetition":record["repetition"],"complete":missing.is_empty(),"missing":missing}));
     }
     for (n, conditions) in repeats {
-        if conditions.len() != CONDITIONS.len() {
+        if conditions.len() != named_conditions {
             reasons.push(format!(
-                "repetition {n} lacks a complete three-condition matched set"
+                "repetition {n} lacks a complete {named_conditions}-condition matched set"
             ));
         }
     }
@@ -356,7 +371,7 @@ where
     let condition_values = request
         .get("conditions")
         .cloned()
-        .unwrap_or(json!(CONDITIONS));
+        .unwrap_or(json!(DEFAULT_CONDITIONS));
     let conditions = condition_values
         .as_array()
         .filter(|a| !a.is_empty() && a.len() <= 3)

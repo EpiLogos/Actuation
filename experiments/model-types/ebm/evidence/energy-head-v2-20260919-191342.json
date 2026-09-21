@@ -1,0 +1,707 @@
+{
+  "schema": "actuation.model-types-ebm-energy-head-v2/v1",
+  "created": "2026-09-19T19:13:42+0100",
+  "experiment": "E-MT-EBM-FIELD phase-2.6 (head redesign + sibling frontier, R1/R2)",
+  "model": {
+    "rungs": {
+      "base": "phase-2 replication: 1x32, scalar semantic, 32-dim type hash",
+      "semantic_channel": "+ PCA-64 of e_a, e_b, e_a-e_b, e_a*e_b + cosine (R1a/R2 semantic channel)",
+      "typed": "+ 128-dim type hash + incident-type profile hashes + log-degree both endpoints (R1b)",
+      "capacity": "typed features at 2x128 capacity + calibration readout (R2)",
+      "hardneg": "capacity + sibling hard-negative mining x3 oversample, low-LR fine-tune (R1c)",
+      "m0only": "capacity arch trained on M0 edges only, M0 pools (R1d)"
+    },
+    "pca": "three PCA bases (64 comps) fitted on the field's own node vectors; difference/product bases estimated on consecutive node pairings (unsupervised, no labels)",
+    "split": "held-out edges by sha256 digest bucket mod 5, unchanged from phase 2",
+    "seeds": {
+      "head": 20260918,
+      "probe": 20260917
+    }
+  },
+  "data": {
+    "vector_key": "embedding",
+    "embedding_dim": 3072,
+    "edges_valid": 10675,
+    "train_edges": 8490,
+    "test_edges": 2185,
+    "m0_test_edges": 121,
+    "m0_train_edges": 449
+  },
+  "rungs": {
+    "base": {
+      "rung": 0,
+      "feature_dim": 71,
+      "arch": "1x32",
+      "full": {
+        "endpoint-rewire": {
+          "n_pos": 2185,
+          "learned": 0.97984425349087,
+          "calibration": {
+            "brier": 0.091,
+            "ece_10bin": 0.1687,
+            "mean_p_real": 0.6435,
+            "mean_p_corrupted": 0.1007,
+            "youden_threshold": 0.334,
+            "recall_at_threshold": 0.9735,
+            "false_positive_rate_at_threshold": 0.1
+          },
+          "baseline_cosine": 0.9242227852239294,
+          "baseline_lineage": 0.9013998505580721,
+          "baseline_combined": 0.9437508756362957
+        },
+        "hard-rewire": {
+          "n_pos": 2185,
+          "learned": 0.8468820593918385,
+          "calibration": {
+            "brier": 0.1643,
+            "ece_10bin": 0.092,
+            "mean_p_real": 0.6435,
+            "mean_p_corrupted": 0.3669,
+            "youden_threshold": 0.5522,
+            "recall_at_threshold": 0.8394,
+            "false_positive_rate_at_threshold": 0.2668
+          },
+          "baseline_cosine": 0.7655053961637752,
+          "baseline_lineage": 0.6605490943556284,
+          "baseline_combined": 0.7029436191214281
+        },
+        "sibling-rewire": {
+          "n_pos": 2185,
+          "learned": 0.5190071937466746,
+          "calibration": {
+            "brier": 0.2771,
+            "ece_10bin": 0.1505,
+            "mean_p_real": 0.6435,
+            "mean_p_corrupted": 0.6285,
+            "youden_threshold": 0.6491,
+            "recall_at_threshold": 0.5629,
+            "false_positive_rate_at_threshold": 0.5161
+          },
+          "baseline_cosine": 0.5509730807663524,
+          "baseline_lineage": 0.5098544163894573,
+          "baseline_combined": 0.5193934845332283
+        },
+        "direction-reversal": {
+          "n_pos": 2185,
+          "learned": 0.787006058574952,
+          "calibration": {
+            "brier": 0.189,
+            "ece_10bin": 0.0646,
+            "mean_p_real": 0.6435,
+            "mean_p_corrupted": 0.43,
+            "youden_threshold": 0.5409,
+            "recall_at_threshold": 0.8522,
+            "false_positive_rate_at_threshold": 0.4389
+          },
+          "baseline_cosine": 0.5,
+          "baseline_lineage": 0.5,
+          "baseline_combined": 0.5
+        }
+      },
+      "m0": {
+        "hard-rewire": {
+          "n_pos": 121,
+          "learned": 0.7207840994467591,
+          "calibration": {
+            "brier": 0.2301,
+            "ece_10bin": 0.1222,
+            "mean_p_real": 0.6097,
+            "mean_p_corrupted": 0.539,
+            "youden_threshold": 0.5452,
+            "recall_at_threshold": 0.7603,
+            "false_positive_rate_at_threshold": 0.3471
+          },
+          "baseline_cosine": 0.7980329212485486,
+          "baseline_lineage": 0.6785738679051977,
+          "baseline_combined": 0.7742640530018441
+        },
+        "sibling-rewire": {
+          "n_pos": 121,
+          "learned": 0.5846924595918964,
+          "calibration": {
+            "brier": 0.2543,
+            "ece_10bin": 0.112,
+            "mean_p_real": 0.6097,
+            "mean_p_corrupted": 0.5863,
+            "youden_threshold": 0.6043,
+            "recall_at_threshold": 0.5372,
+            "false_positive_rate_at_threshold": 0.3274
+          },
+          "baseline_cosine": 0.6879982447158633,
+          "baseline_lineage": 0.5775616177868792,
+          "baseline_combined": 0.6486506253199736
+        },
+        "direction-reversal": {
+          "n_pos": 121,
+          "learned": 0.6139949457004303,
+          "calibration": {
+            "brier": 0.2451,
+            "ece_10bin": 0.0961,
+            "mean_p_real": 0.6097,
+            "mean_p_corrupted": 0.5666,
+            "youden_threshold": 0.6308,
+            "recall_at_threshold": 0.4132,
+            "false_positive_rate_at_threshold": 0.2562
+          },
+          "baseline_cosine": 0.5,
+          "baseline_lineage": 0.5,
+          "baseline_combined": 0.5
+        }
+      }
+    },
+    "semantic_channel": {
+      "rung": 1,
+      "feature_dim": 328,
+      "arch": "1x32",
+      "full": {
+        "endpoint-rewire": {
+          "n_pos": 2185,
+          "learned": 0.9888808041609399,
+          "calibration": {
+            "brier": 0.0687,
+            "ece_10bin": 0.1469,
+            "mean_p_real": 0.6974,
+            "mean_p_corrupted": 0.0741,
+            "youden_threshold": 0.3762,
+            "recall_at_threshold": 0.9748,
+            "false_positive_rate_at_threshold": 0.0553
+          },
+          "baseline_cosine": 0.925478727206047,
+          "baseline_lineage": 0.9026145307166935,
+          "baseline_combined": 0.9444260487591114
+        },
+        "hard-rewire": {
+          "n_pos": 2185,
+          "learned": 0.8997926365012122,
+          "calibration": {
+            "brier": 0.1336,
+            "ece_10bin": 0.0946,
+            "mean_p_real": 0.6974,
+            "mean_p_corrupted": 0.3118,
+            "youden_threshold": 0.5408,
+            "recall_at_threshold": 0.9002,
+            "false_positive_rate_at_threshold": 0.2224
+          },
+          "baseline_cosine": 0.7581193806324587,
+          "baseline_lineage": 0.6594967769638004,
+          "baseline_combined": 0.7002966973697302
+        },
+        "sibling-rewire": {
+          "n_pos": 2185,
+          "learned": 0.5798008417938081,
+          "calibration": {
+            "brier": 0.2744,
+            "ece_10bin": 0.1633,
+            "mean_p_real": 0.6974,
+            "mean_p_corrupted": 0.641,
+            "youden_threshold": 0.6264,
+            "recall_at_threshold": 0.778,
+            "false_positive_rate_at_threshold": 0.6427
+          },
+          "baseline_cosine": 0.5513746198734282,
+          "baseline_lineage": 0.5110539509371769,
+          "baseline_combined": 0.5206706665570806
+        },
+        "direction-reversal": {
+          "n_pos": 2185,
+          "learned": 0.7985020605438579,
+          "calibration": {
+            "brier": 0.1802,
+            "ece_10bin": 0.0598,
+            "mean_p_real": 0.6974,
+            "mean_p_corrupted": 0.4222,
+            "youden_threshold": 0.5295,
+            "recall_at_threshold": 0.9071,
+            "false_positive_rate_at_threshold": 0.4412
+          },
+          "baseline_cosine": 0.5,
+          "baseline_lineage": 0.5,
+          "baseline_combined": 0.5
+        }
+      },
+      "m0": {
+        "hard-rewire": {
+          "n_pos": 121,
+          "learned": 0.8385356191516973,
+          "calibration": {
+            "brier": 0.183,
+            "ece_10bin": 0.1087,
+            "mean_p_real": 0.6675,
+            "mean_p_corrupted": 0.4656,
+            "youden_threshold": 0.5172,
+            "recall_at_threshold": 0.8843,
+            "false_positive_rate_at_threshold": 0.3471
+          },
+          "baseline_cosine": 0.8031555221637866,
+          "baseline_lineage": 0.6735537190082644,
+          "baseline_combined": 0.7666826036472919
+        },
+        "sibling-rewire": {
+          "n_pos": 121,
+          "learned": 0.7276384114678563,
+          "calibration": {
+            "brier": 0.2206,
+            "ece_10bin": 0.0922,
+            "mean_p_real": 0.6675,
+            "mean_p_corrupted": 0.5471,
+            "youden_threshold": 0.6016,
+            "recall_at_threshold": 0.7107,
+            "false_positive_rate_at_threshold": 0.3274
+          },
+          "baseline_cosine": 0.7166313171944708,
+          "baseline_lineage": 0.6121187742265779,
+          "baseline_combined": 0.6915453814086155
+        },
+        "direction-reversal": {
+          "n_pos": 121,
+          "learned": 0.6040912505976368,
+          "calibration": {
+            "brier": 0.2639,
+            "ece_10bin": 0.1438,
+            "mean_p_real": 0.6675,
+            "mean_p_corrupted": 0.6201,
+            "youden_threshold": 0.5873,
+            "recall_at_threshold": 0.7521,
+            "false_positive_rate_at_threshold": 0.5702
+          },
+          "baseline_cosine": 0.5,
+          "baseline_lineage": 0.5,
+          "baseline_combined": 0.5
+        }
+      }
+    },
+    "typed": {
+      "rung": 2,
+      "feature_dim": 554,
+      "arch": "1x32",
+      "full": {
+        "endpoint-rewire": {
+          "n_pos": 2185,
+          "learned": 0.9852976847828971,
+          "calibration": {
+            "brier": 0.045,
+            "ece_10bin": 0.086,
+            "mean_p_real": 0.8182,
+            "mean_p_corrupted": 0.0991,
+            "youden_threshold": 0.4932,
+            "recall_at_threshold": 0.9748,
+            "false_positive_rate_at_threshold": 0.057
+          },
+          "baseline_cosine": 0.9219557312672592,
+          "baseline_lineage": 0.9001805968581916,
+          "baseline_combined": 0.9413981081757871
+        },
+        "hard-rewire": {
+          "n_pos": 2185,
+          "learned": 0.9230454157481057,
+          "calibration": {
+            "brier": 0.1199,
+            "ece_10bin": 0.0801,
+            "mean_p_real": 0.8182,
+            "mean_p_corrupted": 0.3243,
+            "youden_threshold": 0.7064,
+            "recall_at_threshold": 0.8993,
+            "false_positive_rate_at_threshold": 0.1579
+          },
+          "baseline_cosine": 0.7544158475983013,
+          "baseline_lineage": 0.6577372243662584,
+          "baseline_combined": 0.6980692154223984
+        },
+        "sibling-rewire": {
+          "n_pos": 2185,
+          "learned": 0.6192961548277697,
+          "calibration": {
+            "brier": 0.3044,
+            "ece_10bin": 0.2623,
+            "mean_p_real": 0.8182,
+            "mean_p_corrupted": 0.7209,
+            "youden_threshold": 0.7257,
+            "recall_at_threshold": 0.8746,
+            "false_positive_rate_at_threshold": 0.6749
+          },
+          "baseline_cosine": 0.5440757571169643,
+          "baseline_lineage": 0.5084761196160451,
+          "baseline_combined": 0.5169376397762715
+        },
+        "direction-reversal": {
+          "n_pos": 2185,
+          "learned": 0.8759440537469432,
+          "calibration": {
+            "brier": 0.1691,
+            "ece_10bin": 0.1353,
+            "mean_p_real": 0.8182,
+            "mean_p_corrupted": 0.4525,
+            "youden_threshold": 0.7554,
+            "recall_at_threshold": 0.8046,
+            "false_positive_rate_at_threshold": 0.2279
+          },
+          "baseline_cosine": 0.5,
+          "baseline_lineage": 0.5,
+          "baseline_combined": 0.5
+        }
+      },
+      "m0": {
+        "hard-rewire": {
+          "n_pos": 121,
+          "learned": 0.8013796871798374,
+          "calibration": {
+            "brier": 0.2114,
+            "ece_10bin": 0.1652,
+            "mean_p_real": 0.7691,
+            "mean_p_corrupted": 0.5612,
+            "youden_threshold": 0.7212,
+            "recall_at_threshold": 0.7521,
+            "false_positive_rate_at_threshold": 0.2397
+          },
+          "baseline_cosine": 0.8043507957106755,
+          "baseline_lineage": 0.6886824670446008,
+          "baseline_combined": 0.7824943651389933
+        },
+        "sibling-rewire": {
+          "n_pos": 121,
+          "learned": 0.6660937614276311,
+          "calibration": {
+            "brier": 0.2612,
+            "ece_10bin": 0.1975,
+            "mean_p_real": 0.7691,
+            "mean_p_corrupted": 0.6563,
+            "youden_threshold": 0.7287,
+            "recall_at_threshold": 0.7355,
+            "false_positive_rate_at_threshold": 0.4248
+          },
+          "baseline_cosine": 0.6744679294960871,
+          "baseline_lineage": 0.5722957653770204,
+          "baseline_combined": 0.6371681415929203
+        },
+        "direction-reversal": {
+          "n_pos": 121,
+          "learned": 0.6770370876306263,
+          "calibration": {
+            "brier": 0.2688,
+            "ece_10bin": 0.214,
+            "mean_p_real": 0.7691,
+            "mean_p_corrupted": 0.6589,
+            "youden_threshold": 0.8019,
+            "recall_at_threshold": 0.5289,
+            "false_positive_rate_at_threshold": 0.2562
+          },
+          "baseline_cosine": 0.5,
+          "baseline_lineage": 0.5,
+          "baseline_combined": 0.5
+        }
+      }
+    },
+    "capacity": {
+      "rung": 3,
+      "feature_dim": 554,
+      "arch": "2x128",
+      "full": {
+        "endpoint-rewire": {
+          "n_pos": 2185,
+          "learned": 0.9807277519296452,
+          "calibration": {
+            "brier": 0.0745,
+            "ece_10bin": 0.1428,
+            "mean_p_real": 0.6901,
+            "mean_p_corrupted": 0.0879,
+            "youden_threshold": 0.3849,
+            "recall_at_threshold": 0.9648,
+            "false_positive_rate_at_threshold": 0.0649
+          },
+          "baseline_cosine": 0.9252327793556897,
+          "baseline_lineage": 0.9028172060864654,
+          "baseline_combined": 0.9444428204099816
+        },
+        "hard-rewire": {
+          "n_pos": 2185,
+          "learned": 0.8992745419413622,
+          "calibration": {
+            "brier": 0.1287,
+            "ece_10bin": 0.0831,
+            "mean_p_real": 0.6901,
+            "mean_p_corrupted": 0.2788,
+            "youden_threshold": 0.5415,
+            "recall_at_threshold": 0.9103,
+            "false_positive_rate_at_threshold": 0.2252
+          },
+          "baseline_cosine": 0.75518110269206,
+          "baseline_lineage": 0.6568214736423189,
+          "baseline_combined": 0.6966290863962213
+        },
+        "sibling-rewire": {
+          "n_pos": 2185,
+          "learned": 0.6024438407599504,
+          "calibration": {
+            "brier": 0.2606,
+            "ece_10bin": 0.1438,
+            "mean_p_real": 0.6901,
+            "mean_p_corrupted": 0.6061,
+            "youden_threshold": 0.6288,
+            "recall_at_threshold": 0.7785,
+            "false_positive_rate_at_threshold": 0.6035
+          },
+          "baseline_cosine": 0.548887954043076,
+          "baseline_lineage": 0.5103330622520796,
+          "baseline_combined": 0.5203343383526623
+        },
+        "direction-reversal": {
+          "n_pos": 2185,
+          "learned": 0.8159424828113463,
+          "calibration": {
+            "brier": 0.1824,
+            "ece_10bin": 0.0761,
+            "mean_p_real": 0.6901,
+            "mean_p_corrupted": 0.435,
+            "youden_threshold": 0.6004,
+            "recall_at_threshold": 0.8481,
+            "false_positive_rate_at_threshold": 0.3721
+          },
+          "baseline_cosine": 0.5,
+          "baseline_lineage": 0.5,
+          "baseline_combined": 0.5
+        }
+      },
+      "m0": {
+        "hard-rewire": {
+          "n_pos": 121,
+          "learned": 0.7942763472440407,
+          "calibration": {
+            "brier": 0.1974,
+            "ece_10bin": 0.1306,
+            "mean_p_real": 0.6536,
+            "mean_p_corrupted": 0.4852,
+            "youden_threshold": 0.5738,
+            "recall_at_threshold": 0.8347,
+            "false_positive_rate_at_threshold": 0.2975
+          },
+          "baseline_cosine": 0.8190014343282562,
+          "baseline_lineage": 0.659347039136671,
+          "baseline_combined": 0.7671607130660474
+        },
+        "sibling-rewire": {
+          "n_pos": 121,
+          "learned": 0.6320485628611131,
+          "calibration": {
+            "brier": 0.2485,
+            "ece_10bin": 0.1109,
+            "mean_p_real": 0.6536,
+            "mean_p_corrupted": 0.6007,
+            "youden_threshold": 0.5982,
+            "recall_at_threshold": 0.7438,
+            "false_positive_rate_at_threshold": 0.4867
+          },
+          "baseline_cosine": 0.7045637387552109,
+          "baseline_lineage": 0.5923718276896073,
+          "baseline_combined": 0.6686535507935347
+        },
+        "direction-reversal": {
+          "n_pos": 121,
+          "learned": 0.6284748309541698,
+          "calibration": {
+            "brier": 0.2483,
+            "ece_10bin": 0.1229,
+            "mean_p_real": 0.6536,
+            "mean_p_corrupted": 0.5922,
+            "youden_threshold": 0.4968,
+            "recall_at_threshold": 0.9504,
+            "false_positive_rate_at_threshold": 0.7273
+          },
+          "baseline_cosine": 0.5,
+          "baseline_lineage": 0.5,
+          "baseline_combined": 0.5
+        }
+      }
+    },
+    "hardneg": {
+      "rung": 4,
+      "feature_dim": 554,
+      "arch": "2x128+mined",
+      "mined_hard_train_negatives": 2800,
+      "mining_note": "sibling train negatives the rung3 model ranked above its real edge were oversampled x3 in a 15-epoch low-LR fine-tune of the rung3 weights",
+      "full": {
+        "endpoint-rewire": {
+          "n_pos": 2185,
+          "learned": 0.9780090721305125,
+          "calibration": {
+            "brier": 0.113,
+            "ece_10bin": 0.202,
+            "mean_p_real": 0.5744,
+            "mean_p_corrupted": 0.0738,
+            "youden_threshold": 0.3573,
+            "recall_at_threshold": 0.9561,
+            "false_positive_rate_at_threshold": 0.0563
+          },
+          "baseline_cosine": 0.9223749450534157,
+          "baseline_lineage": 0.9020109000105544,
+          "baseline_combined": 0.9432243757546094
+        },
+        "hard-rewire": {
+          "n_pos": 2185,
+          "learned": 0.9019243961061743,
+          "calibration": {
+            "brier": 0.1442,
+            "ece_10bin": 0.1464,
+            "mean_p_real": 0.5744,
+            "mean_p_corrupted": 0.2202,
+            "youden_threshold": 0.422,
+            "recall_at_threshold": 0.9291,
+            "false_positive_rate_at_threshold": 0.2297
+          },
+          "baseline_cosine": 0.7588474569170912,
+          "baseline_lineage": 0.6592030120071845,
+          "baseline_combined": 0.7003251836685536
+        },
+        "sibling-rewire": {
+          "n_pos": 2185,
+          "learned": 0.6141143213091494,
+          "calibration": {
+            "brier": 0.2372,
+            "ece_10bin": 0.0426,
+            "mean_p_real": 0.5744,
+            "mean_p_corrupted": 0.5022,
+            "youden_threshold": 0.5325,
+            "recall_at_threshold": 0.7451,
+            "false_positive_rate_at_threshold": 0.5832
+          },
+          "baseline_cosine": 0.5483391226484061,
+          "baseline_lineage": 0.5102453573730497,
+          "baseline_combined": 0.5194013790537823
+        },
+        "direction-reversal": {
+          "n_pos": 2185,
+          "learned": 0.8062998706596358,
+          "calibration": {
+            "brier": 0.1814,
+            "ece_10bin": 0.0845,
+            "mean_p_real": 0.5744,
+            "mean_p_corrupted": 0.3485,
+            "youden_threshold": 0.5111,
+            "recall_at_threshold": 0.8192,
+            "false_positive_rate_at_threshold": 0.3217
+          },
+          "baseline_cosine": 0.5,
+          "baseline_lineage": 0.5,
+          "baseline_combined": 0.5
+        }
+      },
+      "m0": {
+        "hard-rewire": {
+          "n_pos": 121,
+          "learned": 0.7996038521958883,
+          "calibration": {
+            "brier": 0.199,
+            "ece_10bin": 0.1357,
+            "mean_p_real": 0.5437,
+            "mean_p_corrupted": 0.4021,
+            "youden_threshold": 0.4915,
+            "recall_at_threshold": 0.7851,
+            "false_positive_rate_at_threshold": 0.2975
+          },
+          "baseline_cosine": 0.8112150809370945,
+          "baseline_lineage": 0.6601325046103408,
+          "baseline_combined": 0.7641554538624411
+        },
+        "sibling-rewire": {
+          "n_pos": 121,
+          "learned": 0.6478461200906896,
+          "calibration": {
+            "brier": 0.233,
+            "ece_10bin": 0.0573,
+            "mean_p_real": 0.5437,
+            "mean_p_corrupted": 0.4918,
+            "youden_threshold": 0.5032,
+            "recall_at_threshold": 0.7438,
+            "false_positive_rate_at_threshold": 0.469
+          },
+          "baseline_cosine": 0.7022233599063848,
+          "baseline_lineage": 0.6094858480216485,
+          "baseline_combined": 0.6796972134864331
+        },
+        "direction-reversal": {
+          "n_pos": 121,
+          "learned": 0.6270405026979031,
+          "calibration": {
+            "brier": 0.2342,
+            "ece_10bin": 0.0493,
+            "mean_p_real": 0.5437,
+            "mean_p_corrupted": 0.4911,
+            "youden_threshold": 0.4138,
+            "recall_at_threshold": 0.9587,
+            "false_positive_rate_at_threshold": 0.7107
+          },
+          "baseline_cosine": 0.5,
+          "baseline_lineage": 0.5,
+          "baseline_combined": 0.5
+        }
+      }
+    },
+    "m0only": {
+      "rung": 5,
+      "arch": "2x128 m0-trained",
+      "m0_train_edges": 449,
+      "m0": {
+        "hard-rewire": {
+          "n_pos": 121,
+          "learned": 0.7887439382555836,
+          "calibration": {
+            "brier": 0.2387,
+            "ece_10bin": 0.1756,
+            "mean_p_real": 0.5111,
+            "mean_p_corrupted": 0.4875,
+            "youden_threshold": 0.4977,
+            "recall_at_threshold": 0.843,
+            "false_positive_rate_at_threshold": 0.4132
+          },
+          "baseline_cosine": 0.8038043849463834,
+          "baseline_lineage": 0.6652209548528106,
+          "baseline_combined": 0.7647360152995014
+        },
+        "sibling-rewire": {
+          "n_pos": 121,
+          "learned": 0.586886564762671,
+          "calibration": {
+            "brier": 0.2473,
+            "ece_10bin": 0.07,
+            "mean_p_real": 0.5111,
+            "mean_p_corrupted": 0.5056,
+            "youden_threshold": 0.5033,
+            "recall_at_threshold": 0.7273,
+            "false_positive_rate_at_threshold": 0.5487
+          },
+          "baseline_cosine": 0.6475535727345864,
+          "baseline_lineage": 0.5722957653770204,
+          "baseline_combined": 0.6254662473487896
+        },
+        "direction-reversal": {
+          "n_pos": 121,
+          "learned": 0.4437879926234547,
+          "calibration": {
+            "brier": 0.2508,
+            "ece_10bin": 0.0115,
+            "mean_p_real": 0.5111,
+            "mean_p_corrupted": 0.5118,
+            "youden_threshold": 0.4857,
+            "recall_at_threshold": 0.9587,
+            "false_positive_rate_at_threshold": 0.8678
+          },
+          "baseline_cosine": 0.5,
+          "baseline_lineage": 0.5,
+          "baseline_combined": 0.5
+        }
+      }
+    }
+  },
+  "honest_limits": [
+    "learned readings are semantic-stochastic; never promoted, never the determination",
+    "negatives are synthetic corruptions; AUC measures separation from the ladder, not value or correctness",
+    "PCA components are fitted on the field's own node vectors (unsupervised); no label information is used",
+    "the 'combined' baseline is lineage + cosine (probe convention); phase-2 tables called this 'semantic+lineage'",
+    "hard-negative mining uses train edges only; held-out negatives stay untouched by mining",
+    "calibration statistics (Brier/ECE/threshold) describe agreement of the head's probability output with the real-vs-corrupted label on the corruption ladder, not with human judgement of real loop transitions"
+  ],
+  "runtime_seconds": 133.3,
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "semantic-stochastic"
+  }
+}

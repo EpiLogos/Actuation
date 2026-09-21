@@ -1,0 +1,18 @@
+{
+ "schema": "central.project-now.handoff/v1",
+ "id": "full-campaign-dispatched-three-parallel-tracks-2026-09-15",
+ "provenance": "agent-authored-bounded-return",
+ "actor": "zcode-campaign5-kickoff",
+ "kind": "handoff",
+ "recorded_at_unix_seconds": 1789485544,
+ "subject": "Full campaign dispatched: three parallel tracks - native corpus re-runs (5a/5b), QL-MEF #185 landing + live-faculty Prime rounds (5c), Vak-control arm build (5d)",
+ "result": "Owner commissioned the full campaign. Track B: rounds 5a/5b from the native harness on main 828052e - all six tasks x three conditions with max_calls 64 and max_contexts 32 for ql lanes (round-4 failures were the since-fixed closure gate, unwired repair decorator, and undersized budgets), then the compressed arm across the corpus with QL_COMPRESSED_CONTROL=1; acceptance criterion is the first fully-closing native QL circuit (R11 gate). Track A: QL-MEF PR #185 (provider attach) rebase onto current main 3a3d7db, verify, un-draft, merge; then the Actuation Prime source-lock re-pin to post-merge main (the wave5 caveat is stale - QL-MEF main now contains vak composition #142); then Prime P0/P2/P3 faculty rounds on S1-EPISTEMIC-001 through the native harness with prebuilt pinned binaries. Track C: the Vak-control arm - a native policy lane answering interpret/next-act by invoking ql.vak-composition/v1 over circuit state (kernel-native control, zero model calls on those turns, fail-closed, decision lineage recorded), with real fixtures captured from the built kernel; deterministic tests only, draft PR, no merge, no live runs until owner reviews. All lanes sequential model traffic; records under /tmp/actuation-round5-experiments and /tmp/actuation-prime-experiments; consolidated campaign report follows when tracks complete. Next condition: the three tracks complete and the consolidated campaign report lands for owner review before any merge or live run.",
+ "status": "active",
+ "source_refs": [
+  "crates/actuation-research/src/policy.rs",
+  "experiments/ql-runtime/prime/source-lock.json"
+ ],
+ "evidence_refs": [
+  "https://github.com/EpiLogos/QL-MEF/pull/185"
+ ]
+}

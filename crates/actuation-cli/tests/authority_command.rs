@@ -272,3 +272,99 @@ fn revocation_persists_and_a_revoked_source_never_resolves() {
     assert_eq!(resolved["standing"], json!("refused"));
     assert_eq!(resolved["refusal"]["code"], json!("authority.revoked"));
 }
+
+#[test]
+fn actualise_refusal_names_the_malformed_record() {
+    // The shape a session plausibly invents when nothing discloses the
+    // envelope: compact string shorthands where the contract has records.
+    let shorthand = json!({
+        "schema": "actuation.agency-actualisation/v1",
+        "request_ref": "request:shorthand",
+        "requester_ref": "human:owner",
+        "governing_binding": {
+            "schema": "actuation.agency/v1",
+            "binding_ref": "binding:governing",
+            "agent_ref": "agent:governor",
+            "agency_ref": "agency:governing",
+            "world_ref": "world:personal",
+            "scope_ref": "scope:personal"
+        },
+        "metagency_grant": {
+            "schema": "actuation.agency/v1",
+            "grant_ref": "grant:delegation",
+            "agency_ref": "agency:governing",
+            "world_binding_ref": "binding:governing",
+            "authority_ref": "authority:owner",
+            "operations": ["determine-agency"],
+            "bounds_refs": ["bound:observation"]
+        },
+        "determination": {
+            "schema": "actuation.agency/v1",
+            "determination_ref": "determination:delegation",
+            "kind": "delegation",
+            "determining_agency_ref": "agency:governing",
+            "differentiated_agency_ref": "agency:delegated-work",
+            "world_binding_ref": "binding:delegated-work",
+            "bounds_refs": ["bound:observation"],
+            "delegated_autonomy": "bounded",
+            "return_policy": "owner-return",
+            "authority_refs": ["authority:owner"]
+        },
+        "differentiated_binding": {
+            "schema": "actuation.agency/v1",
+            "binding_ref": "binding:delegated-work",
+            "agent_ref": "agent:governor",
+            "agency_ref": "agency:delegated-work",
+            "world_ref": "world:personal",
+            "scope_ref": "scope:personal"
+        },
+        "agent_identity": {
+            "standing": "existing",
+            "evidence_refs": ["evidence:identity-registry"]
+        },
+        "provenance": { "source_refs": ["source:owner-commission"] }
+    });
+    let error = execute(
+        &["agency".into(), "actualise".into(), "-".into()],
+        &shorthand.to_string(),
+    )
+    .expect_err("a shorthand document must be refused");
+    let message = error.to_string();
+    assert!(
+        message.contains("DelegatedAutonomyFields"),
+        "the refusal must name the record that was not an object: {message}"
+    );
+}
+
+#[test]
+fn schema_flag_prints_an_envelope_that_admits() {
+    let printed = execute(
+        &["agency".into(), "actualise".into(), "--schema".into()],
+        "",
+    )
+    .expect("--schema must not error");
+    let example: Value =
+        serde_json::from_str(&printed.stdout).expect("--schema prints a JSON envelope");
+    assert_eq!(
+        example["schema"],
+        json!("actuation.agency-actualisation/v1")
+    );
+    // The printed envelope must itself be a complete, admitting request —
+    // the example is documentation that cannot rot.
+    let actualised = execute(
+        &[
+            "agency".into(),
+            "actualise".into(),
+            "-".into(),
+            "--json".into(),
+        ],
+        &example.to_string(),
+    )
+    .expect("the printed example must parse as a request");
+    assert_eq!(actualised.code, 0, "the printed example must admit");
+    let receipt: Value = serde_json::from_str(&actualised.stdout).expect("receipt is JSON");
+    assert!(
+        receipt.get("receipt").is_some() || receipt.is_object(),
+        "actualisation returns its receipt: {receipt}"
+    );
+}

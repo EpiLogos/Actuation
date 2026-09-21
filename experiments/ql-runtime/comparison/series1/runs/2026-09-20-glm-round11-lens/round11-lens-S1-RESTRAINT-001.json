@@ -1,0 +1,1068 @@
+{
+  "schema": "ql-series1-run/0.3",
+  "trace_ref": "trace:actuation:round5accept:s1-restraint-001",
+  "task": {
+    "id": "S1-RESTRAINT-001",
+    "category": "bounded-restraint",
+    "prompt": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything.",
+    "successConditions": [
+      "Answer from fact.txt.",
+      "Use one sentence.",
+      "Do not edit the workspace.",
+      "Stop once the bounded request is answered."
+    ],
+    "verificationProtocol": [
+      "Require byte-identical workspace before/after.",
+      "Preserve complete model/tool trace to reveal unnecessary ceremony.",
+      "Do not auto-score prose; human review considers correctness, directness and friction."
+    ],
+    "reviewFocus": [
+      "prompt apprehension",
+      "tool/action selection",
+      "difference and recovery",
+      "closure/stopping",
+      "final intent fulfilment",
+      "unnecessary friction",
+      "bounded directness",
+      "minimal tool use",
+      "anti-ceremony"
+    ]
+  },
+  "benchmark_revision": "series1-round5-accept-2026-09-17",
+  "host": {
+    "id": "rust-native-acceptance",
+    "revision": "9f8e3e2"
+  },
+  "determination": "pending-human-review",
+  "provider_mode": "supplied-body",
+  "fixture_provider": false,
+  "records": [
+    {
+      "condition": "ql-lens",
+      "repetition": 0,
+      "ordinal": 0,
+      "trace_ref": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+      "status": "completed",
+      "error": null,
+      "prompt": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything.",
+      "success_conditions": [
+        "Answer from fact.txt.",
+        "Use one sentence.",
+        "Do not edit the workspace.",
+        "Stop once the bounded request is answered."
+      ],
+      "starting_workspace": {
+        "fact.txt": "Preferred review format: Markdown with concise prose and code blocks only when needed.\n"
+      },
+      "final_workspace": {
+        "fact.txt": "Preferred review format: Markdown with concise prose and code blocks only when needed.\n"
+      },
+      "verification": {
+        "protocol": "workspace-preservation-and-human-restraint-review",
+        "observations": {
+          "workspaceUnchanged": true
+        },
+        "objective_checks_pass": true
+      },
+      "outcome": {
+        "report": {
+          "status": "completed",
+          "runtime": "ql-lens",
+          "runtimeVersion": "0.1.0-lens",
+          "trace_ref": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+          "iterations": 3,
+          "model_calls": 3,
+          "capability_calls": 1,
+          "lens_calls": 0,
+          "outcome": "According to fact.txt, the preferred review format is Markdown with concise prose, using code blocks only when needed. The file was read only; nothing was edited.",
+          "error": null,
+          "history": [
+            {
+              "role": "user",
+              "content": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything."
+            },
+            {
+              "role": "assistant",
+              "content": "I'll read `fact.txt` to find the preferred review format — without modifying anything.",
+              "capabilityCalls": [
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "fact.txt"
+                  },
+                  "id": null
+                }
+              ],
+              "control": null,
+              "usage": {
+                "input_tokens": 649,
+                "output_tokens": 92,
+                "total_tokens": 741
+              },
+              "raw": {
+                "id": "202609201155051d9a38aa055f40da",
+                "model": "glm-5.3-flash",
+                "finish_reason": "stop",
+                "adapter_attempts": 1
+              },
+              "repairs": 0
+            },
+            {
+              "role": "capability",
+              "name": "read_file",
+              "result": "Preferred review format: Markdown with concise prose and code blocks only when needed.\n"
+            },
+            {
+              "role": "assistant",
+              "content": "According to `fact.txt`, the preferred review format is Markdown with concise prose, using code blocks only when needed.",
+              "capabilityCalls": [],
+              "control": null,
+              "usage": {
+                "input_tokens": 908,
+                "output_tokens": 103,
+                "total_tokens": 1011
+              },
+              "raw": {
+                "id": "2026092011553965750a9ae4434dd7",
+                "model": "glm-5.3-flash",
+                "finish_reason": "stop",
+                "adapter_attempts": 2
+              },
+              "repairs": 1,
+              "failed_attempts": [
+                {
+                  "error": "model specimen returned invalid JSON"
+                }
+              ]
+            },
+            {
+              "role": "user",
+              "content": "The work cannot end with content alone. When the bounded request is realised, run the close tool with {\"synthesis\": ...}; otherwise continue with the tools."
+            },
+            {
+              "role": "assistant",
+              "content": "The bounded request is realised: `fact.txt` was read without modification, and the preferred review format was answered in one sentence. Closing the work.",
+              "capabilityCalls": [
+                {
+                  "name": "close",
+                  "args": {
+                    "synthesis": "According to fact.txt, the preferred review format is Markdown with concise prose, using code blocks only when needed. The file was read only; nothing was edited."
+                  },
+                  "id": null
+                }
+              ],
+              "control": null,
+              "usage": {
+                "input_tokens": 1093,
+                "output_tokens": 171,
+                "total_tokens": 1264
+              },
+              "raw": {
+                "id": "20260920115543a090982a9fdb47fb",
+                "model": "glm-5.3-flash",
+                "finish_reason": "stop",
+                "adapter_attempts": 1
+              },
+              "repairs": 0
+            }
+          ],
+          "circuits": [
+            {
+              "id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0",
+              "face": "direct",
+              "active_position": 5,
+              "closure_state": "closed",
+              "residues": [
+                {
+                  "id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0:res:frame",
+                  "position": 0,
+                  "kind": "frame",
+                  "value": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything.",
+                  "invalidated": false
+                },
+                {
+                  "id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0:res:1",
+                  "position": 1,
+                  "kind": "material",
+                  "value": "Preferred review format: Markdown with concise prose and code blocks only when needed.\n",
+                  "invalidated": false
+                },
+                {
+                  "id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0:res:2",
+                  "position": 5,
+                  "kind": "determination",
+                  "value": {
+                    "synthesis": "According to fact.txt, the preferred review format is Markdown with concise prose, using code blocks only when needed. The file was read only; nothing was edited.",
+                    "requested_outcome": "close",
+                    "via": "close tool"
+                  },
+                  "invalidated": false
+                }
+              ],
+              "trajectory": [
+                {
+                  "from": 0,
+                  "to": 1,
+                  "by": "read_file"
+                },
+                {
+                  "from": 1,
+                  "to": 5,
+                  "by": "close"
+                }
+              ]
+            }
+          ],
+          "closure": {
+            "success_state": "true",
+            "inspection": {
+              "objective_checks_pass": true
+            },
+            "refusal": null,
+            "closed_at_position": 5
+          },
+          "determination": {
+            "synthesis": "According to fact.txt, the preferred review format is Markdown with concise prose, using code blocks only when needed. The file was read only; nothing was edited.",
+            "requested_outcome": "close",
+            "via": "close tool"
+          },
+          "paradigm": "toolset"
+        },
+        "evidence_refs": [
+          "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:0",
+          "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:1",
+          "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:2",
+          "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:3",
+          "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:4",
+          "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:5",
+          "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:6",
+          "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:7",
+          "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:8"
+        ]
+      },
+      "model": {
+        "provider": "zai",
+        "model": "glm-5.3-flash"
+      },
+      "fixture_provider": false,
+      "provider_mode": "supplied-body",
+      "host": {
+        "id": "rust-native-acceptance",
+        "revision": "9f8e3e2"
+      },
+      "host_revision": "9f8e3e2",
+      "host_composition_fingerprint": null,
+      "benchmark_revision": "series1-round5-accept-2026-09-17",
+      "task_revision": "8d81c9134f127a9ad1336652f9f169f938c67bbf2c71fc96b604208b94317a17",
+      "runner_revision": "actuation-research-0.2.0",
+      "review_contract_revision": "ql-series1-run/0.3",
+      "prompt_digest": "7e6c2438e17068df8465e54909b4b69bdbc9325aa9b64da66ba985c1ded7dff8",
+      "success_constraints_digest": "cd569eba875c73ead2be46ddb238982e1324e1e06e350f327c9b3c364e741de5",
+      "start_state_digest": "8cfe9770cc678331b29991a65d99128b8ddadf53fec4f992d58bc5c7f274ea59",
+      "capability_contract_digest": "1bca74b9082ea7490979012b56118c65892b6d9107719a1ed72e626ca3c5b864",
+      "verification_protocol_digest": "4fc4c47ffd4986f4901d1ce763ed795664bf52892cdb488764844d016e98791a",
+      "execution_budget_digest": "558d872ad8c951c6a6eea5e9f1b98b983e483366ad8001527c841057cf63bbba",
+      "network_policy_digest": "outbound-https-zai-only",
+      "elapsed_ms": 42329,
+      "model_calls": 3,
+      "capability_calls": 1,
+      "total_tokens": 3016,
+      "usage_partial": false,
+      "receipt_path": "trial-000-ql-lens/receipt.json",
+      "record": {
+        "result": {
+          "schema": "actuation.research-run/v1",
+          "runtime": "ql-lens",
+          "status": "completed",
+          "task": {
+            "id": "S1-RESTRAINT-001",
+            "category": "bounded-restraint",
+            "prompt": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything.",
+            "successConditions": [
+              "Answer from fact.txt.",
+              "Use one sentence.",
+              "Do not edit the workspace.",
+              "Stop once the bounded request is answered."
+            ],
+            "verificationProtocol": [
+              "Require byte-identical workspace before/after.",
+              "Preserve complete model/tool trace to reveal unnecessary ceremony.",
+              "Do not auto-score prose; human review considers correctness, directness and friction."
+            ],
+            "reviewFocus": [
+              "prompt apprehension",
+              "tool/action selection",
+              "difference and recovery",
+              "closure/stopping",
+              "final intent fulfilment",
+              "unnecessary friction",
+              "bounded directness",
+              "minimal tool use",
+              "anti-ceremony"
+            ]
+          },
+          "task_revision": "8d81c9134f127a9ad1336652f9f169f938c67bbf2c71fc96b604208b94317a17",
+          "trace_ref": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+          "model_body": {
+            "source": {
+              "program": "/Users/admin/.cache/actuation/body-tee.mjs",
+              "adapter": "one-shot-json/glm-body.mjs",
+              "provider": "zai",
+              "model": "glm-5.3-flash"
+            },
+            "fixture_provider": false,
+            "provider_mode": "supplied-body",
+            "turn_repairs": {
+              "malformed_reask_max": 2,
+              "empty_act_reask": true
+            }
+          },
+          "workspace": {
+            "before": {
+              "fact.txt": "Preferred review format: Markdown with concise prose and code blocks only when needed.\n"
+            },
+            "after": {
+              "fact.txt": "Preferred review format: Markdown with concise prose and code blocks only when needed.\n"
+            }
+          },
+          "execution": {
+            "report": {
+              "status": "completed",
+              "runtime": "ql-lens",
+              "runtimeVersion": "0.1.0-lens",
+              "trace_ref": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+              "iterations": 3,
+              "model_calls": 3,
+              "capability_calls": 1,
+              "lens_calls": 0,
+              "outcome": "According to fact.txt, the preferred review format is Markdown with concise prose, using code blocks only when needed. The file was read only; nothing was edited.",
+              "error": null,
+              "history": [
+                {
+                  "role": "user",
+                  "content": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything."
+                },
+                {
+                  "role": "assistant",
+                  "content": "I'll read `fact.txt` to find the preferred review format — without modifying anything.",
+                  "capabilityCalls": [
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "fact.txt"
+                      },
+                      "id": null
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 649,
+                    "output_tokens": 92,
+                    "total_tokens": 741
+                  },
+                  "raw": {
+                    "id": "202609201155051d9a38aa055f40da",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 1
+                  },
+                  "repairs": 0
+                },
+                {
+                  "role": "capability",
+                  "name": "read_file",
+                  "result": "Preferred review format: Markdown with concise prose and code blocks only when needed.\n"
+                },
+                {
+                  "role": "assistant",
+                  "content": "According to `fact.txt`, the preferred review format is Markdown with concise prose, using code blocks only when needed.",
+                  "capabilityCalls": [],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 908,
+                    "output_tokens": 103,
+                    "total_tokens": 1011
+                  },
+                  "raw": {
+                    "id": "2026092011553965750a9ae4434dd7",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 2
+                  },
+                  "repairs": 1,
+                  "failed_attempts": [
+                    {
+                      "error": "model specimen returned invalid JSON"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "The work cannot end with content alone. When the bounded request is realised, run the close tool with {\"synthesis\": ...}; otherwise continue with the tools."
+                },
+                {
+                  "role": "assistant",
+                  "content": "The bounded request is realised: `fact.txt` was read without modification, and the preferred review format was answered in one sentence. Closing the work.",
+                  "capabilityCalls": [
+                    {
+                      "name": "close",
+                      "args": {
+                        "synthesis": "According to fact.txt, the preferred review format is Markdown with concise prose, using code blocks only when needed. The file was read only; nothing was edited."
+                      },
+                      "id": null
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 1093,
+                    "output_tokens": 171,
+                    "total_tokens": 1264
+                  },
+                  "raw": {
+                    "id": "20260920115543a090982a9fdb47fb",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 1
+                  },
+                  "repairs": 0
+                }
+              ],
+              "circuits": [
+                {
+                  "id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0",
+                  "face": "direct",
+                  "active_position": 5,
+                  "closure_state": "closed",
+                  "residues": [
+                    {
+                      "id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0:res:frame",
+                      "position": 0,
+                      "kind": "frame",
+                      "value": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything.",
+                      "invalidated": false
+                    },
+                    {
+                      "id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0:res:1",
+                      "position": 1,
+                      "kind": "material",
+                      "value": "Preferred review format: Markdown with concise prose and code blocks only when needed.\n",
+                      "invalidated": false
+                    },
+                    {
+                      "id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0:res:2",
+                      "position": 5,
+                      "kind": "determination",
+                      "value": {
+                        "synthesis": "According to fact.txt, the preferred review format is Markdown with concise prose, using code blocks only when needed. The file was read only; nothing was edited.",
+                        "requested_outcome": "close",
+                        "via": "close tool"
+                      },
+                      "invalidated": false
+                    }
+                  ],
+                  "trajectory": [
+                    {
+                      "from": 0,
+                      "to": 1,
+                      "by": "read_file"
+                    },
+                    {
+                      "from": 1,
+                      "to": 5,
+                      "by": "close"
+                    }
+                  ]
+                }
+              ],
+              "closure": {
+                "success_state": "true",
+                "inspection": {
+                  "objective_checks_pass": true
+                },
+                "refusal": null,
+                "closed_at_position": 5
+              },
+              "determination": {
+                "synthesis": "According to fact.txt, the preferred review format is Markdown with concise prose, using code blocks only when needed. The file was read only; nothing was edited.",
+                "requested_outcome": "close",
+                "via": "close tool"
+              },
+              "paradigm": "toolset"
+            },
+            "evidence_refs": [
+              "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:0",
+              "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:1",
+              "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:2",
+              "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:3",
+              "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:4",
+              "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:5",
+              "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:6",
+              "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:7",
+              "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:8"
+            ]
+          },
+          "body_evidence": {
+            "status": "not-applicable",
+            "session_evidence": null
+          },
+          "observations": [
+            {
+              "event_type": "model_requested",
+              "value": {
+                "request": {
+                  "id": "S1-RESTRAINT-001",
+                  "taskId": "S1-RESTRAINT-001",
+                  "runId": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+                  "input": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything.",
+                  "successConditions": [
+                    "Answer from fact.txt.",
+                    "Use one sentence.",
+                    "Do not edit the workspace.",
+                    "Stop once the bounded request is answered."
+                  ],
+                  "maxSteps": 64
+                },
+                "payload": {
+                  "history": [
+                    {
+                      "role": "user",
+                      "content": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything."
+                    }
+                  ],
+                  "iteration": 1
+                },
+                "capabilities": [
+                  {
+                    "name": "list_files",
+                    "description": "See what the workspace holds. This takes in the field as given material (P1); what comes back reads as discovery (P1')."
+                  },
+                  {
+                    "name": "read_file",
+                    "description": "Read one file's content into the work as material and evidence (P1). What comes back reads as the given (P1')."
+                  },
+                  {
+                    "name": "write_file",
+                    "description": "Transform the ground: create or change one file (P2). What comes back reads as the effect made (P2')."
+                  },
+                  {
+                    "name": "run_tests",
+                    "description": "Evaluate the built form against the whole: run the workspace test suite (P4). What comes back reads as whole-relative evaluation (P4')."
+                  },
+                  {
+                    "name": "situate",
+                    "description": "The return reading: state where the work now stands. Positions: P0 frame, P1 material, P2 effect, P3 form, P4 evaluation, P5 determination; a prime marks the return reading of a position (P1'). Args: {\"position\": \"P2\"}."
+                  },
+                  {
+                    "name": "close",
+                    "description": "The return condition: when the bounded request is realised, close the work at determination (P5); what passes reads as the return (P5'). Args: {\"synthesis\": string} — what is actually realised, in plain text. The workspace checks run on close."
+                  },
+                  {
+                    "name": "lens_reading",
+                    "description": "A lens reading of a subject you name: how that subject reads through twelve lenses right now, returned as a distribution with the strongest lens named. The reading is taken fresh on each call; it is a reading of the subject, never an identity assigned to it. Args: {\"subject\": string} — name the subject concretely (the task, a decision, a file, the work as it stands)."
+                  }
+                ]
+              }
+            },
+            {
+              "event_type": "model_returned",
+              "value": {
+                "ok": true,
+                "result": {
+                  "content": "I'll read `fact.txt` to find the preferred review format — without modifying anything.",
+                  "capabilityCalls": [
+                    {
+                      "name": "read_file",
+                      "args": {
+                        "path": "fact.txt"
+                      },
+                      "id": null
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 649,
+                    "output_tokens": 92,
+                    "total_tokens": 741
+                  },
+                  "raw": {
+                    "id": "202609201155051d9a38aa055f40da",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 1
+                  },
+                  "repairs": 0
+                }
+              }
+            },
+            {
+              "event_type": "capability_requested",
+              "value": {
+                "name": "read_file",
+                "args": {
+                  "path": "fact.txt"
+                }
+              }
+            },
+            {
+              "event_type": "capability_returned",
+              "value": {
+                "name": "read_file",
+                "ok": true,
+                "result": "Preferred review format: Markdown with concise prose and code blocks only when needed.\n"
+              }
+            },
+            {
+              "event_type": "model_requested",
+              "value": {
+                "request": {
+                  "id": "S1-RESTRAINT-001",
+                  "taskId": "S1-RESTRAINT-001",
+                  "runId": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+                  "input": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything.",
+                  "successConditions": [
+                    "Answer from fact.txt.",
+                    "Use one sentence.",
+                    "Do not edit the workspace.",
+                    "Stop once the bounded request is answered."
+                  ],
+                  "maxSteps": 64
+                },
+                "payload": {
+                  "history": [
+                    {
+                      "role": "user",
+                      "content": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything."
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "I'll read `fact.txt` to find the preferred review format — without modifying anything.",
+                      "capabilityCalls": [
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "fact.txt"
+                          },
+                          "id": null
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 649,
+                        "output_tokens": 92,
+                        "total_tokens": 741
+                      },
+                      "raw": {
+                        "id": "202609201155051d9a38aa055f40da",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "name": "read_file",
+                      "result": "Preferred review format: Markdown with concise prose and code blocks only when needed.\n"
+                    }
+                  ],
+                  "iteration": 2
+                },
+                "capabilities": [
+                  {
+                    "name": "list_files",
+                    "description": "See what the workspace holds. This takes in the field as given material (P1); what comes back reads as discovery (P1')."
+                  },
+                  {
+                    "name": "read_file",
+                    "description": "Read one file's content into the work as material and evidence (P1). What comes back reads as the given (P1')."
+                  },
+                  {
+                    "name": "write_file",
+                    "description": "Transform the ground: create or change one file (P2). What comes back reads as the effect made (P2')."
+                  },
+                  {
+                    "name": "run_tests",
+                    "description": "Evaluate the built form against the whole: run the workspace test suite (P4). What comes back reads as whole-relative evaluation (P4')."
+                  },
+                  {
+                    "name": "situate",
+                    "description": "The return reading: state where the work now stands. Positions: P0 frame, P1 material, P2 effect, P3 form, P4 evaluation, P5 determination; a prime marks the return reading of a position (P1'). Args: {\"position\": \"P2\"}."
+                  },
+                  {
+                    "name": "close",
+                    "description": "The return condition: when the bounded request is realised, close the work at determination (P5); what passes reads as the return (P5'). Args: {\"synthesis\": string} — what is actually realised, in plain text. The workspace checks run on close."
+                  },
+                  {
+                    "name": "lens_reading",
+                    "description": "A lens reading of a subject you name: how that subject reads through twelve lenses right now, returned as a distribution with the strongest lens named. The reading is taken fresh on each call; it is a reading of the subject, never an identity assigned to it. Args: {\"subject\": string} — name the subject concretely (the task, a decision, a file, the work as it stands)."
+                  }
+                ]
+              }
+            },
+            {
+              "event_type": "model_returned",
+              "value": {
+                "ok": true,
+                "result": {
+                  "content": "According to `fact.txt`, the preferred review format is Markdown with concise prose, using code blocks only when needed.",
+                  "capabilityCalls": [],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 908,
+                    "output_tokens": 103,
+                    "total_tokens": 1011
+                  },
+                  "raw": {
+                    "id": "2026092011553965750a9ae4434dd7",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 2
+                  },
+                  "repairs": 1,
+                  "failed_attempts": [
+                    {
+                      "error": "model specimen returned invalid JSON"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "event_type": "model_requested",
+              "value": {
+                "request": {
+                  "id": "S1-RESTRAINT-001",
+                  "taskId": "S1-RESTRAINT-001",
+                  "runId": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+                  "input": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything.",
+                  "successConditions": [
+                    "Answer from fact.txt.",
+                    "Use one sentence.",
+                    "Do not edit the workspace.",
+                    "Stop once the bounded request is answered."
+                  ],
+                  "maxSteps": 64
+                },
+                "payload": {
+                  "history": [
+                    {
+                      "role": "user",
+                      "content": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything."
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "I'll read `fact.txt` to find the preferred review format — without modifying anything.",
+                      "capabilityCalls": [
+                        {
+                          "name": "read_file",
+                          "args": {
+                            "path": "fact.txt"
+                          },
+                          "id": null
+                        }
+                      ],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 649,
+                        "output_tokens": 92,
+                        "total_tokens": 741
+                      },
+                      "raw": {
+                        "id": "202609201155051d9a38aa055f40da",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 1
+                      },
+                      "repairs": 0
+                    },
+                    {
+                      "role": "capability",
+                      "name": "read_file",
+                      "result": "Preferred review format: Markdown with concise prose and code blocks only when needed.\n"
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "According to `fact.txt`, the preferred review format is Markdown with concise prose, using code blocks only when needed.",
+                      "capabilityCalls": [],
+                      "control": null,
+                      "usage": {
+                        "input_tokens": 908,
+                        "output_tokens": 103,
+                        "total_tokens": 1011
+                      },
+                      "raw": {
+                        "id": "2026092011553965750a9ae4434dd7",
+                        "model": "glm-5.3-flash",
+                        "finish_reason": "stop",
+                        "adapter_attempts": 2
+                      },
+                      "repairs": 1,
+                      "failed_attempts": [
+                        {
+                          "error": "model specimen returned invalid JSON"
+                        }
+                      ]
+                    },
+                    {
+                      "role": "user",
+                      "content": "The work cannot end with content alone. When the bounded request is realised, run the close tool with {\"synthesis\": ...}; otherwise continue with the tools."
+                    }
+                  ],
+                  "iteration": 3
+                },
+                "capabilities": [
+                  {
+                    "name": "list_files",
+                    "description": "See what the workspace holds. This takes in the field as given material (P1); what comes back reads as discovery (P1')."
+                  },
+                  {
+                    "name": "read_file",
+                    "description": "Read one file's content into the work as material and evidence (P1). What comes back reads as the given (P1')."
+                  },
+                  {
+                    "name": "write_file",
+                    "description": "Transform the ground: create or change one file (P2). What comes back reads as the effect made (P2')."
+                  },
+                  {
+                    "name": "run_tests",
+                    "description": "Evaluate the built form against the whole: run the workspace test suite (P4). What comes back reads as whole-relative evaluation (P4')."
+                  },
+                  {
+                    "name": "situate",
+                    "description": "The return reading: state where the work now stands. Positions: P0 frame, P1 material, P2 effect, P3 form, P4 evaluation, P5 determination; a prime marks the return reading of a position (P1'). Args: {\"position\": \"P2\"}."
+                  },
+                  {
+                    "name": "close",
+                    "description": "The return condition: when the bounded request is realised, close the work at determination (P5); what passes reads as the return (P5'). Args: {\"synthesis\": string} — what is actually realised, in plain text. The workspace checks run on close."
+                  },
+                  {
+                    "name": "lens_reading",
+                    "description": "A lens reading of a subject you name: how that subject reads through twelve lenses right now, returned as a distribution with the strongest lens named. The reading is taken fresh on each call; it is a reading of the subject, never an identity assigned to it. Args: {\"subject\": string} — name the subject concretely (the task, a decision, a file, the work as it stands)."
+                  }
+                ]
+              }
+            },
+            {
+              "event_type": "model_returned",
+              "value": {
+                "ok": true,
+                "result": {
+                  "content": "The bounded request is realised: `fact.txt` was read without modification, and the preferred review format was answered in one sentence. Closing the work.",
+                  "capabilityCalls": [
+                    {
+                      "name": "close",
+                      "args": {
+                        "synthesis": "According to fact.txt, the preferred review format is Markdown with concise prose, using code blocks only when needed. The file was read only; nothing was edited."
+                      },
+                      "id": null
+                    }
+                  ],
+                  "control": null,
+                  "usage": {
+                    "input_tokens": 1093,
+                    "output_tokens": 171,
+                    "total_tokens": 1264
+                  },
+                  "raw": {
+                    "id": "20260920115543a090982a9fdb47fb",
+                    "model": "glm-5.3-flash",
+                    "finish_reason": "stop",
+                    "adapter_attempts": 1
+                  },
+                  "repairs": 0
+                }
+              }
+            }
+          ],
+          "verification": {
+            "protocol": "workspace-preservation-and-human-restraint-review",
+            "observations": {
+              "workspaceUnchanged": true
+            },
+            "objective_checks_pass": true
+          },
+          "model_calls": 3,
+          "capability_calls": 1,
+          "elapsed_ms": 42050,
+          "budget": {
+            "limits": {
+              "max_steps": 64,
+              "max_depth": 2,
+              "max_contexts": 32,
+              "max_trace_bytes": 67108864,
+              "max_reentries": 0
+            },
+            "max_calls": 64
+          },
+          "evidence_standing": "D-unless-separately-exercised-and-attested",
+          "provider_evidence": "not-assessed",
+          "human_acceptance": false,
+          "factory_ancestry": "not-supplied"
+        },
+        "events": [
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:0",
+            "event_type": "run_started",
+            "run_id": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+            "sequence": 0,
+            "runtime": "ql-lens",
+            "payload": {
+              "task_id": "S1-RESTRAINT-001",
+              "paradigm": "toolset",
+              "circuit_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:1",
+            "event_type": "circuit_started",
+            "run_id": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+            "sequence": 1,
+            "runtime": "ql-lens",
+            "payload": {
+              "frame": "According to `fact.txt`, what is the preferred review format? Answer in one sentence. Do not edit anything.",
+              "active_position": 0,
+              "circuit_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:2",
+            "event_type": "act_created",
+            "run_id": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+            "sequence": 2,
+            "runtime": "ql-lens",
+            "payload": {
+              "act_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0:act:1",
+              "carrier": "model",
+              "capability_calls": [
+                {
+                  "name": "read_file",
+                  "args": {
+                    "path": "fact.txt"
+                  },
+                  "id": null
+                }
+              ],
+              "circuit_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:3",
+            "event_type": "return_interpreted",
+            "run_id": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+            "sequence": 3,
+            "runtime": "ql-lens",
+            "payload": {
+              "by": "tool office law",
+              "tool": "read_file",
+              "position": 1,
+              "circuit_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:4",
+            "event_type": "act_created",
+            "run_id": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+            "sequence": 4,
+            "runtime": "ql-lens",
+            "payload": {
+              "act_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0:act:2",
+              "carrier": "model",
+              "capability_calls": [],
+              "circuit_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:5",
+            "event_type": "act_created",
+            "run_id": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+            "sequence": 5,
+            "runtime": "ql-lens",
+            "payload": {
+              "act_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0:act:3",
+              "carrier": "model",
+              "capability_calls": [
+                {
+                  "name": "close",
+                  "args": {
+                    "synthesis": "According to fact.txt, the preferred review format is Markdown with concise prose, using code blocks only when needed. The file was read only; nothing was edited."
+                  },
+                  "id": null
+                }
+              ],
+              "circuit_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:6",
+            "event_type": "determination_proposed",
+            "run_id": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+            "sequence": 6,
+            "runtime": "ql-lens",
+            "payload": {
+              "determination": {
+                "synthesis": "According to fact.txt, the preferred review format is Markdown with concise prose, using code blocks only when needed. The file was read only; nothing was edited.",
+                "requested_outcome": "close",
+                "via": "close tool"
+              },
+              "circuit_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:7",
+            "event_type": "circuit_closed",
+            "run_id": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+            "sequence": 7,
+            "runtime": "ql-lens",
+            "payload": {
+              "closed_at_position": 5,
+              "circuit_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0"
+            }
+          },
+          {
+            "channel": "runtime-semantic",
+            "event_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:toolset:8",
+            "event_type": "run_completed",
+            "run_id": "trace:actuation:round5accept:s1-restraint-001:trial:0",
+            "sequence": 8,
+            "runtime": "ql-lens",
+            "payload": {
+              "outcome": "According to fact.txt, the preferred review format is Markdown with concise prose, using code blocks only when needed. The file was read only; nothing was edited.",
+              "circuit_id": "trace:actuation:round5accept:s1-restraint-001:trial:0:c0"
+            }
+          }
+        ],
+        "durable_stream": false
+      },
+      "human_acceptance": false,
+      "provider_evidence": "not-assessed"
+    }
+  ],
+  "held_constants": {
+    "prompt": true,
+    "success_constraints": true,
+    "start_state": true,
+    "model": true,
+    "capabilities": true,
+    "verification": true,
+    "budget": true,
+    "host_revision": true,
+    "host_composition": true,
+    "network_policy": true,
+    "benchmark_revision": true,
+    "task_revision": true,
+    "runner_revision": true,
+    "review_contract_revision": true,
+    "valid": true,
+    "mismatches": []
+  },
+  "provider_evidence": "not-assessed",
+  "human_acceptance": false
+}

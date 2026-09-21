@@ -1,0 +1,284 @@
+{
+  "schema": "actuation.jev-question-catalogue/v1",
+  "created": "2026-09-17",
+  "scope": "Jev for QL and MEF lensing/classification, plus typed refereeing of the loop's decision points. The M-coordinate census work is deliberately out of scope (owner scoping 2026-09-17).",
+  "model_ref": "jev-latest",
+  "access": "TypeSafe System One API — POST https://api.typesafe.ai/v1/systemone, Bearer TYPESAFE_API_KEY. Question primitives: noul (probability of yes), choice (one of a defined set + distribution), score (probability-weighted position on ordered levels). The Vercel AI Gateway path (typesafe-ai/jev via AI SDK experimental_evaluate) is an alternative route; this catalogue is written against the direct API, where the gateway's boolean maps to noul.",
+  "integration_law": "From the vendored TypeSafe skill (jev/skill/typesafe-ai, rev 65a39f3): code owns the workflow — known rules, exact lookups, execution and thresholds stay in Rust; the model supplies programmable common sense. In this programme the pairing is: the LLM owns semantics (generation, reflection); Jev owns typed classification across QL positions and MEF lenses and referees the loop's decision points.",
+  "instrument_standing": {
+    "reading_class": "semantic-stochastic",
+    "promotion": "none",
+    "law": "answers are instrument readings, never the run determination; determination remains pending-human-review"
+  },
+  "families": {
+    "ql-mef-lensing": {
+      "experiment": "E-MT-1",
+      "purpose": "typed classification across QL positions and MEF lenses",
+      "questions": [
+        {
+          "id": "ql-position",
+          "type": "choice",
+          "options": [
+            "P0",
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+            "P5"
+          ],
+          "masked_field": "ql act source_position",
+          "instructions": "Which position's responsibility does this act belong to in a QL-native agent recurrence? Positions are responsibilities, not chronological stages.",
+          "criteria": {
+            "P0": "initiating intent and operative frame",
+            "P1": "material, evidence and givens",
+            "P2": "effect, operation and transformation",
+            "P3": "form, pattern and implementation",
+            "P4": "whole-relative evaluation, context and adequacy",
+            "P5": "candidate determination and synthesis"
+          },
+          "truth_standing": "loop-recorded position state from the retained ql-condition runs; not human-verified"
+        },
+        {
+          "id": "mef-lens-refraction",
+          "type": "choice",
+          "options": [
+            "L0",
+            "L0'",
+            "L1",
+            "L1'",
+            "L2",
+            "L2'",
+            "L3",
+            "L3'",
+            "L4",
+            "L4'",
+            "L5",
+            "L5'"
+          ],
+          "instructions": "Through which MEF lens is this subject most coherently read? The lens is a reading taken now, never an identity assigned to the subject: subject identity is not lens identity.",
+          "criteria": {
+            "L0": "Quaternal — why/what/how questioning articulation",
+            "L0'": "Archetypal-Numerical — one through six as archetypal number",
+            "L1": "Causal — svatantrya, material/efficient/formal/final cause, will",
+            "L1'": "Phenomenal — introversion, sensation, feeling, thinking, intuition, extroversion",
+            "L2": "Logical — tetralemmaic ground: IS, IS-NOT, BOTH, NEITHER, SILENCE",
+            "L2'": "Alchemical-Elemental — elemental correspondence articulation",
+            "L3": "Processual — concrescent desire, actual occasion (Whitehead)",
+            "L3'": "Chronological — Spirit (Geist), seasons, life (Aufhebung)",
+            "L4": "Phenomenological — Sein, Geworfenheit, Dasein, Zeit, Besorge, Gelassenheit",
+            "L4'": "Scientific — prompts, traces, challenges, patterns, discovery, insight",
+            "L5": "Para Vāk — anuttara/asambhava, para vāk, paśyantī, madhyamā, vaikharī, mātṛkā",
+            "L5'": "Divine Logos — arche, apokalypsis, dynamis and the logological articulation"
+          },
+          "truth_standing": "none — instrument reading, research standing; the retained runs carry the runtime's standing refraction pair L1+L4', so the harness reports Jev's mass on that pair as agreement-of-readings, not accuracy"
+        },
+        {
+          "id": "reading-coherence",
+          "type": "score",
+          "instructions": "How coherently does the proposed lens reading refract this subject, judged only from the subject's declared content and the lens's own articulation?",
+          "criteria": [
+            "incoherent: the reading contradicts the subject's declared content",
+            "loose: the reading shares vocabulary but not structure",
+            "coherent: the reading discloses structure the subject's content supports",
+            "strong: the reading discloses structure and names what the content leaves implicit"
+          ]
+        }
+      ]
+    },
+    "loop-refereeing": {
+      "experiment": "E-MT-2",
+      "purpose": "typed answers at the QL loop's model-facing decision points, replayed from retained run records",
+      "state_shapes": {
+        "decision_context": {
+          "run_id": "string",
+          "task_id": "string",
+          "circuit_id": "string",
+          "active_position": "P0..P5",
+          "mode": "ql-direct|ql-deep",
+          "allowance_state": "record of per-position budgets and spends",
+          "stipulations": "array of {id, kind, statement}",
+          "success_conditions": "array of strings",
+          "recent_transcript_digest": "sha256 over the recent event window (events themselves may be included bounded)",
+          "provenance": "pointer into the retained run record (file + record index)"
+        }
+      },
+      "decision_points": [
+        {
+          "rust_point": "crates/actuation-research/src/policy.rs ql-next-act",
+          "questions": [
+            {
+              "id": "next-carrier",
+              "type": "choice",
+              "options": [
+                "model",
+                "capability",
+                "internal_control"
+              ],
+              "instructions": "Which carrier kind should the next exterior act use? internal_control is only a closure request.",
+              "criteria": {
+                "model": "the act is an act of judgement or language",
+                "capability": "the act is an exterior effect on the workspace through a named capability",
+                "internal_control": "the realisable intent is already achieved and no exterior act remains"
+              }
+            },
+            {
+              "id": "intent-already-achieved",
+              "type": "noul",
+              "instructions": "Is the realisable intent of the circuit already achieved relative to the success conditions? Answer yes only if the realised state satisfies them."
+            },
+            {
+              "id": "act-adequacy",
+              "type": "score",
+              "criteria": [
+                "inadequate: the act does not serve the active position's responsibility",
+                "partial: it serves the position but leaves the evidence chain broken",
+                "adequate: it serves the position and is checkable against success conditions",
+                "excellent: it serves the position, is checkable, and closes distance without repetition"
+              ]
+            }
+          ]
+        },
+        {
+          "rust_point": "crates/actuation-research/src/policy.rs ql-propose-determination",
+          "questions": [
+            {
+              "id": "requested-outcome",
+              "type": "choice",
+              "options": [
+                "close",
+                "reopen"
+              ],
+              "instructions": "Should the circuit close on this determination, or reopen?",
+              "criteria": {
+                "close": "the realised state satisfies the success conditions with verifiable evidence",
+                "reopen": "a condition remains unrealisable or unverified"
+              }
+            },
+            {
+              "id": "claimed-adequacy",
+              "type": "choice",
+              "options": [
+                "adequate",
+                "partial",
+                "inadequate",
+                "unknown"
+              ],
+              "instructions": "How adequate is the realised state relative to the initiating intent?"
+            },
+            {
+              "id": "subject-verifiable",
+              "type": "noul",
+              "instructions": "Is the claimed completion subject exactly the task id and verifiable from measured state (not free text)?"
+            }
+          ]
+        },
+        {
+          "rust_point": "crates/actuation-research/src/policy.rs classify_stipulations",
+          "questions": [
+            {
+              "id": "stipulation-violated",
+              "type": "noul",
+              "per": "stipulation id",
+              "instructions": "Given the observed state, was this stipulation violated? The stipulation's own statement defines what counts as violation; exclusion stipulations forbid the entire class of action including creating new artifacts."
+            }
+          ]
+        },
+        {
+          "rust_point": "crates/actuation-research/src/policy.rs deep-mode depth (P4, deep_operator)",
+          "questions": [
+            {
+              "id": "genuinely-local-whole",
+              "type": "noul",
+              "instructions": "Is there a genuinely local whole — a sub-question whose independent resolution would materially change the evaluation and which is resolvable without the parent's transcript — warranting independent treatment at the lemniscate point?"
+            }
+          ]
+        },
+        {
+          "rust_point": "relational recurrence resolution (resolve_Rij)",
+          "questions": [
+            {
+              "id": "next-position",
+              "type": "choice",
+              "options": [
+                "P0",
+                "P1",
+                "P2",
+                "P3",
+                "P4",
+                "P5"
+              ],
+              "instructions": "Which position's responsibility should the recurrence move to? Positions are responsibilities, not chronological stages: P0 initiating intent and operative frame; P1 material, evidence and givens; P2 effect, operation and transformation; P3 form, pattern and implementation; P4 whole-relative evaluation, context and adequacy; P5 candidate determination and synthesis."
+            }
+          ]
+        }
+      ],
+      "comparison_targets": [
+        "the incumbent LLM's recorded decision (retained Series-1 run records)",
+        "human review when it lands (pending-human-review law unchanged)"
+      ]
+    },
+    "concrescence": {
+      "experiment": "E-MT-CONCRESCENCE",
+      "purpose": "QL-native typed judgement: is the determination (#5) warranted given the frame (#0) and the maturity/balance of the middle types (#1-#4)? The concrescence question — 'given #0, given enough balance and maturity of #1-#4, #5 is/appears to be the case' — held across types, not position-guessing. Validated by a synthetic degradation ladder: gutted circuits must read as less satisfied, or the instrument is invalid before any agreement number counts.",
+      "questions": [
+        {
+          "id": "determination-warranted",
+          "type": "noul",
+          "instructions": "You are given a completed piece of work as a QL whole: the initiating intent (#0), the residues gathered at material/effect/form/evaluation (#1-#4), and a candidate determination (#5). Judge across the types: given #0, and given the balance and maturity of #1-#4 as stated, is #5 warranted — does the whole achieve satisfaction, so that #5 appears to be the case? Answer as probability of yes."
+        },
+        {
+          "id": "middle-maturity",
+          "type": "score",
+          "instructions": "Given the initiating intent (#0) in the state, how mature and balanced are the middle residues (#1 material, #2 effect, #3 form, #4 evaluation) relative to what #0 demands? Score 0-3.",
+          "criteria": [
+            "0 - bare: middle types absent or empty relative to the intent",
+            "1 - thin: some material present but visibly unbalanced or immature",
+            "2 - adequate: the middle types carry the intent forward recognisably",
+            "3 - full: balanced and mature; the whole visibly supports determination"
+          ]
+        },
+        {
+          "id": "closure-appropriate",
+          "type": "choice",
+          "options": [
+            "close",
+            "reopen"
+          ],
+          "instructions": "Given the initiating intent (#0), the middle residues (#1-#4), and the candidate determination (#5) in the state: should this circuit close on this determination, or reopen because the whole is not yet satisfied? This is asked of the whole, not of the loop's bookkeeping."
+        },
+        {
+          "id": "amplify-direction",
+          "type": "choice",
+          "options": [
+            "deepen",
+            "shift-lens",
+            "conclude"
+          ],
+          "instructions": "You are refereeing an amplification loop: a text was written about a subject, and you have classified its lens and adequacy. What should the next round do? deepen = continue developing the same reading; shift-lens = the reading is coherent but exhausted, take a different lens; conclude = the subject is sufficiently amplified for now."
+        },
+        {
+          "id": "syntax-compute-mark",
+          "type": "choice",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "instructions": "You hold the full mark table of the Anuttara syntax: every mark with its coordinate and name. A formulation from one coordinate is given as a computation over the marks. Which candidate mark does this formulation compute to / express? Answer with the candidate letter."
+        },
+        {
+          "id": "syntax-explain-breakdown",
+          "type": "choice",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "instructions": "A formulation is given, with two candidate prose breakdowns. Which breakdown genuinely explains this formulation as its expansion? Answer with the candidate letter."
+        }
+      ]
+    }
+  }
+}

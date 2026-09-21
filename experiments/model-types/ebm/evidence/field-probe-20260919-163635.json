@@ -1,0 +1,142 @@
+{
+  "schema": "actuation.model-types-ebm-field-probe/v1",
+  "created": "2026-09-19T16:36:35+0100",
+  "experiment": "E-MT-EBM-FIELD phase-1 (coordinate-led)",
+  "uri": "bolt://100.92.62.101:7687",
+  "root_filter": null,
+  "graph": {
+    "nodes_total": 2141,
+    "nodes_with_parsed_coordinate": 2131,
+    "nodes_unparseable": 10,
+    "nodes_with_embedding": 1992,
+    "embedding_coverage": 0.935,
+    "edges_total_all_roots": 11774,
+    "edges_scoreable": 11686,
+    "distinct_relation_types_in_scope": 1397,
+    "graph_capture_sha256": "dded775d01034264b032de48d78948760c3a10fe211fed03797b66acdf0a6bf0"
+  },
+  "structural_potential": {
+    "source": "bimba-portable/src/coordinates/parser.ts grammar, mirrored in probe",
+    "weights": {
+      "prefix_or_self": 0.0,
+      "cross_family": 1.5,
+      "other": "1/(1+LCP)"
+    }
+  },
+  "semantic_readout": {
+    "mode": "in-graph-embeddings:embedding"
+  },
+  "corruption_operators": {
+    "endpoint-rewire": "target replaced with a random node of a different coordinate root (type + first segment)",
+    "hard-rewire": "target replaced with a random node of the same coordinate root",
+    "sibling-rewire": "target replaced with a random sibling (same type + parent segments, different final segment)",
+    "direction-reversal": "endpoints swapped: (b, r, a) \u2014 identical unordered pair, direction only"
+  },
+  "results": {
+    "endpoint-rewire": {
+      "n_pairs": 2000,
+      "n_excluded_missing_vector": 449,
+      "separation_auc_real_lower_energy": {
+        "lineage": 0.895880625,
+        "semantic": 0.922784,
+        "combined": 0.93948075
+      },
+      "mean_energy": {
+        "lineage": {
+          "real": 0.3547571428571429,
+          "corrupted": 1.0284583333333333
+        },
+        "semantic": {
+          "real": 0.1799098262537832,
+          "corrupted": 0.2944083841425873
+        },
+        "combined": {
+          "real": 0.534666969110926,
+          "corrupted": 1.3228667174759206
+        }
+      }
+    },
+    "hard-rewire": {
+      "n_pairs": 2000,
+      "n_excluded_missing_vector": 187,
+      "separation_auc_real_lower_energy": {
+        "lineage": 0.652258375,
+        "semantic": 0.7513755,
+        "combined": 0.693636
+      },
+      "mean_energy": {
+        "lineage": {
+          "real": 0.35230119047619046,
+          "corrupted": 0.5062666666666666
+        },
+        "semantic": {
+          "real": 0.18046177692956064,
+          "corrupted": 0.24055617161285753
+        },
+        "combined": {
+          "real": 0.5327629674057511,
+          "corrupted": 0.7468228382795241
+        }
+      }
+    },
+    "sibling-rewire": {
+      "n_pairs": 2000,
+      "n_excluded_missing_vector": 48,
+      "separation_auc_real_lower_energy": {
+        "lineage": 0.51678725,
+        "semantic": 0.5565625,
+        "combined": 0.52748
+      },
+      "mean_energy": {
+        "lineage": {
+          "real": 0.3323940476190476,
+          "corrupted": 0.34909761904761905
+        },
+        "semantic": {
+          "real": 0.17582998460138105,
+          "corrupted": 0.19147931665808873
+        },
+        "combined": {
+          "real": 0.5082240322204287,
+          "corrupted": 0.5405769357057078
+        }
+      }
+    },
+    "direction-reversal": {
+      "n_pairs": 2000,
+      "n_excluded_missing_vector": 197,
+      "separation_auc_real_lower_energy": {
+        "lineage": 0.5,
+        "semantic": 0.5,
+        "combined": 0.5
+      },
+      "mean_energy": {
+        "lineage": {
+          "real": 0.3508595238095238,
+          "corrupted": 0.3508595238095238
+        },
+        "semantic": {
+          "real": 0.18386769901007585,
+          "corrupted": 0.18386769901007585
+        },
+        "combined": {
+          "real": 0.5347272228195996,
+          "corrupted": 0.5347272228195996
+        }
+      }
+    }
+  },
+  "honest_limits": [
+    "structure is taken from the coordinate grammar (operative parser mirror), not from relation-type declarations: the schema-docs vocabulary is out of line with the live graph (zero POSk_* types among the live types) \u2014 owner-confirmed 2026-09-17",
+    "lineage weights (prefix=0, cross-family=1.5, else 1/(1+LCP)) are this probe's declared convention, not owner-declared legality",
+    "separation AUC reads P(real energy < corrupted energy); 0.5 is no separation",
+    "AUC here is not a claim that the field models value or correctness",
+    "direction-reversal negatives share the unordered pair with their real positive, so pair-potentials separate them only through direction-sensitive structure (none is direction-sensitive by construction)",
+    "embedding readout uses in-graph vectors as stored; no re-embedding was performed"
+  ],
+  "runtime_seconds": 14.9,
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "research"
+  }
+}

@@ -1,0 +1,1 @@
+agent/jev-vak-classification-2026-09-18 @ 5c33139 — worktree ~/.cache/actuation/jev-vak-thread retired 2026-09-18 under the single-tree protocol (all experiment work in ~/.cache/actuation/acceptance); commits live on the branch.

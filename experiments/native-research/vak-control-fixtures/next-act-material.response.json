@@ -1,0 +1,256 @@
+{
+  "contract": "ql.vak-composition/v1",
+  "results": [
+    {
+      "op": "whole",
+      "result": {
+        "basis": [
+          {
+            "caller": "actuation:vak-control",
+            "evidence": [
+              "circuit:trace:t1:c0",
+              "trace:trace:t1"
+            ],
+            "revision": "trace:t1",
+            "source": "trace:t1:c0",
+            "standing": "OBSERVED"
+          }
+        ],
+        "binding": {
+          "basisRefs": [
+            "circuit:trace:t1:c0:p0",
+            "circuit:trace:t1:c0:p1",
+            "circuit:trace:t1:c0:p2:vacant",
+            "circuit:trace:t1:c0:p3:vacant",
+            "circuit:trace:t1:c0:p4:vacant",
+            "circuit:trace:t1:c0:p5:vacant"
+          ],
+          "derivationRef": null,
+          "members": [
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 0
+              },
+              "subjectRef": "circuit:trace:t1:c0:p0"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 1
+              },
+              "subjectRef": "circuit:trace:t1:c0:p1"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 2
+              },
+              "subjectRef": "circuit:trace:t1:c0:p2:vacant"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 3
+              },
+              "subjectRef": "circuit:trace:t1:c0:p3:vacant"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 4
+              },
+              "subjectRef": "circuit:trace:t1:c0:p4:vacant"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 5
+              },
+              "subjectRef": "circuit:trace:t1:c0:p5:vacant"
+            }
+          ],
+          "operatorRef": null,
+          "provenance": {
+            "caller": "actuation:vak-control",
+            "source": "trace:t1:c0",
+            "standing": "OBSERVED"
+          },
+          "relations": [],
+          "returnRefs": [
+            "ql:structural:2.0.0:return:through-anchor:own"
+          ],
+          "shapeRef": "ql:shape:1.0.0:constellation:sixfold",
+          "subjectRef": "circuit:trace:t1:c0",
+          "wholeRef": "anchor:circuit:trace:t1:c0"
+        },
+        "body": {
+          "anchorRef": "anchor:circuit:trace:t1:c0",
+          "grain": "sixfold",
+          "kind": "constellation",
+          "members": [
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 0
+              },
+              "subjectRef": "circuit:trace:t1:c0:p0"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 1
+              },
+              "subjectRef": "circuit:trace:t1:c0:p1"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 2
+              },
+              "subjectRef": "circuit:trace:t1:c0:p2:vacant"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 3
+              },
+              "subjectRef": "circuit:trace:t1:c0:p3:vacant"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 4
+              },
+              "subjectRef": "circuit:trace:t1:c0:p4:vacant"
+            },
+            {
+              "coordinate": {
+                "face": "direct",
+                "position": 5
+              },
+              "subjectRef": "circuit:trace:t1:c0:p5:vacant"
+            }
+          ],
+          "returns": [
+            {
+              "anchorRef": "anchor:circuit:trace:t1:c0",
+              "face": "direct",
+              "fromRef": "trace:t1:c0:act:0:return",
+              "groundPosition": 0,
+              "groundRef": "ground:circuit:trace:t1:c0",
+              "kind": "own",
+              "operatorRef": "ql:structural:2.0.0:return:through-anchor:own"
+            }
+          ]
+        },
+        "category": "M",
+        "frame": {
+          "absolutePosition": 0,
+          "basis": "chromatic",
+          "expression": "(00/00)",
+          "face": "direct",
+          "grain": "outer-two",
+          "id": "CF1",
+          "lens": "L0",
+          "localPosition": 0,
+          "positions": "local",
+          "unitFace": "Name"
+        },
+        "groundFace": "direct",
+        "groundRef": "ground:circuit:trace:t1:c0",
+        "language": null,
+        "producingRefs": [],
+        "transitions": [],
+        "useRef": "circuit:trace:t1:c0:state"
+      }
+    },
+    {
+      "op": "enter",
+      "result": {
+        "allowedOperators": [
+          "@#",
+          "-",
+          "+",
+          "x",
+          "/",
+          "="
+        ],
+        "categoryGround": {
+          "face": "direct",
+          "position": 1
+        },
+        "contentFields": [
+          "##",
+          "O#",
+          "X#",
+          "N#",
+          "M#",
+          "#",
+          "R#"
+        ],
+        "focusPath": [],
+        "focusUse": "circuit:trace:t1:c0:state",
+        "groundUse": "circuit:trace:t1:c0:state",
+        "operations": [],
+        "rPath": null,
+        "thread": [],
+        "threadBindings": []
+      }
+    },
+    {
+      "op": "cpf",
+      "result": {
+        "allowedOperators": [
+          "+",
+          "x",
+          "/",
+          "="
+        ],
+        "categoryGround": {
+          "face": "direct",
+          "position": 1
+        },
+        "contentFields": [
+          "##",
+          "O#",
+          "X#",
+          "N#",
+          "M#",
+          "#",
+          "R#"
+        ],
+        "focusPath": [],
+        "focusUse": "circuit:trace:t1:c0:cpf",
+        "groundUse": "circuit:trace:t1:c0:state",
+        "operations": [
+          {
+            "basis": {
+              "caller": "actuation:vak-control",
+              "evidence": [
+                "circuit:trace:t1:c0",
+                "trace:trace:t1",
+                "vacant-offices:2,3,4,5"
+              ],
+              "revision": "trace:t1",
+              "source": "trace:t1:c0",
+              "standing": "OBSERVED"
+            },
+            "family": "CPF",
+            "inputRefs": [
+              "circuit:trace:t1:c0:state"
+            ],
+            "operatorRef": "ql.kernel.vak.cpf/v1",
+            "outputRefs": [
+              "circuit:trace:t1:c0:cpf"
+            ]
+          }
+        ],
+        "rPath": null,
+        "thread": [],
+        "threadBindings": []
+      }
+    }
+  ],
+  "sourceRevision": "daa660cbc1b8c5da83828698665a753852cb0287"
+}

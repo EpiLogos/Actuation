@@ -1,0 +1,68 @@
+{
+  "schema": "actuation.model-types-jev-run/v1",
+  "created": "2026-09-20T03:35:23.164Z",
+  "model_ref": "jev-latest",
+  "api": "https://api.typesafe.ai/v1/systemone",
+  "instrument_standing": {
+    "reading_class": "semantic-stochastic",
+    "promotion": "none",
+    "law": "answers are instrument readings, never the run determination; determination remains pending-human-review"
+  },
+  "inputs": {
+    "catalogue": {
+      "path": "/Users/admin/Central/Work/Actuation/experiments/model-types/jev/question-catalogue.json",
+      "sha256": "ce4535c8214f45a96353096675cd9f7b7563dfaeaf6210bc954cdf154498e90a"
+    },
+    "states": {
+      "path": "/Users/admin/Central/Work/Actuation/experiments/model-types/hybrid-loop/evidence/tmp-loop-state.jsonl",
+      "sha256": "f642bc16facc947863c68a2c7df59e0e95eeb982d2babe651c9a7c8d932a0c32",
+      "count": 1
+    },
+    "truth": {
+      "path": "/Users/admin/Central/Work/Actuation/experiments/model-types/hybrid-loop/evidence/tmp-empty-truth.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "per_question": {
+    "amplify-direction": {
+      "n": 1,
+      "accuracy": null,
+      "brier_mean": null,
+      "confidence_mean": 0.46
+    }
+  },
+  "standing_refraction_pair_mass": null,
+  "usage": {
+    "input_tokens": 738,
+    "output_tokens": 47
+  },
+  "determination": "pending-human-review",
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "semantic-stochastic"
+  },
+  "records": [
+    {
+      "record_id": "direction|ql-form-readme-r2",
+      "question_id": "amplify-direction",
+      "answer": {
+        "type": "choice",
+        "choice": "deepen",
+        "confidence": 0.46,
+        "probabilities": {
+          "deepen": 0.64,
+          "conclude": 0.02,
+          "shift-lens": 0.34
+        }
+      },
+      "truth": null,
+      "scored": {
+        "correct": null,
+        "brier": 0.5256000000000001,
+        "predicted": "deepen",
+        "confidence": 0.46
+      },
+      "latency_ms": 598
+    }
+  ]
+}

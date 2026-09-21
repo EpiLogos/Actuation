@@ -1,0 +1,61 @@
+{
+  "schema": "actuation.model-types-jev-run/v1",
+  "created": "2026-09-20T03:35:14.997Z",
+  "model_ref": "jev-latest",
+  "api": "https://api.typesafe.ai/v1/systemone",
+  "instrument_standing": {
+    "reading_class": "semantic-stochastic",
+    "promotion": "none",
+    "law": "answers are instrument readings, never the run determination; determination remains pending-human-review"
+  },
+  "inputs": {
+    "catalogue": {
+      "path": "/Users/admin/Central/Work/Actuation/experiments/model-types/jev/question-catalogue.json",
+      "sha256": "ce4535c8214f45a96353096675cd9f7b7563dfaeaf6210bc954cdf154498e90a"
+    },
+    "states": {
+      "path": "/Users/admin/Central/Work/Actuation/experiments/model-types/hybrid-loop/evidence/tmp-loop-state.jsonl",
+      "sha256": "0cbbc9bd2578b302ec603b02ba2644b759a50b6b332925623de27cb92e88be53",
+      "count": 1
+    },
+    "truth": {
+      "path": "/Users/admin/Central/Work/Actuation/experiments/model-types/hybrid-loop/evidence/tmp-empty-truth.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "per_question": {
+    "determination-warranted": {
+      "n": 1,
+      "accuracy": null,
+      "brier_mean": null,
+      "confidence_mean": 0
+    }
+  },
+  "standing_refraction_pair_mass": null,
+  "usage": {
+    "input_tokens": 809,
+    "output_tokens": 26
+  },
+  "determination": "pending-human-review",
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "semantic-stochastic"
+  },
+  "records": [
+    {
+      "record_id": "closure|m0-formulation",
+      "question_id": "determination-warranted",
+      "answer": {
+        "type": "noul",
+        "noul": 0.44
+      },
+      "truth": null,
+      "scored": {
+        "correct": null,
+        "brier": null,
+        "probability": 0.44
+      },
+      "latency_ms": 752
+    }
+  ]
+}
