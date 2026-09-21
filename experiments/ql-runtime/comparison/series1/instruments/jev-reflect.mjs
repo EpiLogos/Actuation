@@ -3,12 +3,14 @@
 // stdin:  {"mode": "full_text"|"right_frame"|"being"|"becoming"|"knowing"|"resonant",
 //          "subject": string, "own_disclosure": optional string}
 // stdout: {"mode", "reading": {...full giving...}, "own_disclosure": echoed, "latency_ms"}
-// The reading carries the full MEF giving — lens names, faces, complete sublens
-// chains, the family alignment in effect, full distributions — never bare codes.
-// The square modes read the subject through the kernel A/B/C family alignments
-// with the owner's title sets carried per square. Jev gives the decision; the
-// model's own disclosure rides alongside and is echoed. Fail-closed: any error
-// exits non-zero and the caller returns it to the model as a tool result.
+// Ground: the canonical MEF lens register (mef-giving.json, copied from the
+// personal context surface to ql-mef docs 2026-09-21). Machinery-first: every
+// question carries the lens's defined sub-slots WITH their authored meanings —
+// a lens named must run its machinery. The subject is pre-lens data; the
+// lenses are refraction media of the P/P' positions, never the thing itself.
+// Square modes are register rule 4: lens-pairs over position-pairs.
+// Fail-closed: any error exits non-zero and the caller returns it to the
+// model as a tool result; nothing here fakes a reading.
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -39,30 +41,30 @@ const own = typeof req.own_disclosure === 'string' ? req.own_disclosure : '';
 if (!subject) fail('request needs a subject');
 if (!['full_text', 'right_frame', 'being', 'becoming', 'knowing', 'resonant'].includes(mode)) fail(`unknown mode: ${mode}`);
 
-const lensCriteria = () => Object.fromEntries(GIVING.lenses.map((l) => [l.id, `${l.name} — ${l.sublens.join(' → ')}`]));
-const withGiving = (probs) => Object.fromEntries(
-  GIVING.lenses.map((l) => [l.id, {
-    name: l.name,
-    face: l.face,
-    mass: probs?.[l.id] ?? null,
-    sublens: l.sublens,
-  }]),
-);
+const slotLine = (s) => `${s.slot} ${s.label} — ${s.meaning}`;
+const lensLine = (l) => `${l.id} ${l.name} (${l.ground}): ${l.sublens.map((s) => s.label).join(' · ')}`;
+const lensCriteria = () => Object.fromEntries(GIVING.lenses.map((l) => [l.id, lensLine(l)]));
+const slotCriteria = (l) => Object.fromEntries(l.sublens.map((s) => [`${s.slot} ${s.label}`, slotLine(s)]));
+const fullGiving = (lensId, probs, strongest) => {
+  const l = GIVING.lenses.find((x) => x.id === lensId);
+  return { lens: lensId, name: l.name, ground: l.ground, strongest, distribution: probs ?? null, machinery: l.sublens };
+};
 
 let questions, shape;
 if (mode === 'full_text') {
-  // The 72: for each lens, the subject's presence across its six articulations.
-  shape = 'per-lens six-articulation presence (12 x 6 = 72 cells)';
+  // Every lens run at its machinery: one question per lens, criteria are the
+  // defined sub-slots with their authored meanings.
+  shape = 'machinery-first: each of the twelve lenses run across its defined sub-slots (12 x 6, meanings carried)';
   questions = Object.fromEntries(GIVING.lenses.map((l) => [
     l.id,
     {
       type: 'choice',
-      instructions: `Reading the subject as a presented whole: where does ${l.name} live in it? Distribute the subject's presence across ${l.name}'s six articulations (${l.sublens.join(', ')}). One choice = where the articulation is strongest.`,
-      criteria: Object.fromEntries(l.sublens.map((s, i) => [`${i + 1}. ${s}`, `${l.name} at its ${s} articulation`])),
+      instructions: `Run ${l.name} (${l.ground}) over the subject as a presented whole. Its machinery: ${l.sublens.map(slotLine).join('; ')}. At which sub-slot does the subject's weight most strongly sit under this lens? The subject is pre-lens data; the sub-slot is where the lens refracts it.`,
+      criteria: slotCriteria(l),
     },
   ]));
 } else if (mode === 'right_frame') {
-  shape = 'single-lens selection (12-lens distribution, full giving)';
+  shape = 'single-lens selection (12-lens distribution, machinery summarised)';
   questions = {
     right_frame: {
       type: 'choice',
@@ -80,20 +82,24 @@ if (mode === 'full_text') {
     },
   };
 } else {
-  // Square modes: the subject read through the square's family alignment —
-  // three paired crossings, one lens reading per crossing.
+  // Register rule 4: squares are lens-pairs over position-pairs. Each square
+  // reading runs its linked lens at its linked position, machinery carried.
   const squareKey = mode === 'being' ? 'A' : mode === 'becoming' ? 'B' : 'C';
   const square = GIVING.squares[squareKey];
-  const family = GIVING.families[square.family_alignment];
-  shape = `square ${squareKey} (${square.titles.filter(Boolean).join(' / ')}): lens reading at each of the three paired crossings of the ${family.alignment} alignment`;
-  questions = Object.fromEntries(family.pairs.map(([p, q], i) => [
-    `crossing_${i + 1}_P${p}_P${q}`,
-    {
-      type: 'choice',
-      instructions: `Reading the subject through the square (${square.titles.filter(Boolean).join(' / ')}): at the crossing between ${GIVING.positions[p]} and ${GIVING.positions[q]}, which lens reads the subject most coherently there?`,
-      criteria: lensCriteria(),
-    },
-  ]));
+  const dayLensIds = square.lens_pairs.flat().filter((id) => !id.includes("'"));
+  const dayLenses = GIVING.lenses.filter((l) => dayLensIds.includes(l.id));
+  const posDay = square.positions.filter((p) => !p.includes("'"));
+  shape = `square ${squareKey} (${square.titles.filter(Boolean).join(' / ')}): ${square.lens_pairs.map(([a, b]) => `${a}↔${b}`).join(', ')} over ${square.positions.join('/')}`;
+  questions = {};
+  for (const l of dayLenses) {
+    for (const p of posDay) {
+      questions[`${l.id}@${p}`] = {
+        type: 'choice',
+        instructions: `Reading the subject's ${GIVING.positions[p]} through ${l.id} ${l.name} (${l.ground}). Its machinery: ${l.sublens.map(slotLine).join('; ')}. At which sub-slot does it refract the subject's ${GIVING.positions[p]}?`,
+        criteria: slotCriteria(l),
+      };
+    }
+  }
 }
 
 const state = { kind: `reflect-${mode}`, subject, ...(own ? { own_disclosure: own } : {}) };
@@ -115,14 +121,11 @@ let reading;
 if (mode === 'full_text') {
   reading = {
     shape,
-    cells: Object.fromEntries(GIVING.lenses.map((l) => {
+    cells: GIVING.lenses.map((l) => {
       const a = result.answers?.[l.id] ?? {};
-      return [`${l.id} ${l.name}`, {
-        distribution: a.probabilities ?? null,
-        strongest: a.choice ?? Object.entries(a.probabilities ?? {}).sort((x, y) => y[1] - x[1])[0]?.[0] ?? null,
-        sublens: l.sublens,
-      }];
-    })),
+      const strongest = a.choice ?? Object.entries(a.probabilities ?? {}).sort((x, y) => y[1] - x[1])[0]?.[0] ?? null;
+      return fullGiving(l.id, a.probabilities ?? null, strongest);
+    }),
   };
 } else if (mode === 'right_frame' || mode === 'resonant') {
   const key = mode === 'right_frame' ? 'right_frame' : 'resonant_frames';
@@ -131,23 +134,29 @@ if (mode === 'full_text') {
   reading = {
     shape,
     selected: a.choice ?? sorted[0]?.[0] ?? null,
-    ranking: sorted.map(([id, mass]) => ({ lens: id, name: GIVING.lenses.find((l) => l.id === id)?.name, mass })),
+    ranking: sorted.map(([id, mass]) => {
+      const l = GIVING.lenses.find((x) => x.id === id);
+      return { lens: id, name: l?.name, mass };
+    }),
     rationale: a.rationale ?? null,
   };
 } else {
   const squareKey = mode === 'being' ? 'A' : mode === 'becoming' ? 'B' : 'C';
   const square = GIVING.squares[squareKey];
-  const family = GIVING.families[square.family_alignment];
   reading = {
     shape,
-    square: { key: squareKey, titles: square.titles, alignment: family.alignment, pairs: family.pairs },
-    crossings: family.pairs.map(([p, q], i) => {
-      const a = result.answers?.[`crossing_${i + 1}_P${p}_P${q}`] ?? {};
+    square: { key: squareKey, titles: square.titles, lens_pairs: square.lens_pairs, positions: square.positions },
+    readings: Object.keys(questions).map((q) => {
+      const a = result.answers?.[q] ?? {};
+      const [lensId, pos] = q.split('@');
+      const l = GIVING.lenses.find((x) => x.id === lensId);
       return {
-        crossing: `P${p}/P${q}`,
-        positions: [GIVING.positions[p], GIVING.positions[q]],
-        lens: a.choice ?? null,
+        at: pos,
+        lens: lensId,
+        name: l.name,
+        strongest: a.choice ?? null,
         distribution: a.probabilities ?? null,
+        machinery: l.sublens,
       };
     }),
   };
