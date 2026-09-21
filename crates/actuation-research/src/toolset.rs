@@ -16,9 +16,9 @@
 //! model's own synthesis in the close call, gated by the task's objective
 //! checks), `model` (one separate control-style model turn evaluates the
 //! synthesis against the success conditions first). Jev is not a closure
-//! option: its role is fast classification — the lens-reading instrument
-//! behind the `lens_reading` cognitive tool, and the batch classification
-//! harnesses in the model-types thread.
+//! option: its role is fast classification — the reflect instrument behind
+//! the Night (P′) tools, and the batch classification harnesses in the
+//! model-types thread.
 use crate::tasks::Task;
 use crate::{Error, Result};
 use actuation_runtime::{
@@ -98,20 +98,57 @@ impl Route {
     }
 }
 
-/// The cognitive tool: a lens reading of a subject the model names, served
-/// by the jev classification instrument. The description carries the whole
-/// contract — the law stays in the toolset, never in prose to the model.
-pub const LENS_TOOL: (&str, &str) = (
-    "lens_reading",
-    "A lens reading of a subject you name: how that subject reads through twelve lenses right now, returned as a distribution with the strongest lens named. The reading is taken fresh on each call; it is a reading of the subject, never an identity assigned to it. Args: {\"subject\": string} — name the subject concretely (the task, a decision, a file, the work as it stands).",
-);
+/// The Night (P′) face: six reflect tools, the conjugates of the Day six.
+/// Each call carries the model's own disclosure; the jev reflect instrument
+/// decides alongside it; results return the full MEF giving, never bare
+/// codes. The descriptions name each tool's office — the law stays in the
+/// toolset, never in prose to the model.
+pub const NIGHT_TOOLS: [(&str, &str); 6] = [
+    (
+        "reflect_full_text",
+        "The Night reading of a presented whole: how the whole text stands across all twelve lenses at their six articulations — the complete giving returned in full. Pass your own reading of the text as your disclosure; the instrument decides alongside it. Args: {\"subject\": text, \"own_disclosure\": optional string}.",
+    ),
+    (
+        "reflect_right_frame",
+        "The one lens most useful for reading this subject now — the frame that, taken up, does the most work. Returns the selected lens in its full giving with the complete distribution. Your candidate frame may ride the call as disclosure. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+    ),
+    (
+        "reflect_being",
+        "The subject read through Square A (its titles: Being, Becoming, Knowing) — three paired crossings of the base alignment, each read through all twelve lenses, returned in full. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+    ),
+    (
+        "reflect_becoming",
+        "The subject read through Square B (its titles: Articulation, Encounter, Becoming) — three paired crossings of the offset alignment, each read through all twelve lenses, returned in full. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+    ),
+    (
+        "reflect_knowing",
+        "The subject read through Square C (its titles: Text/Texture, and two held open) — three paired crossings of the mirror alignment, each read through all twelve lenses, returned in full. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+    ),
+    (
+        "reflect_resonant_frames",
+        "The ranked relation among frames for this subject — the full ordering of which frames resonate and how strongly, to name the ones worth taking deeper. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+    ),
+];
 
-/// The ql-lens capability supply: the founding six plus the cognitive tool.
-pub fn lens_capability_supply() -> Value {
+/// The full P+P′ supply: the Day six plus the Night six (`ql-twelve`).
+pub fn night_capability_supply() -> Value {
     Value::Array(
         TOOLSET_TOOLS
             .iter()
-            .chain(std::iter::once(&LENS_TOOL))
+            .chain(NIGHT_TOOLS.iter())
+            .map(|(name, description)| json!({"name": name, "description": description}))
+            .collect(),
+    )
+}
+
+/// The explicate eight: the four world tools plus the Night middle (three
+/// square readings and the mediator) — no return verbs (`ql-eight`).
+pub fn eight_capability_supply() -> Value {
+    Value::Array(
+        TOOLSET_TOOLS
+            .iter()
+            .take(4)
+            .chain(NIGHT_TOOLS.iter().skip(2))
             .map(|(name, description)| json!({"name": name, "description": description}))
             .collect(),
     )
@@ -157,9 +194,9 @@ pub struct ToolsetContext<'a> {
     pub before: Value,
     /// Which route the loop runs: the full return loop or the tagged four.
     pub route: Route,
-    /// The cognitive lens-reading tool rides the supply when true (the
-    /// `ql-lens` condition).
-    pub lens_tool: bool,
+    /// The Night (P′) tools ride the supply when true (`ql-eight`,
+    /// `ql-twelve`).
+    pub night: bool,
     /// `self` (default) or `model`.
     pub close_check: CloseCheck,
 }
@@ -208,15 +245,19 @@ pub async fn run_toolset(
     let mut capability_calls: u64 = 0;
     let mut iterations: u64 = 0;
     let mut premature_deliveries: u64 = 0;
-    let mut lens_calls: u64 = 0;
+    let mut night_calls: u64 = 0;
     let mut status = "failed";
     let mut error: Option<String> = None;
     let mut outcome: Value = Value::Null;
     let mut closure: Value = Value::Null;
     let mut determination: Value = Value::Null;
     let mut closed_via_close = false;
-    let runtime_name = if ctx.lens_tool {
-        "ql-lens"
+    let runtime_name = if ctx.night {
+        if ctx.route == Route::ReturnLoop {
+            "ql-twelve"
+        } else {
+            "ql-eight"
+        }
     } else {
         ctx.route.name()
     };
@@ -355,42 +396,57 @@ pub async fn run_toolset(
                     "result": {"ok": false, "error": "no such tool in the tagged route"}}));
                 continue;
             }
-            if name == "lens_reading" {
-                // A cognitive tool: the reading is served by the jev
-                // classification instrument and returned to the model. It
-                // records as a residue without moving the active position —
-                // a reading is not a position change. An unavailable
-                // instrument is an ordinary tool error, not a trial failure.
-                lens_calls += 1;
+            if ctx.night && name.starts_with("reflect_") {
+                // A Night tool: the reading is served by the jev reflect
+                // instrument with the model's own disclosure riding the
+                // call. It records as a residue without moving the active
+                // position — a reading is not a position change. An
+                // unavailable instrument is an ordinary tool error, not a
+                // trial failure.
+                night_calls += 1;
                 let subject = args
                     .get("subject")
                     .and_then(Value::as_str)
                     .unwrap_or_default();
+                let own = args.get("own_disclosure").and_then(Value::as_str);
+                let instrument_mode = match name.as_str() {
+                    "reflect_full_text" => "full_text",
+                    "reflect_right_frame" => "right_frame",
+                    "reflect_being" => "being",
+                    "reflect_becoming" => "becoming",
+                    "reflect_knowing" => "knowing",
+                    "reflect_resonant_frames" => "resonant",
+                    _ => "unknown",
+                };
                 let reading = if subject.trim().is_empty() {
-                    Err(Error::new("lens_reading requires a subject string"))
+                    Err(Error::new(
+                        "{name} requires a subject".replace("{name}", &name),
+                    ))
+                } else if instrument_mode == "unknown" {
+                    Err(Error::new(format!("no reflect instrument for {name}")))
                 } else {
-                    run_lens_reading(subject)
+                    run_reflect(instrument_mode, subject, own)
                 };
                 match reading {
                     Ok(reading) => {
                         residues.push(json!({
                             "id": format!("{circuit_id}:res:{}", residues.len()),
-                            "position": active_position, "kind": "lens-reading",
+                            "position": active_position, "kind": "night-reading",
                             "value": reading, "invalidated": false}));
                         history
                             .push(json!({"role": "capability", "name": name, "result": reading}));
                         record(
-                            "lens_reading_taken",
+                            "night_reading_taken",
                             json!({
-                            "subject": subject,
-                            "lens": reading["lens"],
+                            "tool": name,
+                            "subject_chars": reading["subject_chars"],
                             "latency_ms": reading["latency_ms"]}),
                         );
                     }
                     Err(e) => {
                         history.push(json!({"role": "capability", "name": name,
                             "result": {"ok": false, "error": e.to_string()}}));
-                        record("lens_reading_failed", json!({"error": e.to_string()}));
+                        record("night_reading_failed", json!({"error": e.to_string()}));
                     }
                 }
                 continue;
@@ -583,12 +639,12 @@ pub async fn run_toolset(
     let report = json!({
         "status": status,
         "runtime": runtime_name,
-        "runtimeVersion": if ctx.lens_tool { "0.1.0-lens" } else if ctx.route == Route::ReturnLoop { "0.1.0-toolset" } else { "0.1.0-tagged" },
+        "runtimeVersion": if ctx.night { "0.1.0-night" } else if ctx.route == Route::ReturnLoop { "0.1.0-toolset" } else { "0.1.0-tagged" },
         "trace_ref": trace,
         "iterations": iterations,
         "model_calls": model_calls,
         "capability_calls": capability_calls,
-        "lens_calls": lens_calls,
+        "night_calls": night_calls,
         "outcome": outcome,
         "error": error,
         "history": history,
@@ -610,23 +666,27 @@ pub async fn run_toolset(
     }
 }
 
-/// Run the lens-reading instrument (QL_LENS_BIN) against one subject. The
+/// Run the reflect instrument (QL_REFLECT_BIN) for one Night tool call. The
 /// instrument is a process, like the owner instrument: request JSON on
 /// stdin, one JSON reading on stdout, fail-closed.
-fn run_lens_reading(subject: &str) -> Result<Value> {
-    let program = std::env::var("QL_LENS_BIN")
+fn run_reflect(mode: &str, subject: &str, own_disclosure: Option<&str>) -> Result<Value> {
+    let program = std::env::var("QL_REFLECT_BIN")
         .ok()
         .filter(|p| !p.is_empty())
         .ok_or_else(|| {
             Error::new(
-                "the lens_reading tool requires QL_LENS_BIN (path to the lens-reading instrument)",
+                "the reflect tools require QL_REFLECT_BIN (path to the jev reflect instrument)",
             )
         })?;
-    let scratch = tempfile::tempdir()
-        .map_err(|e| Error::new(format!("lens-reading scratch unavailable: {e}")))?;
+    let scratch =
+        tempfile::tempdir().map_err(|e| Error::new(format!("reflect scratch unavailable: {e}")))?;
     // The instrument reads one JSON request on stdin.
-    let input = serde_json::to_vec(&json!({"subject": subject}))
-        .map_err(|e| Error::new(format!("lens-reading request not built: {e}")))?;
+    let input = serde_json::to_vec(&json!({
+        "mode": mode,
+        "subject": subject,
+        "own_disclosure": own_disclosure,
+    }))
+    .map_err(|e| Error::new(format!("reflect request not built: {e}")))?;
     // The instrument is a Node script resolved through PATH: inherit the
     // host's PATH (an empty environment leaves `env node` unresolvable).
     let environment = [("PATH".to_owned(), std::env::var("PATH").unwrap_or_default())]
@@ -646,7 +706,7 @@ fn run_lens_reading(subject: &str) -> Result<Value> {
         return Err(Error::new(format!("instrument exited {:?}: {why}", r.code)));
     }
     serde_json::from_str(&r.stdout)
-        .map_err(|_| Error::new("lens-reading instrument returned invalid JSON"))
+        .map_err(|_| Error::new("reflect instrument returned invalid JSON"))
 }
 
 #[cfg(test)]
@@ -698,17 +758,49 @@ mod tests {
     }
 
     #[test]
-    fn lens_condition_adds_the_cognitive_tool() {
-        let supply = lens_capability_supply();
-        let arr = supply.as_array().unwrap();
-        assert_eq!(arr.len(), 7, "the founding six plus the lens reading");
-        assert_eq!(arr[6]["name"], json!("lens_reading"));
+    fn night_face_is_six_reflect_tools_and_the_conditions_split_p_and_p_prime() {
+        assert_eq!(NIGHT_TOOLS.len(), 6, "the Night face: six reflect tools");
+        let names: Vec<&str> = NIGHT_TOOLS.iter().map(|(n, _)| *n).collect();
+        assert_eq!(
+            names,
+            vec![
+                "reflect_full_text",
+                "reflect_right_frame",
+                "reflect_being",
+                "reflect_becoming",
+                "reflect_knowing",
+                "reflect_resonant_frames",
+            ]
+        );
+        let twelve = night_capability_supply();
+        assert_eq!(twelve.as_array().unwrap().len(), 12, "P six + P' six");
+        let eight = eight_capability_supply();
+        let eight_names: Vec<&str> = eight
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|c| c["name"].as_str().unwrap())
+            .collect();
+        assert_eq!(eight_names.len(), 8, "P-world four + Night middle four");
         assert!(
-            arr[6]["description"]
-                .as_str()
-                .unwrap()
-                .contains("twelve lenses"),
-            "the description states what comes back"
+            !eight_names.contains(&"situate"),
+            "the eight is explicate: no return reading"
+        );
+        assert!(
+            !eight_names.contains(&"close"),
+            "the eight is explicate: no return condition"
+        );
+        assert!(
+            !eight_names.contains(&"reflect_full_text"),
+            "full_text is an implicate pole"
+        );
+        assert!(
+            !eight_names.contains(&"reflect_right_frame"),
+            "right_frame is an implicate pole"
+        );
+        assert!(
+            eight_names.contains(&"reflect_resonant_frames"),
+            "the mediator is explicate"
         );
     }
 

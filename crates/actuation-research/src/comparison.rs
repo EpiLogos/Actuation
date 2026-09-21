@@ -10,7 +10,15 @@ use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet};
 /// The admitted conditions. A comparison run names 1..3 of them explicitly;
 /// the default (absent request field) stays the original native trio.
-pub const CONDITIONS: &[&str] = &["classic", "ql-direct", "ql-deep", "ql-toolset", "ql-tagged", "ql-lens"];
+pub const CONDITIONS: &[&str] = &[
+    "classic",
+    "ql-direct",
+    "ql-deep",
+    "ql-toolset",
+    "ql-tagged",
+    "ql-eight",
+    "ql-twelve",
+];
 pub const DEFAULT_CONDITIONS: &[&str] = &["classic", "ql-direct", "ql-deep"];
 pub const HELD_CONSTANTS: &[&str] = &[
     "prompt",
