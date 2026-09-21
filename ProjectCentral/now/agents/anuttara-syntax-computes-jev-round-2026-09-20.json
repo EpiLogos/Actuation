@@ -1,0 +1,11 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "anuttara-syntax-computes-jev-round-2026-09-20",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "zcode-model-types-experiments-session-3",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1789948000,
+  "subject": "Experiment redesigned per owner (marks are the vocabulary, formulations are computations over them, pairing is self-description) and run live: Jev, holding the full 107-mark spec, computes formulation->mark at 90% (chance 25%) and formulation->its own breakdown at 30/30 (chance 50%) — the syntax computes as a whole and Jev is its machine; embeddings confirmed wrong physics for the syntax; EBM's home is the value structure (M0-2-9 survey is next, not run this round)",
+  "result": "SYNTAX ROUND (read-only graph, API pennies, no embeddings): catalogue += syntax-compute-mark + syntax-explain-breakdown (concrescence family). Spec assembled from the graph: 107 marks (c_1_symbol + coordinate + name, 5.2k chars), 67 complete_formulation, 49 formulation_breakdown. 70 typed questions, live jev-run in jev/syntax/runs/: syntax-compute-mark 36/40 = 90% (chance 25%, mean conf 0.81, p50 265ms) — given the full mark table and a formulation, identify which mark it computes to among 4 candidates; syntax-explain-breakdown 30/30 (chance 50%, conf 0.91) — given a formulation and its true + a foreign breakdown, pick the expansion. Measured against the map's OWN declared pairings — no synthetic corruption anywhere. CAVEATS: distractors were random coordinates (not near-siblings); breakdown was 2-candidate; harder tiers are the calibration next. Division of labour now standing: Jev = the Anuttara syntax as typed computation (this round's result is the evidence); EBM = compatibility field over the value structure — M0-2-9 virtues system (never yet surveyed as itself) + the general map (baseline numbers stand); embeddings = wrong physics for the syntax (descent-coherence failure at 0.511 vs Jev's 0.90-1.00 on the same declared relations). Follow-up agent: read jev/syntax/ + this record; next: (a) hard-tier syntax rounds (sibling distractors, same-family breakdowns, transformation-ordering questions); (b) M0-2-9 virtue-system survey (read-only) to design the EBM's proper test; (c) leave embeddings composition untouched absent a demonstrated failure.",
+  "status": "active"
+}
