@@ -1,0 +1,119 @@
+{
+  "schema": "actuation.model-types-ebm-m0-symbols/v1",
+  "created": "2026-09-20T05:01:08+0100",
+  "experiment": "E-MT-EBM-FIELD M0 at symbol granularity (owner hypothesis: the compressed VAK syntax carries the structure; generic embeddings dilute it)",
+  "symbol_property_set": [
+    "c_1_symbol",
+    "c_1_complete_formulation",
+    "c_1_formulation_breakdown",
+    "c_1_structure",
+    "c_1_metaphysical_names",
+    "c_4_ql_operator_types",
+    "c_4_key_operators",
+    "c_1_operational_symbolics",
+    "c_1_mother_daughter_formula",
+    "c_1_wholeness_formula_seed",
+    "c_0_logical_operator_nature",
+    "c_0_void_grammar_structure",
+    "c_1_consciousness_structure",
+    "all m_0_<n>_<*> matrix keys",
+    "all q_<n>_<*> structure keys",
+    "coordinate + name"
+  ],
+  "data": {
+    "m0_nodes": 111,
+    "m0_nodes_with_symbol_vectors": 109,
+    "m0_edges_full": 570,
+    "m0_edges_symbol": 566
+  },
+  "results_full_content_embeddings": {
+    "hard-rewire": {
+      "n_pairs": 570,
+      "cosine": 0.7966343490304709,
+      "combined": 0.7771206525084642
+    },
+    "sibling-rewire": {
+      "n_pairs": 543,
+      "cosine": 0.692184813243389,
+      "combined": 0.6757865890676245
+    },
+    "direction-reversal": {
+      "n_pairs": 570,
+      "cosine": 0.5,
+      "combined": 0.5
+    }
+  },
+  "results_symbol_only_embeddings": {
+    "hard-rewire": {
+      "n_pairs": 566,
+      "cosine": 0.8196053765186231,
+      "combined": 0.7957350572488107
+    },
+    "sibling-rewire": {
+      "n_pairs": 543,
+      "cosine": 0.7171823543576542,
+      "combined": 0.6938653344593334
+    },
+    "direction-reversal": {
+      "n_pairs": 566,
+      "cosine": 0.5,
+      "combined": 0.5
+    }
+  },
+  "results_symbol_only_m0_local_head": {
+    "hard-rewire": {
+      "n_pairs": 120,
+      "head": 0.705,
+      "calibration": {
+        "brier": 0.2355,
+        "ece_10bin": 0.1337,
+        "mean_p_real": 0.5148,
+        "mean_p_corrupted": 0.4796,
+        "youden_threshold": 0.4898,
+        "recall_at_threshold": 0.7167,
+        "false_positive_rate_at_threshold": 0.275
+      }
+    },
+    "sibling-rewire": {
+      "n_pairs": 120,
+      "head": 0.591924778761062,
+      "calibration": {
+        "brier": 0.2465,
+        "ece_10bin": 0.0201,
+        "mean_p_real": 0.5148,
+        "mean_p_corrupted": 0.5032,
+        "youden_threshold": 0.5639,
+        "recall_at_threshold": 0.25,
+        "false_positive_rate_at_threshold": 0.0708
+      }
+    },
+    "direction-reversal": {
+      "n_pairs": 120,
+      "head": 0.5470833333333334,
+      "calibration": {
+        "brier": 0.2473,
+        "ece_10bin": 0.0157,
+        "mean_p_real": 0.5148,
+        "mean_p_corrupted": 0.5034,
+        "youden_threshold": 0.4899,
+        "recall_at_threshold": 0.7083,
+        "false_positive_rate_at_threshold": 0.5667
+      }
+    }
+  },
+  "honest_limits": [
+    "graph untouched: symbol vectors fetched via bimba_embed WITHOUT store_for (read-only path)",
+    "different edge counts (full vs symbol) mean cross-set comparison is directional, not exact",
+    "small n: one coordinate family, ~109 nodes; treat deltas within +/-0.05 as noise",
+    "the M0-local head trains on ~4/5 of an already small edge set (starvation caveat from phase 2.6 applies)",
+    "readings are instrument output; promotion none; low energy is compatibility, nothing else"
+  ],
+  "seeds": {
+    "probe": 20260917
+  },
+  "runtime_seconds": 1.0,
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "research"
+  }
+}
