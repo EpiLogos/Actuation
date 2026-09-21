@@ -1,20 +1,20 @@
 {
-  "schema": "central.project-now.handoff/v1",
-  "id": "round-4-complete-first-live-native-2026-09-15",
-  "provenance": "agent-authored-bounded-return",
-  "actor": "zcode-round4-native",
-  "kind": "handoff",
-  "recorded_at_unix_seconds": 1789454485,
-  "subject": "Round 4 complete: first live native harness run proves the machinery (classic 6/6, Deep conjugate circuits through the QL owner, compressed lane verified); four seams found and all fixed on main (286c3f0); re-run ready",
-  "result": "The first live run of the native Rust research harness (round 4, 421 model calls, ~2.97M tokens, glm-5.3-flash) proved the machinery end to end and characterised every failure precisely. Proven: build, owner binding through the native QL-MEF owner instrument (stdin-JSON RPC at experiments/ql-runtime/native-owner-instrument, NOT the ql CLI), the staged QL loop, Deep conjugate child circuits through the owner (7 completed on one task), comparison mechanics with held constants valid on every manifest, secret redaction, receipts; classic completed 6/6 with objective verification; the compressed lane demonstrably eliminates interpret model turns (zero ql-interpret-return calls, compressed_control witnesses recorded). Four seams found and fixed on main: (1) PR #88 - the engine reopen-request law now honoured by the policy; (2) PR #88 - RepairingBody wired into both body protocols; (3) PR #89 - the closure-gate blocker: the engine compares claimed_subject byte-for-byte to the task id and claimed_state to the measured digest while the prompt solicited free text, so prose claims failed subject_matches up to 23 times per run until budget death; prompt now pins the semantics and the policy normalises the claim to the task id or drops it; (4) PR #89 - RepairingBody triggers read the correct payload nesting (they could never fire). Harness frictions documented for the owner: max_calls is a required explicit request field (recommend 64 multi-step / 48 restraint floor, and executor pre-flight against allowance-sum x calls-per-act); Deep max_contexts 8 exhausts under conjugate reopen cycles (raise for deep lanes); specimen stdio via /tmp temp files can present host disk-pressure as model failure (capture stderr head); control turns at 60-90s mean multi-hour driver timeouts; total_tokens nulls entirely if one call lacks usage. GLM quirk recorded: at temperature 0 it emits prose then partial JSON with finish_reason stop - the adapter carries fence/prose-tolerant extraction plus its own re-asks. Spend transparency: ~2.97M tokens this round. Next: re-run the failed QL conditions on 286c3f0 with max_calls 64 and raised max_contexts for deep lanes (driver at /tmp/rerun-fix.mjs skips completed roots); the first fully-closing native circuit then becomes the R11 acceptance-gate evidence.",
-  "status": "active",
-  "source_refs": [
-    "crates/actuation-research/src/policy.rs",
-    "crates/actuation-research/src/relational.rs",
-    "/tmp/actuation-round4-experiments"
-  ],
-  "evidence_refs": [
-    "https://github.com/EpiLogos/Actuation/pull/89",
-    "https://github.com/EpiLogos/Actuation/pull/88"
-  ]
+ "schema": "central.project-now.handoff/v1",
+ "id": "round-4-complete-first-live-native-2026-09-15",
+ "provenance": "agent-authored-bounded-return",
+ "actor": "zcode-round4-native",
+ "kind": "handoff",
+ "recorded_at_unix_seconds": 1789454485,
+ "subject": "Round 4 complete: first live native harness run proves the machinery (classic 6/6, Deep conjugate circuits through the QL owner, compressed lane verified); four seams found and all fixed on main (286c3f0); re-run ready",
+ "result": "The first live run of the native Rust research harness (round 4, 421 model calls, ~2.97M tokens, glm-5.3-flash) proved the machinery end to end and characterised every failure precisely. Proven: build, owner binding through the native QL-MEF owner instrument (stdin-JSON RPC at experiments/ql-runtime/native-owner-instrument, NOT the ql CLI), the staged QL loop, Deep conjugate child circuits through the owner (7 completed on one task), comparison mechanics with held constants valid on every manifest, secret redaction, receipts; classic completed 6/6 with objective verification; the compressed lane demonstrably eliminates interpret model turns (zero ql-interpret-return calls, compressed_control witnesses recorded). Four seams found and fixed on main: (1) PR #88 - the engine reopen-request law now honoured by the policy; (2) PR #88 - RepairingBody wired into both body protocols; (3) PR #89 - the closure-gate blocker: the engine compares claimed_subject byte-for-byte to the task id and claimed_state to the measured digest while the prompt solicited free text, so prose claims failed subject_matches up to 23 times per run until budget death; prompt now pins the semantics and the policy normalises the claim to the task id or drops it; (4) PR #89 - RepairingBody triggers read the correct payload nesting (they could never fire). Harness frictions documented for the owner: max_calls is a required explicit request field (recommend 64 multi-step / 48 restraint floor, and executor pre-flight against allowance-sum x calls-per-act); Deep max_contexts 8 exhausts under conjugate reopen cycles (raise for deep lanes); specimen stdio via /tmp temp files can present host disk-pressure as model failure (capture stderr head); control turns at 60-90s mean multi-hour driver timeouts; total_tokens nulls entirely if one call lacks usage. GLM quirk recorded: at temperature 0 it emits prose then partial JSON with finish_reason stop - the adapter carries fence/prose-tolerant extraction plus its own re-asks. Spend transparency: ~2.97M tokens this round. Next: re-run the failed QL conditions on 286c3f0 with max_calls 64 and raised max_contexts for deep lanes (driver at /tmp/rerun-fix.mjs skips completed roots); the first fully-closing native circuit then becomes the R11 acceptance-gate evidence. Next condition: the failed QL conditions re-run on 286c3f0 with max_calls 64 and raised max_contexts; the first fully-closing native circuit becomes the R11 acceptance-gate evidence.",
+ "status": "active",
+ "source_refs": [
+  "crates/actuation-research/src/policy.rs",
+  "crates/actuation-research/src/relational.rs",
+  "/tmp/actuation-round4-experiments"
+ ],
+ "evidence_refs": [
+  "https://github.com/EpiLogos/Actuation/pull/89",
+  "https://github.com/EpiLogos/Actuation/pull/88"
+ ]
 }

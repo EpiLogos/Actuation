@@ -1,20 +1,20 @@
 {
-  "schema": "central.project-now.handoff/v1",
-  "id": "session-handoff-harness-is-settled-the-2026-09-17",
-  "provenance": "agent-authored-bounded-return",
-  "actor": "zcode-session-handoff-experiment-orientation",
-  "kind": "handoff",
-  "recorded_at_unix_seconds": 1789660076,
-  "subject": "SESSION HANDOFF: harness is settled - the next session runs the experiment matrix, not infrastructure. Run recipe, corpus state, and the standing attitude contract.",
-  "result": "ORIENTATION FOR THE NEXT SESSION. The owner ruled that rounds 3-5 over-served infrastructure and under-served the experiment: the actual question (does changing recurrence change what the model can do, held constant everything else) has native-era evidence only on RESTRAINT plus the corpus run completing right now. Treat the harness as boring, settled infrastructure. DO NOT re-derive setup. THE RECIPE (proven, one command): node /Users/admin/.cache/actuation/acceptance-run.mjs with TASKS and CONDS env vars - it drives comparison.run through the release binaries built from a worktree at ~/.cache/actuation/acceptance (worktree add origin/main; cargo build --release -p actuation-research; plus experiments/ql-runtime/native-owner-instrument cargo build). Required facts: ZAI_API_KEY in env; owner revision 08d14e89c6427cb885e117c2e9bc9dc61a0f90b7 must match the instrument OWNER_REVISION; max_calls 64; limits max_contexts 32; owner process timeout_ms 120000; durable paths only (/tmp gets cleaned mid-run). THE EXPERIMENT: six frozen task families x three loop conditions (classic control, ql-direct outward face, ql-deep with conjugate P-prime closure), held constants enforced by the harness, determination pending-human-review; the first human-review pass over a complete corpus is the actual deliverable, per Factory #110/#137/#138. CURRENT STATE: five-task run (classic+ql-direct) completing in ~/.cache/actuation/round5-experiments/ - CODE/RESEARCH/EPISTEMIC done, both conditions completing with checks passing (native closures across the corpus); RESTRAINT done including a full deep attempt. QUEUE in order: (1) read the finished corpus results and write the results reading - outcomes, closure quality, calls/tokens per condition - BEFORE launching anything new; (2) Deep conjugate allowance (small Rust change: conjugate cycles consume a typed allowance like position allowances, refusal routes to determination) then Deep across corpus at max_calls 64; (3) compressed arm QL_COMPRESSED_CONTROL=1 across corpus for token economics; (4) assess origin/act-rust/vak-control (the wedged agent pushed a branch) and the Vak-vs-whittled-English design. ATTITUDE CONTRACT: infrastructure work only when the experiment itself surfaces a defect; file it as a defect with the failing run reference; do not celebrate plumbing; the results reading comes before the next launch. The five-task background run belongs to the previous session shell and may need re-running - the recipe makes that one command.",
-  "status": "active",
-  "source_refs": [
-    "/Users/admin/.cache/actuation/acceptance-run.mjs",
-    "/Users/admin/.cache/actuation/round5-experiments",
-    "crates/actuation-research/src/policy.rs"
-  ],
-  "evidence_refs": [
-    "trace:actuation:round5accept:s1-restraint-001",
-    "https://github.com/EpiLogos/Actuation/pull/93"
-  ]
+ "schema": "central.project-now.handoff/v1",
+ "id": "session-handoff-harness-is-settled-the-2026-09-17",
+ "provenance": "agent-authored-bounded-return",
+ "actor": "zcode-session-handoff-experiment-orientation",
+ "kind": "handoff",
+ "recorded_at_unix_seconds": 1789660076,
+ "subject": "SESSION HANDOFF: harness is settled - the next session runs the experiment matrix, not infrastructure. Run recipe, corpus state, and the standing attitude contract.",
+ "result": "ORIENTATION FOR THE NEXT SESSION. The owner ruled that rounds 3-5 over-served infrastructure and under-served the experiment: the actual question (does changing recurrence change what the model can do, held constant everything else) has native-era evidence only on RESTRAINT plus the corpus run completing right now. Treat the harness as boring, settled infrastructure. DO NOT re-derive setup. THE RECIPE (proven, one command): node /Users/admin/.cache/actuation/acceptance-run.mjs with TASKS and CONDS env vars - it drives comparison.run through the release binaries built from a worktree at ~/.cache/actuation/acceptance (worktree add origin/main; cargo build --release -p actuation-research; plus experiments/ql-runtime/native-owner-instrument cargo build). Required facts: ZAI_API_KEY in env; owner revision 08d14e89c6427cb885e117c2e9bc9dc61a0f90b7 must match the instrument OWNER_REVISION; max_calls 64; limits max_contexts 32; owner process timeout_ms 120000; durable paths only (/tmp gets cleaned mid-run). THE EXPERIMENT: six frozen task families x three loop conditions (classic control, ql-direct outward face, ql-deep with conjugate P-prime closure), held constants enforced by the harness, determination pending-human-review; the first human-review pass over a complete corpus is the actual deliverable, per Factory #110/#137/#138. CURRENT STATE: five-task run (classic+ql-direct) completing in ~/.cache/actuation/round5-experiments/ - CODE/RESEARCH/EPISTEMIC done, both conditions completing with checks passing (native closures across the corpus); RESTRAINT done including a full deep attempt. QUEUE in order: (1) read the finished corpus results and write the results reading - outcomes, closure quality, calls/tokens per condition - BEFORE launching anything new; (2) Deep conjugate allowance (small Rust change: conjugate cycles consume a typed allowance like position allowances, refusal routes to determination) then Deep across corpus at max_calls 64; (3) compressed arm QL_COMPRESSED_CONTROL=1 across corpus for token economics; (4) assess origin/act-rust/vak-control (the wedged agent pushed a branch) and the Vak-vs-whittled-English design. ATTITUDE CONTRACT: infrastructure work only when the experiment itself surfaces a defect; file it as a defect with the failing run reference; do not celebrate plumbing; the results reading comes before the next launch. The five-task background run belongs to the previous session shell and may need re-running - the recipe makes that one command. Next condition: the five-task background run re-runs per the recipe if its shell is gone, then the vak-control branch assessment and the Vak-vs-whittled-English design follow.",
+ "status": "active",
+ "source_refs": [
+  "/Users/admin/.cache/actuation/acceptance-run.mjs",
+  "/Users/admin/.cache/actuation/round5-experiments",
+  "crates/actuation-research/src/policy.rs"
+ ],
+ "evidence_refs": [
+  "trace:actuation:round5accept:s1-restraint-001",
+  "https://github.com/EpiLogos/Actuation/pull/93"
+ ]
 }

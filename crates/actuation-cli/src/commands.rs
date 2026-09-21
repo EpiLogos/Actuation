@@ -458,6 +458,27 @@ pub fn harness_capability(command: &Command) -> Result<Output> {
     match slug {
         Some(slug) => {
             let capability: &HarnessCapability = catalog.capability(&slug).ok_or_else(|| {
+                if let Some(gap) = catalog.capability_gap(&slug) {
+                    // A declared absence is an authored answer, not a bare
+                    // refusal: the coverage-closure law authors a reason and
+                    // evidence for exactly this slug, so the refusal carries
+                    // them instead of leaving the consumer with an unnamed gap.
+                    let value = gap.as_value();
+                    let reason = value["reason"].as_str().unwrap_or("undeclared reason");
+                    let evidence = value["evidence_refs"]
+                        .as_array()
+                        .map(|refs| {
+                            refs.iter()
+                                .filter_map(|r| r.as_str())
+                                .collect::<Vec<_>>()
+                                .join(", ")
+                        })
+                        .unwrap_or_default();
+                    return Error::new(format!(
+                        "no capability descriptor declared for harness {slug}: \
+                         declared capability gap — {reason} (evidence: {evidence})"
+                    ));
+                }
                 Error::new(format!(
                     "no capability descriptor declared for harness {slug}; declared: {}",
                     catalog
@@ -607,4 +628,55 @@ pub fn verify(command: &Command) -> Result<Output> {
         },
         stderr: String::new(),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn capability_refusal(slug: &str) -> String {
+        harness_capability(&Command {
+            args: vec![slug.to_owned()],
+            json: false,
+            stdin: String::new(),
+        })
+        .unwrap_err()
+        .to_string()
+    }
+
+    #[test]
+    fn a_declared_gap_answers_with_its_authored_reason() {
+        let catalog = NativeCatalog::bundled().expect("bundled catalog");
+        let gapped = catalog
+            .capability_gaps()
+            .first()
+            .map(|g| {
+                g.as_value()["harness_slug"]
+                    .as_str()
+                    .expect("admitted slug")
+                    .to_owned()
+            })
+            .expect("the shipped catalog declares capability gaps");
+        let error = capability_refusal(&gapped);
+        assert!(
+            error.contains("declared capability gap"),
+            "a gap slug's refusal must name the gap: {error}"
+        );
+        let reason = catalog.capability_gap(&gapped).unwrap().as_value()["reason"]
+            .as_str()
+            .expect("admitted gap reason")
+            .to_owned();
+        assert!(
+            error.contains(&reason),
+            "a gap slug's refusal must carry the authored reason: {error}"
+        );
+    }
+
+    #[test]
+    fn an_undeclared_slug_still_lists_the_declared_capabilities() {
+        let error = capability_refusal("not-a-harness");
+        assert!(error.contains("declared:"), "{error}");
+        assert!(error.contains("claude-code"), "{error}");
+        assert!(!error.contains("declared capability gap"), "{error}");
+    }
 }

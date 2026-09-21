@@ -1,19 +1,19 @@
 {
-  "schema": "central.project-now.handoff/v1",
-  "id": "jev-lens-tool-round11-zero-invocations-2026-09-20",
-  "provenance": "agent-authored-bounded-return",
-  "actor": "zcode-session-jev-lens-tool",
-  "kind": "handoff",
-  "recorded_at_unix_seconds": 1789875600,
-  "subject": "Jev role settled per owner — gate retired, one lens-reading cognitive tool built and run live (round 11): the model never called it; the finding is that capacity without invitation stays idle",
-  "result": "Owner design calls applied: (1) jev is the fast large-scale classification instrument, not a closure referee — CloseCheck::Jev removed, QL_CLOSE_CHECK is self|model, gate instrument wiring deleted (round-9 arm D remains reproducible at 64331c1/3112f29). (2) One cognitive tool, not twelve: lens_reading added to the loop (condition ql-lens = founding six + lens_reading; RunMode::Lens; d3a773a + admission fix d04dbc2; 114/114 tests, clippy clean). The instrument (experiments/ql-runtime/comparison/series1/instruments/jev-lens-reading.mjs, cache copy live) sends the subject to jev-latest with the classification thread's LENS_QUESTION verbatim and returns the full twelve-lens distribution; live smoke OK (L4' 0.32 with standing-pair mass, ~670ms). Tool errors are ordinary tool results — a failed reading does not fail a trial, and a reading records as a residue without moving the active position. ROUND 11 (runs/2026-09-20-glm-round11-lens/ + READING.md, commit 26d51df): 5/5 objective checks pass across main run + retries, 22 model calls / 41,401 tokens, lens_calls=0 in every trial — given the reading tool, the model never names a subject. Finding: availability alone does nothing; extends the situate result to a pattern (tools get used when the work's structure demands them — list/read/write/tests demanded, close required, situate and lens_reading idle). Design implication recorded for the owner: a reading happens only if something in the work wants it — an office whose procedure includes taking a reading, material that references it, or close itself. VARIANCE: model endpoint hung twice at ~213s (RESTRAINT both passes, SKILL once) killing the adapter with empty stderr; failed records preserved as *-variance-fail-endpoint.json; direct repro succeeded in 3s; solo reruns clean. NEXT (owner's call): what counts as an invitation — reading as part of an office's procedure, part of the material, or part of close. NOTHING PUSHED, NOTHING MERGED: techne/deep-conjugate-allowance @ 26d51df local (21 commits ahead of origin/main); human review over rounds 5-11 stays with the owner. Follow-up agent: read runs/2026-09-20-glm-round11-lens/READING.md and docs/TOOLSET-LOOP.md, then execute from the owner's invitation decision.",
-  "status": "active",
-  "source_refs": [
-    "central:source:actuation:repo:experiments/ql-runtime/comparison/series1/runs/2026-09-20-glm-round11-lens/READING.md",
-    "central:source:actuation:repo:experiments/ql-runtime/comparison/series1/instruments/jev-lens-reading.mjs",
-    "central:source:actuation:repo:docs/TOOLSET-LOOP.md"
-  ],
-  "evidence_refs": [
-    "trace:actuation:round5accept:s1-restraint-001"
-  ]
+ "schema": "central.project-now.handoff/v1",
+ "id": "jev-lens-tool-round11-zero-invocations-2026-09-20",
+ "provenance": "agent-authored-bounded-return",
+ "actor": "zcode-session-jev-lens-tool",
+ "kind": "handoff",
+ "recorded_at_unix_seconds": 1789875600,
+ "subject": "Jev role settled per owner — gate retired, one lens-reading cognitive tool built and run live (round 11): the model never called it; the finding is that capacity without invitation stays idle",
+ "result": "Owner design calls applied: (1) jev is the fast large-scale classification instrument, not a closure referee — CloseCheck::Jev removed, QL_CLOSE_CHECK is self|model, gate instrument wiring deleted (round-9 arm D remains reproducible at 64331c1/3112f29). (2) One cognitive tool, not twelve: lens_reading added to the loop (condition ql-lens = founding six + lens_reading; RunMode::Lens; d3a773a + admission fix d04dbc2; 114/114 tests, clippy clean). The instrument (experiments/ql-runtime/comparison/series1/instruments/jev-lens-reading.mjs, cache copy live) sends the subject to jev-latest with the classification thread's LENS_QUESTION verbatim and returns the full twelve-lens distribution; live smoke OK (L4' 0.32 with standing-pair mass, ~670ms). Tool errors are ordinary tool results — a failed reading does not fail a trial, and a reading records as a residue without moving the active position. ROUND 11 (runs/2026-09-20-glm-round11-lens/ + READING.md, commit 26d51df): 5/5 objective checks pass across main run + retries, 22 model calls / 41,401 tokens, lens_calls=0 in every trial — given the reading tool, the model never names a subject. Finding: availability alone does nothing; extends the situate result to a pattern (tools get used when the work's structure demands them — list/read/write/tests demanded, close required, situate and lens_reading idle). Design implication recorded for the owner: a reading happens only if something in the work wants it — an office whose procedure includes taking a reading, material that references it, or close itself. VARIANCE: model endpoint hung twice at ~213s (RESTRAINT both passes, SKILL once) killing the adapter with empty stderr; failed records preserved as *-variance-fail-endpoint.json; direct repro succeeded in 3s; solo reruns clean. NEXT (owner's call): what counts as an invitation — reading as part of an office's procedure, part of the material, or part of close. NOTHING PUSHED, NOTHING MERGED: techne/deep-conjugate-allowance @ 26d51df local (21 commits ahead of origin/main); human review over rounds 5-11 stays with the owner. Follow-up agent: read runs/2026-09-20-glm-round11-lens/READING.md and docs/TOOLSET-LOOP.md, then execute from the owner's invitation decision. Next condition: the owner decides what counts as an invitation; the follow-up agent reads runs/2026-09-20-glm-round11-lens/READING.md and docs/TOOLSET-LOOP.md and executes from that decision.",
+ "status": "active",
+ "source_refs": [
+  "central:source:actuation:repo:experiments/ql-runtime/comparison/series1/runs/2026-09-20-glm-round11-lens/READING.md",
+  "central:source:actuation:repo:experiments/ql-runtime/comparison/series1/instruments/jev-lens-reading.mjs",
+  "central:source:actuation:repo:docs/TOOLSET-LOOP.md"
+ ],
+ "evidence_refs": [
+  "trace:actuation:round5accept:s1-restraint-001"
+ ]
 }

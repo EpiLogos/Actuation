@@ -59,7 +59,6 @@ pub fn commands() -> &'static [CommandDescriptor] {
 }
 
 /// Longest route first so operation routes win over their read-model parents.
-/// Longest route first so operation routes win over their read-model parents.
 fn route_order() -> Vec<usize> {
     let mut order: Vec<usize> = (0..COMMANDS.len()).collect();
     order.sort_by(|left, right| {
