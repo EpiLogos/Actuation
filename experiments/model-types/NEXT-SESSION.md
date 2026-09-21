@@ -21,7 +21,10 @@ decimals.
   standing, `promotion: none`, determination stays `pending-human-review`.
   A fixture result never counts as a live claim.
 - Seeds stay fixed (20260917 probe, 20260918 head) so runs are comparable.
-- Nothing is committed in Actuation; the working tree carries everything.
+- The corpus IS committed as of 2026-09-21 (PR #102 merged the research line).
+  Commit your work when a round closes: scripts, evidence JSON, and a NOW
+  handoff record. Only runtime scratch (`tmp-*`, `__pycache__/`, `node_modules/`)
+  stays out of git.
 
 ## Context to read first (in this order)
 
