@@ -1,0 +1,6 @@
+{
+  "S1-SKILL-001": {
+    "SKILL.md": "# Composition skill — presenting a whole\n\nThe work here is composing: bring a position into the world as a whole, in writing.\n\n1. Take in the request and any material as given (P1); what you read, read fully.\n2. Let your reading of the subject be disclosed — name the frame you are thinking in, pass it as your own disclosure wherever a reflection is taken, and let the returned reading be weighed against yours.\n3. Compose the position as one whole: claims that commit, reasons that hold them, and nothing that pretends to be part of the whole (P2; what comes back reads as the effect made).\n4. Weigh the whole against itself before finishing: does it hold as one way of thinking (P4)?\n5. Present the whole in deliverable.md. What is finished reads as what is actually realised (P5-prime).\n6. Never edit this skill, the request, or the notes — the given is not the composer to transform.\n",
+    "inbox/request.md": "# Request\n\nCompose a short political philosophy: a complete position, presented as a whole (~400 words). What binds a society together, and what should govern it? Commit to claims and let the whole cohere — a reader should meet one way of thinking, not a survey.\n"
+  }
+}

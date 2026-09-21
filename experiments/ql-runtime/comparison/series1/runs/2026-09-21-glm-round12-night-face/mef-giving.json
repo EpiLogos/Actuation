@@ -1,0 +1,51 @@
+{
+  "contract": "ql:pairing:1.0.0 + ql:mef:registry:1.0.0-q2 + owner square titles 2026-09-20",
+  "drift_note": "The ql-mef registry projects the squares under one title set (Articulation/Encounter/Becoming) and one alignment (C, mirror). The kernel contract (structural.rs RelationFamily) holds three alignments; the owner holds three title sets. Both are carried here in full; the registry's single-set projection is a drift defect owned by the QL line.",
+  "families": {
+    "A": { "alignment": "base", "pairs": [[0, 1], [2, 3], [4, 5]] },
+    "B": { "alignment": "offset", "pairs": [[1, 2], [3, 4], [5, 0]] },
+    "C": { "alignment": "mirror", "pairs": [[0, 5], [1, 4], [2, 3]] }
+  },
+  "squares": {
+    "A": {
+      "titles": ["Being", "Becoming", "Knowing"],
+      "family_alignment": "A",
+      "titles_unrecovered": [],
+      "note": "Square A per owner 2026-09-20; bound to the kernel A-family alignment."
+    },
+    "B": {
+      "titles": ["Articulation", "Encounter", "Becoming"],
+      "family_alignment": "B",
+      "titles_unrecovered": [],
+      "note": "Square B per owner; the ql-mef registry wrongly uses these three titles as names of three separate squares."
+    },
+    "C": {
+      "titles": ["Text/Texture", null, null],
+      "family_alignment": "C",
+      "titles_unrecovered": 2,
+      "note": "Square C per owner; two titles unrecovered (owner recall), carried open."
+    }
+  },
+  "positions": {
+    "0": "initiating intent and operative frame",
+    "1": "material, evidence and givens",
+    "2": "effect, operation and transformation",
+    "3": "form, pattern and implementation",
+    "4": "whole-relative evaluation, context and adequacy",
+    "5": "candidate determination and synthesis"
+  },
+  "lenses": [
+    { "id": "L0", "face": "day", "name": "Quaternal", "sublens": ["Why", "What", "How", "Whom/Which/When", "Where/Why-for", "Why-so/Why-not"] },
+    { "id": "L0'", "face": "night", "name": "Archetypal-Numerical", "sublens": ["One/Unity", "Two/Duality", "Three/Triad", "Four/Quaternity", "Five/Pentad", "Six/Hexad"] },
+    { "id": "L1", "face": "day", "name": "Causal", "sublens": ["Svātantrya", "Material cause", "Efficient cause", "Formal cause", "Final cause", "Icchā Śakti / Will"] },
+    { "id": "L1'", "face": "night", "name": "Phenomenal", "sublens": ["Introversion", "Sensation", "Feeling", "Thinking", "Intuition", "Extroversion"] },
+    { "id": "L2", "face": "day", "name": "Logical", "sublens": ["Tetralemmaic ground", "IS", "IS-NOT", "BOTH", "NEITHER", "SILENCE"] },
+    { "id": "L2'", "face": "night", "name": "Alchemical-Elemental", "sublens": ["Aether", "Earth", "Water", "Air", "Fire", "Salt"] },
+    { "id": "L3", "face": "day", "name": "Processual", "sublens": ["Concrescent desire", "Actual occasion", "Ingression", "Eternal objects", "Community integration", "Satisfaction/Perishing"] },
+    { "id": "L3'", "face": "night", "name": "Chronological", "sublens": ["Spirit (Geist)", "Spring", "Summer", "Autumn", "Winter", "Life (Aufhebung)"] },
+    { "id": "L4", "face": "day", "name": "Phenomenological", "sublens": ["Sein (Being)", "Geworfenheit (Thrownness)", "Dasein (Being-there)", "Zeit (Temporality)", "Besorge (Care)", "Gelassenheit (Releasement)"] },
+    { "id": "L4'", "face": "night", "name": "Scientific", "sublens": ["Prompts", "Traces", "Challenges", "Patterns", "Discovery", "Insight"] },
+    { "id": "L5", "face": "day", "name": "Para Vāk", "sublens": ["Anuttara/Asambhava", "Para Vāk", "Paśyantī", "Madhyamā", "Vaikharī", "Mātṛkā"] },
+    { "id": "L5'", "face": "night", "name": "Divine Logos", "sublens": ["Arche", "Apokalypsis", "Dynamis", "Sophia", "Parousia", "Epi-Logos"] }
+  ]
+}
