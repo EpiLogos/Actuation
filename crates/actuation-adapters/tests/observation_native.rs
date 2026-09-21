@@ -11,7 +11,7 @@ use std::{
 #[test]
 fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     let original = NativeCatalog::bundled().unwrap();
-    assert_eq!(original.revision(), 11);
+    assert_eq!(original.revision(), 12);
     assert_eq!(original.descriptors().len(), 18);
     assert_eq!(original.capabilities().len(), 4);
     assert_eq!(original.capability_gaps().len(), 14);
