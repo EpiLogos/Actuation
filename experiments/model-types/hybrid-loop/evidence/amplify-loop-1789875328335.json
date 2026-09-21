@@ -1,0 +1,169 @@
+{
+  "schema": "actuation.model-types-amplify-loop/v1",
+  "created": "2026-09-20T03:35:28.335Z",
+  "loop": "mercury writes -> jev classifies (lens/adequacy/direction) -> verdict steers next round; closure noul at end",
+  "rounds_per_subject": 3,
+  "transcript": [
+    {
+      "subject": "m0-formulation",
+      "kind": "symbolic notation",
+      "rounds": [
+        {
+          "round": 1,
+          "mercury_chars": 1527,
+          "mercury_usage": {
+            "prompt_tokens": 389,
+            "completion_tokens": 520,
+            "total_tokens": 909,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 246
+            }
+          },
+          "wall_ms": 2346,
+          "amplification": "\n\nReading this subject through the 12 MEF lenses reveals a dense ontology of self-reflexive void. The lenses map the symbolic operators to structural dependencies, showing how the \"Transcendent Dyad\" functions as a recursive loop rather than a static point. Productively, the semantic lens clarifies the shift from raw potential (00) to differentiated existence (≠), while the logical lens traces the validity of the reflective operator (/) within a closed system.\n\nHowever, the reading fractures under the empirical and pragmatic lenses. The notation posits an absolute beginning (Anuttara) that resists verification or utility; it describes a state prior to measurement, rendering standard evaluation criteria inapplicable. The causal lens struggles to distinguish between the \"Vimarśa Engine\" as a mechanism and as a metaphor, leaving the direction of flow ambiguous. Furthermore, the temporal lens finds no progression, only eternal oscillation, which conflicts with the transformative arrow (→) suggesting completion.\n\nUltimately, the lenses reveal a system designed to collapse under scrutiny. It is productive for mapping internal coherence but breaks down when applied to external reality. Th",
+          "lens": "L3",
+          "lens_confidence": 0.19,
+          "adequacy": 1.55,
+          "adequacy_confidence": 0.26,
+          "direction": "shift-lens",
+          "direction_confidence": 0.66
+        },
+        {
+          "round": 2,
+          "mercury_chars": 1715,
+          "mercury_usage": {
+            "prompt_tokens": 391,
+            "completion_tokens": 700,
+            "total_tokens": 1091,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 246
+            }
+          },
+          "wall_ms": 2032,
+          "amplification": "\n\n**Lens L4: Recursive Topology of Silence**\n**Adequacy: 2.8/3**\n\nThe previous lens (L3) treated the notation as a static map. L4 treats it as a dynamic manifold where the coordinate M0-0-0 is not a place, but an event of self-closure.\n\n**Amplification:**\n\n1.  **The Zero-Point as Horizon:**\n    `00` is not absence; it is the unsaid ground. `00/(00-00)` describes a singularity dividing itself to perceive its own limit. The division `/` is not arithmetic but ontological friction—the moment silence touches its own echo.\n\n2.  **The Vimarśa Engine (?!=!?):**\n    This is the pulse of the Transcendent Dyad. `(?!)` is the outward thrust of being seeking form; `(!?)` is the inward collapse returning to source. The inequality `≠` ensures the system never freezes into a static image; it remains a living question.\n\n3.  **Resonance (~) and Locus (@):**\n    The operator `~` binds the abstract `5.0/5.1` to the coordinate. `5.0` is potential; `5.1` is the first tremor of manifestation. `(-)+@` marks where potential (`-`) contracts into presence (`@`). This is the \"Spanda\" throb—the universe breathing in on itself.\n\n4.  **The Return (→):**\n    The final arrow does not point forward; it points inwar",
+          "lens": "L4",
+          "lens_confidence": 0.94,
+          "adequacy": 1.66,
+          "adequacy_confidence": 0.47,
+          "direction": "shift-lens",
+          "direction_confidence": 0.45
+        },
+        {
+          "round": 3,
+          "mercury_chars": 2103,
+          "mercury_usage": {
+            "prompt_tokens": 385,
+            "completion_tokens": 740,
+            "total_tokens": 1125,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 245
+            }
+          },
+          "wall_ms": 2323,
+          "amplification": "\n\n**Lens Selection:** Λ5 (Recursive Topology of Self-Manifestation)\n**Adequacy Target:** 2.8/3\n**Operational Stance:** Structural-Phenomenological\n\nAmplification of M0-0-0 through Λ5:\n\nThe notation defines a fixed point in the manifold of consciousness, not as a static coordinate but as a **singularity of recursive inversion**. Where L4 may have treated the elements as sequential steps, Λ5 treats them as simultaneous topological constraints on the void.\n\n1.  **The Zero-Point Topology (00/(00-00)):**\n    This is not a division of numbers but a **boundary condition** where the observer and observed are the same membrane. `00` represents the pre-geometric field. `(00-00)` represents the first topological handle attached to that field—a loop where the void grasps its own tail. The result is a **closed time-like curve** in ontological space; a moment that contains its own cause.\n\n2.  **The Vimarśa Engine as a Feedback Loop (?!=!?):**\n    In this lens, `?` and `!` are not questions and answers but **phase shifts** in a standing wave. The engine does not \"think\"; it oscillates. The outward query and inward assertion are the crest and trough of a single vibration. This is the **Spanda** pu",
+          "lens": "L5",
+          "lens_confidence": 0.86,
+          "adequacy": 1.4,
+          "adequacy_confidence": 0.41,
+          "direction": "shift-lens",
+          "direction_confidence": 0.67
+        }
+      ],
+      "closure_noul": 0.44
+    },
+    {
+      "subject": "ql-form-readme",
+      "kind": "whole text",
+      "rounds": [
+        {
+          "round": 1,
+          "mercury_chars": 1445,
+          "mercury_usage": {
+            "prompt_tokens": 1087,
+            "completion_tokens": 492,
+            "total_tokens": 1579,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 253
+            }
+          },
+          "wall_ms": 1733,
+          "amplification": "\n\nThrough the twelve MEF lenses, this text reveals a rigorous attempt to ground instrument validation in structural integrity rather than superficial pattern matching. The lenses highlight a productive shift from measuring agreement to measuring sensitivity: the `middle-maturity` score successfully tracks synthetic degradation, proving the instrument detects missing type-fullness. This establishes a validity floor before reporting performance metrics.\n\nHowever, the reading breaks down where the `determination-warranted` channel fails to couple with the underlying state. The lenses expose a critical flaw: the instrument punishes empty conclusions but ignores unsupported ones, suggesting the query structure itself needs restructuring. The closure decisions further reveal a divergence between automated judgement and human review queues, not as errors but as evidence of unresolved complexity.\n\nThe lenses also surface a fidelity gap between native and host records; without embedded schedules, replay states cannot fully expose budget constraints to the referee. While the corpus passes the form check, the validation process shows that passing the floor is not the same as passing the task.",
+          "lens": "L3",
+          "lens_confidence": 0.18,
+          "adequacy": 2.2,
+          "adequacy_confidence": 0.2,
+          "direction": "shift-lens",
+          "direction_confidence": 0.25
+        },
+        {
+          "round": 2,
+          "mercury_chars": 2271,
+          "mercury_usage": {
+            "prompt_tokens": 1100,
+            "completion_tokens": 791,
+            "total_tokens": 1891,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 260
+            }
+          },
+          "wall_ms": 2099,
+          "amplification": "\n\nAdopting lens **L2: Architectural Integrity & Data Lineage**.\n\nWhere L3 focused on the output judgments, L2 interrogates the substrate: the structural fidelity of the QL form and the provenance of the state passed to the instrument.\n\n### 1. The Validity Floor: Structural Census\nThe text establishes a hard prerequisite: before evaluating *judgment quality*, we must confirm the *form itself* is intact.\n- **Record Triage:** Of 87 ql records, only 32 are \"form-checkable.\" The rest (55) are later-round shapes lacking circuit context, effectively noise for this test.\n- **Compliance Metrics:** The 32 valid records show near-perfect structural adherence (frame declared 32/32; transitions lawful 29/29).\n- **The Anomaly:** One real violation exists (deeplane S1-SKILL-001). This isn't a test failure; it's a system flag. The allowance overrun is named and queued for review, proving the system catches its own breaches.\n- **Data Lineage Gap:** A critical architectural note: the deeplane host restates allowance schedules in control payloads; the native host does not. This means replay states built from native records cannot show the referee the loop's budgets. The schedule lives in Rust, not th",
+          "lens": "L2",
+          "lens_confidence": 0.99,
+          "adequacy": 1.88,
+          "adequacy_confidence": 0.4,
+          "direction": "deepen",
+          "direction_confidence": 0.46
+        },
+        {
+          "round": 3,
+          "mercury_chars": 2777,
+          "mercury_usage": {
+            "prompt_tokens": 1108,
+            "completion_tokens": 794,
+            "total_tokens": 1902,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 258
+            }
+          },
+          "wall_ms": 2086,
+          "amplification": "\n\nTo deepen this reading, we must shift from observing instrument behavior to diagnosing the structural disconnect between the QL form's logic and the instrument’s interpretation of that logic. The mixed validity verdict signals that the current formulation treats the circuit’s state as a static dataset rather than a dynamic argument.\n\n### 1. The Disconnect in the Warrantedness Channel\nThe `determination-warranted` score failing to drop significantly when the middle is stripped reveals a critical flaw: the instrument is likely anchoring on the *presence* of a determination rather than the *support* for it. This suggests the model is recognizing the surface pattern of a conclusion without validating the premises. To sharpen this, the question must force an explicit dependency. Instead of asking \"is #5 warranted?\", the instrument should be required to first output the maturity score of #1-#4 before evaluating #5. If the maturity is low, the warrantedness score should be structurally constrained to near-zero, preventing the model from hallucinating support for a conclusion in a vacuum.\n\n### 2. The Strategic Value of the Closure Choice\nThe `closure-appropriate` results, where the instr",
+          "lens": "L3",
+          "lens_confidence": 0.23,
+          "adequacy": 1.44,
+          "adequacy_confidence": 0.44,
+          "direction": "deepen",
+          "direction_confidence": 0.61
+        }
+      ],
+      "closure_noul": 0.39
+    }
+  ],
+  "honest_limits": [
+    "instrument readings only, promotion none",
+    "adequacy/lens/direction are jev readings of Mercury text, not ground truth",
+    "the loop is ungraded: this run establishes that the pairing runs and what its trajectory looks like, not that it improves anything"
+  ],
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "semantic-stochastic"
+  }
+}

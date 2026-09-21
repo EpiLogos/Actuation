@@ -1,0 +1,84 @@
+{
+  "schema": "actuation.model-types-jev-run/v1",
+  "created": "2026-09-20T03:35:17.474Z",
+  "model_ref": "jev-latest",
+  "api": "https://api.typesafe.ai/v1/systemone",
+  "instrument_standing": {
+    "reading_class": "semantic-stochastic",
+    "promotion": "none",
+    "law": "answers are instrument readings, never the run determination; determination remains pending-human-review"
+  },
+  "inputs": {
+    "catalogue": {
+      "path": "/Users/admin/Central/Work/Actuation/experiments/model-types/jev/question-catalogue.json",
+      "sha256": "ce4535c8214f45a96353096675cd9f7b7563dfaeaf6210bc954cdf154498e90a"
+    },
+    "states": {
+      "path": "/Users/admin/Central/Work/Actuation/experiments/model-types/hybrid-loop/evidence/tmp-loop-state.jsonl",
+      "sha256": "fe45156a2af596ffac6555f886d139bdd952a77b5c3be1de86f138e8c8d896da",
+      "count": 1
+    },
+    "truth": {
+      "path": "/Users/admin/Central/Work/Actuation/experiments/model-types/hybrid-loop/evidence/tmp-empty-truth.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "per_question": {
+    "mef-lens-refraction": {
+      "n": 1,
+      "accuracy": null,
+      "brier_mean": null,
+      "confidence_mean": 0.18
+    }
+  },
+  "standing_refraction_pair_mass": {
+    "pair": [
+      "L1",
+      "L4'"
+    ],
+    "mean_mass": 0.09,
+    "n": 1,
+    "note": "agreement-of-readings with the runtime standing pair, not accuracy"
+  },
+  "usage": {
+    "input_tokens": 777,
+    "output_tokens": 126
+  },
+  "determination": "pending-human-review",
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "semantic-stochastic"
+  },
+  "records": [
+    {
+      "record_id": "lens|ql-form-readme-r1",
+      "question_id": "mef-lens-refraction",
+      "answer": {
+        "type": "choice",
+        "choice": "L3",
+        "confidence": 0.18,
+        "probabilities": {
+          "L0": 0.07,
+          "L0'": 0.02,
+          "L3": 0.25,
+          "L1'": 0.02,
+          "L5'": 0.04,
+          "L2'": 0.02,
+          "L3'": 0.04,
+          "L2": 0.07,
+          "L1": 0.05,
+          "L4'": 0.04,
+          "L5": 0.21,
+          "L4": 0.17
+        }
+      },
+      "standing_pair_mass": 0.09,
+      "latency_ms": 640,
+      "truth": null,
+      "scored": {
+        "correct": null,
+        "brier": null
+      }
+    }
+  ]
+}

@@ -245,6 +245,38 @@
             "reopen"
           ],
           "instructions": "Given the initiating intent (#0), the middle residues (#1-#4), and the candidate determination (#5) in the state: should this circuit close on this determination, or reopen because the whole is not yet satisfied? This is asked of the whole, not of the loop's bookkeeping."
+        },
+        {
+          "id": "amplify-direction",
+          "type": "choice",
+          "options": [
+            "deepen",
+            "shift-lens",
+            "conclude"
+          ],
+          "instructions": "You are refereeing an amplification loop: a text was written about a subject, and you have classified its lens and adequacy. What should the next round do? deepen = continue developing the same reading; shift-lens = the reading is coherent but exhausted, take a different lens; conclude = the subject is sufficiently amplified for now."
+        },
+        {
+          "id": "syntax-compute-mark",
+          "type": "choice",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "instructions": "You hold the full mark table of the Anuttara syntax: every mark with its coordinate and name. A formulation from one coordinate is given as a computation over the marks. Which candidate mark does this formulation compute to / express? Answer with the candidate letter."
+        },
+        {
+          "id": "syntax-explain-breakdown",
+          "type": "choice",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "instructions": "A formulation is given, with two candidate prose breakdowns. Which breakdown genuinely explains this formulation as its expansion? Answer with the candidate letter."
         }
       ]
     }
