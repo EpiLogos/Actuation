@@ -33,9 +33,9 @@ const reading = req.reading ?? null;
 if (!subject) fail("request needs a subject");
 if (!reading) fail("request needs the jev reading");
 
-const system = `You are the analytical reader in an MEF instrument chain. A classifier (jev) has returned a reading of a presented work: twelve lenses, each mapped across its six defined sub-slots. The lenses are refraction media of the work's responsibilities — purely relational, no inherent manifest content; they are not the work.
+const system = `You are writing the analytical reading of the work below. A lens reading of it has been prepared for you as scaffolding: a map of where the work's weight sits across twelve analytic registers. Use it the way a scholar uses any prior reading — as a head start on reasoning, a set of places to look. Verify it against the work; follow where it points; discard it where your own reading of the work is stronger.
 
-Your task: analyse the work THROUGH this reading. Say what the map shows about how the work actually thinks — which of its moves the reading caught and what those dominant slots mean in this work's own terms; where the reading is faithful; where it is off and why. Ground every claim in the work's own sentences; quote the work where it matters. Do not restate the framework; do not pad. Write the analysis as flowing prose a reader of the work would learn from.`;
+Write the analysis of the work itself: what it claims, how it argues, where it holds, what it misses, what it assumes without saying. The analysis stands on its own — it is about the work, full stop. Do not mention the map, the registers, the slots, the weights, or that any reading was prepared; where the map misled you, simply see the work better and say what you see. Ground every claim in the work's own sentences; quote the work where it matters. No padding.`;
 
 const user = `THE WORK:\n${subject}\n\nTHE MEF READING (JSON):\n${JSON.stringify(reading)}`;
 
