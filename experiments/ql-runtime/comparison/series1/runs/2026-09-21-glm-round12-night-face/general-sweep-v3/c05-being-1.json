@@ -1,0 +1,221 @@
+{
+  "entry": "C5",
+  "title": "Government by consent — Locke (1689), Second Treatise §§87, 95, 124",
+  "subject_chars": 428,
+  "mode": "being",
+  "reading": {
+    "shape": "square A (Being / Becoming / Knowing): L0↔L5', L5↔L0' over P0/P5/P0'/P5'",
+    "square": {
+      "key": "A",
+      "titles": [
+        "Being",
+        "Becoming",
+        "Knowing"
+      ],
+      "lens_pairs": [
+        [
+          "L0",
+          "L5'"
+        ],
+        [
+          "L5",
+          "L0'"
+        ]
+      ],
+      "positions": [
+        "P0",
+        "P5",
+        "P0'",
+        "P5'"
+      ]
+    },
+    "readings": [
+      {
+        "at": "P0",
+        "lens": "L0",
+        "name": "Quaternal",
+        "strongest": "L0.0 Why (./?)",
+        "distribution": {
+          "L0.2 How (./?)": 0.02,
+          "L0.5 Why-so/Why-not (./?)": 0.05,
+          "L0.3 Whom/Which/When (./?)": 0.01,
+          "L0.4 Where/When/Why-for": 0.37,
+          "L0.1 What (./?)": 0.04,
+          "L0.0 Why (./?)": 0.51
+        },
+        "machinery": [
+          {
+            "slot": "L0.0",
+            "label": "Why (./?)",
+            "meaning": "presuppositional frame"
+          },
+          {
+            "slot": "L0.1",
+            "label": "What (./?)",
+            "meaning": "definitional question"
+          },
+          {
+            "slot": "L0.2",
+            "label": "How (./?)",
+            "meaning": "operational question"
+          },
+          {
+            "slot": "L0.3",
+            "label": "Whom/Which/When (./?)",
+            "meaning": "pattern-identifying question"
+          },
+          {
+            "slot": "L0.4",
+            "label": "Where/When/Why-for",
+            "meaning": "contextual question (→ lemniscate)"
+          },
+          {
+            "slot": "L0.5",
+            "label": "Why-so/Why-not (./?)",
+            "meaning": "pros hen homonymy, analogia; question questioning itself"
+          }
+        ]
+      },
+      {
+        "at": "P5",
+        "lens": "L0",
+        "name": "Quaternal",
+        "strongest": "L0.4 Where/When/Why-for",
+        "distribution": {
+          "L0.2 How (./?)": 0.04,
+          "L0.5 Why-so/Why-not (./?)": 0.13,
+          "L0.3 Whom/Which/When (./?)": 0.02,
+          "L0.4 Where/When/Why-for": 0.49,
+          "L0.1 What (./?)": 0.08,
+          "L0.0 Why (./?)": 0.24
+        },
+        "machinery": [
+          {
+            "slot": "L0.0",
+            "label": "Why (./?)",
+            "meaning": "presuppositional frame"
+          },
+          {
+            "slot": "L0.1",
+            "label": "What (./?)",
+            "meaning": "definitional question"
+          },
+          {
+            "slot": "L0.2",
+            "label": "How (./?)",
+            "meaning": "operational question"
+          },
+          {
+            "slot": "L0.3",
+            "label": "Whom/Which/When (./?)",
+            "meaning": "pattern-identifying question"
+          },
+          {
+            "slot": "L0.4",
+            "label": "Where/When/Why-for",
+            "meaning": "contextual question (→ lemniscate)"
+          },
+          {
+            "slot": "L0.5",
+            "label": "Why-so/Why-not (./?)",
+            "meaning": "pros hen homonymy, analogia; question questioning itself"
+          }
+        ]
+      },
+      {
+        "at": "P0",
+        "lens": "L5",
+        "name": "Para Vāk",
+        "strongest": "L5-4 Vaikharī",
+        "distribution": {
+          "L5-3 Madhyamā": 0.41,
+          "L5-5 Mātṛkā": 0.03,
+          "L5-0 Anuttara / Asambhava": 0.01,
+          "L5-1 Parā Vāk": 0.04,
+          "L5-4 Vaikharī": 0.44,
+          "L5-2 Paśyantī": 0.07
+        },
+        "machinery": [
+          {
+            "slot": "L5-0",
+            "label": "Anuttara / Asambhava",
+            "meaning": "transcendent beyond speech"
+          },
+          {
+            "slot": "L5-1",
+            "label": "Parā Vāk",
+            "meaning": "supreme Word — pure I-consciousness"
+          },
+          {
+            "slot": "L5-2",
+            "label": "Paśyantī",
+            "meaning": "visionary speech — unified seeing"
+          },
+          {
+            "slot": "L5-3",
+            "label": "Madhyamā",
+            "meaning": "mental speech — intermediate structuring"
+          },
+          {
+            "slot": "L5-4",
+            "label": "Vaikharī",
+            "meaning": "articulate speech — full manifestation"
+          },
+          {
+            "slot": "L5-5",
+            "label": "Mātṛkā",
+            "meaning": "letters — measuring power of consciousness"
+          }
+        ]
+      },
+      {
+        "at": "P5",
+        "lens": "L5",
+        "name": "Para Vāk",
+        "strongest": "L5-4 Vaikharī",
+        "distribution": {
+          "L5-3 Madhyamā": 0.36,
+          "L5-5 Mātṛkā": 0.04,
+          "L5-0 Anuttara / Asambhava": 0,
+          "L5-1 Parā Vāk": 0.02,
+          "L5-4 Vaikharī": 0.54,
+          "L5-2 Paśyantī": 0.04
+        },
+        "machinery": [
+          {
+            "slot": "L5-0",
+            "label": "Anuttara / Asambhava",
+            "meaning": "transcendent beyond speech"
+          },
+          {
+            "slot": "L5-1",
+            "label": "Parā Vāk",
+            "meaning": "supreme Word — pure I-consciousness"
+          },
+          {
+            "slot": "L5-2",
+            "label": "Paśyantī",
+            "meaning": "visionary speech — unified seeing"
+          },
+          {
+            "slot": "L5-3",
+            "label": "Madhyamā",
+            "meaning": "mental speech — intermediate structuring"
+          },
+          {
+            "slot": "L5-4",
+            "label": "Vaikharī",
+            "meaning": "articulate speech — full manifestation"
+          },
+          {
+            "slot": "L5-5",
+            "label": "Mātṛkā",
+            "meaning": "letters — measuring power of consciousness"
+          }
+        ]
+      }
+    ]
+  },
+  "latency_ms": 666,
+  "wall_ms": 728
+}

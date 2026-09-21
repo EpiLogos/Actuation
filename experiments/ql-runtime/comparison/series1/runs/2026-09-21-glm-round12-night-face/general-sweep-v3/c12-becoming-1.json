@@ -1,0 +1,221 @@
+{
+  "entry": "C12",
+  "title": "Probability as degree of belief — Ramsey (1926), Truth and Probability",
+  "subject_chars": 338,
+  "mode": "becoming",
+  "reading": {
+    "shape": "square B (Articulation / Encounter / Becoming): L1↔L4', L4↔L1' over P1/P4/P1'/P4'",
+    "square": {
+      "key": "B",
+      "titles": [
+        "Articulation",
+        "Encounter",
+        "Becoming"
+      ],
+      "lens_pairs": [
+        [
+          "L1",
+          "L4'"
+        ],
+        [
+          "L4",
+          "L1'"
+        ]
+      ],
+      "positions": [
+        "P1",
+        "P4",
+        "P1'",
+        "P4'"
+      ]
+    },
+    "readings": [
+      {
+        "at": "P1",
+        "lens": "L1",
+        "name": "Causal",
+        "strongest": "L1-3 Formal Cause",
+        "distribution": {
+          "L1-1 Material Cause": 0,
+          "L1-3 Formal Cause": 0.59,
+          "L1-2 Efficient Cause": 0.31,
+          "L1-0 Svātantrya": 0.01,
+          "L1-5 Icchā Śakti / Will": 0.05,
+          "L1-4 Final Cause": 0.04
+        },
+        "machinery": [
+          {
+            "slot": "L1-0",
+            "label": "Svātantrya",
+            "meaning": "essential / absolute freedom causation"
+          },
+          {
+            "slot": "L1-1",
+            "label": "Material Cause",
+            "meaning": "substance, substrate, matter"
+          },
+          {
+            "slot": "L1-2",
+            "label": "Efficient Cause",
+            "meaning": "agency, force, transformation"
+          },
+          {
+            "slot": "L1-3",
+            "label": "Formal Cause",
+            "meaning": "pattern, architecture, organizing principle"
+          },
+          {
+            "slot": "L1-4",
+            "label": "Final Cause",
+            "meaning": "telos, purpose, for-the-sake-of-which"
+          },
+          {
+            "slot": "L1-5",
+            "label": "Icchā Śakti / Will",
+            "meaning": "ultimate causation — divine will / blind Will"
+          }
+        ]
+      },
+      {
+        "at": "P4",
+        "lens": "L1",
+        "name": "Causal",
+        "strongest": "L1-3 Formal Cause",
+        "distribution": {
+          "L1-1 Material Cause": 0,
+          "L1-3 Formal Cause": 0.64,
+          "L1-2 Efficient Cause": 0.29,
+          "L1-0 Svātantrya": 0.01,
+          "L1-5 Icchā Śakti / Will": 0.03,
+          "L1-4 Final Cause": 0.03
+        },
+        "machinery": [
+          {
+            "slot": "L1-0",
+            "label": "Svātantrya",
+            "meaning": "essential / absolute freedom causation"
+          },
+          {
+            "slot": "L1-1",
+            "label": "Material Cause",
+            "meaning": "substance, substrate, matter"
+          },
+          {
+            "slot": "L1-2",
+            "label": "Efficient Cause",
+            "meaning": "agency, force, transformation"
+          },
+          {
+            "slot": "L1-3",
+            "label": "Formal Cause",
+            "meaning": "pattern, architecture, organizing principle"
+          },
+          {
+            "slot": "L1-4",
+            "label": "Final Cause",
+            "meaning": "telos, purpose, for-the-sake-of-which"
+          },
+          {
+            "slot": "L1-5",
+            "label": "Icchā Śakti / Will",
+            "meaning": "ultimate causation — divine will / blind Will"
+          }
+        ]
+      },
+      {
+        "at": "P1",
+        "lens": "L4",
+        "name": "Phenomenological",
+        "strongest": "L4.4 Besorge",
+        "distribution": {
+          "L4.4 Besorge": 0.66,
+          "L4.2 Dasein": 0.28,
+          "L4.1 Geworfenheit": 0.02,
+          "L4.0 Sein": 0.02,
+          "L4.3 Zeit": 0,
+          "L4.5 Gelassenheit": 0.01
+        },
+        "machinery": [
+          {
+            "slot": "L4.0",
+            "label": "Sein",
+            "meaning": "the question of the meaning of Being"
+          },
+          {
+            "slot": "L4.1",
+            "label": "Geworfenheit",
+            "meaning": "thrownness — givenness of existence"
+          },
+          {
+            "slot": "L4.2",
+            "label": "Dasein",
+            "meaning": "being-there — human existence as clearing"
+          },
+          {
+            "slot": "L4.3",
+            "label": "Zeit",
+            "meaning": "temporality as horizon of Being"
+          },
+          {
+            "slot": "L4.4",
+            "label": "Besorge",
+            "meaning": "concern — caring engagement with world"
+          },
+          {
+            "slot": "L4.5",
+            "label": "Gelassenheit",
+            "meaning": "releasement — letting-be, openness"
+          }
+        ]
+      },
+      {
+        "at": "P4",
+        "lens": "L4",
+        "name": "Phenomenological",
+        "strongest": "L4.4 Besorge",
+        "distribution": {
+          "L4.4 Besorge": 0.63,
+          "L4.2 Dasein": 0.28,
+          "L4.0 Sein": 0.05,
+          "L4.3 Zeit": 0.01,
+          "L4.1 Geworfenheit": 0.02,
+          "L4.5 Gelassenheit": 0.01
+        },
+        "machinery": [
+          {
+            "slot": "L4.0",
+            "label": "Sein",
+            "meaning": "the question of the meaning of Being"
+          },
+          {
+            "slot": "L4.1",
+            "label": "Geworfenheit",
+            "meaning": "thrownness — givenness of existence"
+          },
+          {
+            "slot": "L4.2",
+            "label": "Dasein",
+            "meaning": "being-there — human existence as clearing"
+          },
+          {
+            "slot": "L4.3",
+            "label": "Zeit",
+            "meaning": "temporality as horizon of Being"
+          },
+          {
+            "slot": "L4.4",
+            "label": "Besorge",
+            "meaning": "concern — caring engagement with world"
+          },
+          {
+            "slot": "L4.5",
+            "label": "Gelassenheit",
+            "meaning": "releasement — letting-be, openness"
+          }
+        ]
+      }
+    ]
+  },
+  "latency_ms": 606,
+  "wall_ms": 667
+}

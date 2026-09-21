@@ -1,0 +1,221 @@
+{
+  "entry": "C12",
+  "title": "Probability as degree of belief — Ramsey (1926), Truth and Probability",
+  "subject_chars": 338,
+  "mode": "knowing",
+  "reading": {
+    "shape": "square C (Text/Texture): L2↔L3', L3↔L2' over P2/P3/P2'/P3'",
+    "square": {
+      "key": "C",
+      "titles": [
+        "Text/Texture",
+        null,
+        null
+      ],
+      "lens_pairs": [
+        [
+          "L2",
+          "L3'"
+        ],
+        [
+          "L3",
+          "L2'"
+        ]
+      ],
+      "positions": [
+        "P2",
+        "P3",
+        "P2'",
+        "P3'"
+      ]
+    },
+    "readings": [
+      {
+        "at": "P2",
+        "lens": "L2",
+        "name": "Logical",
+        "strongest": "L2-2 IS-NOT",
+        "distribution": {
+          "L2-3 BOTH": 0.05,
+          "L2-1 IS": 0.15,
+          "L2-0 Tetralemmaic Ground": 0.22,
+          "L2-4 NEITHER": 0.11,
+          "L2-5 SILENCE": 0.02,
+          "L2-2 IS-NOT": 0.45
+        },
+        "machinery": [
+          {
+            "slot": "L2-0",
+            "label": "Tetralemmaic Ground",
+            "meaning": "(./?)/(?/.) — pre-logical superposition"
+          },
+          {
+            "slot": "L2-1",
+            "label": "IS",
+            "meaning": "being, assertion, affirmation"
+          },
+          {
+            "slot": "L2-2",
+            "label": "IS-NOT",
+            "meaning": "non-being, negation, boundary"
+          },
+          {
+            "slot": "L2-3",
+            "label": "BOTH",
+            "meaning": "IS and IS-NOT — contradiction, dialetheism"
+          },
+          {
+            "slot": "L2-4",
+            "label": "NEITHER",
+            "meaning": "IS nor IS-NOT — void, ineffability"
+          },
+          {
+            "slot": "L2-5",
+            "label": "SILENCE",
+            "meaning": "irrepresentable / unprovable truth"
+          }
+        ]
+      },
+      {
+        "at": "P3",
+        "lens": "L2",
+        "name": "Logical",
+        "strongest": "L2-2 IS-NOT",
+        "distribution": {
+          "L2-3 BOTH": 0.04,
+          "L2-1 IS": 0.23,
+          "L2-0 Tetralemmaic Ground": 0.22,
+          "L2-4 NEITHER": 0.11,
+          "L2-2 IS-NOT": 0.38,
+          "L2-5 SILENCE": 0.02
+        },
+        "machinery": [
+          {
+            "slot": "L2-0",
+            "label": "Tetralemmaic Ground",
+            "meaning": "(./?)/(?/.) — pre-logical superposition"
+          },
+          {
+            "slot": "L2-1",
+            "label": "IS",
+            "meaning": "being, assertion, affirmation"
+          },
+          {
+            "slot": "L2-2",
+            "label": "IS-NOT",
+            "meaning": "non-being, negation, boundary"
+          },
+          {
+            "slot": "L2-3",
+            "label": "BOTH",
+            "meaning": "IS and IS-NOT — contradiction, dialetheism"
+          },
+          {
+            "slot": "L2-4",
+            "label": "NEITHER",
+            "meaning": "IS nor IS-NOT — void, ineffability"
+          },
+          {
+            "slot": "L2-5",
+            "label": "SILENCE",
+            "meaning": "irrepresentable / unprovable truth"
+          }
+        ]
+      },
+      {
+        "at": "P2",
+        "lens": "L3",
+        "name": "Processual",
+        "strongest": "L3-1 Actual Occasion",
+        "distribution": {
+          "L3-0 Concrescent Desire": 0.28,
+          "L3-5 Satisfaction / Perishing": 0.01,
+          "L3-3 Eternal Objects": 0.09,
+          "L3-2 Ingression": 0.15,
+          "L3-4 Community Integration": 0.05,
+          "L3-1 Actual Occasion": 0.42
+        },
+        "machinery": [
+          {
+            "slot": "L3-0",
+            "label": "Concrescent Desire",
+            "meaning": "creative urge / Lacanian lack"
+          },
+          {
+            "slot": "L3-1",
+            "label": "Actual Occasion",
+            "meaning": "fundamental unit of reality"
+          },
+          {
+            "slot": "L3-2",
+            "label": "Ingression",
+            "meaning": "eternal objects entering occasions"
+          },
+          {
+            "slot": "L3-3",
+            "label": "Eternal Objects",
+            "meaning": "pure potentials that ingress"
+          },
+          {
+            "slot": "L3-4",
+            "label": "Community Integration",
+            "meaning": "prehensions forming society"
+          },
+          {
+            "slot": "L3-5",
+            "label": "Satisfaction / Perishing",
+            "meaning": "jouissance — objective immortality"
+          }
+        ]
+      },
+      {
+        "at": "P3",
+        "lens": "L3",
+        "name": "Processual",
+        "strongest": "L3-1 Actual Occasion",
+        "distribution": {
+          "L3-0 Concrescent Desire": 0.27,
+          "L3-5 Satisfaction / Perishing": 0.01,
+          "L3-3 Eternal Objects": 0.14,
+          "L3-2 Ingression": 0.15,
+          "L3-4 Community Integration": 0.03,
+          "L3-1 Actual Occasion": 0.4
+        },
+        "machinery": [
+          {
+            "slot": "L3-0",
+            "label": "Concrescent Desire",
+            "meaning": "creative urge / Lacanian lack"
+          },
+          {
+            "slot": "L3-1",
+            "label": "Actual Occasion",
+            "meaning": "fundamental unit of reality"
+          },
+          {
+            "slot": "L3-2",
+            "label": "Ingression",
+            "meaning": "eternal objects entering occasions"
+          },
+          {
+            "slot": "L3-3",
+            "label": "Eternal Objects",
+            "meaning": "pure potentials that ingress"
+          },
+          {
+            "slot": "L3-4",
+            "label": "Community Integration",
+            "meaning": "prehensions forming society"
+          },
+          {
+            "slot": "L3-5",
+            "label": "Satisfaction / Perishing",
+            "meaning": "jouissance — objective immortality"
+          }
+        ]
+      }
+    ]
+  },
+  "latency_ms": 634,
+  "wall_ms": 693
+}
