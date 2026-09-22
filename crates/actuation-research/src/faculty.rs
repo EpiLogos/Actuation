@@ -216,6 +216,9 @@ fn invoke_owner(config: &FacultyConfig, owner: &OwnerInstrument, request: &Value
         "nara-elemental-map" => {
             epi_invoke(owner, 4, "nara.elemental-map", request["request"].clone())
         }
+        "nara-personal-receive" => {
+            epi_invoke(owner, 4, "nara.personal-receive", request["request"].clone())
+        }
         "logos-return" => epi_invoke(owner, 5, "logos.return", request["request"].clone()),
         "kernel-apply" => cli(json!([
             "kernel",
