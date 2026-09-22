@@ -212,6 +212,7 @@ mod tests {
         assert_eq!(position_for_operation("tda-vietoris-rips"), Some(1));
         assert_eq!(position_for_operation("bimba-neighborhood"), Some(2));
         assert_eq!(position_for_operation("representation-bind"), Some(3));
+        assert_eq!(position_for_operation("ql-techne-reading"), Some(3));
         assert_eq!(position_for_operation("nara-elemental-map"), Some(4));
         assert_eq!(position_for_operation("logos-return"), Some(5));
         assert_eq!(position_for_operation("capabilities"), None);
