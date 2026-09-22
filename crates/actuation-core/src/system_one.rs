@@ -77,8 +77,8 @@ pub struct SystemOneResponse {
 /// response is deliberately insufficient to produce a determination.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
-pub struct Determination(SystemOneResponse);
-impl Determination {
+pub struct SystemOneDetermination(SystemOneResponse);
+impl SystemOneDetermination {
     pub fn response(&self) -> &SystemOneResponse {
         &self.0
     }
@@ -166,7 +166,7 @@ impl SystemOneRequest {
         Ok(())
     }
 
-    pub fn validate_response(&self, response: SystemOneResponse) -> Result<Determination> {
+    pub fn validate_response(&self, response: SystemOneResponse) -> Result<SystemOneDetermination> {
         self.validate()?;
         if !versioned_jev(&response.model)
             || (versioned_jev(&self.model) && response.model != self.model)
@@ -221,10 +221,10 @@ impl SystemOneRequest {
                 _ => return Err(Error::new("system_one.answer_type_or_probability_invalid")),
             }
         }
-        Ok(Determination(response))
+        Ok(SystemOneDetermination(response))
     }
 
-    pub fn parse_response(&self, bytes: &[u8]) -> Result<Determination> {
+    pub fn parse_response(&self, bytes: &[u8]) -> Result<SystemOneDetermination> {
         self.validate_response(serde_json::from_value(unique_json(bytes)?)?)
     }
 }
@@ -310,7 +310,7 @@ mod tests {
                     "legend":{"0":{"description":"low"},"1":["high","damage"]},"confidence":0.3}
             }})
     }
-    fn check(value: Value) -> Result<Determination> {
+    fn check(value: Value) -> Result<SystemOneDetermination> {
         request().parse_response(&serde_json::to_vec(&value).unwrap())
     }
     #[test]
