@@ -321,6 +321,90 @@ fn main() {
     return result
 
 
+async def epi_constitution() -> dict[str, Any]:
+    """Return the native Epi-Logos Prime-QL constitution and #0..#5 faculty disclosure."""
+    result = await _ql("epi-agent", "constitution")
+    await _receipt({"operation": "epi-constitution"}, result)
+    return result
+
+
+async def epi_faculty(position: int) -> dict[str, Any]:
+    """Return one source-qualified Epi faculty descriptor (#0..#5)."""
+    if position not in range(6):
+        raise ValueError("position must be 0..5")
+    result = await _ql("epi-agent", "faculty", f"#{position}")
+    await _receipt({"operation": "epi-faculty", "position": f"#{position}"}, result)
+    return result
+
+
+async def _epi_invoke(position: int, operation: str, input_value: dict[str, Any]) -> dict[str, Any]:
+    if position not in range(6):
+        raise ValueError("position must be 0..5")
+    envelope = {
+        "schema": "ql.epi-logos-agent-invocation/v1",
+        "position": f"#{position}",
+        "operation": operation,
+        "input": input_value,
+    }
+    with tempfile.NamedTemporaryFile("w", suffix=".json", encoding="utf-8", delete=False) as handle:
+        json.dump(envelope, handle)
+        path = handle.name
+    try:
+        result = await _ql("epi-agent", "invoke", path)
+    finally:
+        Path(path).unlink(missing_ok=True)
+    return result
+
+
+async def anuttara_read(reference: str, max_relations: int = 128) -> dict[str, Any]:
+    """Read one full Anuttara language row joined to current Bimba relations."""
+    result = await _epi_invoke(0, "anuttara.read", {"reference": reference, "max_relations": max_relations})
+    await _receipt({"operation": "anuttara-read", "reference": reference, "max_relations": max_relations}, result)
+    return result
+
+
+async def tda_vietoris_rips(request: dict[str, Any]) -> dict[str, Any]:
+    """Run deterministic source-qualified Vietoris-Rips persistent H0/H1 over an explicit metric."""
+    result = await _epi_invoke(1, "tda.vietoris-rips", request)
+    await _receipt({"operation": "tda-vietoris-rips", "request": request}, result)
+    return result
+
+
+async def bimba_neighborhood(reference: str, max_relations: int = 256) -> dict[str, Any]:
+    """Read exact source-graph adjacency without substituting GDS or learned inference."""
+    result = await _epi_invoke(2, "bimba.neighborhood", {"reference": reference, "max_relations": max_relations})
+    await _receipt({"operation": "bimba-neighborhood", "reference": reference, "max_relations": max_relations}, result)
+    return result
+
+
+async def representation_bind(request: dict[str, Any]) -> dict[str, Any]:
+    """Bind source/form/representation/asset/temporal provenance for a Mahamaya representation."""
+    result = await _epi_invoke(3, "representation.bind", request)
+    await _receipt({"operation": "representation-bind", "request": request}, result)
+    return result
+
+
+async def nara_activity_validate(activity: dict[str, Any]) -> dict[str, Any]:
+    """Validate protected Nara activity spans, provenance and protection semantics."""
+    result = await _epi_invoke(4, "nara.activity.validate", {"activity": activity})
+    await _receipt({"operation": "nara-activity-validate", "activity": activity}, result)
+    return result
+
+
+async def nara_elemental_map(request: dict[str, Any]) -> dict[str, Any]:
+    """Map typed EFWA contributions to the native quaternion while retaining confidence separately."""
+    result = await _epi_invoke(4, "nara.elemental-map", request)
+    await _receipt({"operation": "nara-elemental-map", "request": request}, result)
+    return result
+
+
+async def logos_return(request: dict[str, Any]) -> dict[str, Any]:
+    """Form the complete T/C/T-prime/C-prime Epii Return envelope without promoting it."""
+    result = await _epi_invoke(5, "logos.return", request)
+    await _receipt({"operation": "logos-return", "request": request}, result)
+    return result
+
+
 def return_envelope(
     subject_ref: str,
     relation_to_parent: str,
