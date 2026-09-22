@@ -8,6 +8,7 @@
 mod admission;
 mod catalog;
 pub mod effects;
+pub mod jev;
 mod instantiation;
 mod observation;
 pub mod secrets;

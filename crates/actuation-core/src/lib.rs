@@ -20,6 +20,7 @@ mod agency;
 mod composition;
 mod refs;
 mod wire;
+pub mod system_one;
 
 pub use agency::*;
 pub use composition::*;
