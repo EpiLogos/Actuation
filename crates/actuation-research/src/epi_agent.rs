@@ -61,19 +61,28 @@ pub fn body(owner: &OwnerInstrument) -> Result<Value> {
         || constitution["faculties"][4]["s_prime"] != "S4′ Anima"
         || constitution["faculties"][5]["s_prime"] != "S5′ Aletheia"
     {
-        return Err(Error::new("QL owner returned an incompatible Epi constitution"));
+        return Err(Error::new(
+            "QL owner returned an incompatible Epi constitution",
+        ));
     }
     let faculties = (0..6)
-        .map(|position| owner_cli(owner, json!(["epi-agent", "faculty", format!("#{position}")]))
+        .map(|position| {
+            owner_cli(
+                owner,
+                json!(["epi-agent", "faculty", format!("#{position}")]),
+            )
             .and_then(|value| {
                 if value["schema"] != "ql.epi-logos-agent-faculty/v1"
                     || value["position"] != format!("#{position}")
                 {
-                    Err(Error::new(format!("QL faculty #{position} readback mismatched")))
+                    Err(Error::new(format!(
+                        "QL faculty #{position} readback mismatched"
+                    )))
                 } else {
                     Ok(value)
                 }
-            }))
+            })
+        })
         .collect::<Result<Vec<_>>>()?;
     Ok(json!({
         "schema":EPI_PRIME_QL_BODY_SCHEMA,
@@ -116,8 +125,15 @@ pub fn run(
     observer: &mut dyn RuntimeObserver,
 ) -> Result<Value> {
     text(&request.subject_ref, "subject_ref")?;
-    if request.source_refs.is_empty() || request.source_refs.iter().any(|source| source.trim().is_empty()) {
-        return Err(Error::new("Epi Prime-QL run requires non-empty source_refs"));
+    if request.source_refs.is_empty()
+        || request
+            .source_refs
+            .iter()
+            .any(|source| source.trim().is_empty())
+    {
+        return Err(Error::new(
+            "Epi Prime-QL run requires non-empty source_refs",
+        ));
     }
     if request.prime.condition != "prime-recursive-field" {
         return Err(Error::new(
