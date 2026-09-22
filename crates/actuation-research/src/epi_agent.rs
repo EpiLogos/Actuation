@@ -111,7 +111,7 @@ fn position_for_operation(operation: &str) -> Option<u8> {
         "anuttara-read" => Some(0),
         "tda-vietoris-rips" | "kernel-apply" | "mef-lenses" | "context-frames" => Some(1),
         "bimba-neighborhood" => Some(2),
-        "representation-bind" => Some(3),
+        "representation-bind" | "ql-techne-reading" => Some(3),
         "nara-activity-validate" | "nara-elemental-map" | "nara-personal-receive" => Some(4),
         "logos-return" => Some(5),
         _ => None,
