@@ -3,24 +3,8 @@ mod runtime;
 use actuation_core::*;
 use actuation_runtime::*;
 use runtime::{block_on, ScriptedHost, Witness};
-use serde_json::{json, Value};
+use serde_json::json;
 
-#[test]
-fn generic_runtime_extraction_matches_original_node_host_calls_events_and_results() {
-    let corpus: Value =
-        serde_json::from_str(include_str!("../../../fixtures/migration/runtime.json")).unwrap();
-    assert_eq!(corpus["schema"], "actuation.runtime-extraction/v1");
-    let cases = corpus["cases"].as_array().unwrap();
-    assert!(cases.len() >= 29);
-    for row in cases {
-        assert_eq!(
-            runtime::evaluate(row).unwrap(),
-            row["expected"],
-            "{}",
-            row["id"]
-        );
-    }
-}
 fn binding() -> WorldBinding {
     WorldBinding::new(WorldBindingFields::new(
         WorldBindingRef::new("binding:project").unwrap(),

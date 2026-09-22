@@ -111,26 +111,13 @@ pub fn caught(value: Result<Value>) -> Value {
         Err(error) => json!({"ok":false,"error":{"name":"TypeError","message":error.to_string()}}),
     }
 }
-pub fn pure_row(row: &Value) -> Value {
-    let result = match (row["operation"].as_str(), row["args"].as_array()) {
-        (Some(operation), Some(args)) => evaluate(operation, args),
-        _ => Err(Error::new("invalid oracle request")),
-    };
-    let mut answer = caught(result);
-    answer["id"] = row["id"].clone();
-    answer
-}
-
-pub fn corpus() -> Value {
-    serde_json::from_str(include_str!(
-        "../../../../fixtures/migration/scenarios.json"
-    ))
-    .unwrap()
-}
 pub struct FixtureCatalogue(Value);
 impl FixtureCatalogue {
+    /// The capability descriptors the boundary catalogue needs, relocated to a
+    /// test-local fixture when the Node-era scenarios corpus was retired
+    /// (cleanup/retire-node-oracle-2026-09-22).
     pub fn new() -> Self {
-        Self(corpus()["cases"][0]["expected"]["capabilities"].clone())
+        Self(serde_json::from_str(include_str!("fixtures/capabilities.json")).unwrap())
     }
 }
 impl Default for FixtureCatalogue {
@@ -225,106 +212,4 @@ fn files(root: &Path) -> Result<BTreeMap<String, String>> {
             ))
         })
         .collect()
-}
-pub fn scenario(row: &Value) -> Result<Value> {
-    let input = &row["input"];
-    match row["kind"].as_str().unwrap_or("") {
-        "fold" => Ok(caught(
-            fold_stream_file(
-                input["raw"]
-                    .as_str()
-                    .ok_or_else(|| Error::new("raw must be text"))?,
-            )
-            .and_then(encode),
-        )),
-        "filename" => Ok(caught(
-            serde_json::from_value::<StreamRef>(input["ref"].clone())
-                .map(|r| json!(stream_file_name(&r)))
-                .map_err(Into::into),
-        )),
-        "command" => {
-            let store = JsonlStreamStore::new(
-                input["root"]
-                    .as_str()
-                    .ok_or_else(|| Error::new("root is required for test command"))?,
-            )?;
-            Ok(caught(store_action(
-                &store,
-                input["operation"].as_str().unwrap_or(""),
-                &input["args"],
-            )))
-        }
-        "store" => {
-            let root = tempfile::tempdir().map_err(|e| Error::new(e.to_string()))?;
-            let store = JsonlStreamStore::new(root.path())?;
-            let mut results = Vec::new();
-            for action in input["actions"]
-                .as_array()
-                .ok_or_else(|| Error::new("missing actions"))?
-            {
-                let before = files(root.path())?;
-                if let Some(raw) = action.get("write") {
-                    let stream_ref: StreamRef =
-                        serde_json::from_value(action["stream_ref"].clone())?;
-                    fs::write(store.path(&stream_ref), raw.as_str().unwrap())
-                        .map_err(|e| Error::new(e.to_string()))?;
-                }
-                let result = caught(store_action(
-                    &store,
-                    action["operation"].as_str().unwrap_or(""),
-                    &action["args"],
-                ));
-                if let Some(expected) = action.get("expect_ok") {
-                    if &result["ok"] != expected {
-                        return Err(Error::new(format!(
-                            "authored assertion failed: {}: {}",
-                            action["label"], result
-                        )));
-                    }
-                }
-                let after = files(root.path())?;
-                if action["unchanged"] == true && before != after {
-                    return Err(Error::new("refusal/dedup wrote to the durable store"));
-                }
-                if action["append_only"] == true {
-                    for (name, raw) in &before {
-                        if !after.get(name).is_some_and(|next| next.starts_with(raw)) {
-                            return Err(Error::new("append rewrote existing bytes"));
-                        }
-                    }
-                }
-                results.push(json!({"label":action["label"],"result":result,"files":after}));
-            }
-            Ok(json!(results))
-        }
-        _ => Err(Error::new("unsupported store scenario kind")),
-    }
-}
-pub fn normalized(mut value: Value) -> Value {
-    match &mut value {
-        Value::Array(rows) => {
-            for row in rows {
-                *row = normalized(row.take());
-            }
-        }
-        Value::Object(fields) => {
-            if fields.get("ok") == Some(&json!(false)) && fields.contains_key("error") {
-                return json!({"ok":false});
-            }
-            for (_, v) in fields.iter_mut() {
-                *v = normalized(v.take());
-            }
-            if let Some(Value::Object(files)) = fields.get_mut("files") {
-                for (_, v) in files.iter_mut() {
-                    let raw = v.as_str().unwrap();
-                    *v = json!(raw
-                        .split('\n')
-                        .map(|line| serde_json::from_str::<Value>(line).unwrap_or(json!(line)))
-                        .collect::<Vec<_>>());
-                }
-            }
-        }
-        _ => {}
-    }
-    value
 }
