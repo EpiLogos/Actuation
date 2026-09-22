@@ -411,6 +411,13 @@ async def nara_elemental_map(request: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+async def nara_personal_receive(request: dict[str, Any]) -> dict[str, Any]:
+    """Receive one exact coupled M1/M2/M3 event through the native Nara personal field."""
+    result = await _epi_invoke(4, "nara.personal-receive", request)
+    await _receipt({"operation": "nara-personal-receive", "request": request}, result)
+    return result
+
+
 async def logos_return(request: dict[str, Any]) -> dict[str, Any]:
     """Form the complete T/C/T-prime/C-prime Epii Return envelope without promoting it."""
     result = await _epi_invoke(5, "logos.return", request)
