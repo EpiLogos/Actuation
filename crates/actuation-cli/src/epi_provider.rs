@@ -24,6 +24,9 @@ pub struct EpiProviderArgs {
     pub provider: Option<String>,
     pub model: Option<String>,
     pub agent_session: Option<String>,
+    pub central_ctrl_bin: Option<PathBuf>,
+    pub central_root: Option<PathBuf>,
+    pub central_project: Option<String>,
 }
 
 fn value(args: &[String], name: &str) -> Result<String> {
@@ -126,6 +129,15 @@ impl EpiProviderArgs {
             provider,
             model,
             agent_session: optional(args, "--agent-session"),
+            central_ctrl_bin: optional(args, "--central-ctrl-bin")
+                .map(PathBuf::from)
+                .map(|path| file(path, "Central ctrl binary"))
+                .transpose()?,
+            central_root: optional(args, "--central-root")
+                .map(PathBuf::from)
+                .map(|path| directory(path, "Central root"))
+                .transpose()?,
+            central_project: optional(args, "--central-project"),
         })
     }
 }
@@ -165,6 +177,23 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
     }
     if let Some(root) = &args.ql_root {
         command.env("QL_MEF_ROOT", root);
+    }
+    if args.central_ctrl_bin.is_some() != args.central_root.is_some() {
+        return Err(Error::new(
+            "--central-ctrl-bin and --central-root must be supplied together or both omitted",
+        ));
+    }
+    if let Some(ctrl) = &args.central_ctrl_bin {
+        command.env("CENTRAL_CTRL_BIN", ctrl);
+    }
+    if let Some(root) = &args.central_root {
+        command.env("CENTRAL_ROOT", root);
+    }
+    if let Some(project) = &args.central_project {
+        if project.trim().is_empty() || project.len() > 256 || project.chars().any(char::is_control) {
+            return Err(Error::new("--central-project is invalid"));
+        }
+        command.env("CENTRAL_PROJECT", project);
     }
     if let Some(aikit) = &args.aikit_bin {
         command.env("AIKIT_BIN", aikit);
