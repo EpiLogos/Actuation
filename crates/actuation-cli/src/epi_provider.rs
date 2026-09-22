@@ -24,6 +24,7 @@ pub struct EpiProviderArgs {
     pub provider: Option<String>,
     pub model: Option<String>,
     pub agent_session: Option<String>,
+    pub aikit_bin: Option<PathBuf>,
     pub central_ctrl_bin: Option<PathBuf>,
     pub central_root: Option<PathBuf>,
     pub central_project: Option<String>,
@@ -129,6 +130,10 @@ impl EpiProviderArgs {
             provider,
             model,
             agent_session: optional(args, "--agent-session"),
+            aikit_bin: optional(args, "--aikit-bin")
+                .map(PathBuf::from)
+                .map(|path| file(path, "AIKit binary"))
+                .transpose()?,
             central_ctrl_bin: optional(args, "--central-ctrl-bin")
                 .map(PathBuf::from)
                 .map(|path| file(path, "Central ctrl binary"))
@@ -177,6 +182,9 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
     }
     if let Some(root) = &args.ql_root {
         command.env("QL_MEF_ROOT", root);
+    }
+    if let Some(aikit) = &args.aikit_bin {
+        command.env("AIKIT_BIN", aikit);
     }
     if args.central_ctrl_bin.is_some() != args.central_root.is_some() {
         return Err(Error::new(
