@@ -1,6 +1,6 @@
 {
   "schema": "actuation.native-catalog/v1",
-  "catalog_revision": 13,
+  "catalog_revision": 14,
   "descriptors": [
     {
       "schema": "actuation.harness-detection/v1",
@@ -1043,16 +1043,16 @@
         "notes": "unchanged by the correction: hooks and notify execute inside or beside a running session; nothing observed wakes the harness from outside. A relay sender must not pretend codex can be woken."
       },
       "install_seam": {
-        "config_path": ".codex/hooks.json",
+        "config_path": "$CODEX_HOME/hooks.json",
         "format": "json",
-        "entry_shape": "per-event hook command entries under camelCase event names (SessionStart / UserPromptSubmit / PreToolUse / PostToolUse / Stop / PreCompact / PostCompact / SessionEnd / SubagentStart / SubagentStop / Interrupt / PermissionRequest); notify listener configured separately in config.toml; hook trust state recorded in hooks.state",
+        "entry_shape": "environment-scoped: the seam is the hooks.json inside the codex home named by CODEX_HOME (default ~/.codex), not the per-project .codex/hooks.json the harness also reads natively \u2014 corrected 2026-09-23 against the aikit codex projection (apply exit 0 on git projects, per-generation undo byte-exact). Per-event hook command entries under camelCase event names (SessionStart / UserPromptSubmit / PreToolUse / PostToolUse / Stop / PreCompact / PostCompact / SessionEnd / SubagentStart / SubagentStop / Interrupt / PermissionRequest); notify listener configured separately in config.toml; hook trust state recorded in hooks.state",
         "ownership_marker": "hook command resolves to the AIKit dispatch executable",
         "preserves_foreign_entries": true
       },
       "uninstall_seam": {
-        "config_path": ".codex/hooks.json",
+        "config_path": "$CODEX_HOME/hooks.json",
         "format": "json",
-        "entry_shape": "entries whose command matches the ownership marker are removed; foreign entries and config.toml notify are untouched",
+        "entry_shape": "environment-scoped: entries in $CODEX_HOME/hooks.json whose command matches the ownership marker are removed; foreign entries and config.toml notify are untouched",
         "ownership_marker": "hook command resolves to the AIKit dispatch executable",
         "preserves_foreign_entries": true
       },
@@ -1074,7 +1074,7 @@
         ]
       },
       "provenance": {
-        "authored_by": "O:I capability descriptor programme (corrected 2026-09-23 against codex-cli 0.155.1's own embedded draft-07 hook output wire schemas \u2014 declares the shipped PostCompact and Interrupt events and the Stop/UserPromptSubmit/SubagentStop decision:block channels the 2026-09-21 correction missed \u2014 and against a local binary scan locating the notify config key in the installed 0.155.1 config field table; the notify invocation-at-turn-completion behaviour remains upstream-declared)",
+        "authored_by": "O:I capability descriptor programme (corrected 2026-09-23 against codex-cli 0.155.1's own embedded draft-07 hook output wire schemas \u2014 declares the shipped PostCompact and Interrupt events and the Stop/UserPromptSubmit/SubagentStop decision:block channels the 2026-09-21 correction missed \u2014 and against a local binary scan locating the notify config key in the installed 0.155.1 config field table; the notify invocation-at-turn-completion behaviour remains upstream-declared; install/uninstall seams redeclared 2026-09-23 to the environment-scoped $CODEX_HOME/hooks.json the dispatch projection actually writes)",
         "source_refs": [
           "survey:local-machine-2026-09-06",
           "survey:local-machine-2026-09-21",
@@ -1082,9 +1082,10 @@
           "upstream:openai-codex-cli-0.155.1",
           "upstream:openai-codex-cli-config-reference",
           "survey:codex-0.155.1-shipped-hook-schemas-2026-09-23",
-          "survey:codex-notify-binary-scan-2026-09-23"
+          "survey:codex-notify-binary-scan-2026-09-23",
+          "aikit:codex-seam-reverify-2026-09-22"
         ],
-        "catalog_revision": 13
+        "catalog_revision": 14
       }
     },
     {
