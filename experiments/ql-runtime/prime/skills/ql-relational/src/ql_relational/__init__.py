@@ -74,6 +74,29 @@ async def _record(operation: str, request: Any, response: Any) -> None:
         handle.write(json.dumps(row, sort_keys=True) + "\n")
 
 
+def _runtime_locus_ref() -> str | None:
+    """Attribute a faculty call to Prime's current runtime locus without leaking paths.
+
+    Prime's host supplies every descendant with RLM_DEPTH and its own
+    RLM_SESSION_DIR.  The directory is material execution evidence but may
+    contain a private/local path, so receipts carry only its SHA-256.  Root
+    calls retain the Actuation-supplied locus ref.
+    """
+    declared = os.environ.get("ACTUATION_RESEARCH_LOCUS_REF")
+    depth_raw = os.environ.get("RLM_DEPTH", "").strip()
+    try:
+        depth = int(depth_raw) if depth_raw else 0
+    except ValueError as exc:
+        raise RuntimeError("Prime supplied a non-integer RLM_DEPTH") from exc
+    if depth <= 0:
+        return declared
+    session_dir = os.environ.get("RLM_SESSION_DIR", "").strip()
+    if not session_dir:
+        return f"prime-rlm-depth:{depth}:session-dir-unobserved"
+    digest = hashlib.sha256(session_dir.encode("utf-8")).hexdigest()
+    return f"prime-rlm-session-sha256:{digest}:depth:{depth}"
+
+
 async def _receipt(native_request: dict[str, Any], response: Any) -> None:
     """File the native Actuation faculty receipt for one executed operation.
 
@@ -99,7 +122,7 @@ async def _receipt(native_request: dict[str, Any], response: Any) -> None:
         "configuration": configuration,
         "request": native_request,
         "trace_ref": os.environ.get("ACTUATION_RESEARCH_TRACE_REF"),
-        "declared_locus_ref": os.environ.get("ACTUATION_RESEARCH_LOCUS_REF"),
+        "declared_locus_ref": _runtime_locus_ref(),
     }
     proc = await asyncio.create_subprocess_exec(
         research_bin,
