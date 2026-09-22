@@ -37,3 +37,5 @@ pub mod sdk;
 pub mod faculty;
 
 pub mod inspection;
+
+pub mod epi_agent;
