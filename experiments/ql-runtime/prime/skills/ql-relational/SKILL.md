@@ -28,6 +28,11 @@ await ql_relational.wiki_refract(request_dict)
 await ql_relational.constellation_contract()
 await ql_relational.harmonic_search("3:3", max_matches=8)
 await ql_relational.harmonic_snapshot("chromatic")
+await ql_relational.spawn_child_cheapest(
+    "Inspect this bounded local whole and return the material difference.",
+    name="bounded-review",
+    use_type="agent-child",
+)
 ql_relational.return_envelope(...)
 ```
 
@@ -43,6 +48,21 @@ For a differentiated child Agency:
 6. retain unresolved or contradictory returned difference instead of flattening it.
 
 Prime children inherit this installed Skill from their parent runtime. A child may itself recurse when the live Prime depth configuration admits it.
+
+## Child model selection
+
+Use `spawn_child_cheapest(...)` when a differentiated child is useful and the
+task is compatible with cost-first routing. The Skill asks the installed AIKit
+binary to resolve the current Project's **CHEAPEST_ELIGIBLE** roster policy.
+It then asks Prime's live `rlm.find_models()` catalogue to confirm the exact
+provider/native model pair before calling the native child runtime. A missing or
+ambiguous match refuses; the Skill never hard-codes a remembered cheap model.
+
+The returned object distinguishes requested policy, AIKit-resolved canonical
+Model/route and the Prime-observed child handle/model. Admission is not the
+child's answer. Results still arrive through Prime's normal child messaging or
+files. The child's private session path is represented only by a SHA-256 digest
+for correlation with native faculty receipts.
 
 ## Wiki / constellation
 
