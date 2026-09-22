@@ -147,9 +147,10 @@ pub fn extract_prime_family(records: &[Value]) -> Value {
                     if let Some(model) = coalesce(v, &["model", "model_id", "modelId"]) {
                         extras["model"] = json!(model)
                     }
-                    if let Some(session_dir) =
-                        coalesce(v, &["session_dir", "sessionDir", "artifact_dir", "artifactDir"])
-                    {
+                    if let Some(session_dir) = coalesce(
+                        v,
+                        &["session_dir", "sessionDir", "artifact_dir", "artifactDir"],
+                    ) {
                         extras["session_dir_sha256"] = json!(bytes_digest(session_dir.as_bytes()))
                     }
                     if let Some(depth) = v
@@ -433,18 +434,13 @@ mod tests {
             .map(|n| n["id"].as_str().unwrap())
             .collect();
         assert!(ids.contains(&"sub-1") && ids.contains(&"sub-2"));
-        assert!(family["nodes"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|n| {
-                n["id"] == json!("sub-1")
-                    && n["active_session_id"] == json!("root-session")
-                    && n["model"] == json!("provider/model-a")
-                    && n["depth"] == json!(1)
-                    && n["session_dir_sha256"]
-                        == json!(bytes_digest(b"/private/tmp/root/sub-1"))
-            }));
+        assert!(family["nodes"].as_array().unwrap().iter().any(|n| {
+            n["id"] == json!("sub-1")
+                && n["active_session_id"] == json!("root-session")
+                && n["model"] == json!("provider/model-a")
+                && n["depth"] == json!(1)
+                && n["session_dir_sha256"] == json!(bytes_digest(b"/private/tmp/root/sub-1"))
+        }));
         assert!(family["nodes"]
             .as_array()
             .unwrap()
