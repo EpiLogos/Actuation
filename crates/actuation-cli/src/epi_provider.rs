@@ -45,8 +45,8 @@ fn file(path: PathBuf, label: &str) -> Result<PathBuf> {
     if !path.is_absolute() {
         return Err(Error::new(format!("{label} must be an absolute path")));
     }
-    let canonical = std::fs::canonicalize(&path)
-        .map_err(|_| Error::new(format!("{label} is unavailable")))?;
+    let canonical =
+        std::fs::canonicalize(&path).map_err(|_| Error::new(format!("{label} is unavailable")))?;
     if !canonical.is_file() {
         return Err(Error::new(format!("{label} must be a regular file")));
     }
@@ -73,7 +73,9 @@ impl EpiProviderArgs {
                 .bytes()
                 .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
         {
-            return Err(Error::new("--ql-revision must be a lowercase 40-hex revision"));
+            return Err(Error::new(
+                "--ql-revision must be a lowercase 40-hex revision",
+            ));
         }
         let provider = value(args, "--provider")?;
         let model = value(args, "--model")?;
@@ -82,7 +84,9 @@ impl EpiProviderArgs {
             || provider.len() > 256
             || model.len() > 1024
         {
-            return Err(Error::new("provider/model identifiers are invalid or unbounded"));
+            return Err(Error::new(
+                "provider/model identifiers are invalid or unbounded",
+            ));
         }
         let ql_root = optional(args, "--ql-root")
             .map(PathBuf::from)
@@ -141,10 +145,7 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
         .env("QL_BIN", &args.ql_bin)
         .env("QL_OWNER_REVISION", &args.ql_revision)
         .env("ACTUATION_RESEARCH_BIN", &args.research_bin)
-        .env(
-            "ACTUATION_RESEARCH_FACULTY_CONFIG",
-            &args.faculty_config,
-        )
+        .env("ACTUATION_RESEARCH_FACULTY_CONFIG", &args.faculty_config)
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit());
@@ -180,14 +181,22 @@ mod tests {
     #[test]
     fn ql_revision_is_exact_not_a_label() {
         let args = vec![
-            "--prime-bin".into(), "/bin/true".into(),
-            "--ql-bin".into(), "/bin/true".into(),
-            "--ql-revision".into(), "short".into(),
-            "--skill-path".into(), "/tmp".into(),
-            "--research-bin".into(), "/bin/true".into(),
-            "--faculty-config".into(), "/bin/true".into(),
-            "--provider".into(), "p".into(),
-            "--model".into(), "m".into(),
+            "--prime-bin".into(),
+            "/bin/true".into(),
+            "--ql-bin".into(),
+            "/bin/true".into(),
+            "--ql-revision".into(),
+            "short".into(),
+            "--skill-path".into(),
+            "/tmp".into(),
+            "--research-bin".into(),
+            "/bin/true".into(),
+            "--faculty-config".into(),
+            "/bin/true".into(),
+            "--provider".into(),
+            "p".into(),
+            "--model".into(),
+            "m".into(),
         ];
         let error = EpiProviderArgs::parse(&args).unwrap_err();
         assert!(error.to_string().contains("40-hex"));
