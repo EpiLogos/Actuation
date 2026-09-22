@@ -20,8 +20,8 @@ pub struct EpiProviderArgs {
     pub research_bin: PathBuf,
     pub faculty_config: PathBuf,
     pub ql_root: Option<PathBuf>,
-    pub provider: String,
-    pub model: String,
+    pub provider: Option<String>,
+    pub model: Option<String>,
     pub agent_session: Option<String>,
 }
 
@@ -79,12 +79,15 @@ impl EpiProviderArgs {
                 "--ql-revision must be a lowercase 40-hex revision",
             ));
         }
-        let provider = value(args, "--provider")?;
-        let model = value(args, "--model")?;
-        if provider.starts_with('-')
-            || model.starts_with('-')
-            || provider.len() > 256
-            || model.len() > 1024
+        let provider = optional(args, "--provider");
+        let model = optional(args, "--model");
+        if provider.is_some() != model.is_some() {
+            return Err(Error::new(
+                "--provider and --model must be supplied together or both omitted",
+            ));
+        }
+        if provider.as_ref().is_some_and(|provider| provider.starts_with('-') || provider.len() > 256)
+            || model.as_ref().is_some_and(|model| model.starts_with('-') || model.len() > 1024)
         {
             return Err(Error::new(
                 "provider/model identifiers are invalid or unbounded",
@@ -135,10 +138,6 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
             "--no-prompt-templates",
             "--no-context-files",
             "--no-skills",
-            "--provider",
-            &args.provider,
-            "--model",
-            &args.model,
             "--skill",
             args.skill_path.to_string_lossy().as_ref(),
         ])
@@ -152,6 +151,9 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit());
 
+    if let (Some(provider), Some(model)) = (&args.provider, &args.model) {
+        command.args(["--provider", provider, "--model", model]);
+    }
     if let Some(root) = &args.ql_root {
         command.env("QL_MEF_ROOT", root);
     }
@@ -173,12 +175,34 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
 pub fn usage() -> &'static str {
     "actuation-epi-prime --prime-bin <abs> --ql-bin <abs> --ql-revision <sha> \
 --skill-path <abs> --research-bin <abs> --faculty-config <abs> \
-[--ql-root <abs>] [--agent-session <ref>] --provider <native> --model <id>"
+[--ql-root <abs>] [--agent-session <ref>] [--provider <native> --model <id>]"
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn provider_and_model_are_one_explicit_override() {
+        let args = vec![
+            "--prime-bin".into(),
+            "/bin/true".into(),
+            "--ql-bin".into(),
+            "/bin/true".into(),
+            "--ql-revision".into(),
+            "0123456789abcdef0123456789abcdef01234567".into(),
+            "--skill-path".into(),
+            "/tmp".into(),
+            "--research-bin".into(),
+            "/bin/true".into(),
+            "--faculty-config".into(),
+            "/bin/true".into(),
+            "--provider".into(),
+            "p".into(),
+        ];
+        let error = EpiProviderArgs::parse(&args).unwrap_err();
+        assert!(error.to_string().contains("supplied together"));
+    }
 
     #[test]
     fn ql_revision_is_exact_not_a_label() {
