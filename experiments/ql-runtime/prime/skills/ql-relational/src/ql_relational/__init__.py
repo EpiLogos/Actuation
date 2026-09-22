@@ -22,10 +22,10 @@ def _root() -> Path:
     return root
 
 
-async def _run(*args: str, stdin: str | None = None) -> dict[str, Any]:
+async def _run(*args: str, stdin: str | None = None, cwd: Path | None = None) -> dict[str, Any]:
     proc = await asyncio.create_subprocess_exec(
         *args,
-        cwd=str(_root()),
+        cwd=str(cwd) if cwd is not None else None,
         stdin=asyncio.subprocess.PIPE if stdin is not None else asyncio.subprocess.DEVNULL,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
@@ -41,7 +41,12 @@ async def _run(*args: str, stdin: str | None = None) -> dict[str, Any]:
 
 
 async def _git_revision() -> str:
-    result = await _run("git", "rev-parse", "HEAD")
+    declared = os.environ.get("QL_OWNER_REVISION", "").strip()
+    if declared:
+        if len(declared) != 40 or any(ch not in "0123456789abcdef" for ch in declared):
+            raise RuntimeError("QL_OWNER_REVISION must be a lowercase 40-hex revision")
+        return declared
+    result = await _run("git", "rev-parse", "HEAD", cwd=_root())
     return str(result.get("stdout", "")).strip()
 
 
@@ -120,10 +125,17 @@ async def _receipt(native_request: dict[str, Any], response: Any) -> None:
 
 async def _ql(*args: str) -> dict[str, Any]:
     request = list(args)
-    response = await _run(
-        "cargo", "run", "--quiet", "--manifest-path", str(_root() / "Cargo.toml"),
-        "-p", "ql-cli", "--", *args, "--json"
-    )
+    binary = os.environ.get("QL_BIN", "").strip()
+    if binary:
+        ql = Path(binary).expanduser().resolve()
+        if not ql.is_file():
+            raise RuntimeError(f"QL_BIN is not an installed executable file: {ql}")
+        response = await _run(str(ql), *args, "--json")
+    else:
+        response = await _run(
+            "cargo", "run", "--quiet", "--manifest-path", str(_root() / "Cargo.toml"),
+            "-p", "ql-cli", "--", *args, "--json", cwd=_root()
+        )
     await _record("ql-cli:" + ".".join(args[:2]), request, response)
     return response
 
@@ -179,6 +191,7 @@ async def wiki_refract(request: dict[str, Any]) -> dict[str, Any]:
         "cargo", "run", "--quiet", "--manifest-path", str(_root() / "Cargo.toml"),
         "-p", "ql-wiki", "--bin", "ql-wiki-refraction",
         stdin=payload,
+        cwd=_root(),
     )
     await _record("ql-wiki:refract", request, response)
     await _receipt({"operation": "wiki-refract", "request": request}, response)
