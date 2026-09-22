@@ -96,7 +96,10 @@ fn apply_relational_environment(
 }
 
 fn child_faculty_evidence(family: &Value, receipts: Option<&[Value]>) -> Value {
-    let children = family["child_nodes"].as_array().cloned().unwrap_or_default();
+    let children = family["child_nodes"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
     let rows = receipts.unwrap_or(&[]);
     let mut correlated = Vec::new();
     let mut material_loci = 0usize;
@@ -511,7 +514,6 @@ mod tests {
         }
     }
 
-
     #[test]
     fn child_faculty_requires_host_locus_and_native_receipt_to_meet() {
         let digest = crate::evidence::bytes_digest(b"/private/prime/sub-a");
@@ -524,19 +526,25 @@ mod tests {
                 "session_dir_sha256":digest
             }]
         });
-        let miss = child_faculty_evidence(&family, Some(&[json!({
-            "declared_locus_ref":"agent-session/root",
-            "operation":"anuttara-read",
-            "success":true
-        })]));
+        let miss = child_faculty_evidence(
+            &family,
+            Some(&[json!({
+                "declared_locus_ref":"agent-session/root",
+                "operation":"anuttara-read",
+                "success":true
+            })]),
+        );
         assert_eq!(miss["observed"], false);
-        let hit = child_faculty_evidence(&family, Some(&[json!({
-            "declared_locus_ref":format!("prime-rlm-session-sha256:{digest}:depth:1"),
-            "operation":"anuttara-read",
-            "success":true,
-            "ql_mef_revision":"q",
-            "response_digest":"r"
-        })]));
+        let hit = child_faculty_evidence(
+            &family,
+            Some(&[json!({
+                "declared_locus_ref":format!("prime-rlm-session-sha256:{digest}:depth:1"),
+                "operation":"anuttara-read",
+                "success":true,
+                "ql_mef_revision":"q",
+                "response_digest":"r"
+            })]),
+        );
         assert_eq!(hit["observed"], true);
         assert_eq!(hit["correlated_children"][0]["model"], "provider/model-a");
         assert_eq!(
