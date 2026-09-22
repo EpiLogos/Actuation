@@ -277,6 +277,33 @@
             "D"
           ],
           "instructions": "A formulation is given, with two candidate prose breakdowns. Which breakdown genuinely explains this formulation as its expansion? Answer with the candidate letter."
+        },
+        {
+          "id": "virtue-presence-balance",
+          "type": "choice",
+          "options": [
+            "Love/Peace",
+            "Truth",
+            "Openness/Creativity",
+            "Joy/Play",
+            "Goodness",
+            "Beauty",
+            "Life/Nature",
+            "Wisdom",
+            "Reality"
+          ],
+          "instructions": "This account is read against the ninefold virtue determinations of the system, with the account's nearest declared relations in view. Which virtue is most present in this account? Your probability distribution across the nine virtues is the balance reading."
+        },
+        {
+          "id": "mark-compute-account",
+          "type": "choice",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "instructions": "You hold the full mark table of the Anuttara syntax. Given an account and candidate marks (A-D), which mark does this account compute through? Answer with the candidate letter."
         }
       ]
     }

@@ -1,0 +1,14 @@
+[
+  {
+    "target": "Truth",
+    "seed": "A repair task: verify actual behaviour before changing anything, make only the narrowest justified correction, leave the workspace truthful."
+  },
+  {
+    "target": "Beauty",
+    "seed": "A design task: reshape a module so its structure becomes proportionate to its use, removing what is excessive."
+  },
+  {
+    "target": "Wisdom",
+    "seed": "A handover task: record what the work established so another person can act on it without re-deriving it."
+  }
+]
