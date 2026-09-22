@@ -7,7 +7,7 @@
 
 use actuation_core::{Error, Result};
 use std::{
-    path::{Path, PathBuf},
+    path::PathBuf,
     process::{Command, Stdio},
 };
 
