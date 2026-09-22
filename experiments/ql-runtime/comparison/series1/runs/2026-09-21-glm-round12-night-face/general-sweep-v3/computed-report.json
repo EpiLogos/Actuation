@@ -1,0 +1,1368 @@
+{
+  "l2maps": {
+    "C1": {
+      "per_rep": [
+        {
+          "rep": 1,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-3 BOTH": 0.06,
+            "L2-5 SILENCE": 0.01,
+            "L2-4 NEITHER": 0.01,
+            "L2-1 IS": 0.77,
+            "L2-2 IS-NOT": 0.01,
+            "L2-0 Tetralemmaic Ground": 0.14
+          }
+        },
+        {
+          "rep": 2,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-3 BOTH": 0.05,
+            "L2-1 IS": 0.79,
+            "L2-0 Tetralemmaic Ground": 0.13,
+            "L2-4 NEITHER": 0.01,
+            "L2-5 SILENCE": 0.01,
+            "L2-2 IS-NOT": 0.01
+          }
+        },
+        {
+          "rep": 3,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-0 Tetralemmaic Ground": 0.13,
+            "L2-1 IS": 0.79,
+            "L2-2 IS-NOT": 0.01,
+            "L2-4 NEITHER": 0.01,
+            "L2-3 BOTH": 0.05,
+            "L2-5 SILENCE": 0.01
+          }
+        }
+      ],
+      "avg": {
+        "L2-0 Tetralemmaic Ground": 0.13333333333333333,
+        "L2-1 IS": 0.7833333333333334,
+        "L2-2 IS-NOT": 0.01,
+        "L2-3 BOTH": 0.05333333333333333,
+        "L2-4 NEITHER": 0.01,
+        "L2-5 SILENCE": 0.01
+      },
+      "spread": {
+        "ge10": 2,
+        "ge05": 3,
+        "top1": 0.7833333333333334,
+        "top2": 0.13333333333333333,
+        "top3": 0.05333333333333333,
+        "entropy": 1.0884077946800148
+      }
+    },
+    "C2": {
+      "per_rep": [
+        {
+          "rep": 1,
+          "argmax": "L2-0 Tetralemmaic Ground",
+          "dist": {
+            "L2-2 IS-NOT": 0.03,
+            "L2-0 Tetralemmaic Ground": 0.32,
+            "L2-1 IS": 0.32,
+            "L2-4 NEITHER": 0.06,
+            "L2-5 SILENCE": 0.03,
+            "L2-3 BOTH": 0.24
+          }
+        },
+        {
+          "rep": 2,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-4 NEITHER": 0.08,
+            "L2-3 BOTH": 0.24,
+            "L2-1 IS": 0.33,
+            "L2-5 SILENCE": 0.03,
+            "L2-2 IS-NOT": 0.03,
+            "L2-0 Tetralemmaic Ground": 0.29
+          }
+        },
+        {
+          "rep": 3,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-4 NEITHER": 0.06,
+            "L2-1 IS": 0.35,
+            "L2-3 BOTH": 0.22,
+            "L2-2 IS-NOT": 0.03,
+            "L2-5 SILENCE": 0.03,
+            "L2-0 Tetralemmaic Ground": 0.31
+          }
+        }
+      ],
+      "avg": {
+        "L2-0 Tetralemmaic Ground": 0.30666666666666664,
+        "L2-1 IS": 0.3333333333333333,
+        "L2-2 IS-NOT": 0.03,
+        "L2-3 BOTH": 0.23333333333333334,
+        "L2-4 NEITHER": 0.06666666666666667,
+        "L2-5 SILENCE": 0.03
+      },
+      "spread": {
+        "ge10": 3,
+        "ge05": 4,
+        "top1": 0.3333333333333333,
+        "top2": 0.30666666666666664,
+        "top3": 0.23333333333333334,
+        "entropy": 2.105150883680634
+      }
+    },
+    "C3": {
+      "per_rep": [
+        {
+          "rep": 1,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-4 NEITHER": 0.02,
+            "L2-1 IS": 0.6,
+            "L2-0 Tetralemmaic Ground": 0.2,
+            "L2-5 SILENCE": 0.02,
+            "L2-3 BOTH": 0.08,
+            "L2-2 IS-NOT": 0.08
+          }
+        },
+        {
+          "rep": 2,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-0 Tetralemmaic Ground": 0.2,
+            "L2-2 IS-NOT": 0.1,
+            "L2-1 IS": 0.59,
+            "L2-5 SILENCE": 0.02,
+            "L2-3 BOTH": 0.08,
+            "L2-4 NEITHER": 0.01
+          }
+        },
+        {
+          "rep": 3,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-0 Tetralemmaic Ground": 0.2,
+            "L2-1 IS": 0.6,
+            "L2-3 BOTH": 0.08,
+            "L2-4 NEITHER": 0.02,
+            "L2-2 IS-NOT": 0.08,
+            "L2-5 SILENCE": 0.02
+          }
+        }
+      ],
+      "avg": {
+        "L2-0 Tetralemmaic Ground": 0.2,
+        "L2-1 IS": 0.5966666666666666,
+        "L2-2 IS-NOT": 0.08666666666666667,
+        "L2-3 BOTH": 0.08,
+        "L2-4 NEITHER": 0.016666666666666666,
+        "L2-5 SILENCE": 0.02
+      },
+      "spread": {
+        "ge10": 2,
+        "ge05": 4,
+        "top1": 0.5966666666666666,
+        "top2": 0.2,
+        "top3": 0.08666666666666667,
+        "entropy": 1.717530663714038
+      }
+    },
+    "C4": {
+      "per_rep": [
+        {
+          "rep": 1,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-0 Tetralemmaic Ground": 0.26,
+            "L2-1 IS": 0.35,
+            "L2-5 SILENCE": 0.02,
+            "L2-4 NEITHER": 0.04,
+            "L2-2 IS-NOT": 0.06,
+            "L2-3 BOTH": 0.27
+          }
+        },
+        {
+          "rep": 2,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-5 SILENCE": 0.02,
+            "L2-4 NEITHER": 0.05,
+            "L2-3 BOTH": 0.28,
+            "L2-2 IS-NOT": 0.1,
+            "L2-0 Tetralemmaic Ground": 0.23,
+            "L2-1 IS": 0.32
+          }
+        },
+        {
+          "rep": 3,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-2 IS-NOT": 0.07,
+            "L2-4 NEITHER": 0.04,
+            "L2-0 Tetralemmaic Ground": 0.24,
+            "L2-5 SILENCE": 0.02,
+            "L2-3 BOTH": 0.28,
+            "L2-1 IS": 0.35
+          }
+        }
+      ],
+      "avg": {
+        "L2-0 Tetralemmaic Ground": 0.24333333333333335,
+        "L2-1 IS": 0.33999999999999997,
+        "L2-2 IS-NOT": 0.07666666666666666,
+        "L2-3 BOTH": 0.27666666666666667,
+        "L2-4 NEITHER": 0.043333333333333335,
+        "L2-5 SILENCE": 0.02
+      },
+      "spread": {
+        "ge10": 3,
+        "ge05": 4,
+        "top1": 0.33999999999999997,
+        "top2": 0.27666666666666667,
+        "top3": 0.24333333333333335,
+        "entropy": 2.1313844677938776
+      }
+    },
+    "C5": {
+      "per_rep": [
+        {
+          "rep": 1,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-4 NEITHER": 0.01,
+            "L2-1 IS": 0.58,
+            "L2-3 BOTH": 0.2,
+            "L2-2 IS-NOT": 0.05,
+            "L2-0 Tetralemmaic Ground": 0.15,
+            "L2-5 SILENCE": 0.01
+          }
+        },
+        {
+          "rep": 2,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-4 NEITHER": 0.01,
+            "L2-2 IS-NOT": 0.04,
+            "L2-3 BOTH": 0.17,
+            "L2-5 SILENCE": 0.01,
+            "L2-1 IS": 0.6,
+            "L2-0 Tetralemmaic Ground": 0.17
+          }
+        },
+        {
+          "rep": 3,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-4 NEITHER": 0.01,
+            "L2-0 Tetralemmaic Ground": 0.16,
+            "L2-5 SILENCE": 0.01,
+            "L2-1 IS": 0.57,
+            "L2-2 IS-NOT": 0.04,
+            "L2-3 BOTH": 0.21
+          }
+        }
+      ],
+      "avg": {
+        "L2-0 Tetralemmaic Ground": 0.16,
+        "L2-1 IS": 0.5833333333333333,
+        "L2-2 IS-NOT": 0.043333333333333335,
+        "L2-3 BOTH": 0.19333333333333333,
+        "L2-4 NEITHER": 0.01,
+        "L2-5 SILENCE": 0.01
+      },
+      "spread": {
+        "ge10": 3,
+        "ge05": 3,
+        "top1": 0.5833333333333333,
+        "top2": 0.19333333333333333,
+        "top3": 0.16,
+        "entropy": 1.664090244953103
+      }
+    },
+    "C6": {
+      "per_rep": [
+        {
+          "rep": 1,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-2 IS-NOT": 0.08,
+            "L2-4 NEITHER": 0.01,
+            "L2-1 IS": 0.63,
+            "L2-3 BOTH": 0.16999999999999998,
+            "L2-0 Tetralemmaic Ground": 0.1,
+            "L2-5 SILENCE": 0.01
+          }
+        },
+        {
+          "rep": 2,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-4 NEITHER": 0.01,
+            "L2-1 IS": 0.63,
+            "L2-2 IS-NOT": 0.1,
+            "L2-0 Tetralemmaic Ground": 0.11,
+            "L2-5 SILENCE": 0.01,
+            "L2-3 BOTH": 0.14
+          }
+        },
+        {
+          "rep": 3,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-5 SILENCE": 0,
+            "L2-2 IS-NOT": 0.1,
+            "L2-4 NEITHER": 0.01,
+            "L2-3 BOTH": 0.11,
+            "L2-0 Tetralemmaic Ground": 0.11,
+            "L2-1 IS": 0.67
+          }
+        }
+      ],
+      "avg": {
+        "L2-0 Tetralemmaic Ground": 0.10666666666666667,
+        "L2-1 IS": 0.6433333333333333,
+        "L2-2 IS-NOT": 0.09333333333333332,
+        "L2-3 BOTH": 0.14,
+        "L2-4 NEITHER": 0.01,
+        "L2-5 SILENCE": 0.006666666666666667
+      },
+      "spread": {
+        "ge10": 3,
+        "ge05": 4,
+        "top1": 0.6433333333333333,
+        "top2": 0.14,
+        "top3": 0.10666666666666667,
+        "entropy": 1.5848774729318014
+      }
+    },
+    "C7": {
+      "per_rep": [
+        {
+          "rep": 1,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-5 SILENCE": 0.01,
+            "L2-3 BOTH": 0.27,
+            "L2-0 Tetralemmaic Ground": 0.24,
+            "L2-4 NEITHER": 0.01,
+            "L2-1 IS": 0.46,
+            "L2-2 IS-NOT": 0.01
+          }
+        },
+        {
+          "rep": 2,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-1 IS": 0.48,
+            "L2-0 Tetralemmaic Ground": 0.25,
+            "L2-3 BOTH": 0.24,
+            "L2-4 NEITHER": 0.01,
+            "L2-5 SILENCE": 0.01,
+            "L2-2 IS-NOT": 0.01
+          }
+        },
+        {
+          "rep": 3,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-5 SILENCE": 0.01,
+            "L2-1 IS": 0.5,
+            "L2-3 BOTH": 0.23,
+            "L2-4 NEITHER": 0.01,
+            "L2-2 IS-NOT": 0.01,
+            "L2-0 Tetralemmaic Ground": 0.24
+          }
+        }
+      ],
+      "avg": {
+        "L2-0 Tetralemmaic Ground": 0.24333333333333335,
+        "L2-1 IS": 0.48,
+        "L2-2 IS-NOT": 0.01,
+        "L2-3 BOTH": 0.2466666666666667,
+        "L2-4 NEITHER": 0.01,
+        "L2-5 SILENCE": 0.01
+      },
+      "spread": {
+        "ge10": 3,
+        "ge05": 3,
+        "top1": 0.48,
+        "top2": 0.2466666666666667,
+        "top3": 0.24333333333333335,
+        "entropy": 1.7018500085993244
+      }
+    },
+    "C8": {
+      "per_rep": [
+        {
+          "rep": 1,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-2 IS-NOT": 0.01,
+            "L2-0 Tetralemmaic Ground": 0.13,
+            "L2-4 NEITHER": 0.01,
+            "L2-5 SILENCE": 0.01,
+            "L2-1 IS": 0.5,
+            "L2-3 BOTH": 0.34
+          }
+        },
+        {
+          "rep": 2,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-4 NEITHER": 0.01,
+            "L2-5 SILENCE": 0.01,
+            "L2-0 Tetralemmaic Ground": 0.12,
+            "L2-1 IS": 0.53,
+            "L2-3 BOTH": 0.32,
+            "L2-2 IS-NOT": 0.01
+          }
+        },
+        {
+          "rep": 3,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-0 Tetralemmaic Ground": 0.12,
+            "L2-1 IS": 0.52,
+            "L2-3 BOTH": 0.33,
+            "L2-2 IS-NOT": 0.01,
+            "L2-4 NEITHER": 0.01,
+            "L2-5 SILENCE": 0.01
+          }
+        }
+      ],
+      "avg": {
+        "L2-0 Tetralemmaic Ground": 0.12333333333333335,
+        "L2-1 IS": 0.5166666666666666,
+        "L2-2 IS-NOT": 0.01,
+        "L2-3 BOTH": 0.33,
+        "L2-4 NEITHER": 0.01,
+        "L2-5 SILENCE": 0.01
+      },
+      "spread": {
+        "ge10": 3,
+        "ge05": 3,
+        "top1": 0.5166666666666666,
+        "top2": 0.33,
+        "top3": 0.12333333333333335,
+        "entropy": 1.5917519396953816
+      }
+    },
+    "C9": {
+      "per_rep": [
+        {
+          "rep": 1,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-4 NEITHER": 0.04,
+            "L2-3 BOTH": 0.21,
+            "L2-5 SILENCE": 0.03,
+            "L2-1 IS": 0.39,
+            "L2-2 IS-NOT": 0.02,
+            "L2-0 Tetralemmaic Ground": 0.31
+          }
+        },
+        {
+          "rep": 2,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-4 NEITHER": 0.05,
+            "L2-5 SILENCE": 0.03,
+            "L2-2 IS-NOT": 0.02,
+            "L2-1 IS": 0.41,
+            "L2-0 Tetralemmaic Ground": 0.3,
+            "L2-3 BOTH": 0.19
+          }
+        },
+        {
+          "rep": 3,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-3 BOTH": 0.2,
+            "L2-0 Tetralemmaic Ground": 0.31,
+            "L2-4 NEITHER": 0.04,
+            "L2-2 IS-NOT": 0.02,
+            "L2-1 IS": 0.4,
+            "L2-5 SILENCE": 0.03
+          }
+        }
+      ],
+      "avg": {
+        "L2-0 Tetralemmaic Ground": 0.30666666666666664,
+        "L2-1 IS": 0.4,
+        "L2-2 IS-NOT": 0.02,
+        "L2-3 BOTH": 0.2,
+        "L2-4 NEITHER": 0.043333333333333335,
+        "L2-5 SILENCE": 0.03
+      },
+      "spread": {
+        "ge10": 3,
+        "ge05": 3,
+        "top1": 0.4,
+        "top2": 0.30666666666666664,
+        "top3": 0.2,
+        "entropy": 1.9769759454294793
+      }
+    },
+    "C10": {
+      "per_rep": [
+        {
+          "rep": 1,
+          "argmax": "L2-3 BOTH",
+          "dist": {
+            "L2-0 Tetralemmaic Ground": 0.3,
+            "L2-3 BOTH": 0.38,
+            "L2-5 SILENCE": 0.02,
+            "L2-2 IS-NOT": 0.04,
+            "L2-1 IS": 0.22,
+            "L2-4 NEITHER": 0.04
+          }
+        },
+        {
+          "rep": 2,
+          "argmax": "L2-3 BOTH",
+          "dist": {
+            "L2-4 NEITHER": 0.05,
+            "L2-1 IS": 0.23,
+            "L2-3 BOTH": 0.34,
+            "L2-2 IS-NOT": 0.04,
+            "L2-5 SILENCE": 0.02,
+            "L2-0 Tetralemmaic Ground": 0.32
+          }
+        },
+        {
+          "rep": 3,
+          "argmax": "L2-3 BOTH",
+          "dist": {
+            "L2-3 BOTH": 0.35,
+            "L2-4 NEITHER": 0.04,
+            "L2-5 SILENCE": 0.02,
+            "L2-1 IS": 0.24,
+            "L2-2 IS-NOT": 0.04,
+            "L2-0 Tetralemmaic Ground": 0.31
+          }
+        }
+      ],
+      "avg": {
+        "L2-0 Tetralemmaic Ground": 0.31,
+        "L2-1 IS": 0.23000000000000004,
+        "L2-2 IS-NOT": 0.04,
+        "L2-3 BOTH": 0.3566666666666667,
+        "L2-4 NEITHER": 0.043333333333333335,
+        "L2-5 SILENCE": 0.02
+      },
+      "spread": {
+        "ge10": 3,
+        "ge05": 3,
+        "top1": 0.3566666666666667,
+        "top2": 0.31,
+        "top3": 0.23000000000000004,
+        "entropy": 2.0368121376809536
+      }
+    },
+    "C11": {
+      "per_rep": [
+        {
+          "rep": 1,
+          "argmax": "L2-3 BOTH",
+          "dist": {
+            "L2-0 Tetralemmaic Ground": 0.16,
+            "L2-3 BOTH": 0.52,
+            "L2-1 IS": 0.2,
+            "L2-4 NEITHER": 0.03,
+            "L2-5 SILENCE": 0.02,
+            "L2-2 IS-NOT": 0.07
+          }
+        },
+        {
+          "rep": 2,
+          "argmax": "L2-3 BOTH",
+          "dist": {
+            "L2-1 IS": 0.2,
+            "L2-4 NEITHER": 0.03,
+            "L2-2 IS-NOT": 0.09,
+            "L2-0 Tetralemmaic Ground": 0.15,
+            "L2-5 SILENCE": 0.02,
+            "L2-3 BOTH": 0.51
+          }
+        },
+        {
+          "rep": 3,
+          "argmax": "L2-3 BOTH",
+          "dist": {
+            "L2-5 SILENCE": 0.02,
+            "L2-3 BOTH": 0.56,
+            "L2-4 NEITHER": 0.03,
+            "L2-0 Tetralemmaic Ground": 0.14,
+            "L2-2 IS-NOT": 0.08,
+            "L2-1 IS": 0.17
+          }
+        }
+      ],
+      "avg": {
+        "L2-0 Tetralemmaic Ground": 0.15,
+        "L2-1 IS": 0.19,
+        "L2-2 IS-NOT": 0.08,
+        "L2-3 BOTH": 0.53,
+        "L2-4 NEITHER": 0.03,
+        "L2-5 SILENCE": 0.02
+      },
+      "spread": {
+        "ge10": 3,
+        "ge05": 4,
+        "top1": 0.53,
+        "top2": 0.19,
+        "top3": 0.15,
+        "entropy": 1.9073696569390353
+      }
+    },
+    "C12": {
+      "per_rep": [
+        {
+          "rep": 1,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-5 SILENCE": 0.03,
+            "L2-3 BOTH": 0.08,
+            "L2-4 NEITHER": 0.11,
+            "L2-2 IS-NOT": 0.2,
+            "L2-0 Tetralemmaic Ground": 0.22,
+            "L2-1 IS": 0.36
+          }
+        },
+        {
+          "rep": 2,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-4 NEITHER": 0.11,
+            "L2-1 IS": 0.34,
+            "L2-0 Tetralemmaic Ground": 0.22,
+            "L2-5 SILENCE": 0.03,
+            "L2-3 BOTH": 0.1,
+            "L2-2 IS-NOT": 0.2
+          }
+        },
+        {
+          "rep": 3,
+          "argmax": "L2-1 IS",
+          "dist": {
+            "L2-0 Tetralemmaic Ground": 0.22,
+            "L2-5 SILENCE": 0.03,
+            "L2-4 NEITHER": 0.12,
+            "L2-1 IS": 0.33,
+            "L2-2 IS-NOT": 0.2,
+            "L2-3 BOTH": 0.1
+          }
+        }
+      ],
+      "avg": {
+        "L2-0 Tetralemmaic Ground": 0.22,
+        "L2-1 IS": 0.3433333333333333,
+        "L2-2 IS-NOT": 0.2,
+        "L2-3 BOTH": 0.09333333333333332,
+        "L2-4 NEITHER": 0.11333333333333334,
+        "L2-5 SILENCE": 0.03
+      },
+      "spread": {
+        "ge10": 4,
+        "ge05": 5,
+        "top1": 0.3433333333333333,
+        "top2": 0.22,
+        "top3": 0.2,
+        "entropy": 2.3016120193387284
+      }
+    }
+  },
+  "l2_closest_pairs": [
+    {
+      "pair": "C2-C9",
+      "l1": 0.13333333333333336
+    },
+    {
+      "pair": "C2-C4",
+      "l1": 0.1933333333333333
+    },
+    {
+      "pair": "C5-C6",
+      "l1": 0.22000000000000003
+    },
+    {
+      "pair": "C3-C5",
+      "l1": 0.22666666666666663
+    },
+    {
+      "pair": "C3-C6",
+      "l1": 0.2266666666666667
+    },
+    {
+      "pair": "C7-C8",
+      "l1": 0.23999999999999994
+    }
+  ],
+  "l2_farthest_pairs": [
+    {
+      "pair": "C1-C2",
+      "l1": 0.9000000000000001
+    },
+    {
+      "pair": "C3-C11",
+      "l1": 0.9266666666666665
+    },
+    {
+      "pair": "C6-C10",
+      "l1": 0.9333333333333332
+    },
+    {
+      "pair": "C6-C11",
+      "l1": 0.9333333333333333
+    },
+    {
+      "pair": "C1-C10",
+      "l1": 1.106666666666667
+    },
+    {
+      "pair": "C1-C11",
+      "l1": 1.1866666666666668
+    }
+  ],
+  "stability": {
+    "total": 144,
+    "all3_agree": 134,
+    "rep12_agree": 138,
+    "rep12_rate": "0.9583",
+    "all3_rate": "0.9306",
+    "disagreements": [
+      {
+        "entry": "C1",
+        "lens": "L2'",
+        "fn": "select",
+        "rep1": "L2-3' Air",
+        "rep2": "L2-5' Salt",
+        "rep3": "L2-5' Salt"
+      },
+      {
+        "entry": "C2",
+        "lens": "L2",
+        "fn": "exhaustive",
+        "rep1": "L2-0 Tetralemmaic Ground",
+        "rep2": "L2-1 IS",
+        "rep3": "L2-1 IS"
+      },
+      {
+        "entry": "C4",
+        "lens": "L5'",
+        "fn": "select",
+        "rep1": "L5-3' Sophia (σοφία)",
+        "rep2": "L5-3' Sophia (σοφία)",
+        "rep3": "L5-5' Epi-Logos (ἐπί-λόγος)"
+      },
+      {
+        "entry": "C6",
+        "lens": "L3'",
+        "fn": "locate",
+        "rep1": "L3-0' Spirit (Geist)",
+        "rep2": "L3-0' Spirit (Geist)",
+        "rep3": "L3-1' Spring"
+      },
+      {
+        "entry": "C7",
+        "lens": "L0'",
+        "fn": "select",
+        "rep1": "L0-2' Three",
+        "rep2": "L0-1' Two",
+        "rep3": "L0-2' Three"
+      },
+      {
+        "entry": "C9",
+        "lens": "L1'",
+        "fn": "select",
+        "rep1": "L1-3' Thinking",
+        "rep2": "L1-3' Thinking",
+        "rep3": "L1-4' Intuition"
+      },
+      {
+        "entry": "C10",
+        "lens": "L3'",
+        "fn": "locate",
+        "rep1": "L3-1' Spring",
+        "rep2": "L3-0' Spirit (Geist)",
+        "rep3": "L3-1' Spring"
+      },
+      {
+        "entry": "C10",
+        "lens": "L5'",
+        "fn": "select",
+        "rep1": "L5-3' Sophia (σοφία)",
+        "rep2": "L5-3' Sophia (σοφία)",
+        "rep3": "L5-1' Apokalypsis (ἀποκάλυψις)"
+      },
+      {
+        "entry": "C12",
+        "lens": "L5",
+        "fn": "locate",
+        "rep1": "L5-3 Madhyamā",
+        "rep2": "L5-5 Mātṛkā",
+        "rep3": "L5-5 Mātṛkā"
+      },
+      {
+        "entry": "C12",
+        "lens": "L0'",
+        "fn": "select",
+        "rep1": "L0-1' Two",
+        "rep2": "L0-2' Three",
+        "rep3": "L0-2' Three"
+      }
+    ],
+    "per_lens": {
+      "L0": {
+        "all3": 12,
+        "rep12": 12,
+        "n": 12
+      },
+      "L1": {
+        "all3": 12,
+        "rep12": 12,
+        "n": 12
+      },
+      "L2": {
+        "all3": 11,
+        "rep12": 11,
+        "n": 12
+      },
+      "L3": {
+        "all3": 12,
+        "rep12": 12,
+        "n": 12
+      },
+      "L4": {
+        "all3": 12,
+        "rep12": 12,
+        "n": 12
+      },
+      "L5": {
+        "all3": 11,
+        "rep12": 11,
+        "n": 12
+      },
+      "L0'": {
+        "all3": 10,
+        "rep12": 10,
+        "n": 12
+      },
+      "L1'": {
+        "all3": 11,
+        "rep12": 12,
+        "n": 12
+      },
+      "L2'": {
+        "all3": 11,
+        "rep12": 11,
+        "n": 12
+      },
+      "L3'": {
+        "all3": 10,
+        "rep12": 11,
+        "n": 12
+      },
+      "L4'": {
+        "all3": 12,
+        "rep12": 12,
+        "n": 12
+      },
+      "L5'": {
+        "all3": 10,
+        "rep12": 12,
+        "n": 12
+      }
+    },
+    "v2_comparison": {
+      "total": 144,
+      "rep12_agree": 137,
+      "rate": "0.9514",
+      "disagreements": [
+        {
+          "entry": "C2",
+          "lens": "L5",
+          "rep1": "L5-2 Paśyantī",
+          "rep2": "L5-3 Madhyamā"
+        },
+        {
+          "entry": "C5",
+          "lens": "L2'",
+          "rep1": "L2-3' Air",
+          "rep2": "L2-5' Salt"
+        },
+        {
+          "entry": "C7",
+          "lens": "L0",
+          "rep1": "L0.0 Why (./?)",
+          "rep2": "L0.5 Why-so/Why-not (./?)"
+        },
+        {
+          "entry": "C7",
+          "lens": "L5",
+          "rep1": "L5-4 Vaikharī",
+          "rep2": "L5-3 Madhyamā"
+        },
+        {
+          "entry": "C10",
+          "lens": "L3'",
+          "rep1": "L3-0' Spirit (Geist)",
+          "rep2": "L3-1' Spring"
+        },
+        {
+          "entry": "C11",
+          "lens": "L5'",
+          "rep1": "L5-1' Apokalypsis (ἀποκάλυψις)",
+          "rep2": "L5-3' Sophia (σοφία)"
+        },
+        {
+          "entry": "C12",
+          "lens": "L0'",
+          "rep1": "L0-2' Three",
+          "rep2": "L0-1' Two"
+        }
+      ]
+    }
+  },
+  "fnStats": {
+    "exhaustive": {
+      "lenses": [
+        "L0",
+        "L2"
+      ],
+      "n_cells": 72,
+      "mean_top1": 0.4559722222222222,
+      "mean_entropy_bits": 1.970935473099722,
+      "mean_adjacent": 0.2381944444444445,
+      "mean_farther": 0.3058333333333331
+    },
+    "locate": {
+      "lenses": [
+        "L3",
+        "L5",
+        "L3'",
+        "L4'"
+      ],
+      "n_cells": 144,
+      "mean_top1": 0.6816666666666671,
+      "mean_entropy_bits": 1.2636368891406873,
+      "mean_adjacent": 0.14763888888888882,
+      "mean_farther": 0.1704166666666666
+    },
+    "select": {
+      "lenses": [
+        "L1",
+        "L4",
+        "L0'",
+        "L1'",
+        "L2'",
+        "L5'"
+      ],
+      "n_cells": 216,
+      "mean_top1": 0.6803240740740739,
+      "mean_entropy_bits": 1.1654979348659507,
+      "mean_adjacent": 0.1530092592592594,
+      "mean_farther": 0.16657407407407415
+    }
+  },
+  "perLens": {
+    "L0": {
+      "fn": "exhaustive",
+      "mean_top1": 0.41972222222222216,
+      "mean_entropy": 2.129177341926306,
+      "mean_adjacent": 0.24250000000000002,
+      "mean_farther": 0.3377777777777778
+    },
+    "L1": {
+      "fn": "select",
+      "mean_top1": 0.7466666666666667,
+      "mean_entropy": 0.9251284406763577,
+      "mean_adjacent": 0.19555555555555557,
+      "mean_farther": 0.057499999999999996
+    },
+    "L2": {
+      "fn": "exhaustive",
+      "mean_top1": 0.49222222222222234,
+      "mean_entropy": 1.8173177696196976,
+      "mean_adjacent": 0.2347222222222222,
+      "mean_farther": 0.27305555555555555
+    },
+    "L3": {
+      "fn": "locate",
+      "mean_top1": 0.7272222222222221,
+      "mean_entropy": 1.1694378270479027,
+      "mean_adjacent": 0.08666666666666667,
+      "mean_farther": 0.18583333333333332
+    },
+    "L4": {
+      "fn": "select",
+      "mean_top1": 0.6505555555555557,
+      "mean_entropy": 1.2705102366475123,
+      "mean_adjacent": 0.1580555555555556,
+      "mean_farther": 0.19138888888888891
+    },
+    "L5": {
+      "fn": "locate",
+      "mean_top1": 0.6872222222222222,
+      "mean_entropy": 1.1965727841438982,
+      "mean_adjacent": 0.22694444444444442,
+      "mean_farther": 0.08555555555555557
+    },
+    "L0'": {
+      "fn": "select",
+      "mean_top1": 0.6755555555555556,
+      "mean_entropy": 1.1103700312343991,
+      "mean_adjacent": 0.27416666666666667,
+      "mean_farther": 0.050277777777777775
+    },
+    "L1'": {
+      "fn": "select",
+      "mean_top1": 0.7869444444444444,
+      "mean_entropy": 0.8314862592679472,
+      "mean_adjacent": 0.16111111111111112,
+      "mean_farther": 0.05166666666666666
+    },
+    "L2'": {
+      "fn": "select",
+      "mean_top1": 0.6394444444444445,
+      "mean_entropy": 1.3726011100806446,
+      "mean_adjacent": 0.058611111111111114,
+      "mean_farther": 0.3019444444444445
+    },
+    "L3'": {
+      "fn": "locate",
+      "mean_top1": 0.47083333333333327,
+      "mean_entropy": 1.8857981141100286,
+      "mean_adjacent": 0.2611111111111111,
+      "mean_farther": 0.2677777777777778
+    },
+    "L4'": {
+      "fn": "locate",
+      "mean_top1": 0.8402777777777777,
+      "mean_entropy": 0.8128846821827675,
+      "mean_adjacent": 0.01666666666666667,
+      "mean_farther": 0.14277777777777778
+    },
+    "L5'": {
+      "fn": "select",
+      "mean_top1": 0.5808333333333334,
+      "mean_entropy": 1.4975329568143805,
+      "mean_adjacent": 0.06444444444444444,
+      "mean_farther": 0.3547222222222223
+    }
+  },
+  "resonant": {
+    "C1": {
+      "selected": "L1",
+      "top3": [
+        {
+          "lens": "L1",
+          "name": "Causal",
+          "mass": 0.37
+        },
+        {
+          "lens": "L4'",
+          "name": "Scientific",
+          "mass": 0.24
+        },
+        {
+          "lens": "L0'",
+          "name": "Archetypal-Numerical",
+          "mass": 0.1
+        }
+      ]
+    },
+    "C2": {
+      "selected": "L1",
+      "top3": [
+        {
+          "lens": "L1",
+          "name": "Causal",
+          "mass": 0.55
+        },
+        {
+          "lens": "L3",
+          "name": "Processual",
+          "mass": 0.24
+        },
+        {
+          "lens": "L4'",
+          "name": "Scientific",
+          "mass": 0.08
+        }
+      ]
+    },
+    "C3": {
+      "selected": "L1",
+      "top3": [
+        {
+          "lens": "L1",
+          "name": "Causal",
+          "mass": 0.64
+        },
+        {
+          "lens": "L2",
+          "name": "Logical",
+          "mass": 0.16
+        },
+        {
+          "lens": "L4'",
+          "name": "Scientific",
+          "mass": 0.07
+        }
+      ]
+    },
+    "C4": {
+      "selected": "L3'",
+      "top3": [
+        {
+          "lens": "L3'",
+          "name": "Chronological",
+          "mass": 0.64
+        },
+        {
+          "lens": "L4",
+          "name": "Phenomenological",
+          "mass": 0.19
+        },
+        {
+          "lens": "L3",
+          "name": "Processual",
+          "mass": 0.05
+        }
+      ]
+    },
+    "C5": {
+      "selected": "L1",
+      "top3": [
+        {
+          "lens": "L1",
+          "name": "Causal",
+          "mass": 0.89
+        },
+        {
+          "lens": "L0",
+          "name": "Quaternal",
+          "mass": 0.060000000000000005
+        },
+        {
+          "lens": "L2",
+          "name": "Logical",
+          "mass": 0.02
+        }
+      ]
+    },
+    "C6": {
+      "selected": "L1",
+      "top3": [
+        {
+          "lens": "L1",
+          "name": "Causal",
+          "mass": 0.63
+        },
+        {
+          "lens": "L3'",
+          "name": "Chronological",
+          "mass": 0.32
+        },
+        {
+          "lens": "L4'",
+          "name": "Scientific",
+          "mass": 0.03
+        }
+      ]
+    },
+    "C7": {
+      "selected": "L1",
+      "top3": [
+        {
+          "lens": "L1",
+          "name": "Causal",
+          "mass": 0.67
+        },
+        {
+          "lens": "L4'",
+          "name": "Scientific",
+          "mass": 0.14
+        },
+        {
+          "lens": "L2",
+          "name": "Logical",
+          "mass": 0.07
+        }
+      ]
+    },
+    "C8": {
+      "selected": "L4'",
+      "top3": [
+        {
+          "lens": "L4'",
+          "name": "Scientific",
+          "mass": 0.46
+        },
+        {
+          "lens": "L3",
+          "name": "Processual",
+          "mass": 0.2
+        },
+        {
+          "lens": "L0'",
+          "name": "Archetypal-Numerical",
+          "mass": 0.13
+        }
+      ]
+    },
+    "C9": {
+      "selected": "L5",
+      "top3": [
+        {
+          "lens": "L5",
+          "name": "Para Vāk",
+          "mass": 0.53
+        },
+        {
+          "lens": "L4",
+          "name": "Phenomenological",
+          "mass": 0.27
+        },
+        {
+          "lens": "L2",
+          "name": "Logical",
+          "mass": 0.04
+        }
+      ]
+    },
+    "C10": {
+      "selected": "L2",
+      "top3": [
+        {
+          "lens": "L2",
+          "name": "Logical",
+          "mass": 0.77
+        },
+        {
+          "lens": "L4",
+          "name": "Phenomenological",
+          "mass": 0.06999999999999999
+        },
+        {
+          "lens": "L5",
+          "name": "Para Vāk",
+          "mass": 0.04
+        }
+      ]
+    },
+    "C11": {
+      "selected": "L3",
+      "top3": [
+        {
+          "lens": "L3",
+          "name": "Processual",
+          "mass": 0.86
+        },
+        {
+          "lens": "L1",
+          "name": "Causal",
+          "mass": 0.1
+        },
+        {
+          "lens": "L0",
+          "name": "Quaternal",
+          "mass": 0.02
+        }
+      ]
+    },
+    "C12": {
+      "selected": "L2",
+      "top3": [
+        {
+          "lens": "L2",
+          "name": "Logical",
+          "mass": 0.59
+        },
+        {
+          "lens": "L4'",
+          "name": "Scientific",
+          "mass": 0.17
+        },
+        {
+          "lens": "L1",
+          "name": "Causal",
+          "mass": 0.1
+        }
+      ]
+    }
+  },
+  "squares": {
+    "C1": {
+      "being": "L0@P0=L0.0 Why; L0@P5=L0.1 What; L5@P0=L5-5 Mātṛkā; L5@P5=L5-5 Mātṛkā",
+      "becoming": "L1@P1=L1-4 Final Cause; L1@P4=L1-4 Final Cause; L4@P1=L4.1 Geworfenheit; L4@P4=L4.0 Sein",
+      "knowing": "L2@P2=L2-1 IS; L2@P3=L2-1 IS; L3@P2=L3-5 Satisfaction / Perishing; L3@P3=L3-5 Satisfaction / Perishing"
+    },
+    "C2": {
+      "being": "L0@P0=L0.2 How; L0@P5=L0.2 How; L5@P0=L5-3 Madhyamā; L5@P5=L5-3 Madhyamā",
+      "becoming": "L1@P1=L1-3 Formal Cause; L1@P4=L1-3 Formal Cause; L4@P1=L4.5 Gelassenheit; L4@P4=L4.5 Gelassenheit",
+      "knowing": "L2@P2=L2-3 BOTH; L2@P3=L2-3 BOTH; L3@P2=L3-4 Community Integration; L3@P3=L3-4 Community Integration"
+    },
+    "C3": {
+      "being": "L0@P0=L0.0 Why; L0@P5=L0.0 Why; L5@P0=L5-4 Vaikharī; L5@P5=L5-4 Vaikharī",
+      "becoming": "L1@P1=L1-0 Svātantrya; L1@P4=L1-0 Svātantrya; L4@P1=L4.5 Gelassenheit; L4@P4=L4.5 Gelassenheit",
+      "knowing": "L2@P2=L2-2 IS-NOT; L2@P3=L2-2 IS-NOT; L3@P2=L3-4 Community Integration; L3@P3=L3-4 Community Integration"
+    },
+    "C4": {
+      "being": "L0@P0=L0.4 Where/When/Why-for; L0@P5=L0.4 Where/When/Why-for; L5@P0=L5-2 Paśyantī; L5@P5=L5-4 Vaikharī",
+      "becoming": "L1@P1=L1-4 Final Cause; L1@P4=L1-4 Final Cause; L4@P1=L4.3 Zeit; L4@P4=L4.3 Zeit",
+      "knowing": "L2@P2=L2-3 BOTH; L2@P3=L2-3 BOTH; L3@P2=L3-4 Community Integration; L3@P3=L3-4 Community Integration"
+    },
+    "C5": {
+      "being": "L0@P0=L0.0 Why; L0@P5=L0.4 Where/When/Why-for; L5@P0=L5-4 Vaikharī; L5@P5=L5-4 Vaikharī",
+      "becoming": "L1@P1=L1-4 Final Cause; L1@P4=L1-4 Final Cause; L4@P1=L4.4 Besorge; L4@P4=L4.4 Besorge",
+      "knowing": "L2@P2=L2-2 IS-NOT; L2@P3=L2-2 IS-NOT; L3@P2=L3-4 Community Integration; L3@P3=L3-4 Community Integration"
+    },
+    "C6": {
+      "being": "L0@P0=L0.0 Why; L0@P5=L0.0 Why; L5@P0=L5-4 Vaikharī; L5@P5=L5-4 Vaikharī",
+      "becoming": "L1@P1=L1-2 Efficient Cause; L1@P4=L1-2 Efficient Cause; L4@P1=L4.1 Geworfenheit; L4@P4=L4.1 Geworfenheit",
+      "knowing": "L2@P2=L2-2 IS-NOT; L2@P3=L2-2 IS-NOT; L3@P2=L3-4 Community Integration; L3@P3=L3-4 Community Integration"
+    },
+    "C7": {
+      "being": "L0@P0=L0.0 Why; L0@P5=L0.5 Why-so/Why-not; L5@P0=L5-4 Vaikharī; L5@P5=L5-4 Vaikharī",
+      "becoming": "L1@P1=L1-3 Formal Cause; L1@P4=L1-3 Formal Cause; L4@P1=L4.4 Besorge; L4@P4=L4.4 Besorge",
+      "knowing": "L2@P2=L2-3 BOTH; L2@P3=L2-3 BOTH; L3@P2=L3-4 Community Integration; L3@P3=L3-4 Community Integration"
+    },
+    "C8": {
+      "being": "L0@P0=L0.2 How; L0@P5=L0.2 How; L5@P0=L5-3 Madhyamā; L5@P5=L5-3 Madhyamā",
+      "becoming": "L1@P1=L1-3 Formal Cause; L1@P4=L1-3 Formal Cause; L4@P1=L4.2 Dasein; L4@P4=L4.2 Dasein",
+      "knowing": "L2@P2=L2-3 BOTH; L2@P3=L2-1 IS; L3@P2=L3-1 Actual Occasion; L3@P3=L3-1 Actual Occasion"
+    },
+    "C9": {
+      "being": "L0@P0=L0.0 Why; L0@P5=L0.2 How; L5@P0=L5-3 Madhyamā; L5@P5=L5-3 Madhyamā",
+      "becoming": "L1@P1=L1-3 Formal Cause; L1@P4=L1-3 Formal Cause; L4@P1=L4.1 Geworfenheit; L4@P4=L4.1 Geworfenheit",
+      "knowing": "L2@P2=L2-0 Tetralemmaic Ground; L2@P3=L2-0 Tetralemmaic Ground; L3@P2=L3-2 Ingression; L3@P3=L3-2 Ingression"
+    },
+    "C10": {
+      "being": "L0@P0=L0.1 What; L0@P5=L0.1 What; L5@P0=L5-3 Madhyamā; L5@P5=L5-3 Madhyamā",
+      "becoming": "L1@P1=L1-3 Formal Cause; L1@P4=L1-3 Formal Cause; L4@P1=L4.0 Sein; L4@P4=L4.0 Sein",
+      "knowing": "L2@P2=L2-3 BOTH; L2@P3=L2-3 BOTH; L3@P2=L3-3 Eternal Objects; L3@P3=L3-3 Eternal Objects"
+    },
+    "C11": {
+      "being": "L0@P0=L0.0 Why; L0@P5=L0.2 How; L5@P0=L5-3 Madhyamā; L5@P5=L5-3 Madhyamā",
+      "becoming": "L1@P1=L1-3 Formal Cause; L1@P4=L1-3 Formal Cause; L4@P1=L4.2 Dasein; L4@P4=L4.2 Dasein",
+      "knowing": "L2@P2=L2-3 BOTH; L2@P3=L2-3 BOTH; L3@P2=L3-0 Concrescent Desire; L3@P3=L3-0 Concrescent Desire"
+    },
+    "C12": {
+      "being": "L0@P0=L0.1 What; L0@P5=L0.1 What; L5@P0=L5-3 Madhyamā; L5@P5=L5-5 Mātṛkā",
+      "becoming": "L1@P1=L1-3 Formal Cause; L1@P4=L1-3 Formal Cause; L4@P1=L4.4 Besorge; L4@P4=L4.4 Besorge",
+      "knowing": "L2@P2=L2-2 IS-NOT; L2@P3=L2-2 IS-NOT; L3@P2=L3-1 Actual Occasion; L3@P3=L3-1 Actual Occasion"
+    }
+  },
+  "run": {
+    "calls": 84,
+    "ok": 12,
+    "failed": 0,
+    "wall_min_ms": 686,
+    "wall_max_ms": 981,
+    "latency_min_ms": 616,
+    "latency_max_ms": 916
+  }
+}

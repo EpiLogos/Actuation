@@ -1,0 +1,80 @@
+{
+  "total": 84,
+  "done": 12,
+  "failed": 0,
+  "skipped": 72,
+  "log": [
+    {
+      "file": "c01-full_text-3.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 820
+    },
+    {
+      "file": "c02-full_text-3.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 733
+    },
+    {
+      "file": "c03-full_text-3.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 767
+    },
+    {
+      "file": "c04-full_text-3.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 757
+    },
+    {
+      "file": "c05-full_text-3.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 807
+    },
+    {
+      "file": "c06-full_text-3.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 701
+    },
+    {
+      "file": "c07-full_text-3.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 686
+    },
+    {
+      "file": "c08-full_text-3.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 981
+    },
+    {
+      "file": "c09-full_text-3.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 746
+    },
+    {
+      "file": "c10-full_text-3.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 771
+    },
+    {
+      "file": "c11-full_text-3.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 873
+    },
+    {
+      "file": "c12-full_text-3.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 736
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "entry": "C8",
+  "title": "Two systems of thinking — Kahneman (2011), Thinking, Fast and Slow",
+  "subject_chars": 401,
+  "mode": "resonant",
+  "reading": {
+    "shape": "ranked frame relation (full ordering, topk=12)",
+    "selected": "L4'",
+    "ranking": [
+      {
+        "lens": "L4'",
+        "name": "Scientific",
+        "mass": 0.46
+      },
+      {
+        "lens": "L3",
+        "name": "Processual",
+        "mass": 0.2
+      },
+      {
+        "lens": "L0'",
+        "name": "Archetypal-Numerical",
+        "mass": 0.13
+      },
+      {
+        "lens": "L1",
+        "name": "Causal",
+        "mass": 0.09
+      },
+      {
+        "lens": "L1'",
+        "name": "Phenomenal",
+        "mass": 0.06
+      },
+      {
+        "lens": "L2",
+        "name": "Logical",
+        "mass": 0.05
+      },
+      {
+        "lens": "L0",
+        "name": "Quaternal",
+        "mass": 0.01
+      },
+      {
+        "lens": "L5",
+        "name": "Para Vāk",
+        "mass": 0
+      },
+      {
+        "lens": "L3'",
+        "name": "Chronological",
+        "mass": 0
+      },
+      {
+        "lens": "L2'",
+        "name": "Alchemical-Elemental",
+        "mass": 0
+      },
+      {
+        "lens": "L4",
+        "name": "Phenomenological",
+        "mass": 0
+      },
+      {
+        "lens": "L5'",
+        "name": "Divine Logos",
+        "mass": 0
+      }
+    ],
+    "rationale": null
+  },
+  "latency_ms": 634,
+  "wall_ms": 699
+}

@@ -1,0 +1,565 @@
+{
+  "entry": "C4",
+  "title": "The partnership of generations — Burke (1790), Reflections",
+  "subject_chars": 487,
+  "mode": "full_text",
+  "reading": {
+    "shape": "machinery-first: each of the twelve lenses run across its defined sub-slots (12 x 6, meanings carried)",
+    "cells": [
+      {
+        "lens": "L0",
+        "name": "Quaternal",
+        "ground": "Jung-Pauli / QL psychoid ground, Aether",
+        "strongest": "L0.4 Where/When/Why-for",
+        "distribution": {
+          "L0.1 What (./?)": 0.11,
+          "L0.4 Where/When/Why-for": 0.48,
+          "L0.2 How (./?)": 0.01,
+          "L0.3 Whom/Which/When (./?)": 0.17,
+          "L0.5 Why-so/Why-not (./?)": 0.13,
+          "L0.0 Why (./?)": 0.1
+        },
+        "machinery": [
+          {
+            "slot": "L0.0",
+            "label": "Why (./?)",
+            "meaning": "presuppositional frame"
+          },
+          {
+            "slot": "L0.1",
+            "label": "What (./?)",
+            "meaning": "definitional question"
+          },
+          {
+            "slot": "L0.2",
+            "label": "How (./?)",
+            "meaning": "operational question"
+          },
+          {
+            "slot": "L0.3",
+            "label": "Whom/Which/When (./?)",
+            "meaning": "pattern-identifying question"
+          },
+          {
+            "slot": "L0.4",
+            "label": "Where/When/Why-for",
+            "meaning": "contextual question (→ lemniscate)"
+          },
+          {
+            "slot": "L0.5",
+            "label": "Why-so/Why-not (./?)",
+            "meaning": "pros hen homonymy, analogia; question questioning itself"
+          }
+        ]
+      },
+      {
+        "lens": "L1",
+        "name": "Causal",
+        "ground": "Aristotle / Icchā Śakti / Schopenhauer, Earth",
+        "strongest": "L1-4 Final Cause",
+        "distribution": {
+          "L1-4 Final Cause": 0.74,
+          "L1-3 Formal Cause": 0.25,
+          "L1-2 Efficient Cause": 0,
+          "L1-0 Svātantrya": 0,
+          "L1-1 Material Cause": 0,
+          "L1-5 Icchā Śakti / Will": 0.01
+        },
+        "machinery": [
+          {
+            "slot": "L1-0",
+            "label": "Svātantrya",
+            "meaning": "essential / absolute freedom causation"
+          },
+          {
+            "slot": "L1-1",
+            "label": "Material Cause",
+            "meaning": "substance, substrate, matter"
+          },
+          {
+            "slot": "L1-2",
+            "label": "Efficient Cause",
+            "meaning": "agency, force, transformation"
+          },
+          {
+            "slot": "L1-3",
+            "label": "Formal Cause",
+            "meaning": "pattern, architecture, organizing principle"
+          },
+          {
+            "slot": "L1-4",
+            "label": "Final Cause",
+            "meaning": "telos, purpose, for-the-sake-of-which"
+          },
+          {
+            "slot": "L1-5",
+            "label": "Icchā Śakti / Will",
+            "meaning": "ultimate causation — divine will / blind Will"
+          }
+        ]
+      },
+      {
+        "lens": "L2",
+        "name": "Logical",
+        "ground": "Nāgārjuna / Catuṣkoṭi, Air",
+        "strongest": "L2-1 IS",
+        "distribution": {
+          "L2-0 Tetralemmaic Ground": 0.13,
+          "L2-4 NEITHER": 0.08,
+          "L2-3 BOTH": 0.25,
+          "L2-1 IS": 0.37,
+          "L2-5 SILENCE": 0.02,
+          "L2-2 IS-NOT": 0.15
+        },
+        "machinery": [
+          {
+            "slot": "L2-0",
+            "label": "Tetralemmaic Ground",
+            "meaning": "(./?)/(?/.) — pre-logical superposition"
+          },
+          {
+            "slot": "L2-1",
+            "label": "IS",
+            "meaning": "being, assertion, affirmation"
+          },
+          {
+            "slot": "L2-2",
+            "label": "IS-NOT",
+            "meaning": "non-being, negation, boundary"
+          },
+          {
+            "slot": "L2-3",
+            "label": "BOTH",
+            "meaning": "IS and IS-NOT — contradiction, dialetheism"
+          },
+          {
+            "slot": "L2-4",
+            "label": "NEITHER",
+            "meaning": "IS nor IS-NOT — void, ineffability"
+          },
+          {
+            "slot": "L2-5",
+            "label": "SILENCE",
+            "meaning": "irrepresentable / unprovable truth"
+          }
+        ]
+      },
+      {
+        "lens": "L3",
+        "name": "Processual",
+        "ground": "Whitehead / Bergson / Lacan, Water",
+        "strongest": "L3-4 Community Integration",
+        "distribution": {
+          "L3-1 Actual Occasion": 0,
+          "L3-5 Satisfaction / Perishing": 0.05,
+          "L3-4 Community Integration": 0.93,
+          "L3-2 Ingression": 0,
+          "L3-3 Eternal Objects": 0.01,
+          "L3-0 Concrescent Desire": 0
+        },
+        "machinery": [
+          {
+            "slot": "L3-0",
+            "label": "Concrescent Desire",
+            "meaning": "creative urge / Lacanian lack"
+          },
+          {
+            "slot": "L3-1",
+            "label": "Actual Occasion",
+            "meaning": "fundamental unit of reality"
+          },
+          {
+            "slot": "L3-2",
+            "label": "Ingression",
+            "meaning": "eternal objects entering occasions"
+          },
+          {
+            "slot": "L3-3",
+            "label": "Eternal Objects",
+            "meaning": "pure potentials that ingress"
+          },
+          {
+            "slot": "L3-4",
+            "label": "Community Integration",
+            "meaning": "prehensions forming society"
+          },
+          {
+            "slot": "L3-5",
+            "label": "Satisfaction / Perishing",
+            "meaning": "jouissance — objective immortality"
+          }
+        ]
+      },
+      {
+        "lens": "L4",
+        "name": "Phenomenological",
+        "ground": "Heidegger, Earth",
+        "strongest": "L4.3 Zeit",
+        "distribution": {
+          "L4.5 Gelassenheit": 0,
+          "L4.0 Sein": 0,
+          "L4.1 Geworfenheit": 0,
+          "L4.2 Dasein": 0,
+          "L4.4 Besorge": 0.01,
+          "L4.3 Zeit": 0.99
+        },
+        "machinery": [
+          {
+            "slot": "L4.0",
+            "label": "Sein",
+            "meaning": "the question of the meaning of Being"
+          },
+          {
+            "slot": "L4.1",
+            "label": "Geworfenheit",
+            "meaning": "thrownness — givenness of existence"
+          },
+          {
+            "slot": "L4.2",
+            "label": "Dasein",
+            "meaning": "being-there — human existence as clearing"
+          },
+          {
+            "slot": "L4.3",
+            "label": "Zeit",
+            "meaning": "temporality as horizon of Being"
+          },
+          {
+            "slot": "L4.4",
+            "label": "Besorge",
+            "meaning": "concern — caring engagement with world"
+          },
+          {
+            "slot": "L4.5",
+            "label": "Gelassenheit",
+            "meaning": "releasement — letting-be, openness"
+          }
+        ]
+      },
+      {
+        "lens": "L5",
+        "name": "Para Vāk",
+        "ground": "Kashmir Shaivism / Vāk ontology, Aether",
+        "strongest": "L5-2 Paśyantī",
+        "distribution": {
+          "L5-1 Parā Vāk": 0.03,
+          "L5-2 Paśyantī": 0.45,
+          "L5-5 Mātṛkā": 0.01,
+          "L5-3 Madhyamā": 0.28,
+          "L5-4 Vaikharī": 0.22,
+          "L5-0 Anuttara / Asambhava": 0.01
+        },
+        "machinery": [
+          {
+            "slot": "L5-0",
+            "label": "Anuttara / Asambhava",
+            "meaning": "transcendent beyond speech"
+          },
+          {
+            "slot": "L5-1",
+            "label": "Parā Vāk",
+            "meaning": "supreme Word — pure I-consciousness"
+          },
+          {
+            "slot": "L5-2",
+            "label": "Paśyantī",
+            "meaning": "visionary speech — unified seeing"
+          },
+          {
+            "slot": "L5-3",
+            "label": "Madhyamā",
+            "meaning": "mental speech — intermediate structuring"
+          },
+          {
+            "slot": "L5-4",
+            "label": "Vaikharī",
+            "meaning": "articulate speech — full manifestation"
+          },
+          {
+            "slot": "L5-5",
+            "label": "Mātṛkā",
+            "meaning": "letters — measuring power of consciousness"
+          }
+        ]
+      },
+      {
+        "lens": "L0'",
+        "name": "Archetypal-Numerical",
+        "ground": "Jung-Pauli psychoid numbers, Aether",
+        "strongest": "L0-2' Three",
+        "distribution": {
+          "L0-2' Three": 0.88,
+          "L0-3' Four": 0.06,
+          "L0-5' Six": 0.02,
+          "L0-4' Five": 0.01,
+          "L0-0' One": 0.03,
+          "L0-1' Two": 0
+        },
+        "machinery": [
+          {
+            "slot": "L0-0'",
+            "label": "One",
+            "meaning": "unity, the monad, wholeness"
+          },
+          {
+            "slot": "L0-1'",
+            "label": "Two",
+            "meaning": "duality, polarity, reflection"
+          },
+          {
+            "slot": "L0-2'",
+            "label": "Three",
+            "meaning": "triad, synthesis, dynamic relation"
+          },
+          {
+            "slot": "L0-3'",
+            "label": "Four",
+            "meaning": "quaternity, stability, completeness"
+          },
+          {
+            "slot": "L0-4'",
+            "label": "Five",
+            "meaning": "pentad, quintessence, transcendence"
+          },
+          {
+            "slot": "L0-5'",
+            "label": "Six",
+            "meaning": "hexad, completion, perfect number"
+          }
+        ]
+      },
+      {
+        "lens": "L1'",
+        "name": "Phenomenal",
+        "ground": "Jung's psychic functions, Water",
+        "strongest": "L1-4' Intuition",
+        "distribution": {
+          "L1-4' Intuition": 0.71,
+          "L1-3' Thinking": 0.05,
+          "L1-5' Extroversion": 0,
+          "L1-0' Introversion": 0.13,
+          "L1-2' Feeling": 0.11,
+          "L1-1' Sensation": 0
+        },
+        "machinery": [
+          {
+            "slot": "L1-0'",
+            "label": "Introversion",
+            "meaning": "toward-unconscious-pole"
+          },
+          {
+            "slot": "L1-1'",
+            "label": "Sensation",
+            "meaning": "immediate perception of sense data"
+          },
+          {
+            "slot": "L1-2'",
+            "label": "Feeling",
+            "meaning": "evaluation of worth and value"
+          },
+          {
+            "slot": "L1-3'",
+            "label": "Thinking",
+            "meaning": "logical analysis of content"
+          },
+          {
+            "slot": "L1-4'",
+            "label": "Intuition",
+            "meaning": "perception of possibilities"
+          },
+          {
+            "slot": "L1-5'",
+            "label": "Extroversion",
+            "meaning": "toward-conscious-pole"
+          }
+        ]
+      },
+      {
+        "lens": "L2'",
+        "name": "Alchemical-Elemental",
+        "ground": "THE element-bearing lens, Aether",
+        "strongest": "L2-0' Aether",
+        "distribution": {
+          "L2-1' Earth": 0.12,
+          "L2-2' Water": 0.01,
+          "L2-5' Salt": 0.13,
+          "L2-0' Aether": 0.69,
+          "L2-3' Air": 0.04,
+          "L2-4' Fire": 0.01
+        },
+        "machinery": [
+          {
+            "slot": "L2-0'",
+            "label": "Aether",
+            "meaning": "fifth element — prima materia and ultima materia; psychoid ground of transformation"
+          },
+          {
+            "slot": "L2-1'",
+            "label": "Earth",
+            "meaning": "stability, grounding, material"
+          },
+          {
+            "slot": "L2-2'",
+            "label": "Water",
+            "meaning": "flow, emotion, transformation"
+          },
+          {
+            "slot": "L2-3'",
+            "label": "Air",
+            "meaning": "intellect, communication, movement"
+          },
+          {
+            "slot": "L2-4'",
+            "label": "Fire",
+            "meaning": "transformation, will, purification"
+          },
+          {
+            "slot": "L2-5'",
+            "label": "Salt",
+            "meaning": "crystallized result of transformation — the fixed body (formerly tabulated as Mineral)"
+          }
+        ]
+      },
+      {
+        "lens": "L3'",
+        "name": "Chronological",
+        "ground": "Hegel / Aion / Dialectic of Spirit, Fire",
+        "strongest": "L3-0' Spirit (Geist)",
+        "distribution": {
+          "L3-5' Life": 0.36,
+          "L3-0' Spirit (Geist)": 0.57,
+          "L3-3' Autumn": 0.06,
+          "L3-1' Spring": 0,
+          "L3-4' Winter": 0.01,
+          "L3-2' Summer": 0
+        },
+        "machinery": [
+          {
+            "slot": "L3-0'",
+            "label": "Spirit (Geist)",
+            "meaning": "the absolute moving through history"
+          },
+          {
+            "slot": "L3-1'",
+            "label": "Spring",
+            "meaning": "birth, emergence, beginning"
+          },
+          {
+            "slot": "L3-2'",
+            "label": "Summer",
+            "meaning": "fullness, maturation, peak"
+          },
+          {
+            "slot": "L3-3'",
+            "label": "Autumn",
+            "meaning": "decline, harvest, wisdom"
+          },
+          {
+            "slot": "L3-4'",
+            "label": "Winter",
+            "meaning": "death, dormancy, incubation"
+          },
+          {
+            "slot": "L3-5'",
+            "label": "Life",
+            "meaning": "the full cycle renewed"
+          }
+        ]
+      },
+      {
+        "lens": "L4'",
+        "name": "Scientific",
+        "ground": "Kuhn / knowledge work, Earth",
+        "strongest": "L4.5' Insight",
+        "distribution": {
+          "L4.0' Questions": 0.04,
+          "L4.1' Traces": 0,
+          "L4.4' Discovery": 0.03,
+          "L4.5' Insight": 0.71,
+          "L4.3' Patterns": 0.2,
+          "L4.2' Challenges": 0.02
+        },
+        "machinery": [
+          {
+            "slot": "L4.0'",
+            "label": "Questions",
+            "meaning": "inquiry initiation"
+          },
+          {
+            "slot": "L4.1'",
+            "label": "Traces",
+            "meaning": "evidence collection"
+          },
+          {
+            "slot": "L4.2'",
+            "label": "Challenges",
+            "meaning": "problem identification"
+          },
+          {
+            "slot": "L4.3'",
+            "label": "Patterns",
+            "meaning": "structure recognition"
+          },
+          {
+            "slot": "L4.4'",
+            "label": "Discovery",
+            "meaning": "source exploration"
+          },
+          {
+            "slot": "L4.5'",
+            "label": "Insight",
+            "meaning": "synthesis crystallization"
+          }
+        ]
+      },
+      {
+        "lens": "L5'",
+        "name": "Divine Logos",
+        "ground": "John 1:1 / Epi-Logos, Aether",
+        "strongest": "L5-3' Sophia (σοφία)",
+        "distribution": {
+          "L5-3' Sophia (σοφία)": 0.41,
+          "L5-0' Arche (ἀρχή)": 0.22,
+          "L5-1' Apokalypsis (ἀποκάλυψις)": 0.01,
+          "L5-4' Parousia (παρουσία)": 0.03,
+          "L5-2' Dynamis (δύναμις)": 0,
+          "L5-5' Epi-Logos (ἐπί-λόγος)": 0.33
+        },
+        "machinery": [
+          {
+            "slot": "L5-0'",
+            "label": "Arche (ἀρχή)",
+            "meaning": "Logos as ground — 'in the beginning was the Word'"
+          },
+          {
+            "slot": "L5-1'",
+            "label": "Apokalypsis (ἀποκάλυψις)",
+            "meaning": "revelation / unveiling — divine self-disclosure"
+          },
+          {
+            "slot": "L5-2'",
+            "label": "Dynamis (δύναμις)",
+            "meaning": "creative power — 'let there be...'"
+          },
+          {
+            "slot": "L5-3'",
+            "label": "Sophia (σοφία)",
+            "meaning": "divine wisdom — pattern in the Word"
+          },
+          {
+            "slot": "L5-4'",
+            "label": "Parousia (παρουσία)",
+            "meaning": "presence — the Word made flesh"
+          },
+          {
+            "slot": "L5-5'",
+            "label": "Epi-Logos (ἐπί-λόγος)",
+            "meaning": "word beyond words / Anastasis"
+          }
+        ]
+      }
+    ]
+  },
+  "latency_ms": 782,
+  "wall_ms": 939
+}

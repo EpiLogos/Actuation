@@ -130,6 +130,17 @@ pub const NIGHT_TOOLS: [(&str, &str); 6] = [
     ),
 ];
 
+/// Lens coverage per Night reading, from the register's lens sets: a
+/// full_text reading covers all twelve; each square covers its own four.
+const NIGHT_COVERAGE_FULL: [&str; 12] = [
+    "L0", "L0'", "L1", "L1'", "L2", "L2'", "L3", "L3'", "L4", "L4'", "L5", "L5'",
+];
+const NIGHT_COVERAGE_BEING: [&str; 4] = ["L0", "L0'", "L5", "L5'"];
+const NIGHT_COVERAGE_BECOMING: [&str; 4] = ["L1", "L1'", "L4", "L4'"];
+const NIGHT_COVERAGE_KNOWING: [&str; 4] = ["L2", "L2'", "L3", "L3'"];
+/// A frame is selected only after adequate coverage: half the registry.
+const NIGHT_COVERAGE_REQUIRED: usize = 6;
+
 /// The full P+P′ supply: the Day six plus the Night six (`ql-twelve`).
 pub fn night_capability_supply() -> Value {
     Value::Array(
@@ -246,6 +257,7 @@ pub async fn run_toolset(
     let mut iterations: u64 = 0;
     let mut premature_deliveries: u64 = 0;
     let mut night_calls: u64 = 0;
+    let mut night_coverage: Vec<&'static str> = vec![];
     let mut status = "failed";
     let mut error: Option<String> = None;
     let mut outcome: Value = Value::Null;
@@ -403,7 +415,6 @@ pub async fn run_toolset(
                 // position — a reading is not a position change. An
                 // unavailable instrument is an ordinary tool error, not a
                 // trial failure.
-                night_calls += 1;
                 let subject = args
                     .get("subject")
                     .and_then(Value::as_str)
@@ -418,6 +429,26 @@ pub async fn run_toolset(
                     "reflect_resonant_frames" => "resonant",
                     _ => "unknown",
                 };
+                // The frame selector is gated on coverage: a single lens is
+                // specified for analysis only after the lenses have been
+                // adequately read — selection without coverage is the
+                // name-without-machinery failure the register warns of.
+                if instrument_mode == "right_frame"
+                    && night_coverage.len() < NIGHT_COVERAGE_REQUIRED
+                {
+                    let notice = format!(
+                        "reflect_right_frame requires adequate coverage first: only {} of {} lenses have been read this work. Take a reflect_full_text reading, or square readings covering the registry, before selecting a frame.",
+                        night_coverage.len(),
+                        NIGHT_COVERAGE_FULL.len()
+                    );
+                    history.push(json!({"role": "capability", "name": name,
+                        "result": {"ok": false, "error": notice}}));
+                    record(
+                        "night_reading_refused",
+                        json!({"tool": name, "coverage": night_coverage.len()}),
+                    );
+                    continue;
+                }
                 let reading = if subject.trim().is_empty() {
                     Err(Error::new(
                         "{name} requires a subject".replace("{name}", &name),
@@ -429,6 +460,19 @@ pub async fn run_toolset(
                 };
                 match reading {
                     Ok(reading) => {
+                        night_calls += 1;
+                        let covered: &[&'static str] = match instrument_mode {
+                            "full_text" => &NIGHT_COVERAGE_FULL,
+                            "being" => &NIGHT_COVERAGE_BEING,
+                            "becoming" => &NIGHT_COVERAGE_BECOMING,
+                            "knowing" => &NIGHT_COVERAGE_KNOWING,
+                            _ => &[],
+                        };
+                        for lens in covered {
+                            if !night_coverage.contains(lens) {
+                                night_coverage.push(lens);
+                            }
+                        }
                         residues.push(json!({
                             "id": format!("{circuit_id}:res:{}", residues.len()),
                             "position": active_position, "kind": "night-reading",
@@ -439,6 +483,7 @@ pub async fn run_toolset(
                             "night_reading_taken",
                             json!({
                             "tool": name,
+                            "coverage": night_coverage.len(),
                             "subject_chars": reading["subject_chars"],
                             "latency_ms": reading["latency_ms"]}),
                         );

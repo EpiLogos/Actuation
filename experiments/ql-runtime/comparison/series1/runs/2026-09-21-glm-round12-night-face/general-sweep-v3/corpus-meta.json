@@ -1,0 +1,74 @@
+[
+  {
+    "id": "C1",
+    "nn": "01",
+    "title": "Utilitarianism — Bentham (1789), IPML ch. I",
+    "subject": "\"Nature has placed mankind under the governance of two sovereign masters, pain and pleasure. It is for them alone to point out what we ought to do, as well as to determine what we shall do.\"\n\nCore move: reduce right action to the aggregation of pleasure over pain; value is a measurable sum."
+  },
+  {
+    "id": "C2",
+    "nn": "02",
+    "title": "The invisible hand — Smith (1776), Wealth of Nations IV.2",
+    "subject": "\"It is not from the benevolence of the butcher, the brewer, or the baker that we expect our dinner, but from their regard to their own interest… he intends only his own gain, and he is in this… led by an invisible hand to promote an end which was no part of his intention.\"\n\nCore move: decentralized self-interest produces coordinated public benefit without intention or design."
+  },
+  {
+    "id": "C3",
+    "nn": "03",
+    "title": "Entitlement theory — Nozick (1974), Anarchy, State, and Utopia ch. 7",
+    "subject": "Precise paraphrase: whatever distribution arises from just acquisitions and just voluntary transfers (plus rectification of past injustice) is itself just — no pattern (equality, need, merit) may be imposed without violating someone's entitlements. \"Liberty upsets patterns.\"\n\nCore move: historical entitlement replaces patterned justice; imposing a pattern requires continuous interference with free exchanges."
+  },
+  {
+    "id": "C4",
+    "nn": "04",
+    "title": "The partnership of generations — Burke (1790), Reflections",
+    "subject": "\"Society is indeed a contract… but the state ought not to be considered as nothing better than a partnership agreement in a trade of pepper and coffee… It is a partnership in all science; a partnership in all art; a partnership in every virtue… not only between those who are living, but between those who are living, those who are dead, and those who are to be born.\"\n\nCore move: political obligation extends across time; the present holds the order in trust, not as owners."
+  },
+  {
+    "id": "C5",
+    "nn": "05",
+    "title": "Government by consent — Locke (1689), Second Treatise §§87, 95, 124",
+    "subject": "\"Men being… by nature all free, equal and independent, no one can be… subjected to the political power of another, without his own consent… The great and chief end, therefore, of men's uniting into commonwealths, and putting themselves under government, is the preservation of their property.\"\n\nCore move: legitimate power is fiduciary, delegated by natural-rights holders for a limited end; it reverts when the end is betrayed."
+  },
+  {
+    "id": "C6",
+    "nn": "06",
+    "title": "Historical materialism — Marx (1859), Preface to A Contribution",
+    "subject": "\"It is not the consciousness of men that determines their existence, but their social existence that determines their consciousness. At a certain stage of development, the material productive forces of society come into conflict with the existing relations of production… Then begins an era of social revolution.\"\n\nCore move: the economic base determines the superstructure; change is driven by forces/relations contradiction, not ideas."
+  },
+  {
+    "id": "C7",
+    "nn": "07",
+    "title": "The tragedy of the commons — Hardin (1968), Science",
+    "subject": "\"Ruin is the destination toward which all men rush, each pursuing his own best interest in a society that believes in the freedom of the commons. Freedom in a commons brings ruin to all.\"\n\nCore move: individually rational use of an unowned shared resource aggregate to collective catastrophe; the solution is \"mutual coercion, mutually agreed upon.\""
+  },
+  {
+    "id": "C8",
+    "nn": "08",
+    "title": "Two systems of thinking — Kahneman (2011), Thinking, Fast and Slow",
+    "subject": "Precise paraphrase: cognition runs on two modes — System 1, fast, automatic, associative, effortless; System 2, slow, deliberate, rule-following, effortful. Most judgment is System 1's output post-rationalized; predictable biases follow from each system's signature failures.\n\nCore move: split the mind's work between automatic and controlled processes, and locate specific errors in specific systems."
+  },
+  {
+    "id": "C9",
+    "nn": "09",
+    "title": "Linguistic relativity — Whorf (1940)",
+    "subject": "\"We dissect nature along lines laid down by our native languages… the world is presented in a kaleidoscopic flux of impressions which has to be organized by our minds — and this means largely by the linguistic systems in our minds.\"\n\nCore move: the categories of one's language shape what one can perceive and think; speakers of different languages live in different world-structures."
+  },
+  {
+    "id": "C10",
+    "nn": "10",
+    "title": "Sense and reference — Frege (1892), Über Sinn und Bedeutung",
+    "subject": "\"The morning star and the evening star are the same body — and yet the thought expressed by 'the morning star is the morning star' differs from that expressed by 'the morning star is the evening star.'\"\n\nCore move: meaning (Sinn) and reference (Bedeutung) come apart; identity statements can be informative because a term carries more than what it points at."
+  },
+  {
+    "id": "C11",
+    "nn": "11",
+    "title": "The unconscious — Freud (1915), The Unconscious",
+    "subject": "Precise paraphrase: mental life includes processes actively kept outside consciousness by repression; these are organized, aim-directed, and return in symptoms, slips, and dreams — the conscious mind is not the master of its own house.\n\nCore move: explain manifest irrationality as the return of a structured, hidden mental process rather than as randomness."
+  },
+  {
+    "id": "C12",
+    "nn": "12",
+    "title": "Probability as degree of belief — Ramsey (1926), Truth and Probability",
+    "subject": "Precise paraphrase: probability is not a frequency in the world but a rational agent's degree of belief, measurable by the bets they will accept; consistency across bets is the whole of probability theory.\n\nCore move: subject the logic of uncertainty to the agent's dispositions to act, and derive its axioms from coherence under betting."
+  }
+]

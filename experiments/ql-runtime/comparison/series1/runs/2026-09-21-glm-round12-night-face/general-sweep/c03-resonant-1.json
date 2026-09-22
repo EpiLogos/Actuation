@@ -1,0 +1,75 @@
+{
+  "entry": "C3",
+  "title": "Entitlement theory — Nozick (1974), Anarchy, State, and Utopia ch. 7",
+  "subject_chars": 411,
+  "mode": "resonant",
+  "reading": {
+    "shape": "ranked frame relation (full ordering, topk=12)",
+    "selected": "L1",
+    "ranking": [
+      {
+        "lens": "L1",
+        "name": "Causal",
+        "mass": 0.61
+      },
+      {
+        "lens": "L2",
+        "name": "Logical",
+        "mass": 0.19
+      },
+      {
+        "lens": "L4'",
+        "name": "Scientific",
+        "mass": 0.07
+      },
+      {
+        "lens": "L0",
+        "name": "Quaternal",
+        "mass": 0.04
+      },
+      {
+        "lens": "L3'",
+        "name": "Chronological",
+        "mass": 0.02
+      },
+      {
+        "lens": "L4",
+        "name": "Phenomenological",
+        "mass": 0.02
+      },
+      {
+        "lens": "L5",
+        "name": "Para Vāk",
+        "mass": 0.01
+      },
+      {
+        "lens": "L1'",
+        "name": "Phenomenal",
+        "mass": 0.01
+      },
+      {
+        "lens": "L0'",
+        "name": "Archetypal-Numerical",
+        "mass": 0.01
+      },
+      {
+        "lens": "L5'",
+        "name": "Divine Logos",
+        "mass": 0.01
+      },
+      {
+        "lens": "L3",
+        "name": "Processual",
+        "mass": 0.01
+      },
+      {
+        "lens": "L2'",
+        "name": "Alchemical-Elemental",
+        "mass": 0
+      }
+    ],
+    "rationale": null
+  },
+  "latency_ms": 643,
+  "wall_ms": 709
+}

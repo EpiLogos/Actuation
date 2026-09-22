@@ -1,0 +1,75 @@
+{
+  "entry": "C9",
+  "title": "Linguistic relativity — Whorf (1940)",
+  "subject_chars": 384,
+  "mode": "resonant",
+  "reading": {
+    "shape": "ranked frame relation (full ordering, topk=12)",
+    "selected": "L5",
+    "ranking": [
+      {
+        "lens": "L5",
+        "name": "Para Vāk",
+        "mass": 0.53
+      },
+      {
+        "lens": "L4",
+        "name": "Phenomenological",
+        "mass": 0.27
+      },
+      {
+        "lens": "L2",
+        "name": "Logical",
+        "mass": 0.04
+      },
+      {
+        "lens": "L3",
+        "name": "Processual",
+        "mass": 0.04
+      },
+      {
+        "lens": "L1",
+        "name": "Causal",
+        "mass": 0.03
+      },
+      {
+        "lens": "L4'",
+        "name": "Scientific",
+        "mass": 0.03
+      },
+      {
+        "lens": "L5'",
+        "name": "Divine Logos",
+        "mass": 0.03
+      },
+      {
+        "lens": "L1'",
+        "name": "Phenomenal",
+        "mass": 0.02
+      },
+      {
+        "lens": "L0",
+        "name": "Quaternal",
+        "mass": 0.01
+      },
+      {
+        "lens": "L2'",
+        "name": "Alchemical-Elemental",
+        "mass": 0
+      },
+      {
+        "lens": "L3'",
+        "name": "Chronological",
+        "mass": 0
+      },
+      {
+        "lens": "L0'",
+        "name": "Archetypal-Numerical",
+        "mass": 0
+      }
+    ],
+    "rationale": null
+  },
+  "latency_ms": 735,
+  "wall_ms": 799
+}

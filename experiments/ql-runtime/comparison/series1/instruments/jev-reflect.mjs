@@ -52,14 +52,15 @@ const fullGiving = (lensId, probs, strongest) => {
 
 let questions, shape;
 if (mode === 'full_text') {
-  // Every lens run at its machinery: one question per lens, criteria are the
-  // defined sub-slots with their authored meanings.
-  shape = 'machinery-first: each of the twelve lenses run across its defined sub-slots (12 x 6, meanings carried)';
+  // Every lens applied as its machinery defines: the distribution states
+  // where the subject stands at each sub-slot — no peak language, no meta
+  // types. The machinery is the application.
+  shape = 'machinery applied as given: each lens run across its defined sub-slots, the distribution stating where the subject stands at each';
   questions = Object.fromEntries(GIVING.lenses.map((l) => [
     l.id,
     {
       type: 'choice',
-      instructions: `Run ${l.name} (${l.ground}) over the subject as a presented whole. Its machinery: ${l.sublens.map(slotLine).join('; ')}. At which sub-slot does the subject's weight most strongly sit under this lens? The subject is pre-lens data; the sub-slot is where the lens refracts it.`,
+      instructions: `Apply ${l.name} (${l.ground}) to the subject as a presented whole. Its machinery: ${l.sublens.map(slotLine).join('; ')}. Apply it as it is defined: state where the subject stands at each sub-slot — the distribution is the statement, covering all of them.`,
       criteria: slotCriteria(l),
     },
   ]));

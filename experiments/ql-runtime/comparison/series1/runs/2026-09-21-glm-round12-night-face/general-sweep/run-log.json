@@ -1,0 +1,512 @@
+{
+  "total": 84,
+  "done": 84,
+  "failed": 0,
+  "skipped": 0,
+  "log": [
+    {
+      "file": "c01-full_text-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 756
+    },
+    {
+      "file": "c01-full_text-2.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 730
+    },
+    {
+      "file": "c01-nameonly-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 830
+    },
+    {
+      "file": "c01-resonant-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 835
+    },
+    {
+      "file": "c01-being-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1414
+    },
+    {
+      "file": "c01-becoming-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 688
+    },
+    {
+      "file": "c01-knowing-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 750
+    },
+    {
+      "file": "c02-full_text-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 902
+    },
+    {
+      "file": "c02-full_text-2.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 763
+    },
+    {
+      "file": "c02-nameonly-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 865
+    },
+    {
+      "file": "c02-resonant-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 775
+    },
+    {
+      "file": "c02-being-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 729
+    },
+    {
+      "file": "c02-becoming-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 759
+    },
+    {
+      "file": "c02-knowing-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 738
+    },
+    {
+      "file": "c03-full_text-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 703
+    },
+    {
+      "file": "c03-full_text-2.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 782
+    },
+    {
+      "file": "c03-nameonly-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 708
+    },
+    {
+      "file": "c03-resonant-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 709
+    },
+    {
+      "file": "c03-being-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 807
+    },
+    {
+      "file": "c03-becoming-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 938
+    },
+    {
+      "file": "c03-knowing-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1340
+    },
+    {
+      "file": "c04-full_text-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1072
+    },
+    {
+      "file": "c04-full_text-2.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 939
+    },
+    {
+      "file": "c04-nameonly-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1095
+    },
+    {
+      "file": "c04-resonant-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1133
+    },
+    {
+      "file": "c04-being-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1037
+    },
+    {
+      "file": "c04-becoming-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1072
+    },
+    {
+      "file": "c04-knowing-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1054
+    },
+    {
+      "file": "c05-full_text-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1110
+    },
+    {
+      "file": "c05-full_text-2.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1170
+    },
+    {
+      "file": "c05-nameonly-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1175
+    },
+    {
+      "file": "c05-resonant-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1120
+    },
+    {
+      "file": "c05-being-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1134
+    },
+    {
+      "file": "c05-becoming-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 992
+    },
+    {
+      "file": "c05-knowing-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1253
+    },
+    {
+      "file": "c06-full_text-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1518
+    },
+    {
+      "file": "c06-full_text-2.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1225
+    },
+    {
+      "file": "c06-nameonly-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 902
+    },
+    {
+      "file": "c06-resonant-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 815
+    },
+    {
+      "file": "c06-being-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 834
+    },
+    {
+      "file": "c06-becoming-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 822
+    },
+    {
+      "file": "c06-knowing-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 970
+    },
+    {
+      "file": "c07-full_text-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 886
+    },
+    {
+      "file": "c07-full_text-2.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 977
+    },
+    {
+      "file": "c07-nameonly-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 851
+    },
+    {
+      "file": "c07-resonant-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 790
+    },
+    {
+      "file": "c07-being-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 813
+    },
+    {
+      "file": "c07-becoming-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 874
+    },
+    {
+      "file": "c07-knowing-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 858
+    },
+    {
+      "file": "c08-full_text-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 802
+    },
+    {
+      "file": "c08-full_text-2.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 840
+    },
+    {
+      "file": "c08-nameonly-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 900
+    },
+    {
+      "file": "c08-resonant-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1167
+    },
+    {
+      "file": "c08-being-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1006
+    },
+    {
+      "file": "c08-becoming-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1252
+    },
+    {
+      "file": "c08-knowing-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1036
+    },
+    {
+      "file": "c09-full_text-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 962
+    },
+    {
+      "file": "c09-full_text-2.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1032
+    },
+    {
+      "file": "c09-nameonly-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 892
+    },
+    {
+      "file": "c09-resonant-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1217
+    },
+    {
+      "file": "c09-being-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1253
+    },
+    {
+      "file": "c09-becoming-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1197
+    },
+    {
+      "file": "c09-knowing-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 860
+    },
+    {
+      "file": "c10-full_text-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 962
+    },
+    {
+      "file": "c10-full_text-2.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 911
+    },
+    {
+      "file": "c10-nameonly-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 973
+    },
+    {
+      "file": "c10-resonant-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 924
+    },
+    {
+      "file": "c10-being-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1303
+    },
+    {
+      "file": "c10-becoming-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1288
+    },
+    {
+      "file": "c10-knowing-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1083
+    },
+    {
+      "file": "c11-full_text-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1092
+    },
+    {
+      "file": "c11-full_text-2.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 1058
+    },
+    {
+      "file": "c11-nameonly-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 905
+    },
+    {
+      "file": "c11-resonant-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 834
+    },
+    {
+      "file": "c11-being-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 831
+    },
+    {
+      "file": "c11-becoming-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 859
+    },
+    {
+      "file": "c11-knowing-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 735
+    },
+    {
+      "file": "c12-full_text-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 745
+    },
+    {
+      "file": "c12-full_text-2.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 780
+    },
+    {
+      "file": "c12-nameonly-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 780
+    },
+    {
+      "file": "c12-resonant-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 741
+    },
+    {
+      "file": "c12-being-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 800
+    },
+    {
+      "file": "c12-becoming-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 758
+    },
+    {
+      "file": "c12-knowing-1.json",
+      "ok": true,
+      "error": null,
+      "wall_ms": 747
+    }
+  ]
+}
