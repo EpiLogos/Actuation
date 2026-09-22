@@ -2,6 +2,7 @@
 //! libraries; this descriptor also drives command discovery and help.
 use crate::{
     comparison, evidence, execution,
+    epi_agent::{self, EpiPrimeQlRunRequest},
     owner::OwnerInstrument,
     prime,
     prime_run::{self, PrimeRunRequest},
@@ -30,6 +31,8 @@ pub const OPERATIONS: &[&str] = &[
     "task.freeze",
     "owner.invoke",
     "faculty.invoke",
+    "epi-agent.body",
+    "epi-agent.run",
     "prime.return",
     "prime.run",
     "classic.run",
@@ -128,6 +131,18 @@ pub fn invoke(v: &Value) -> Result<Value> {
             v["trace_ref"].as_str(),
             v["declared_locus_ref"].as_str(),
         ),
+        "epi-agent.body" => {
+            let owner = owner(&v["owner"])?;
+            epi_agent::body(&owner)
+        }
+        "epi-agent.run" => {
+            let request: EpiPrimeQlRunRequest = decode(&v["request"])?;
+            let world = world(v)?;
+            let owner = owner(&v["owner"])?;
+            let mut observation = observer(&v["stream"])?;
+            let result = epi_agent::run(&request, &world, &owner, &mut observation)?;
+            Ok(json!({"result":result,"events":observation.events,"durable_stream":observation.durable()}))
+        }
         "prime.return" => evidence::prime_return(&v["return"], v["require_schema"] == true),
         "prime.run" => {
             let req: PrimeRunRequest = decode(&v["request"])?;
@@ -294,6 +309,8 @@ mod tests {
             "classic.run",
             "deep.run",
             "prime.run",
+            "epi-agent.body",
+            "epi-agent.run",
             "comparison.review",
         ] {
             assert!(ops.iter().any(|o| o == required), "{required}");
