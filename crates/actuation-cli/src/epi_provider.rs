@@ -20,6 +20,7 @@ pub struct EpiProviderArgs {
     pub research_bin: PathBuf,
     pub faculty_config: PathBuf,
     pub ql_root: Option<PathBuf>,
+    pub aikit_bin: Option<PathBuf>,
     pub provider: Option<String>,
     pub model: Option<String>,
     pub agent_session: Option<String>,
@@ -118,6 +119,10 @@ impl EpiProviderArgs {
                 "Actuation faculty configuration",
             )?,
             ql_root,
+            aikit_bin: optional(args, "--aikit-bin")
+                .map(PathBuf::from)
+                .map(|path| file(path, "AIKit binary"))
+                .transpose()?,
             provider,
             model,
             agent_session: optional(args, "--agent-session"),
@@ -161,6 +166,9 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
     if let Some(root) = &args.ql_root {
         command.env("QL_MEF_ROOT", root);
     }
+    if let Some(aikit) = &args.aikit_bin {
+        command.env("AIKIT_BIN", aikit);
+    }
     if let Some(agent_session) = &args.agent_session {
         if agent_session.len() > 256 || agent_session.trim().is_empty() {
             return Err(Error::new("--agent-session is invalid"));
@@ -179,7 +187,7 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
 pub fn usage() -> &'static str {
     "actuation-epi-prime --prime-bin <abs> --ql-bin <abs> --ql-revision <sha> \
 --skill-path <abs> --research-bin <abs> --faculty-config <abs> \
-[--ql-root <abs>] [--agent-session <ref>] [--provider <native> --model <id>]"
+[--ql-root <abs>] [--aikit-bin <abs>] [--agent-session <ref>] [--provider <native> --model <id>]"
 }
 
 #[cfg(test)]
