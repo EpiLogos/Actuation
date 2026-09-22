@@ -448,6 +448,113 @@ async def logos_return(request: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+
+async def spawn_child_cheapest(
+    task: str,
+    *,
+    name: str,
+    use_type: str = "agent-child",
+    thinking: str | None = None,
+) -> dict[str, Any]:
+    """Spawn a Prime child using AIKit's current CHEAPEST_ELIGIBLE resolution.
+
+    AIKit chooses the canonical Model/route under the current Project context.
+    Prime then independently resolves the exact configured provider/model
+    selector; disagreement is a refusal rather than a guessed mapping.
+    """
+    if not task.strip() or not name.strip():
+        raise ValueError("task and name must be non-empty")
+    aikit_bin = os.environ.get("AIKIT_BIN", "").strip()
+    if not aikit_bin:
+        raise RuntimeError(
+            "AIKIT_BIN is required for cheapest-eligible child selection"
+        )
+    aikit = Path(aikit_bin).expanduser().resolve()
+    if not aikit.is_file():
+        raise RuntimeError(f"AIKIT_BIN is unavailable: {aikit}")
+    resolution = await _run(
+        str(aikit),
+        "--json",
+        "model-resolve",
+        "--use-type",
+        use_type,
+        "--ranking-policy",
+        "CHEAPEST_ELIGIBLE",
+    )
+    if resolution.get("ok") is not True or not isinstance(resolution.get("data"), dict):
+        raise RuntimeError(f"AIKit cheapest-eligible resolution failed: {resolution}")
+    selected = resolution["data"].get("selected")
+    if not isinstance(selected, dict):
+        raise RuntimeError("AIKit resolution returned no selected model route")
+    provider_ref = selected.get("provider")
+    native_id = selected.get("provider_native_id")
+    model_ref = selected.get("model")
+    if not all(isinstance(value, str) and value for value in (provider_ref, native_id, model_ref)):
+        raise RuntimeError("AIKit resolution returned incomplete model identity")
+    provider = provider_ref.removeprefix("provider:")
+    import rlm as prime_rlm
+
+    candidates = await prime_rlm.find_models(native_id, limit=20)
+    exact = [
+        candidate
+        for candidate in candidates
+        if candidate.provider == provider and candidate.id == native_id
+    ]
+    if len(exact) != 1:
+        observed = [
+            {"provider": candidate.provider, "id": candidate.id, "selector": candidate.selector}
+            for candidate in candidates
+        ]
+        raise RuntimeError(
+            "Prime model catalogue does not uniquely confirm AIKit's cheapest-eligible route: "
+            + json.dumps(
+                {
+                    "aikit_provider": provider_ref,
+                    "provider_native_id": native_id,
+                    "prime_candidates": observed,
+                },
+                sort_keys=True,
+            )
+        )
+    requested: dict[str, Any] = {"name": name, "model": exact[0].selector}
+    if thinking is not None:
+        requested["thinking"] = thinking
+    handle = await prime_rlm.run(task, **requested)
+    observed_model = getattr(handle, "model", None)
+    if observed_model != exact[0].selector:
+        raise RuntimeError(
+            f"Prime child observed model {observed_model!r}, expected {exact[0].selector!r}"
+        )
+    session_dir = str(handle.session_dir)
+    result = {
+        "schema": "actuation.prime-child-model-selection/v1",
+        "requested": {
+            "policy": "CHEAPEST_ELIGIBLE",
+            "use_type": use_type,
+            "name": name,
+        },
+        "resolved": {
+            "model_ref": model_ref,
+            "provider_ref": provider_ref,
+            "provider_native_id": native_id,
+            "prime_selector": exact[0].selector,
+            "why": resolution["data"].get("why"),
+        },
+        "observed": {
+            "rlm_child_id": handle.rlm_child_id,
+            "name": handle.name,
+            "model": observed_model,
+            "session_dir_sha256": hashlib.sha256(session_dir.encode("utf-8")).hexdigest(),
+        },
+        "standing": "AIKit roster resolution + Prime live model-catalog confirmation + admitted child handle; child result arrives separately",
+    }
+    await _record(
+        "prime-child-model:cheapest-eligible",
+        {"task_digest": _digest(task), "name": name, "use_type": use_type},
+        result,
+    )
+    return result
+
 def return_envelope(
     subject_ref: str,
     relation_to_parent: str,
