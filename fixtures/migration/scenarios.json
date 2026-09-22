@@ -6353,8 +6353,10 @@
       "harness.detect",
       "harness.self",
       "harness.capability",
+      "harness.capability.validate",
       "system.read",
       "config.contribution",
+      "config.contribution.capability",
       "config.validate",
       "config.plan",
       "config.apply",
@@ -6413,7 +6415,7 @@
     "stdout": {
      "schema": "actuation.harness-detection/v1",
      "document": "catalog",
-     "catalog_revision": 12,
+     "catalog_revision": 14,
      "descriptors": [
       {
        "schema": "actuation.harness-detection/v1",
@@ -7232,7 +7234,7 @@
     "stdout": {
      "schema": "actuation.harness-capability/v1",
      "document": "capability-catalog",
-     "catalog_revision": 12,
+     "catalog_revision": 14,
      "capabilities": [
       {
        "schema": "actuation.harness-capability/v1",
@@ -7363,7 +7365,7 @@
        "schema": "actuation.harness-capability/v1",
        "document": "capability",
        "harness_slug": "codex",
-       "summary": "Per-project hooks.json covers SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop, PreCompact, SessionEnd and the subagent/permission events; hook JSON output carries hookSpecificOutput.additionalContext; PreToolUse permissionDecision deny vetoes the tool call; config.toml notify still invokes an external program at turn completion.",
+       "summary": "CODEX_HOME hooks.json covers the 12 hook events codex 0.155.1 ships (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop, PreCompact, PostCompact, SessionEnd, SubagentStart, SubagentStop, Interrupt, PermissionRequest); hook JSON output carries hookSpecificOutput.additionalContext on five events; PreToolUse permissionDecision deny vetoes the tool call and Stop, UserPromptSubmit and SubagentStop ship decision:block plus a required reason; config.toml notify invokes an external program at turn completion.",
        "native_events": [
         {
          "event": "session-start",
@@ -7377,9 +7379,9 @@
          "event": "user-prompt-submit",
          "native_name": "UserPromptSubmit",
          "transport": "hooks-json-file",
-         "can_block": false,
+         "can_block": true,
          "context_channel": "stdout-additional-context",
-         "notes": "UserPromptSubmitHookSpecificOutputWire.additionalContext declared in the shipped schema; no deny channel observed for this event."
+         "notes": "UserPromptSubmitHookSpecificOutputWire.additionalContext declared in the shipped schema; the same shipped output schema declares decision:'block' (BlockDecisionWire) plus reason \u2014 a block channel the r12 correction missed."
         },
         {
          "event": "pre-tool-use",
@@ -7401,9 +7403,9 @@
          "event": "stop",
          "native_name": "Stop",
          "transport": "hooks-json-file",
-         "can_block": false,
+         "can_block": true,
          "context_channel": "none",
-         "notes": "Stop is a declared hook event in the shipped schema; no continuation-forcing output channel is evidenced."
+         "notes": "shipped 0.155.1 stop.command.output declares decision:'block' (BlockDecisionWire) plus reason \u2014 a continuation-forcing channel \u2014 and stop_hook_active rides the input to guard continuation loops; codex enforces that reason is required when decision is block during output parsing (its own schema text: \"Claude requires `reason` when `decision` is `block`\")."
         },
         {
          "event": "session-end",
@@ -7433,9 +7435,9 @@
          "event": "custom",
          "native_name": "SubagentStop",
          "transport": "hooks-json-file",
-         "can_block": false,
+         "can_block": true,
          "context_channel": "none",
-         "notes": "declared hook event in the shipped schema."
+         "notes": "shipped 0.155.1 subagent-stop.command.output declares decision:'block' (BlockDecisionWire) plus reason, with stop_hook_active in the input; codex enforces that reason is required when decision is block during output parsing."
         },
         {
          "event": "custom",
@@ -7444,6 +7446,22 @@
          "can_block": true,
          "context_channel": "none",
          "notes": "the hook engine records a denied approval ('PermissionRequest hook denied approval'); the event gates approvals, not context."
+        },
+        {
+         "event": "custom",
+         "native_name": "PostCompact",
+         "transport": "hooks-json-file",
+         "can_block": false,
+         "context_channel": "none",
+         "notes": "shipped 0.155.1 post-compact.command.output declares only continue/stopReason/suppressOutput/systemMessage \u2014 advisory; the input carries trigger manual/auto."
+        },
+        {
+         "event": "custom",
+         "native_name": "Interrupt",
+         "transport": "hooks-json-file",
+         "can_block": false,
+         "context_channel": "none",
+         "notes": "shipped 0.155.1 interrupt.command.output declares only systemMessage \u2014 observability on user interrupt; no decision or context channel."
         }
        ],
        "injection_channel": {
@@ -7453,23 +7471,23 @@
        },
        "blocking_semantics": {
         "kind": "deny-and-block",
-        "notes": "PreToolUse permissionDecision:deny (with non-empty permissionDecisionReason) vetoes the tool call; PermissionRequest can deny an approval. A dispatch gate rides the hook decision."
+        "notes": "PreToolUse permissionDecision:deny (with non-empty permissionDecisionReason) vetoes the tool call; PermissionRequest can deny an approval; Stop, UserPromptSubmit and SubagentStop ship decision:'block' plus a required reason \u2014 codex 0.155.1 deliberately mirrors Claude's hook blocking contract (its own schema text: \"Claude requires `reason` when `decision` is `block`\"). A dispatch gate rides the hook decision."
        },
        "wake_capability": {
         "kind": "none",
         "notes": "unchanged by the correction: hooks and notify execute inside or beside a running session; nothing observed wakes the harness from outside. A relay sender must not pretend codex can be woken."
        },
        "install_seam": {
-        "config_path": ".codex/hooks.json",
+        "config_path": "$CODEX_HOME/hooks.json",
         "format": "json",
-        "entry_shape": "per-event hook command entries under camelCase event names (SessionStart / UserPromptSubmit / PreToolUse / PostToolUse / Stop / PreCompact / SessionEnd / SubagentStart / SubagentStop / PermissionRequest); notify listener configured separately in config.toml; hook trust state recorded in hooks.state",
+        "entry_shape": "environment-scoped: the seam is the hooks.json inside the codex home named by CODEX_HOME (default ~/.codex), not the per-project .codex/hooks.json the harness also reads natively \u2014 corrected 2026-09-23 against the aikit codex projection (apply exit 0 on git projects, per-generation undo byte-exact). Per-event hook command entries under camelCase event names (SessionStart / UserPromptSubmit / PreToolUse / PostToolUse / Stop / PreCompact / PostCompact / SessionEnd / SubagentStart / SubagentStop / Interrupt / PermissionRequest); notify listener configured separately in config.toml; hook trust state recorded in hooks.state",
         "ownership_marker": "hook command resolves to the AIKit dispatch executable",
         "preserves_foreign_entries": true
        },
        "uninstall_seam": {
-        "config_path": ".codex/hooks.json",
+        "config_path": "$CODEX_HOME/hooks.json",
         "format": "json",
-        "entry_shape": "entries whose command matches the ownership marker are removed; foreign entries and config.toml notify are untouched",
+        "entry_shape": "environment-scoped: entries in $CODEX_HOME/hooks.json whose command matches the ownership marker are removed; foreign entries and config.toml notify are untouched",
         "ownership_marker": "hook command resolves to the AIKit dispatch executable",
         "preserves_foreign_entries": true
        },
@@ -7491,15 +7509,18 @@
         ]
        },
        "provenance": {
-        "authored_by": "O:I capability descriptor programme (corrected 2026-09-21 against codex-cli 0.155.1 installed on this machine: shipped hook output wire schema and hook-engine refusal strings; supersedes the 0.153.0 surface)",
+        "authored_by": "O:I capability descriptor programme (corrected 2026-09-23 against codex-cli 0.155.1's own embedded draft-07 hook output wire schemas \u2014 declares the shipped PostCompact and Interrupt events and the Stop/UserPromptSubmit/SubagentStop decision:block channels the 2026-09-21 correction missed \u2014 and against a local binary scan locating the notify config key in the installed 0.155.1 config field table; the notify invocation-at-turn-completion behaviour remains upstream-declared; install/uninstall seams redeclared 2026-09-23 to the environment-scoped $CODEX_HOME/hooks.json the dispatch projection actually writes)",
         "source_refs": [
          "survey:local-machine-2026-09-06",
          "survey:local-machine-2026-09-21",
          "upstream:openai-codex-cli-0.153.0",
          "upstream:openai-codex-cli-0.155.1",
-         "upstream:openai-codex-cli-config-reference"
+         "upstream:openai-codex-cli-config-reference",
+         "survey:codex-0.155.1-shipped-hook-schemas-2026-09-23",
+         "survey:codex-notify-binary-scan-2026-09-23",
+         "aikit:codex-seam-reverify-2026-09-22"
         ],
-        "catalog_revision": 12
+        "catalog_revision": 14
        }
       },
       {

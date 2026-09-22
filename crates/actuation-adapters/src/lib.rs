@@ -7,6 +7,7 @@
 //! use the same application surfaces as deterministic conformance.
 mod admission;
 mod catalog;
+mod contribution;
 pub mod effects;
 mod instantiation;
 mod observation;
@@ -17,6 +18,7 @@ pub mod usage;
 pub use actuation_core::{Error, Result};
 pub use admission::*;
 pub use catalog::*;
+pub use contribution::*;
 pub use instantiation::*;
 pub use observation::*;
 pub use speech::*;
