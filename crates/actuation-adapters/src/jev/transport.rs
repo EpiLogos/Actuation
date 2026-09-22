@@ -1,4 +1,4 @@
-use super::{Determination, SystemOneRequest, SystemOneResponse, SystemOneUsage, DOCUMENTED_INPUT_CEILING, ENDPOINT};
+use super::{SystemOneDetermination, SystemOneRequest, SystemOneResponse, SystemOneUsage, DOCUMENTED_INPUT_CEILING, ENDPOINT};
 use crate::{Error, Result};
 use actuation_core::{AgentRef, AgentSessionRef, AgencyRef, ExternalRef, RequestRef};
 use serde::{Deserialize, Serialize};
@@ -141,7 +141,7 @@ pub struct JevInvocationReceipt {
 pub struct JevEvaluation {
     pub receipt: JevInvocationReceipt,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub response: Option<Determination>,
+    pub response: Option<SystemOneDetermination>,
 }
 
 fn failure(code: &str, reason: impl Into<String>) -> JevFailure {
