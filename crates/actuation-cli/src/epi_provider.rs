@@ -38,7 +38,9 @@ fn value(args: &[String], name: &str) -> Result<String> {
 
 fn optional(args: &[String], name: &str) -> Option<String> {
     let index = args.iter().position(|value| value == name)?;
-    args.get(index + 1).filter(|value| !value.trim().is_empty()).cloned()
+    args.get(index + 1)
+        .filter(|value| !value.trim().is_empty())
+        .cloned()
 }
 
 fn file(path: PathBuf, label: &str) -> Result<PathBuf> {
@@ -57,8 +59,8 @@ fn directory(path: PathBuf, label: &str) -> Result<PathBuf> {
     if !path.is_absolute() {
         return Err(Error::new(format!("{label} must be an absolute path")));
     }
-    let canonical = std::fs::canonicalize(&path)
-        .map_err(|_| Error::new(format!("{label} is unavailable")))?;
+    let canonical =
+        std::fs::canonicalize(&path).map_err(|_| Error::new(format!("{label} is unavailable")))?;
     if !canonical.is_dir() {
         return Err(Error::new(format!("{label} must be a directory")));
     }
