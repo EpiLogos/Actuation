@@ -149,3 +149,15 @@ This lock follows the owner's conversation through the final #0/1-versus-#0 corr
 Inspection bases for this publication: Actuation `8459d503542e3707dc03919ba6f467abb9f60e09`, QL-MEF `2bcdc78c2f97ce13312bf96011bd18bea7b73ea5`, O:I `fdb7958d16c94cc4538cc4208bf62f8192486ec2`. These are source bases, not an installed compatibility receipt.
 
 Return exact native operations, source/profile/tool versions, actual invocation and child lineage, selected/delivered/used context, material generations, mode UI evidence, failures/repairs and independent replay to #107/#220/#65 and QL-MEF #201. Source publication and CI do not report a live default agent, successful provider experiment or human Recognition. No machine mutation is performed by this documentation commission.
+
+## 9. Implemented acting-body candidate — 2026-09-22
+
+The runtime candidate is published in [#110](https://github.com/EpiLogos/Actuation/pull/110). `crates/actuation-research/src/epi_agent.rs` constitutes the **#0/1** body against the QL owner constitution and refuses a mismatched #0–#5 readback. `application.rs` exposes `epi-agent.body` and `epi-agent.run`; the existing Prime recursion remains the scheduler.
+
+The existing inherited `ql-relational` Skill now carries actual #0–#5 calls and leaves the same native faculty receipts at parent and child loci. It prefers an installed `QL_BIN` with an explicit `QL_OWNER_REVISION`; the source-checkout cargo path remains only the matched research fallback. `faculty.rs` verifies each QL invocation's position and operation instead of accepting an arbitrary wrapper result.
+
+For application use, `actuation-epi-prime` is the installable Prime JSONL-RPC launcher. It binds the admitted QL binary/revision, relational Skill, research/faculty bridge and RLM depth into Prime's native process. Provider/model are a paired explicit override: when AIKit has selected one, they are delivered and Prime must read them back; when no AIKit override is authored, Prime's own configured model is observed rather than invented by Actuation. Mode selection never authorises Continual refinement.
+
+The twelve-tool form remains the initial reference research supply. The current product transport truth is narrower: domain faculties reach Prime through the inherited Skill/faculty bridge until the Prime transport itself advertises them as first-class tool descriptors. The 4/6/8/12, prompt-only and tool-only conditions therefore remain real comparative conditions instead of being rewritten around the product candidate.
+
+Cloud evidence proves the Prime structural apparatus, inherited Skill compilation, native research boundaries, deep runtime and CLI/build surfaces. Credentialled Prime inference, inexpensive-child model choice, installed material/worktree restriction, Jev/EBM use and human experience are not inferred from those gates; they remain explicit joined/local acceptance conditions.

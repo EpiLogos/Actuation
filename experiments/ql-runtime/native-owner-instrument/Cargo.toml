@@ -9,10 +9,10 @@ publish = false
 # This optional research instrument is deliberately not a member/dependency of
 # the ordinary Actuation workspace. QL-MEF remains the sole formal owner.
 [dependencies]
-ql-core = { git = "https://github.com/EpiLogos/QL-MEF", rev = "08d14e89c6427cb885e117c2e9bc9dc61a0f90b7" }
-ql-mef = { git = "https://github.com/EpiLogos/QL-MEF", rev = "08d14e89c6427cb885e117c2e9bc9dc61a0f90b7" }
-ql-cli = { git = "https://github.com/EpiLogos/QL-MEF", rev = "08d14e89c6427cb885e117c2e9bc9dc61a0f90b7" }
-ql-wiki = { git = "https://github.com/EpiLogos/QL-MEF", rev = "08d14e89c6427cb885e117c2e9bc9dc61a0f90b7" }
+ql-core = { git = "https://github.com/EpiLogos/QL-MEF", rev = "89ca4088ea47fe626c23c2b11efe2d38bdfcd1f7" }
+ql-mef = { git = "https://github.com/EpiLogos/QL-MEF", rev = "89ca4088ea47fe626c23c2b11efe2d38bdfcd1f7" }
+ql-cli = { git = "https://github.com/EpiLogos/QL-MEF", rev = "89ca4088ea47fe626c23c2b11efe2d38bdfcd1f7" }
+ql-wiki = { git = "https://github.com/EpiLogos/QL-MEF", rev = "89ca4088ea47fe626c23c2b11efe2d38bdfcd1f7" }
 serde_json = "1"
 
 [lints.rust]
