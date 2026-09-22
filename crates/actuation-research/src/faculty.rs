@@ -130,7 +130,12 @@ fn text<'a>(v: &'a Value, key: &str) -> Result<&'a str> {
         .filter(|s| !s.trim().is_empty())
         .ok_or_else(|| Error::new(format!("faculty {key} requires text")))
 }
-fn epi_invoke(owner: &OwnerInstrument, position: u8, operation: &str, input: Value) -> Result<Value> {
+fn epi_invoke(
+    owner: &OwnerInstrument,
+    position: u8,
+    operation: &str,
+    input: Value,
+) -> Result<Value> {
     if position > 5 {
         return Err(Error::new("Epi faculty position must be 0..5"));
     }
@@ -147,12 +152,16 @@ fn epi_invoke(owner: &OwnerInstrument, position: u8, operation: &str, input: Val
     file.flush()
         .map_err(|_| Error::new("cannot flush bounded Epi faculty request"))?;
     let path = file.path().to_string_lossy().into_owned();
-    let value = owner.invoke(json!({"operation":"cli","arguments":["epi-agent","invoke",path]}))?["result"].clone();
+    let value = owner.invoke(json!({"operation":"cli","arguments":["epi-agent","invoke",path]}))?
+        ["result"]
+        .clone();
     if value["schema"] != "ql.epi-logos-agent-invocation-result/v1"
         || value["position"] != format!("#{position}")
         || value["operation"] != operation
     {
-        return Err(Error::new("QL owner returned a mismatched Epi faculty result"));
+        return Err(Error::new(
+            "QL owner returned a mismatched Epi faculty result",
+        ));
     }
     Ok(value)
 }
@@ -166,22 +175,47 @@ fn invoke_owner(config: &FacultyConfig, owner: &OwnerInstrument, request: &Value
         "epi-constitution" => cli(json!(["epi-agent", "constitution"])),
         "epi-faculty" => {
             let raw = text(request, "position")?.trim_start_matches('#');
-            let position = raw.parse::<u8>().map_err(|_| Error::new("epi-faculty position must be #0..#5"))?;
-            if position > 5 { return Err(Error::new("epi-faculty position must be #0..#5")); }
+            let position = raw
+                .parse::<u8>()
+                .map_err(|_| Error::new("epi-faculty position must be #0..#5"))?;
+            if position > 5 {
+                return Err(Error::new("epi-faculty position must be #0..#5"));
+            }
             cli(json!(["epi-agent", "faculty", format!("#{position}")]))
-        },
-        "anuttara-read" => epi_invoke(owner, 0, "anuttara.read", json!({
-            "reference":text(request,"reference")?,
-            "max_relations":request.get("max_relations").cloned().unwrap_or(json!(128))
-        })),
-        "tda-vietoris-rips" => epi_invoke(owner, 1, "tda.vietoris-rips", request["request"].clone()),
-        "bimba-neighborhood" => epi_invoke(owner, 2, "bimba.neighborhood", json!({
-            "reference":text(request,"reference")?,
-            "max_relations":request.get("max_relations").cloned().unwrap_or(json!(256))
-        })),
-        "representation-bind" => epi_invoke(owner, 3, "representation.bind", request["request"].clone()),
-        "nara-activity-validate" => epi_invoke(owner, 4, "nara.activity.validate", json!({"activity":request["activity"].clone()})),
-        "nara-elemental-map" => epi_invoke(owner, 4, "nara.elemental-map", request["request"].clone()),
+        }
+        "anuttara-read" => epi_invoke(
+            owner,
+            0,
+            "anuttara.read",
+            json!({
+                "reference":text(request,"reference")?,
+                "max_relations":request.get("max_relations").cloned().unwrap_or(json!(128))
+            }),
+        ),
+        "tda-vietoris-rips" => {
+            epi_invoke(owner, 1, "tda.vietoris-rips", request["request"].clone())
+        }
+        "bimba-neighborhood" => epi_invoke(
+            owner,
+            2,
+            "bimba.neighborhood",
+            json!({
+                "reference":text(request,"reference")?,
+                "max_relations":request.get("max_relations").cloned().unwrap_or(json!(256))
+            }),
+        ),
+        "representation-bind" => {
+            epi_invoke(owner, 3, "representation.bind", request["request"].clone())
+        }
+        "nara-activity-validate" => epi_invoke(
+            owner,
+            4,
+            "nara.activity.validate",
+            json!({"activity":request["activity"].clone()}),
+        ),
+        "nara-elemental-map" => {
+            epi_invoke(owner, 4, "nara.elemental-map", request["request"].clone())
+        }
         "logos-return" => epi_invoke(owner, 5, "logos.return", request["request"].clone()),
         "kernel-apply" => cli(json!([
             "kernel",
