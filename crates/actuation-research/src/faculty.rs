@@ -167,7 +167,9 @@ fn epi_invoke(
 }
 fn techne_reading(owner: &OwnerInstrument, target: &Value) -> Result<Value> {
     if !target.is_object() {
-        return Err(Error::new("Technē reading requires a Wiki refraction target object"));
+        return Err(Error::new(
+            "Technē reading requires a Wiki refraction target object",
+        ));
     }
     let mut file = tempfile::NamedTempFile::new()
         .map_err(|_| Error::new("cannot create bounded Technē target"))?;
