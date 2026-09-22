@@ -1,8 +1,9 @@
 //! Thin research application routing. Product/research semantics remain in the
 //! libraries; this descriptor also drives command discovery and help.
 use crate::{
-    comparison, evidence, execution,
+    comparison,
     epi_agent::{self, EpiPrimeQlRunRequest},
+    evidence, execution,
     owner::OwnerInstrument,
     prime,
     prime_run::{self, PrimeRunRequest},
@@ -141,7 +142,9 @@ pub fn invoke(v: &Value) -> Result<Value> {
             let owner = owner(&v["owner"])?;
             let mut observation = observer(&v["stream"])?;
             let result = epi_agent::run(&request, &world, &owner, &mut observation)?;
-            Ok(json!({"result":result,"events":observation.events,"durable_stream":observation.durable()}))
+            Ok(
+                json!({"result":result,"events":observation.events,"durable_stream":observation.durable()}),
+            )
         }
         "prime.return" => evidence::prime_return(&v["return"], v["require_schema"] == true),
         "prime.run" => {
