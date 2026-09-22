@@ -33,6 +33,15 @@ await ql_relational.spawn_child_cheapest(
     name="bounded-review",
     use_type="agent-child",
 )
+handoff = await ql_relational.central_now_handover(
+    "bounded contribution",
+    "What changed, what remains, and the next native action.",
+    actor="prime-child/bounded-review",
+    source_refs=["source:..."],
+    evidence_refs=["evidence:..."],
+    work_refs=[{"repo":"EpiLogos/O-I","branch":"feature/...","worktree_path":"/actual/path"}],
+)
+await ql_relational.central_now_handoff_read(handoff["data"]["handoff"]["id"])
 ql_relational.return_envelope(...)
 ```
 
@@ -63,6 +72,28 @@ Model/route and the Prime-observed child handle/model. Admission is not the
 child's answer. Results still arrive through Prime's normal child messaging or
 files. The child's private session path is represented only by a SHA-256 digest
 for correlation with native faculty receipts.
+
+
+## NOW handover and worker replacement
+
+When a useful worker must be replaced, use Central's own bounded NOW return
+instead of transferring the parent transcript or inventing a handoff file.
+
+`central_now_handover(...)` calls the installed `ctrl` owner through
+`projectcentral.now.return`. It requires `CENTRAL_CTRL_BIN` and
+`CENTRAL_ROOT`; `CENTRAL_PROJECT` supplies the default Project key. The
+record keeps the worker/session ref, source/evidence/preserve refs, and exact
+repo/branch/optional-worktree lane claim. Central owns its lifecycle and DAY
+rollover.
+
+A replacement worker uses `central_now_handoff_read(id)` to re-read that exact
+record from Central's current NOW inspection and continues from the referenced
+source/evidence/next action. These calls are optional: absence of Central makes
+the continuation faculty unavailable and never blocks ordinary QL work.
+
+Do not put private transcript text, credentials or protected material in the
+handoff merely to make it look complete. Keep it pithy: returned difference,
+remaining uncertainty, exact refs and the next native action.
 
 ## Wiki / constellation
 
