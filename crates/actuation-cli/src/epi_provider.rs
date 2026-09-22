@@ -86,8 +86,12 @@ impl EpiProviderArgs {
                 "--provider and --model must be supplied together or both omitted",
             ));
         }
-        if provider.as_ref().is_some_and(|provider| provider.starts_with('-') || provider.len() > 256)
-            || model.as_ref().is_some_and(|model| model.starts_with('-') || model.len() > 1024)
+        if provider
+            .as_ref()
+            .is_some_and(|provider| provider.starts_with('-') || provider.len() > 256)
+            || model
+                .as_ref()
+                .is_some_and(|model| model.starts_with('-') || model.len() > 1024)
         {
             return Err(Error::new(
                 "provider/model identifiers are invalid or unbounded",
