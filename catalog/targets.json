@@ -1,6 +1,6 @@
 {
   "schema": "actuation.native-catalog/v1",
-  "catalog_revision": 16,
+  "catalog_revision": 17,
   "descriptors": [
     {
       "schema": "actuation.harness-detection/v1",
@@ -1399,6 +1399,57 @@
         ],
         "catalog_revision": 13
       }
+    },
+    {
+      "schema": "actuation.harness-capability/v1",
+      "document": "capability",
+      "harness_slug": "openclaw",
+      "summary": "OpenClaw 2026.1.30: observed internal-hook configuration and bundled hook inventory; lifecycle dispatch, context, blocking and wake semantics remain unobserved.",
+      "native_events": [],
+      "injection_channel": {
+        "kind": "none",
+        "mechanism": "Unobserved: no verified additional-context field or pipe in the bounded census.",
+        "notes": "none is the required least-committal encoding, not a claim of unsupported functionality. openclaw hooks list completed on its 30-second retry and advertised boot-md (run BOOT.md on gateway startup), command-logger (log command events), session-memory (save session context on /new), and soul-evil (swap SOUL files). These are hook names and descriptions, not verified native event identifiers or context transport grammar; native_events is therefore empty. hooks info session-memory timed out after 10 seconds. No session-level probe or server was started."
+      },
+      "blocking_semantics": {
+        "kind": "none",
+        "notes": "Unobserved, not unsupported. Root help advertises approvals and hooks, but no blocking contract was observed. hooks --help printed internal hook management commands but timed out at both 10 and 30 seconds; neither outcome licenses runtime semantics."
+      },
+      "wake_capability": {
+        "kind": "none",
+        "notes": "Unobserved, not unsupported. Root help advertises system events, heartbeat and presence; system --help timed out at 10 seconds with no output. No listener was launched or verified."
+      },
+      "install_seam": {
+        "config_path": "/Users/admin/.openclaw/openclaw.json",
+        "format": "json",
+        "entry_shape": "Observed structure: hooks.internal.enabled is boolean; hooks.internal.entries maps a hook name to an object containing enabled:boolean. session-memory is an existing entry. This accounts for the named configuration seam only, not an unobserved executable-handler installation contract.",
+        "ownership_marker": "Contributor policy, not a native marker: only a newly created, collision-checked hooks.internal.entries key prefixed actuation-owned- is owned. Existing keys, including session-memory, are foreign. No entry was created during this census.",
+        "preserves_foreign_entries": true
+      },
+      "uninstall_seam": {
+        "config_path": "/Users/admin/.openclaw/openclaw.json",
+        "format": "json",
+        "entry_shape": "Reverse the proposed named-entry contribution by removing only its newly created, recorded hooks.internal.entries key. Preserve every other key and value, including hooks.internal.enabled. Do not remove the whole hooks or entries object. Reversibility is a contribution policy; no install or uninstall was executed.",
+        "ownership_marker": "Contributor policy: exact recorded actuation-owned- key created by the contributor after a collision check; a matching prefix alone does not establish ownership.",
+        "preserves_foreign_entries": true
+      },
+      "provenance": {
+        "authored_by": "Codex, local bounded harness census, 2026-09-23. Followed /tmp/t3-skill/skills/harness-plug-in/SKILL.md only. No repository source, campaign directories, external documentation, secret values, session execution, MCP server, daemon or REPL inspected or launched. Optional model_dispatch omitted: models --help timed out; config model key names alone do not settle binding or credential requirements.",
+        "source_refs": [
+          "detection:actuation harness capability openclaw \u2014 exit 2, explicit declared capability gap; diagnosis:harness-capability-coverage-2026-09-14. Named repository evidence in that response was not opened.",
+          "local:which openclaw \u2014 ok, /Users/admin/Library/pnpm/openclaw",
+          "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw --version \u2014 ok, exit 0, 2026.1.30",
+          "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw --help \u2014 ok, exit 0, version 2026.1.30 (76b5208), setup names ~/.openclaw/openclaw.json; hooks, models, system, approvals and agent commands advertised",
+          "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw hooks --help \u2014 timed-out, exit 142; partial help advertises internal hook list/info/check/enable/disable/install/update; behavior remains unobserved",
+          "local:perl -e 'alarm shift; exec @ARGV' 30 openclaw hooks --help \u2014 sole escalation retry timed-out, exit 142; partial help repeated; behavior remains unobserved",
+          "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw system --help \u2014 timed-out, exit 142, no output; wake remains unobserved",
+          "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw models --help \u2014 timed-out, exit 142, no output; model binding remains unobserved",
+          "local:/Users/admin/.openclaw/openclaw.json \u2014 ok, exists and parses as JSON; bounded Python structure-only traversal emitted key names and types, never scalar values. hooks.internal.enabled:boolean and hooks.internal.entries.session-memory.enabled:boolean observed. Ownership and preservation rules above are proposed contributor policy over this observed structure, not measured native behavior.",
+          "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw hooks list \u2014 timed-out, exit 142, no output",
+          "local:perl -e 'alarm shift; exec @ARGV' 30 openclaw hooks list \u2014 ok, exit 0, sole escalation retry; boot-md, command-logger and session-memory ready; soul-evil missing; inventory is not a complete event grammar",
+          "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw hooks info session-memory \u2014 timed-out, exit 142, no output; no retry; event identifiers and execution semantics remain unobserved"
+        ]
+      }
     }
   ],
   "capability_gaps": [
@@ -1488,25 +1539,6 @@
         "aikit:clients/ollama.rs admission (ai-kit#186, closed 2026-09-08)",
         "survey:local-machine-2026-09-05",
         "upstream:github.com/ollama/ollama/blob/main/docs/api.md",
-        "diagnosis:harness-capability-coverage-2026-09-14"
-      ],
-      "provenance": {
-        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
-        "source_refs": [
-          "diagnosis:harness-capability-coverage-2026-09-14"
-        ],
-        "catalog_revision": 7
-      }
-    },
-    {
-      "schema": "actuation.harness-capability-gap/v1",
-      "document": "capability-gap",
-      "harness_slug": "openclaw",
-      "summary": "OpenClaw agent harness; detected only",
-      "reason": "No capability descriptor authored at diagnosis (2026-09-14): AIKit's admission rides the detection record only; the native event/blocking surface is unobserved.",
-      "evidence_refs": [
-        "aikit:clients/openclaw.rs admission (ai-kit#186, closed 2026-09-08)",
-        "survey:local-machine-2026-09-05",
         "diagnosis:harness-capability-coverage-2026-09-14"
       ],
       "provenance": {
