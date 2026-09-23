@@ -193,9 +193,7 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
         command.env("CENTRAL_ROOT", root);
     }
     if let Some(project) = &args.central_project {
-        if project.trim().is_empty()
-            || project.len() > 256
-            || project.chars().any(char::is_control)
+        if project.trim().is_empty() || project.len() > 256 || project.chars().any(char::is_control)
         {
             return Err(Error::new("--central-project is invalid"));
         }

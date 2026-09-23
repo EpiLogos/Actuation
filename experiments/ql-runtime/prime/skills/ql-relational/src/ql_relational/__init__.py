@@ -558,6 +558,18 @@ async def anuttara_read(reference: str, max_relations: int = 128) -> dict[str, A
     return result
 
 
+async def ananda_m1_2(engine_request: dict[str, Any]) -> dict[str, Any]:
+    """Read Ananda's native numerical-relational reading at M1-2 through the M1 engine.
+
+    The request is the engine's own ``ql.m1.engine/v1`` request; the selected
+    coordinate must resolve to an Ananda operation. The reading is numerical
+    and relational; it is never a semantic verifier.
+    """
+    result = await _epi_invoke(0, "ananda.m1-2", engine_request)
+    await _receipt({"operation": "ananda-m1-2", "request": engine_request}, result)
+    return result
+
+
 async def tda_vietoris_rips(request: dict[str, Any]) -> dict[str, Any]:
     """Run deterministic source-qualified Vietoris-Rips persistent H0/H1 over an explicit metric."""
     result = await _epi_invoke(1, "tda.vietoris-rips", request)

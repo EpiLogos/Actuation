@@ -20,6 +20,7 @@ Available calls:
 ```python
 await ql_relational.capabilities()
 await ql_relational.kernel_apply("conjugate-address", "qladdr:sixfold@1/direct/P2/d0")
+await ql_relational.ananda_m1_2({"schema": "ql.m1.engine/v1", "config": {"event_ref": "...", "subject_coordinate": "#1", "selected_coordinate": "#1-2-0", "revision": "0", "cycle": "0", "tick12": 0, "family": 0, "row12": 0, "col12": 0, "flowering_substage": 0, "lens12": 0, "context_frame": 1, "basis": "chromatic"}})
 await ql_relational.mef_lenses()
 await ql_relational.context_frames()
 await ql_relational.vak_locate("<vak-ref>")

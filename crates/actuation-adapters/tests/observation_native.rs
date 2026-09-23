@@ -11,9 +11,9 @@ use std::{
 #[test]
 fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     let original = NativeCatalog::bundled().unwrap();
-    assert_eq!(original.revision(), 13);
-    assert_eq!(original.descriptors().len(), 23);
-    assert_eq!(original.capabilities().len(), 4);
+    assert_eq!(original.revision(), 14);
+    assert_eq!(original.descriptors().len(), 24);
+    assert_eq!(original.capabilities().len(), 5);
     assert_eq!(original.capability_gaps().len(), 19);
     for slug in [
         "claude-code",
@@ -35,6 +35,11 @@ fn declarative_catalog_is_extensible_without_generic_executable_changes() {
         "kiro-cli",
         "qoder",
         "droid",
+        // Epi-Logos Prime-QL roster repair (catalog r14, 2026-09-23): prime
+        // is an installed harness whose own model catalogue names five
+        // providers; the descriptor makes it detectable and the capability
+        // declares that dispatch binding from live observation.
+        "prime",
     ] {
         assert!(original.descriptor(slug).is_some());
     }
@@ -57,6 +62,28 @@ fn declarative_catalog_is_extensible_without_generic_executable_changes() {
         "the pi descriptor is authored from admission evidence, not guessed"
     );
     assert!(original.capability_gap("pi").is_none());
+    assert!(
+        original.capability("prime").is_some(),
+        "the prime capability is authored from live installed-binary observation (prime-agent 0.9.4), not guessed"
+    );
+    let prime_providers: Vec<String> = original.capability("prime").unwrap().as_value()
+        ["model_dispatch"]["providers"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|p| p["provider_ref"].as_str().unwrap().to_owned())
+        .collect();
+    assert_eq!(
+        prime_providers,
+        vec![
+            "provider:deepseek",
+            "provider:kimi-coding",
+            "provider:minimax",
+            "provider:openrouter",
+            "provider:zai",
+        ],
+        "prime's dispatch binding names exactly the providers prime's own model catalogue discloses"
+    );
     assert!(
         original.capability("gemini").is_none(),
         "an unauthored capability is declared as a gap, not guessed"

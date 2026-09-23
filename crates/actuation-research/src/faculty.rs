@@ -216,6 +216,7 @@ fn invoke_owner(config: &FacultyConfig, owner: &OwnerInstrument, request: &Value
                 "max_relations":request.get("max_relations").cloned().unwrap_or(json!(128))
             }),
         ),
+        "ananda-m1-2" => epi_invoke(owner, 0, "ananda.m1-2", request["request"].clone()),
         "tda-vietoris-rips" => {
             epi_invoke(owner, 1, "tda.vietoris-rips", request["request"].clone())
         }
