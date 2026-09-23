@@ -222,7 +222,7 @@ re-executing.
 `instantiation record --out <file>` appends bound receipts as JSONL.
 `occupancy` keeps the tenure ledger of stable World Positions (the
 addresses Central defines as `central:position:<world>:<slug>`; see the
-[World inhabitation contract v1](https://github.com/EpiLogos/O-I/blob/a35956725249d0bea28aef02b9dc199bf9a42e5f/docs/contracts/WORLD-INHABITATION-V1.md) §2).
+[World inhabitation contract v1](https://github.com/EpiLogos/O-I/blob/main/docs/contracts/WORLD-INHABITATION-V1.md) §2).
 A Position is an address, not an Agent, Agency, AgentSession or composition
 locus: it survives every change of occupant, model, harness and Workcell.
 Each occupancy is a tenure with its own generation
