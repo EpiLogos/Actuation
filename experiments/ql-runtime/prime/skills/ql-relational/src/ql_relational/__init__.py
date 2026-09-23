@@ -637,6 +637,70 @@ async def logos_return(request: dict[str, Any]) -> dict[str, Any]:
 
 
 
+class _AgentMessage:
+    """Child-to-parent message seam over the encounter's bounded outbox.
+
+    The encounter adapter hands every Prime session a session-scoped
+    directory (`ACTUATION_CHILD_MESSAGE_DIR`); sending is one bounded JSON
+    record there, correlated to this child's locus digest exactly like the
+    faculty receipts. Text only: the channel carries words, never effects.
+    When the adapter did not supply a directory the send refuses with its
+    reason - never silence.
+    """
+
+    MAX_TEXT_CHARS = 4096  # the acceptance runner's own bounded-ref limit
+
+    async def send(self, text: str, receiver_role: str = "parent") -> dict[str, Any]:
+        if not isinstance(text, str) or not text.strip():
+            raise ValueError("agent_message.send requires non-empty text")
+        if len(text) > self.MAX_TEXT_CHARS:
+            raise ValueError(
+                f"agent_message text exceeds {self.MAX_TEXT_CHARS} characters"
+            )
+        directory = os.environ.get("ACTUATION_CHILD_MESSAGE_DIR", "").strip()
+        if not directory:
+            raise RuntimeError(
+                "agent_message is unavailable: this session supplied no "
+                "ACTUATION_CHILD_MESSAGE_DIR, so there is no parent channel"
+            )
+        path = Path(directory).expanduser().resolve()
+        if not path.is_dir():
+            raise RuntimeError(
+                f"agent_message is unavailable: message directory {path} is absent"
+            )
+        locus = _runtime_locus_ref() or "unattributed"
+        digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+        existing = sorted(path.glob("*.json"))
+        sequence = len(existing) + 1
+        record = {
+            "schema": "actuation.child-message/v1",
+            "from": locus,
+            "receiver_role": receiver_role,
+            "text": text,
+            "text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+            "sequence": sequence,
+        }
+        target = path / f"{sequence:04d}-{digest}.json"
+        handle = tempfile.NamedTemporaryFile(
+            "w", suffix=".json", dir=str(path), encoding="utf-8", delete=False
+        )
+        json.dump(record, handle, sort_keys=True)
+        handle.close()
+        Path(handle.name).replace(target)
+        await _record("agent-message:send", {"receiver_role": receiver_role}, record)
+        return {
+            "schema": "actuation.child-message-result/v1",
+            "sent": True,
+            "file": target.name,
+            "sequence": sequence,
+            "bytes": len(text.encode("utf-8")),
+        }
+
+
+agent_message = _AgentMessage()
+
+
+
 async def spawn_child_cheapest(
     task: str,
     *,

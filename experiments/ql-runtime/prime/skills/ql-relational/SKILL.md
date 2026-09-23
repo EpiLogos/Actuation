@@ -44,6 +44,18 @@ handoff = await ql_relational.central_now_handover(
 )
 await ql_relational.central_now_handoff_read(handoff["data"]["handoff"]["id"])
 ql_relational.return_envelope(...)
+await ql_relational.agent_message.send("CHILD_QL_OK", receiver_role="parent")
+```
+
+## Child-to-parent message
+
+`agent_message.send(text, receiver_role="parent")` delivers one bounded text
+message to the parent's encounter channel. The encounter adapter supplies
+each session its own message directory; the send is one JSON record there,
+correlated to this session's locus digest like every faculty receipt. The
+channel carries words, never effects. When the adapter supplied no
+directory the send refuses with its reason - report that refusal honestly
+in your final answer instead of claiming a send.
 ```
 
 ## Acting relation

@@ -27,6 +27,7 @@ pub struct EpiProviderArgs {
     pub central_ctrl_bin: Option<PathBuf>,
     pub central_root: Option<PathBuf>,
     pub central_project: Option<String>,
+    pub child_message_dir: Option<PathBuf>,
 }
 
 fn value(args: &[String], name: &str) -> Result<String> {
@@ -138,6 +139,10 @@ impl EpiProviderArgs {
                 .map(|path| directory(path, "Central root"))
                 .transpose()?,
             central_project: optional(args, "--central-project"),
+            child_message_dir: optional(args, "--child-message-dir")
+                .map(PathBuf::from)
+                .map(|path| directory(path, "child message directory"))
+                .transpose()?,
         })
     }
 }
@@ -177,6 +182,9 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
     }
     if let Some(root) = &args.ql_root {
         command.env("QL_MEF_ROOT", root);
+    }
+    if let Some(dir) = &args.child_message_dir {
+        command.env("ACTUATION_CHILD_MESSAGE_DIR", dir);
     }
     if let Some(aikit) = &args.aikit_bin {
         command.env("AIKIT_BIN", aikit);
@@ -219,7 +227,7 @@ pub fn usage() -> &'static str {
 --skill-path <abs> --research-bin <abs> --faculty-config <abs> \
 [--ql-root <abs>] [--aikit-bin <abs>] [--agent-session <ref>] \
 [--central-ctrl-bin <abs> --central-root <abs> [--central-project <key>]] \
-[--provider <native> --model <id>]"
+[--child-message-dir <abs>] [--provider <native> --model <id>]"
 }
 
 #[cfg(test)]
