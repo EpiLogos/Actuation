@@ -152,6 +152,12 @@ actuation authority issue [--store <dir>] [--now <ts>] [file|-] [--json]
 actuation authority resolve [--store <dir>] [--now <ts>] [file|-] [--json]
 actuation authority revoke <authority_source_ref> [--reason <text>] [--store <dir>] [--now <ts>] [--json]
 actuation realised [file|-] [--json]
+actuation occupancy claim --position <ref> --agent <ref> --agency <ref> [--agent-session <ref>] [--session-space <ref>] [--harness-composition <ref>] [--model <ref>] [--workcell <ref>] [--gateway-address <addr>] --reason <text> [--expect-vacant | --expect-generation <generation>] [--kind initial|handover|fresh|adopt] [--store <dir>] [--json]
+actuation occupancy release --position <ref> --generation <generation> --reason <text> [--store <dir>] [--json]
+actuation occupancy verify --position <ref> --generation <generation> [--store <dir>] [--json]
+actuation occupancy presence --position <ref> --generation <generation> --presence active|idle|away|offline [--attention <text>] [--store <dir>] [--json]
+actuation occupancy read --position <ref> [--store <dir>] [--json]
+actuation occupancy list [--store <dir>] [--json]
 actuation stream [file|-] [--json]
 actuation stream open [--store <dir>] [file|-] [--json]
 actuation stream record [--store <dir>] [file|-] [--json]
@@ -214,6 +220,25 @@ An executed idempotency key (owner, changeset, setting, scope, plan digest)
 replays as outcome `no_op` naming the original receipt instead of
 re-executing.
 `instantiation record --out <file>` appends bound receipts as JSONL.
+`occupancy` keeps the tenure ledger of stable World Positions (the
+addresses Central defines as `central:position:<world>:<slug>`; see the
+[World inhabitation contract v1](https://github.com/EpiLogos/O-I/blob/a35956725249d0bea28aef02b9dc199bf9a42e5f/docs/contracts/WORLD-INHABITATION-V1.md) §2).
+A Position is an address, not an Agent, Agency, AgentSession or composition
+locus: it survives every change of occupant, model, harness and Workcell.
+Each occupancy is a tenure with its own generation
+(`actuation:generation:<uuid>`, per-Position ordinal max + 1), appended to
+one JSONL ledger per Position under `$ACTUATION_OCCUPANCY_STORE` (default
+`~/.actuation/occupancy/`) inside one exclusive lock. `claim` on a vacant
+Position needs no expectation (or `--expect-vacant`); on an occupied one it
+must name the current generation with `--expect-generation`, and then
+supersedes it in the same write. A superseded or released generation can no
+longer `verify`, report `presence` or `release`. The current occupant is the
+single open tenure: two open tenures or an unreadable line are refused as
+`occupancy.ambiguous` / `occupancy.corrupt`, never resolved newest-wins.
+Every refusal exits 2 with `{ok:false,error:{code,fact,consequence,action}}`
+under `--json` (three lines on stderr otherwise), naming the current holder
+and the exact next lawful command. `claim` returns the `OI_POSITION_REF` and
+`OI_OCCUPANT_GENERATION` values a launcher stamps into the body's environment.
 `agency actualise` accepts one complete semantic request — the same envelope
 `actuation authority resolve` assembles; `--schema` prints a filled example — and
 fails closed unless
