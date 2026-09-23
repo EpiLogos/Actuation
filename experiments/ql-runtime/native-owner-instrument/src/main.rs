@@ -90,6 +90,7 @@ fn owner_cli(v: &Value) -> Result<Value> {
             | ["kernel", "apply", _, _]
             | ["vak", "locate", _]
             | ["service", "negotiate", _]
+            | ["techne", "reading", _]
             | ["epi-agent", "constitution"]
             | ["epi-agent", "faculty", _]
             | ["epi-agent", "invoke", _]
