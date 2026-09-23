@@ -33,6 +33,13 @@ const CHANNELS: &[&str] = &[
     "none",
 ];
 const PROBES: &[&str] = &["executable", "config-dir", "service", "env"];
+/// Probe-record kinds a detection document may carry. `version` is never a
+/// declarable probe plan: it names the version invocation a detected
+/// executable's own descriptor declares through `probe.executable.version_args`.
+const PROBE_RECORDS: &[&str] = &["executable", "config-dir", "service", "env", "version"];
+/// The wall-clock bound a single probe may declare against the engine default
+/// (`DEFAULT_PROBE_BOUND`), in milliseconds.
+const MAX_PROBE_TIMEOUT_MS: f64 = 600_000.0;
 const FACETS: &[&str] = &[
     "skills",
     "harness-compositions",
@@ -135,6 +142,17 @@ fn reference_fields(v: &Value, required: &[&str], optional: &[&str]) -> Result<(
     }
     Ok(())
 }
+/// The shared probe outcome vocabulary. A probe record may name its outcome
+/// class alongside the pass/fail axis; nothing outside this vocabulary admits.
+pub const PROBE_OUTCOMES: &[&str] = &[
+    "ok",
+    "credential-gated",
+    "unreachable",
+    "unsupported",
+    "timed-out",
+    "refused",
+];
+
 fn probe_records(v: &Value, kinds: &[&str]) -> Result<()> {
     if v.is_null() {
         return Ok(());
@@ -143,6 +161,9 @@ fn probe_records(v: &Value, kinds: &[&str]) -> Result<()> {
         object(p)?;
         one(&p["kind"], kinds)?;
         one(&p["result"], &["pass", "fail"])?;
+        if !p["outcome"].is_null() {
+            one(&p["outcome"], PROBE_OUTCOMES)?;
+        }
         optional_text(&p["spec"])?;
         optional_text(&p["detail"])?;
     }
@@ -235,6 +256,21 @@ pub fn validate_harness_descriptor(v: &Value) -> Result<()> {
     for (k, p) in probes {
         require(PROBES.contains(&k.as_str()), "unsupported probe kind")?;
         object(p)?;
+        if !p["timeout_ms"].is_null() {
+            require(
+                nonnegative_integer(&p["timeout_ms"])
+                    && p["timeout_ms"]
+                        .as_f64()
+                        .is_some_and(|ms| ms > 0.0 && ms <= MAX_PROBE_TIMEOUT_MS),
+                "probe timeout_ms must be a positive integer of at most 600000",
+            )?;
+        }
+    }
+    if !v["credential"].is_null() {
+        // A credential declaration is a presence signal only: the named file
+        // is stat'ed for existence and never read or rendered.
+        object(&v["credential"])?;
+        text(&v["credential"]["path"])?;
     }
     if !v["probe"]["env"].is_null() {
         require(
@@ -501,7 +537,12 @@ pub fn validate_harness_detection(v: &Value) -> Result<()> {
                 validate_inventory(f)?;
             }
         }
-        probe_records(&e["probes"], PROBES)?;
+        if !e["credential"].is_null() {
+            object(&e["credential"])?;
+            text(&e["credential"]["path"])?;
+            one(&e["credential"]["outcome"], &["credential-gated", "absent"])?;
+        }
+        probe_records(&e["probes"], PROBE_RECORDS)?;
     }
     let empty = Value::Array(vec![]);
     let declared = v.get("absent").filter(|v| !v.is_null()).unwrap_or(&empty);

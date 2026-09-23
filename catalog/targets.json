@@ -1,6 +1,6 @@
 {
   "schema": "actuation.native-catalog/v1",
-  "catalog_revision": 15,
+  "catalog_revision": 16,
   "descriptors": [
     {
       "schema": "actuation.harness-detection/v1",
@@ -125,6 +125,9 @@
       "aliases": [
         "gemini-cli"
       ],
+      "credential": {
+        "path": "~/.gemini/oauth_creds.json"
+      },
       "probe": {
         "executable": {
           "names": [
@@ -161,7 +164,8 @@
         "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
         "source_refs": [
           "survey:local-machine-2026-09-05",
-          "survey:mcp-config-facet-2026-09-16"
+          "survey:mcp-config-facet-2026-09-16",
+          "acceptance:gemini-oauth-hang-2026-09-23"
         ],
         "catalog_revision": 1
       }
