@@ -11,7 +11,7 @@ use ql_mef::{
 use serde_json::{json, Value};
 use std::io::{self, Read};
 
-const OWNER_REVISION: &str = "08d14e89c6427cb885e117c2e9bc9dc61a0f90b7";
+const OWNER_REVISION: &str = "89ca4088ea47fe626c23c2b11efe2d38bdfcd1f7";
 const SCHEMA: &str = "actuation.ql-owner-operation/v1";
 const OPERATIONS: &[&str] = &[
     "capabilities",
@@ -90,6 +90,9 @@ fn owner_cli(v: &Value) -> Result<Value> {
             | ["kernel", "apply", _, _]
             | ["vak", "locate", _]
             | ["service", "negotiate", _]
+            | ["epi-agent", "constitution"]
+            | ["epi-agent", "faculty", _]
+            | ["epi-agent", "invoke", _]
     );
     if !admitted {
         return Err("operation is not part of the research faculty's owner surface".into());

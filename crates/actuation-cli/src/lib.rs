@@ -6,6 +6,7 @@ pub mod authority;
 pub mod commands;
 pub mod configuration;
 pub mod dispatch;
+pub mod epi_provider;
 pub mod render;
 pub mod surface;
 pub mod system;
