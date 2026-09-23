@@ -11,10 +11,10 @@ use std::{
 #[test]
 fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     let original = NativeCatalog::bundled().unwrap();
-    assert_eq!(original.revision(), 14);
+    assert_eq!(original.revision(), 15);
     assert_eq!(original.descriptors().len(), 18);
-    assert_eq!(original.capabilities().len(), 4);
-    assert_eq!(original.capability_gaps().len(), 14);
+    assert_eq!(original.capabilities().len(), 5);
+    assert_eq!(original.capability_gaps().len(), 13);
     for slug in [
         "claude-code",
         "codex",
@@ -45,10 +45,10 @@ fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     );
     assert!(original.capability_gap("pi").is_none());
     assert!(
-        original.capability("gemini").is_none(),
-        "an unauthored capability is declared as a gap, not guessed"
+        original.capability("gemini").is_some(),
+        "the gemini contribution landed at r15 (receipt capability-contribution:gemini:f1af4031414a)"
     );
-    assert!(original.capability_gap("gemini").is_some());
+    assert!(original.capability_gap("gemini").is_none());
     for d in original.descriptors() {
         let slug = d.slug();
         assert!(

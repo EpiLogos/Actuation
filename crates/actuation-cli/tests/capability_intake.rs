@@ -1,7 +1,11 @@
 //! The CLI faces of the capability-descriptor intake route (O:I #113 A1):
 //! `harness capability validate` answers with named diagnostics and exit
 //! codes; `config-contribution capability` receives a gap-filling descriptor
-//! with a receipt the owner lands into the bundled catalog.
+//! with a receipt the owner lands into the bundled catalog. The gemini
+//! specimen landed at catalog r15 (receipt
+//! capability-contribution:gemini:f1af4031414a), so the same specimen now
+//! answers the coverage-closure refusal, and the routes' positive face rides
+//! the same contributed bytes re-addressed to a still-declared gap.
 use actuation_adapters::NativeCatalog;
 use actuation_cli::dispatch::{execute, Output};
 use serde_json::{json, Value};
@@ -18,6 +22,27 @@ fn specimen_bytes() -> String {
     std::fs::read_to_string(specimen_path()).expect("the gemini specimen ships as a fixture")
 }
 
+/// The contributed bytes re-addressed to `ollama`, a detection descriptor
+/// that still carries a declared capability gap: the positive-face document
+/// now that gemini's gap is filled.
+fn gap_filling_bytes() -> String {
+    specimen_bytes().replacen(
+        "\"harness_slug\": \"gemini\"",
+        "\"harness_slug\": \"ollama\"",
+        1,
+    )
+}
+
+/// Write the gap-filling document to a scratch file and answer with its path.
+/// The label keeps concurrent tests off each other's files.
+fn gap_filling_file(label: &str) -> String {
+    let dir = std::env::temp_dir().join(format!("actuation-intake-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join(format!("gap-filling-{label}.json"));
+    std::fs::write(&path, gap_filling_bytes()).unwrap();
+    path.to_str().unwrap().to_owned()
+}
+
 fn run(argv: &[&str], stdin: &str) -> Output {
     let args: Vec<String> = argv.iter().map(|s| s.to_string()).collect();
     execute(&args, stdin).expect("the intake routes execute or refuse, never panic")
@@ -28,13 +53,13 @@ fn body(output: &Output) -> Value {
 }
 
 #[test]
-fn validate_answers_exit_zero_with_named_passing_checks_on_the_specimen() {
+fn validate_answers_exit_zero_with_named_passing_checks_on_a_gap_filling_document() {
     let output = run(
         &[
             "harness",
             "capability",
             "validate",
-            &specimen_path(),
+            &gap_filling_file("validate"),
             "--json",
         ],
         "",
@@ -46,7 +71,7 @@ fn validate_answers_exit_zero_with_named_passing_checks_on_the_specimen() {
         json!("actuation.harness-capability-validation/v1")
     );
     assert_eq!(document["valid"], json!(true));
-    assert_eq!(document["harness_slug"], json!("gemini"));
+    assert_eq!(document["harness_slug"], json!("ollama"));
     let checks: Vec<&str> = document["checks"]
         .as_array()
         .unwrap()
@@ -56,6 +81,38 @@ fn validate_answers_exit_zero_with_named_passing_checks_on_the_specimen() {
     assert_eq!(
         checks,
         vec!["schema-admission", "slug-alignment", "coverage-closure"]
+    );
+}
+
+#[test]
+fn the_landed_gemini_specimen_now_refuses_with_the_shadowing_answer() {
+    let output = run(
+        &[
+            "harness",
+            "capability",
+            "validate",
+            &specimen_path(),
+            "--json",
+        ],
+        "",
+    );
+    assert_eq!(output.code, 1, "{}", output.stdout);
+    let document = body(&output);
+    assert_eq!(document["valid"], json!(false));
+    let failed = document["checks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["result"] == json!("fail"))
+        .expect("the failing check is named");
+    assert_eq!(failed["check"], json!("coverage-closure"));
+    assert!(
+        failed["detail"]
+            .as_str()
+            .unwrap()
+            .contains("already carries a declared capability"),
+        "{}",
+        failed["detail"]
     );
 }
 
@@ -106,15 +163,8 @@ fn validate_answers_exit_one_with_the_failing_check_named() {
 
 #[test]
 fn the_contribution_face_mints_a_receipt_the_owner_can_land() {
-    let output = run(
-        &[
-            "config-contribution",
-            "capability",
-            &specimen_path(),
-            "--json",
-        ],
-        "",
-    );
+    let path = gap_filling_file("contribute");
+    let output = run(&["config-contribution", "capability", &path, "--json"], "");
     assert_eq!(output.code, 0, "{}", output.stdout);
     let receipt = body(&output);
     assert_eq!(
@@ -122,18 +172,18 @@ fn the_contribution_face_mints_a_receipt_the_owner_can_land() {
         json!("actuation.capability-contribution/v1")
     );
     assert_eq!(receipt["status"], json!("received"));
-    assert_eq!(receipt["harness_slug"], json!("gemini"));
+    assert_eq!(receipt["harness_slug"], json!("ollama"));
     assert!(
         receipt["contribution_ref"]
             .as_str()
             .unwrap()
-            .starts_with("capability-contribution:gemini:"),
+            .starts_with("capability-contribution:ollama:"),
         "{}",
         receipt["contribution_ref"]
     );
     // The source digest is the sha256 of the contributed bytes.
     let mut digest = Sha256::new();
-    digest.update(specimen_bytes().as_bytes());
+    digest.update(gap_filling_bytes().as_bytes());
     assert_eq!(
         receipt["source"]["sha256"],
         json!(format!("{:x}", digest.finalize()))
@@ -190,7 +240,7 @@ fn the_contribution_face_refuses_a_descriptor_that_shadows_a_declared_capability
 fn validate_reads_stdin_when_the_positional_is_the_stdin_marker() {
     let output = run(
         &["harness", "capability", "validate", "-", "--json"],
-        &specimen_bytes(),
+        &gap_filling_bytes(),
     );
     assert_eq!(output.code, 0, "{}", output.stdout);
     assert_eq!(body(&output)["valid"], json!(true));
@@ -210,7 +260,7 @@ fn a_non_json_document_is_a_handler_refusal_not_a_validation_answer() {
 fn the_human_render_names_the_verdict_and_the_checks() {
     let output = run(
         &["harness", "capability", "validate", "-"],
-        &specimen_bytes(),
+        &gap_filling_bytes(),
     );
     assert_eq!(output.code, 0);
     assert!(output.stdout.contains("valid"), "{}", output.stdout);

@@ -8,7 +8,7 @@
    "kind": "catalog",
    "input": {},
    "expected": {
-    "revision": 14,
+    "revision": 15,
     "harnesses": [
      {
       "schema": "actuation.harness-detection/v1",
@@ -1248,6 +1248,160 @@
         "upstream:github.com/earendil-works/pi"
        ],
        "catalog_revision": 8
+      }
+     },
+     {
+      "schema": "actuation.harness-capability/v1",
+      "document": "capability",
+      "harness_slug": "gemini",
+      "summary": "Hooks dispatched from the settings.json hooks map across project/user/system/extension layers; stdin JSON in, stdout JSON out; exit 2 and decision deny block tools, turns and results with BeforeAgent/AfterAgent turn control; SessionStart, BeforeAgent and AfterTool carry an additional-context channel; no wake; native Gemini provider dispatch credential-gated on this machine.",
+      "native_events": [
+       {
+        "event": "session-start",
+        "native_name": "SessionStart",
+        "transport": "settings-json-hooks-map",
+        "can_block": false,
+        "context_channel": "stdout-additional-context",
+        "notes": "matcher values startup/resume/clear; hookSpecificOutput.additionalContext becomes the first history turn (interactive) or is prepended to the prompt (non-interactive); decision and continue are ignored - startup is never blocked."
+       },
+       {
+        "event": "session-end",
+        "native_name": "SessionEnd",
+        "transport": "settings-json-hooks-map",
+        "can_block": false,
+        "context_channel": "none",
+        "notes": "matcher values exit/clear/logout/prompt_input_exit/other; the CLI does not wait for the hook and ignores all flow-control fields."
+       },
+       {
+        "event": "custom",
+        "native_name": "BeforeAgent",
+        "transport": "settings-json-hooks-map",
+        "can_block": true,
+        "context_channel": "stdout-additional-context",
+        "notes": "exit 2 (or decision deny) blocks the turn and discards the prompt; continue:false blocks the turn but saves the prompt to history; hookSpecificOutput.additionalContext is appended to the prompt for this turn."
+       },
+       {
+        "event": "custom",
+        "native_name": "AfterAgent",
+        "transport": "settings-json-hooks-map",
+        "can_block": true,
+        "context_channel": "none",
+        "notes": "decision deny rejects the final response and forces a retry turn with reason as the new prompt; continue:false stops the session; hookSpecificOutput.clearContext:true clears conversation history; no text-append context channel."
+       },
+       {
+        "event": "custom",
+        "native_name": "BeforeModel",
+        "transport": "settings-json-hooks-map",
+        "can_block": true,
+        "context_channel": "none",
+        "notes": "decision deny (or exit 2) aborts the turn and skips the LLM call; hookSpecificOutput.llm_request overrides the outgoing request (model, generation config) and llm_response supplies a synthetic response that skips the call entirely; these are rewrites, not context injection."
+       },
+       {
+        "event": "custom",
+        "native_name": "AfterModel",
+        "transport": "settings-json-hooks-map",
+        "can_block": true,
+        "context_channel": "none",
+        "notes": "fires per streamed chunk; decision deny (or exit 2) discards the chunk and blocks the turn; hookSpecificOutput.llm_response replaces the chunk (redaction); continue:false kills the loop."
+       },
+       {
+        "event": "custom",
+        "native_name": "BeforeToolSelection",
+        "transport": "settings-json-hooks-map",
+        "can_block": false,
+        "context_channel": "none",
+        "notes": "filters the toolset: hookSpecificOutput.toolConfig.mode AUTO/ANY/NONE (NONE disables all tools) and allowedFunctionNames whitelist, combined across hooks; supports no decision, continue or systemMessage."
+       },
+       {
+        "event": "pre-tool-use",
+        "native_name": "BeforeTool",
+        "transport": "settings-json-hooks-map",
+        "can_block": true,
+        "context_channel": "none",
+        "notes": "decision deny (or exit 2) prevents execution and sends reason to the agent as a tool error; hookSpecificOutput.tool_input merges over the model's arguments (rewrite); matcher is a regex over tool names, MCP tools named mcp_<server>_<tool>; no additionalContext field on this event."
+       },
+       {
+        "event": "post-tool-use",
+        "native_name": "AfterTool",
+        "transport": "settings-json-hooks-map",
+        "can_block": true,
+        "context_channel": "stdout-additional-context",
+        "notes": "decision deny (or exit 2) hides the real tool output and replaces it with reason - the executed tool is not undone; hookSpecificOutput.additionalContext is appended to the tool result; tailToolCallRequest can substitute a further tool call; continue:false kills the loop."
+       },
+       {
+        "event": "pre-compact",
+        "native_name": "PreCompress",
+        "transport": "settings-json-hooks-map",
+        "can_block": false,
+        "context_channel": "none",
+        "notes": "matcher values auto/manual; fired asynchronously before history compression; cannot block or modify compression; flow-control fields ignored."
+       },
+       {
+        "event": "notification",
+        "native_name": "Notification",
+        "transport": "settings-json-hooks-map",
+        "can_block": false,
+        "context_channel": "none",
+        "notes": "outbound: fires on system alerts (notification_type ToolPermission observed in the reference); observability only, cannot block or auto-grant."
+       }
+      ],
+      "injection_channel": {
+       "kind": "stdout-additional-context",
+       "mechanism": "hookSpecificOutput.additionalContext in the hook's stdout JSON is the context channel: SessionStart (first history turn; prepended to the prompt headless), BeforeAgent (appended to the turn prompt), AfterTool (appended to the tool result). exit 2 stderr is the deny/reason channel, never a context channel. BeforeModel/AfterModel rewrite llm_request/llm_response and BeforeToolSelection filters toolConfig - rewrites and filters, not context injection.",
+       "notes": "observed on the gemini 0.29.5 surface: the hooks subcommand, the settings.json hooks schema and the sanitized hook environment (GEMINI_PROJECT_DIR, GEMINI_SESSION_ID, GEMINI_CWD, CLAUDE_PROJECT_DIR alias); hook event behaviour per the upstream reference for this release line (docs/hooks/reference.md). Non-JSON stdout pollution defaults the outcome to Allow - a dispatch consumer must emit strict JSON only."
+      },
+      "blocking_semantics": {
+       "kind": "deny-and-block",
+       "notes": "exit code 2 is a system block (tool call, turn, result or response aborted; stderr is the rejection reason); exit 0 stdout JSON decision deny|block denies per-event: BeforeTool prevents execution, BeforeAgent discards the prompt, AfterAgent forces a retry, AfterModel discards the chunk, AfterTool hides the result, BeforeModel skips the LLM call; continue:false kills the agent loop from any event that supports it; non-zero non-2 exits and stdout pollution are warnings that proceed with original parameters (fail-open)."
+      },
+      "wake_capability": {
+       "kind": "none",
+       "notes": "hooks execute only inside a running session; no daemon, listener or file-wake surface is observed on gemini 0.29.5. --experimental-acp is a client-driven stdio agent protocol in which the client spawns the gemini process - it is a dispatch entrypoint, not a wake of an existing session. A relay sender must not pretend gemini can be woken."
+      },
+      "install_seam": {
+       "config_path": "~/.gemini/settings.json (user) and .gemini/settings.json (project, highest precedence); /etc/gemini-cli/settings.json (system) and installed extensions also feed the hooks map",
+       "format": "json",
+       "entry_shape": "hooks.<EventName>[] entries, each {matcher?, sequential?, hooks: [{type: \"command\", command, name?, timeout?, description?}]}",
+       "ownership_marker": "hook command string carries the dispatch projection's marker (e.g. resolves to the dispatch executable path); entries without the marker are foreign",
+       "preserves_foreign_entries": true
+      },
+      "uninstall_seam": {
+       "config_path": "~/.gemini/settings.json (user) and .gemini/settings.json (project)",
+       "format": "json",
+       "entry_shape": "hooks.<EventName>[] entries whose hook command matches the ownership marker are removed (whole matcher-group when its last hook is removed); entries without the marker are untouched",
+       "ownership_marker": "hook command string carries the dispatch projection's marker (e.g. resolves to the dispatch executable path); entries without the marker are foreign",
+       "preserves_foreign_entries": true
+      },
+      "model_dispatch": {
+       "kind": "native-provider-binding",
+       "providers": [
+        {
+         "provider_ref": "provider:google",
+         "selector": {
+          "kind": "config-key",
+          "name": "model"
+         },
+         "credential": {
+          "required": true,
+          "hint": "Google account OAuth (observed state on this machine: security.auth.selectedType=oauth-personal with an expired/non-interactive session - headless use is blocked pending interactive re-authorization), or a GEMINI_API_KEY / Vertex Application Default Credentials"
+         },
+         "notes": "model is named by the settings.json model key or the -m/--model CLI flag; Actuation does not enumerate Google's model catalogue here."
+        }
+       ]
+      },
+      "provenance": {
+       "authored_by": "oi65-l6-author external integration agent (public-surface authorship only: live observation of gemini 0.29.5 on this machine, 2026-09-22, + upstream google-gemini/gemini-cli hooks documentation; no Actuation source access); normalized on public intake 2026-09-23: the event field carries Actuation's own boundary vocabulary (native_name keeps the harness's event name), so gemini events were mapped onto it by function - session-start/session-end/notification as their own kinds, BeforeTool -> pre-tool-use, AfterTool -> post-tool-use, PreCompress -> pre-compact, and BeforeAgent, AfterAgent, BeforeModel, AfterModel, BeforeToolSelection as custom (no AIKit boundary kind)",
+       "source_refs": [
+        "detection:2026-09-22T21:15:18.82Z gemini:detected exe:/opt/homebrew/bin/gemini config-facet ~/.gemini (extensions count 2, settings.json present, antigravity count 13, mcp-config inventory 1)",
+        "local:gemini --version -> 0.29.5 (homebrew gemini-cli 0.29.5, /opt/homebrew/Cellar/gemini-cli/0.29.5)",
+        "local:gemini --help -> hooks/skills/extensions/mcp subcommands, --approval-mode default|auto_edit|yolo|plan, --experimental-acp, -o text|json|stream-json, --allowed-tools/--allowed-mcp-server-names",
+        "local:gemini hooks --help -> hooks migrate (Claude Code hook migration) and /hooks panel surface",
+        "local:settings.json structure observed (keys only, values not read except security.auth.selectedType=oauth-personal)",
+        "local:NO_BROWSER=true gemini --list-sessions -> interactive OAuth authorization-code prompt (Please visit the following URL... Enter the authorization code) - headless use credential-blocked; gemini extensions list -> FatalAuthenticationError exitCode 41",
+        "local:SessionStart hook probe in a scratch project did not fire - auth wall precedes session start in headless mode; hook event behaviour therefore rests on the upstream reference, disclosed here",
+        "upstream:github.com/google-gemini/gemini-cli docs/hooks/index.md + docs/hooks/reference.md (11 events, exit-code and hookSpecificOutput schemas, settings.json hooks schema, config layer precedence)"
+       ],
+       "catalog_revision": 13
       }
      }
     ],
@@ -3435,7 +3589,7 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 14,
+      "catalog_revision": 15,
       "detector": {
        "implementation": "actuation surface-probes",
        "version": "0.1.0"
@@ -3514,7 +3668,7 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 14,
+      "catalog_revision": 15,
       "detector": {
        "implementation": "actuation surface-probes",
        "version": "0.1.0"
@@ -3613,7 +3767,7 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 14,
+      "catalog_revision": 15,
       "detector": {
        "implementation": "actuation surface-probes",
        "version": "0.1.0"
@@ -3730,7 +3884,7 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 14,
+      "catalog_revision": 15,
       "detector": {
        "implementation": "actuation surface-probes",
        "version": "0.1.0"
@@ -3835,7 +3989,7 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 14,
+      "catalog_revision": 15,
       "detector": {
        "implementation": "actuation surface-probes",
        "version": "0.1.0"
@@ -3900,7 +4054,7 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 14,
+      "catalog_revision": 15,
       "detector": {
        "implementation": "actuation surface-probes",
        "version": "0.1.0"
@@ -4733,7 +4887,7 @@
       "document": "self",
       "self_ref": "self:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 14,
+      "catalog_revision": 15,
       "matched": [],
       "resolved": null,
       "ambiguity": false,
@@ -4851,7 +5005,7 @@
       "document": "self",
       "self_ref": "self:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 14,
+      "catalog_revision": 15,
       "matched": [
        {
         "slug": "fixture-0",
@@ -4985,7 +5139,7 @@
       "document": "self",
       "self_ref": "self:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 14,
+      "catalog_revision": 15,
       "matched": [
        {
         "slug": "fixture-0",
@@ -6415,7 +6569,7 @@
     "stdout": {
      "schema": "actuation.harness-detection/v1",
      "document": "catalog",
-     "catalog_revision": 14,
+     "catalog_revision": 15,
      "descriptors": [
       {
        "schema": "actuation.harness-detection/v1",
@@ -7234,7 +7388,7 @@
     "stdout": {
      "schema": "actuation.harness-capability/v1",
      "document": "capability-catalog",
-     "catalog_revision": 14,
+     "catalog_revision": 15,
      "capabilities": [
       {
        "schema": "actuation.harness-capability/v1",
@@ -7676,6 +7830,160 @@
         ],
         "catalog_revision": 8
        }
+      },
+      {
+       "schema": "actuation.harness-capability/v1",
+       "document": "capability",
+       "harness_slug": "gemini",
+       "summary": "Hooks dispatched from the settings.json hooks map across project/user/system/extension layers; stdin JSON in, stdout JSON out; exit 2 and decision deny block tools, turns and results with BeforeAgent/AfterAgent turn control; SessionStart, BeforeAgent and AfterTool carry an additional-context channel; no wake; native Gemini provider dispatch credential-gated on this machine.",
+       "native_events": [
+        {
+         "event": "session-start",
+         "native_name": "SessionStart",
+         "transport": "settings-json-hooks-map",
+         "can_block": false,
+         "context_channel": "stdout-additional-context",
+         "notes": "matcher values startup/resume/clear; hookSpecificOutput.additionalContext becomes the first history turn (interactive) or is prepended to the prompt (non-interactive); decision and continue are ignored - startup is never blocked."
+        },
+        {
+         "event": "session-end",
+         "native_name": "SessionEnd",
+         "transport": "settings-json-hooks-map",
+         "can_block": false,
+         "context_channel": "none",
+         "notes": "matcher values exit/clear/logout/prompt_input_exit/other; the CLI does not wait for the hook and ignores all flow-control fields."
+        },
+        {
+         "event": "custom",
+         "native_name": "BeforeAgent",
+         "transport": "settings-json-hooks-map",
+         "can_block": true,
+         "context_channel": "stdout-additional-context",
+         "notes": "exit 2 (or decision deny) blocks the turn and discards the prompt; continue:false blocks the turn but saves the prompt to history; hookSpecificOutput.additionalContext is appended to the prompt for this turn."
+        },
+        {
+         "event": "custom",
+         "native_name": "AfterAgent",
+         "transport": "settings-json-hooks-map",
+         "can_block": true,
+         "context_channel": "none",
+         "notes": "decision deny rejects the final response and forces a retry turn with reason as the new prompt; continue:false stops the session; hookSpecificOutput.clearContext:true clears conversation history; no text-append context channel."
+        },
+        {
+         "event": "custom",
+         "native_name": "BeforeModel",
+         "transport": "settings-json-hooks-map",
+         "can_block": true,
+         "context_channel": "none",
+         "notes": "decision deny (or exit 2) aborts the turn and skips the LLM call; hookSpecificOutput.llm_request overrides the outgoing request (model, generation config) and llm_response supplies a synthetic response that skips the call entirely; these are rewrites, not context injection."
+        },
+        {
+         "event": "custom",
+         "native_name": "AfterModel",
+         "transport": "settings-json-hooks-map",
+         "can_block": true,
+         "context_channel": "none",
+         "notes": "fires per streamed chunk; decision deny (or exit 2) discards the chunk and blocks the turn; hookSpecificOutput.llm_response replaces the chunk (redaction); continue:false kills the loop."
+        },
+        {
+         "event": "custom",
+         "native_name": "BeforeToolSelection",
+         "transport": "settings-json-hooks-map",
+         "can_block": false,
+         "context_channel": "none",
+         "notes": "filters the toolset: hookSpecificOutput.toolConfig.mode AUTO/ANY/NONE (NONE disables all tools) and allowedFunctionNames whitelist, combined across hooks; supports no decision, continue or systemMessage."
+        },
+        {
+         "event": "pre-tool-use",
+         "native_name": "BeforeTool",
+         "transport": "settings-json-hooks-map",
+         "can_block": true,
+         "context_channel": "none",
+         "notes": "decision deny (or exit 2) prevents execution and sends reason to the agent as a tool error; hookSpecificOutput.tool_input merges over the model's arguments (rewrite); matcher is a regex over tool names, MCP tools named mcp_<server>_<tool>; no additionalContext field on this event."
+        },
+        {
+         "event": "post-tool-use",
+         "native_name": "AfterTool",
+         "transport": "settings-json-hooks-map",
+         "can_block": true,
+         "context_channel": "stdout-additional-context",
+         "notes": "decision deny (or exit 2) hides the real tool output and replaces it with reason - the executed tool is not undone; hookSpecificOutput.additionalContext is appended to the tool result; tailToolCallRequest can substitute a further tool call; continue:false kills the loop."
+        },
+        {
+         "event": "pre-compact",
+         "native_name": "PreCompress",
+         "transport": "settings-json-hooks-map",
+         "can_block": false,
+         "context_channel": "none",
+         "notes": "matcher values auto/manual; fired asynchronously before history compression; cannot block or modify compression; flow-control fields ignored."
+        },
+        {
+         "event": "notification",
+         "native_name": "Notification",
+         "transport": "settings-json-hooks-map",
+         "can_block": false,
+         "context_channel": "none",
+         "notes": "outbound: fires on system alerts (notification_type ToolPermission observed in the reference); observability only, cannot block or auto-grant."
+        }
+       ],
+       "injection_channel": {
+        "kind": "stdout-additional-context",
+        "mechanism": "hookSpecificOutput.additionalContext in the hook's stdout JSON is the context channel: SessionStart (first history turn; prepended to the prompt headless), BeforeAgent (appended to the turn prompt), AfterTool (appended to the tool result). exit 2 stderr is the deny/reason channel, never a context channel. BeforeModel/AfterModel rewrite llm_request/llm_response and BeforeToolSelection filters toolConfig - rewrites and filters, not context injection.",
+        "notes": "observed on the gemini 0.29.5 surface: the hooks subcommand, the settings.json hooks schema and the sanitized hook environment (GEMINI_PROJECT_DIR, GEMINI_SESSION_ID, GEMINI_CWD, CLAUDE_PROJECT_DIR alias); hook event behaviour per the upstream reference for this release line (docs/hooks/reference.md). Non-JSON stdout pollution defaults the outcome to Allow - a dispatch consumer must emit strict JSON only."
+       },
+       "blocking_semantics": {
+        "kind": "deny-and-block",
+        "notes": "exit code 2 is a system block (tool call, turn, result or response aborted; stderr is the rejection reason); exit 0 stdout JSON decision deny|block denies per-event: BeforeTool prevents execution, BeforeAgent discards the prompt, AfterAgent forces a retry, AfterModel discards the chunk, AfterTool hides the result, BeforeModel skips the LLM call; continue:false kills the agent loop from any event that supports it; non-zero non-2 exits and stdout pollution are warnings that proceed with original parameters (fail-open)."
+       },
+       "wake_capability": {
+        "kind": "none",
+        "notes": "hooks execute only inside a running session; no daemon, listener or file-wake surface is observed on gemini 0.29.5. --experimental-acp is a client-driven stdio agent protocol in which the client spawns the gemini process - it is a dispatch entrypoint, not a wake of an existing session. A relay sender must not pretend gemini can be woken."
+       },
+       "install_seam": {
+        "config_path": "~/.gemini/settings.json (user) and .gemini/settings.json (project, highest precedence); /etc/gemini-cli/settings.json (system) and installed extensions also feed the hooks map",
+        "format": "json",
+        "entry_shape": "hooks.<EventName>[] entries, each {matcher?, sequential?, hooks: [{type: \"command\", command, name?, timeout?, description?}]}",
+        "ownership_marker": "hook command string carries the dispatch projection's marker (e.g. resolves to the dispatch executable path); entries without the marker are foreign",
+        "preserves_foreign_entries": true
+       },
+       "uninstall_seam": {
+        "config_path": "~/.gemini/settings.json (user) and .gemini/settings.json (project)",
+        "format": "json",
+        "entry_shape": "hooks.<EventName>[] entries whose hook command matches the ownership marker are removed (whole matcher-group when its last hook is removed); entries without the marker are untouched",
+        "ownership_marker": "hook command string carries the dispatch projection's marker (e.g. resolves to the dispatch executable path); entries without the marker are foreign",
+        "preserves_foreign_entries": true
+       },
+       "model_dispatch": {
+        "kind": "native-provider-binding",
+        "providers": [
+         {
+          "provider_ref": "provider:google",
+          "selector": {
+           "kind": "config-key",
+           "name": "model"
+          },
+          "credential": {
+           "required": true,
+           "hint": "Google account OAuth (observed state on this machine: security.auth.selectedType=oauth-personal with an expired/non-interactive session - headless use is blocked pending interactive re-authorization), or a GEMINI_API_KEY / Vertex Application Default Credentials"
+          },
+          "notes": "model is named by the settings.json model key or the -m/--model CLI flag; Actuation does not enumerate Google's model catalogue here."
+         }
+        ]
+       },
+       "provenance": {
+        "authored_by": "oi65-l6-author external integration agent (public-surface authorship only: live observation of gemini 0.29.5 on this machine, 2026-09-22, + upstream google-gemini/gemini-cli hooks documentation; no Actuation source access); normalized on public intake 2026-09-23: the event field carries Actuation's own boundary vocabulary (native_name keeps the harness's event name), so gemini events were mapped onto it by function - session-start/session-end/notification as their own kinds, BeforeTool -> pre-tool-use, AfterTool -> post-tool-use, PreCompress -> pre-compact, and BeforeAgent, AfterAgent, BeforeModel, AfterModel, BeforeToolSelection as custom (no AIKit boundary kind)",
+        "source_refs": [
+         "detection:2026-09-22T21:15:18.82Z gemini:detected exe:/opt/homebrew/bin/gemini config-facet ~/.gemini (extensions count 2, settings.json present, antigravity count 13, mcp-config inventory 1)",
+         "local:gemini --version -> 0.29.5 (homebrew gemini-cli 0.29.5, /opt/homebrew/Cellar/gemini-cli/0.29.5)",
+         "local:gemini --help -> hooks/skills/extensions/mcp subcommands, --approval-mode default|auto_edit|yolo|plan, --experimental-acp, -o text|json|stream-json, --allowed-tools/--allowed-mcp-server-names",
+         "local:gemini hooks --help -> hooks migrate (Claude Code hook migration) and /hooks panel surface",
+         "local:settings.json structure observed (keys only, values not read except security.auth.selectedType=oauth-personal)",
+         "local:NO_BROWSER=true gemini --list-sessions -> interactive OAuth authorization-code prompt (Please visit the following URL... Enter the authorization code) - headless use credential-blocked; gemini extensions list -> FatalAuthenticationError exitCode 41",
+         "local:SessionStart hook probe in a scratch project did not fire - auth wall precedes session start in headless mode; hook event behaviour therefore rests on the upstream reference, disclosed here",
+         "upstream:github.com/google-gemini/gemini-cli docs/hooks/index.md + docs/hooks/reference.md (11 events, exit-code and hookSpecificOutput schemas, settings.json hooks schema, config layer precedence)"
+        ],
+        "catalog_revision": 13
+       }
       }
      ]
     },
@@ -7841,7 +8149,7 @@
    "expected": {
     "code": 2,
     "stdout": "",
-    "stderr": "actuation: no capability descriptor declared for harness undeclared; declared: claude-code, codex, zcode, pi\n"
+    "stderr": "actuation: no capability descriptor declared for harness undeclared; declared: claude-code, codex, zcode, pi, gemini\n"
    }
   },
   {
@@ -7859,7 +8167,7 @@
    "expected": {
     "code": 2,
     "stdout": "",
-    "stderr": "actuation: unknown harness slug(s): undeclared; catalog r12 declares: claude-code, codex, gemini, gemini-antigravity, pi, hermes, hermes-acp, grok-bot, ollama, openclaw, kimi, zcode, opencode, aider, cursor-cli, deepseek-harness, goose, qwen-code\n"
+    "stderr": "actuation: unknown harness slug(s): undeclared; catalog r15 declares: claude-code, codex, gemini, gemini-antigravity, pi, hermes, hermes-acp, grok-bot, ollama, openclaw, kimi, zcode, opencode, aider, cursor-cli, deepseek-harness, goose, qwen-code\n"
    }
   },
   {
