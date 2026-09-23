@@ -8,7 +8,7 @@
    "kind": "catalog",
    "input": {},
    "expected": {
-    "revision": 15,
+    "revision": 16,
     "harnesses": [
      {
       "schema": "actuation.harness-detection/v1",
@@ -133,6 +133,9 @@
       "aliases": [
        "gemini-cli"
       ],
+      "credential": {
+       "path": "~/.gemini/oauth_creds.json"
+      },
       "probe": {
        "executable": {
         "names": [
@@ -169,7 +172,8 @@
        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
        "source_refs": [
         "survey:local-machine-2026-09-05",
-        "survey:mcp-config-facet-2026-09-16"
+        "survey:mcp-config-facet-2026-09-16",
+        "acceptance:gemini-oauth-hang-2026-09-23"
        ],
        "catalog_revision": 1
       }
@@ -3589,10 +3593,10 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 15,
+      "catalog_revision": 16,
       "detector": {
        "implementation": "actuation surface-probes",
-       "version": "0.1.0"
+       "version": "0.2.0"
       },
       "harnesses": [
        {
@@ -3668,10 +3672,10 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 15,
+      "catalog_revision": 16,
       "detector": {
        "implementation": "actuation surface-probes",
-       "version": "0.1.0"
+       "version": "0.2.0"
       },
       "harnesses": [
        {
@@ -3767,10 +3771,10 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 15,
+      "catalog_revision": 16,
       "detector": {
        "implementation": "actuation surface-probes",
-       "version": "0.1.0"
+       "version": "0.2.0"
       },
       "harnesses": [
        {
@@ -3884,10 +3888,10 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 15,
+      "catalog_revision": 16,
       "detector": {
        "implementation": "actuation surface-probes",
-       "version": "0.1.0"
+       "version": "0.2.0"
       },
       "harnesses": [
        {
@@ -3989,10 +3993,10 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 15,
+      "catalog_revision": 16,
       "detector": {
        "implementation": "actuation surface-probes",
-       "version": "0.1.0"
+       "version": "0.2.0"
       },
       "harnesses": [
        {
@@ -4054,10 +4058,10 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 15,
+      "catalog_revision": 16,
       "detector": {
        "implementation": "actuation surface-probes",
-       "version": "0.1.0"
+       "version": "0.2.0"
       },
       "harnesses": [
        {
@@ -4118,7 +4122,11 @@
           "spec": "~/.gemini",
           "detail": "not found"
          }
-        ]
+        ],
+        "credential": {
+         "path": "~/.gemini/oauth_creds.json",
+         "outcome": "absent"
+        }
        },
        {
         "slug": "gemini-antigravity",
@@ -4514,6 +4522,18 @@
      {
       "effect": "expandHome",
       "args": [
+       "~/.gemini/oauth_creds.json"
+      ]
+     },
+     {
+      "effect": "statProbe",
+      "args": [
+       "/home/oracle/.gemini/oauth_creds.json"
+      ]
+     },
+     {
+      "effect": "expandHome",
+      "args": [
        "~/.gemini/antigravity"
       ]
      },
@@ -4887,7 +4907,7 @@
       "document": "self",
       "self_ref": "self:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 15,
+      "catalog_revision": 16,
       "matched": [],
       "resolved": null,
       "ambiguity": false,
@@ -5005,7 +5025,7 @@
       "document": "self",
       "self_ref": "self:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 15,
+      "catalog_revision": 16,
       "matched": [
        {
         "slug": "fixture-0",
@@ -5139,7 +5159,7 @@
       "document": "self",
       "self_ref": "self:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 15,
+      "catalog_revision": 16,
       "matched": [
        {
         "slug": "fixture-0",
@@ -6569,7 +6589,7 @@
     "stdout": {
      "schema": "actuation.harness-detection/v1",
      "document": "catalog",
-     "catalog_revision": 15,
+     "catalog_revision": 16,
      "descriptors": [
       {
        "schema": "actuation.harness-detection/v1",
@@ -6694,6 +6714,9 @@
        "aliases": [
         "gemini-cli"
        ],
+       "credential": {
+        "path": "~/.gemini/oauth_creds.json"
+       },
        "probe": {
         "executable": {
          "names": [
@@ -6730,7 +6753,8 @@
         "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
         "source_refs": [
          "survey:local-machine-2026-09-05",
-         "survey:mcp-config-facet-2026-09-16"
+         "survey:mcp-config-facet-2026-09-16",
+         "acceptance:gemini-oauth-hang-2026-09-23"
         ],
         "catalog_revision": 1
        }
@@ -7388,7 +7412,7 @@
     "stdout": {
      "schema": "actuation.harness-capability/v1",
      "document": "capability-catalog",
-     "catalog_revision": 15,
+     "catalog_revision": 16,
      "capabilities": [
       {
        "schema": "actuation.harness-capability/v1",
@@ -8167,7 +8191,7 @@
    "expected": {
     "code": 2,
     "stdout": "",
-    "stderr": "actuation: unknown harness slug(s): undeclared; catalog r15 declares: claude-code, codex, gemini, gemini-antigravity, pi, hermes, hermes-acp, grok-bot, ollama, openclaw, kimi, zcode, opencode, aider, cursor-cli, deepseek-harness, goose, qwen-code\n"
+    "stderr": "actuation: unknown harness slug(s): undeclared; catalog r16 declares: claude-code, codex, gemini, gemini-antigravity, pi, hermes, hermes-acp, grok-bot, ollama, openclaw, kimi, zcode, opencode, aider, cursor-cli, deepseek-harness, goose, qwen-code\n"
    }
   },
   {

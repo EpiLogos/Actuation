@@ -2,9 +2,10 @@ use crate::{admission::*, effects::*, Error, NativeCatalog, Result};
 use actuation_stream::Timestamp;
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, HashSet};
+use std::time::Duration;
 
 pub const DETECTOR_IMPLEMENTATION: &str = "actuation surface-probes";
-pub const DETECTOR_VERSION: &str = "0.1.0";
+pub const DETECTOR_VERSION: &str = "0.2.0";
 #[derive(Clone, Debug)]
 pub struct DetectionOptions {
     pub observed_at: Timestamp,
@@ -30,8 +31,48 @@ fn probe(kind: &str, ok: bool, spec: Option<&str>, detail: Option<&str>) -> Valu
     }
     v
 }
+/// The named failure class a probe error carries, in the shared probe outcome
+/// vocabulary (`ok | credential-gated | unreachable | unsupported | timed-out
+/// | refused`). Only the bounded-observation refusals this engine produces
+/// are classified; any other error stays a plain failure without a named
+/// outcome.
+pub fn probe_outcome(err: &str) -> Option<&'static str> {
+    if err.contains("timed out") {
+        Some("timed-out")
+    } else if err.starts_with("spawn failed") {
+        Some("unreachable")
+    } else if err.starts_with("exit ") {
+        Some("refused")
+    } else if err == "unsupported service kind" {
+        Some("unsupported")
+    } else {
+        None
+    }
+}
+/// A failed probe record that names its outcome class when the error is one
+/// the engine itself raises (bound refusal, spawn failure, target refusal,
+/// unsupported observation). The plain `fail` result is preserved so the
+/// pass/fail axis and the named outcome axis stay independent.
+fn classified_probe(kind: &str, spec: Option<&str>, err: &str) -> Value {
+    let mut v = probe(kind, false, spec, Some(err));
+    if let Some(outcome) = probe_outcome(err) {
+        v["outcome"] = json!(outcome);
+    }
+    v
+}
 fn spec_names(v: &Value, key: &str) -> Result<Vec<String>> {
     texts(&v[key])
+}
+/// The per-probe wall-clock bound: a declared `timeout_ms` override or the
+/// engine default. The declaration rides the descriptor's own probe spec.
+fn probe_bound(spec: Option<&Value>) -> Result<Duration> {
+    let declared = spec.map(|s| &s["timeout_ms"]).filter(|v| !v.is_null());
+    match declared {
+        Some(ms) => Ok(Duration::from_millis(ms.as_u64().ok_or_else(|| {
+            Error::new("probe timeout_ms must be a positive integer")
+        })?)),
+        None => Ok(DEFAULT_PROBE_BOUND),
+    }
 }
 
 /// Observe an existing native condition. A result describes the observation
@@ -67,7 +108,7 @@ pub fn run_detection(
                     Some(&spec),
                     Some("not found on PATH"),
                 )),
-                Err(e) => probes.push(probe("executable", false, Some(&spec), Some(&e))),
+                Err(e) => probes.push(classified_probe("executable", Some(&spec), &e)),
             }
         }
         if let Some(s) = p.get("config-dir") {
@@ -87,20 +128,22 @@ pub fn run_detection(
                             }),
                         ));
                     }
-                    Err(e) => probes.push(probe("config-dir", false, Some(path), Some(&e))),
+                    Err(e) => probes.push(classified_probe("config-dir", Some(path), &e)),
                 },
                 Err(e) => probes.push(probe("config-dir", false, Some(path), Some(e))),
             }
         }
         if let Some(s) = p.get("service") {
             let kind = s["kind"].as_str().unwrap_or("service");
+            effects.set_probe_bound(probe_bound(Some(s))?);
             match effects.service(s) {
                 Ok(reading) => {
                     service_live = reading.is_present();
                     probes.push(probe("service", true, Some(kind), Some(reading.detail())));
                 }
-                Err(e) => probes.push(probe("service", false, Some(kind), Some(&e))),
+                Err(e) => probes.push(classified_probe("service", Some(kind), &e)),
             }
+            effects.set_probe_bound(DEFAULT_PROBE_BOUND);
         }
         if let Some(s) = p.get("env") {
             let names = spec_names(s, "any_of")?;
@@ -118,7 +161,33 @@ pub fn run_detection(
                     };
                     probes.push(probe("env", true, Some(&spec), Some(&detail)));
                 }
-                Err(e) => probes.push(probe("env", false, Some(&spec), Some(&e))),
+                Err(e) => probes.push(classified_probe("env", Some(&spec), &e)),
+            }
+        }
+        // A declared credential signal is a cheap presence stat, never a read:
+        // surfacing it in disclosure spares callers from discovering a
+        // credential gate by hanging on an external invocation.
+        let mut credential = None;
+        if let Some(spec) = d.as_value()["credential"].as_object() {
+            let declared = text(&spec["path"])?.to_owned();
+            let observed = effects
+                .expand_home(&declared)
+                .and_then(|full| effects.stat(&full).map(|o| (declared.clone(), o)));
+            match observed {
+                Ok((declared, Some(_))) => {
+                    credential = Some(json!({"path": declared, "outcome": "credential-gated"}));
+                    disclosure.push(format!(
+                        "{}: credential-gated ({declared} present; presence only, contents never read)",
+                        d.slug()
+                    ));
+                }
+                Ok((declared, None)) => {
+                    credential = Some(json!({"path": declared, "outcome": "absent"}));
+                }
+                Err(e) => disclosure.push(format!(
+                    "{}: credential presence not observable ({e})",
+                    d.slug()
+                )),
             }
         }
         let any_pass = probes.iter().any(|p| p["result"] == "pass");
@@ -135,6 +204,9 @@ pub fn run_detection(
             "not-installed"
         };
         let mut entry = json!({"slug":d.slug(),"harness_ref":format!("harness/{}",d.slug()),"native_kind":d.native_kind(),"state":state,"probes":probes});
+        if let Some(c) = credential {
+            entry["credential"] = c;
+        }
         if state == "unavailable" {
             entry["unavailable_reason"] = json!(if !any_pass {
                 "all probes failed; could not run"
@@ -146,6 +218,7 @@ pub fn run_detection(
             let mut receipts = json!({});
             // Preserve the actual resolution separately from its readable probe
             // detail. A passing ABSENCE probe must never become an executable.
+            effects.set_probe_bound(probe_bound(p.get("executable"))?);
             if let Some(path) = &executable {
                 receipts["executable"] = json!(path);
                 if let Ok(hash) = effects.hash(path) {
@@ -167,6 +240,7 @@ pub fn run_detection(
                     receipts["executable_is"] = json!("config-dir");
                 }
             }
+            effects.set_probe_bound(DEFAULT_PROBE_BOUND);
             let facets =
                 observe_facets(d, &probes, service_live, effects, &mut disclosure, options)?;
             if !facets.is_empty() {
@@ -191,11 +265,28 @@ pub fn run_detection(
                         .map(texts)
                         .transpose()?
                         .unwrap_or_else(|| vec!["--version".into()]);
+                    let spec = p.get("executable");
+                    effects.set_probe_bound(probe_bound(spec)?);
                     match effects.version(path, &args) {
                         Ok(version) => entry["version"] = json!(version),
-                        Err(reason) => disclosure
-                            .push(format!("{}: version probe failed ({reason})", d.slug())),
+                        Err(reason) => {
+                            // A version failure is a named probe outcome, not
+                            // an error bubble: the record carries the class
+                            // (timed-out, unreachable, refused) and the bound
+                            // that elapsed.
+                            let record =
+                                classified_probe("version", Some(&args.join(" ")), &reason);
+                            entry["probes"]
+                                .as_array_mut()
+                                .expect("admitted probes array")
+                                .push(record);
+                            let line = probe_outcome(&reason)
+                                .map(|token| format!("version probe {token} ({reason})"))
+                                .unwrap_or_else(|| format!("version probe failed ({reason})"));
+                            disclosure.push(format!("{}: {line}", d.slug()));
+                        }
                     }
+                    effects.set_probe_bound(DEFAULT_PROBE_BOUND);
                 }
             }
         }
@@ -525,4 +616,67 @@ pub fn resolve_self(
     HarnessSelf::try_from(
         json!({"schema":HARNESS_DETECTION_VERSION,"document":"self","self_ref":format!("self:{now}"),"observed_at":now,"catalog_revision":options.catalog_revision,"matched":matched,"resolved":resolved,"ambiguity":matched.len()>1,"detection_ref":detection.as_value()["detection_ref"],"detection":{"states":states}}),
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn named_outcomes_cover_the_engine_refusal_classes() {
+        // The gemini 0.29.5 expired-oauth class: an init-bearing binary that
+        // produces no output and no exit inside the bound.
+        assert_eq!(
+            probe_outcome("process observation timed out after 10s"),
+            Some("timed-out")
+        );
+        assert_eq!(
+            probe_outcome("observation timed out after 4s"),
+            Some("timed-out")
+        );
+        assert_eq!(
+            probe_outcome("executable fingerprint timed out after 10s"),
+            Some("timed-out")
+        );
+        assert_eq!(
+            probe_outcome("directory count timed out after 10s"),
+            Some("timed-out")
+        );
+        assert_eq!(
+            probe_outcome("spawn failed: PermissionDenied"),
+            Some("unreachable")
+        );
+        assert_eq!(
+            probe_outcome("spawn failed: ExecFormatError"),
+            Some("unreachable")
+        );
+        assert_eq!(probe_outcome("exit 1"), Some("refused"));
+        assert_eq!(probe_outcome("exit signal"), Some("refused"));
+        assert_eq!(
+            probe_outcome("unsupported service kind"),
+            Some("unsupported")
+        );
+        assert_eq!(probe_outcome("metadata unavailable: EIO"), None);
+        assert_eq!(probe_outcome("pgrep exit Some(2)"), None);
+        // A refused connection is an absence observation, not a refused probe.
+        assert_eq!(probe_outcome("connection refused"), None);
+    }
+
+    #[test]
+    fn classified_failures_carry_the_outcome_and_plain_failures_do_not() {
+        let timed_out = classified_probe(
+            "version",
+            Some("--version"),
+            "process observation timed out after 10s",
+        );
+        assert_eq!(timed_out["result"], json!("fail"));
+        assert_eq!(timed_out["outcome"], json!("timed-out"));
+        assert_eq!(
+            timed_out["detail"],
+            json!("process observation timed out after 10s")
+        );
+        let generic = classified_probe("executable", Some("fixture"), "metadata unavailable: EIO");
+        assert_eq!(generic["result"], json!("fail"));
+        assert!(generic.get("outcome").is_none());
+    }
 }
