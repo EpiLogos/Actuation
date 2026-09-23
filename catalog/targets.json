@@ -1499,7 +1499,7 @@
             "notes": "prime's catalogue enumerates the openrouter offering; -latest rows are spelled with a leading '~' in prime's own listing"
           },
           {
-            "provider_ref": "provider:z-ai",
+            "provider_ref": "provider:zai",
             "selector": {
               "kind": "cli-flag",
               "name": "--provider"

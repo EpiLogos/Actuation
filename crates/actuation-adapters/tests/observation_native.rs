@@ -80,9 +80,9 @@ fn declarative_catalog_is_extensible_without_generic_executable_changes() {
             "provider:kimi-coding",
             "provider:minimax",
             "provider:openrouter",
-            "provider:z-ai",
+            "provider:zai",
         ],
-        "prime's dispatch binding names exactly the providers prime's own model catalogue discloses, in the AIKit route-world spelling (prime calls the vendor zai; catalogued Model routes spell it z-ai)"
+        "prime's dispatch binding names exactly the providers prime's own model catalogue discloses"
     );
     assert!(
         original.capability("gemini").is_none(),
