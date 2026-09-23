@@ -139,7 +139,12 @@ correction discipline, made after the owner has reviewed the declared facts
 against their cited sources. The gemini descriptor authored from public
 surfaces during the 2026-09-22 adapter-acceptance campaign
 (`fixtures/capability-contributions/gemini.harness-capability.json`) is the
-worked specimen: it validates, and its receipt is what an integrator lands.
+worked specimen: its receipt (`capability-contribution:gemini:f1af4031414a`)
+was the route's first landing — catalog r15 applies its edit verbatim. The
+specimen's provenance travels unchanged (it names the revision its
+normalisation was recorded at); re-running the intake on the landed specimen
+now answers the coverage-closure refusal, since gemini carries a declared
+capability — the same law that refused a shadow before the landing existed.
 
 A contribution fills a gap. Correcting an already-declared capability — the
 ordinary maintenance this document records below — is the owner's own edit,
@@ -166,7 +171,13 @@ dispatch. Catalog r13/r14 redeclared `codex` on codex 0.155.1's own embedded
 draft-07 hook schemas (events and blocking channels read from the shipped
 schemas, never from brand similarity) and on the environment-scoped seam the
 dispatch projection actually writes — the same correction discipline this
-route serves.
+route serves. Catalog r15 landed the intake route's first contribution: the
+gemini capability descriptor received through `config-contribution
+capability` (the campaign specimen above) applied its receipt's edit — the
+r7-declared gemini gap withdrawn, gemini carrying a real account instead:
+eleven declared native events, a stdout-additional-context injection
+channel, deny-and-block, no wake. Thirteen gaps remain declared, each naming
+its true reason.
 
 ## Correction discipline
 

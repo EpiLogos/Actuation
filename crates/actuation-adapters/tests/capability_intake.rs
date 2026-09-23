@@ -1,8 +1,13 @@
-//! The public intake law for harness capability descriptors (O:I #113 A1):
-//! the gemini specimen contributed by the uncoached external author
-//! validates; a fabricated event kind is refused by the closed vocabulary;
-//! a descriptor that would shadow a declared capability fails coverage
-//! closure; an unknown slug fails slug alignment.
+//! The public intake law for harness capability descriptors (O:I #113 A1).
+//! The gemini specimen contributed by the uncoached external author was
+//! received and landed at catalog r15 (receipt
+//! capability-contribution:gemini:f1af4031414a), so against the shipped
+//! catalog the same specimen now answers the coverage-closure shadowing
+//! refusal — the law working as designed. The minting law that produced that
+//! receipt is proven against the reconstructed pre-landing catalog; a
+//! fabricated event kind is refused by the closed vocabulary; a descriptor
+//! that would shadow a declared capability fails coverage closure; an
+//! unknown slug fails slug alignment.
 use actuation_adapters::*;
 use serde_json::{json, Value};
 
@@ -12,6 +17,50 @@ fn gemini_specimen() -> Value {
     let path = format!("{ROOT}/fixtures/capability-contributions/gemini.harness-capability.json");
     let raw = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("cannot read {path}: {e}"));
     serde_json::from_str(&raw).expect("the gemini specimen is JSON")
+}
+
+/// The declared gemini capability gap exactly as catalog r14 shipped it —
+/// the gap the landed receipt withdrew.
+const R14_GEMINI_GAP: &str = r#"{
+  "schema": "actuation.harness-capability-gap/v1",
+  "document": "capability-gap",
+  "harness_slug": "gemini",
+  "summary": "Gemini CLI agent harness; adapter consumes the detection record, descriptor not authored",
+  "reason": "No capability descriptor authored at diagnosis (2026-09-14): the gemini CLI's native event/blocking surface has not been observed into descriptor form. AIKit's adapter cites the detection record for discovery (ai-kit#186 round-2 migration) and records the undeclared capability state honestly; authoring the descriptor is Actuation-side work that had not happened.",
+  "evidence_refs": [
+    "aikit:clients/gemini.rs (ai-kit#186 round-2 migration, commit 971e8fa)",
+    "survey:local-machine-2026-09-05",
+    "diagnosis:harness-capability-coverage-2026-09-14"
+  ],
+  "provenance": {
+    "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+    "source_refs": [
+      "diagnosis:harness-capability-coverage-2026-09-14"
+    ],
+    "catalog_revision": 7
+  }
+}"#;
+
+/// The shipped catalog as a raw value (the bytes the binary bundles).
+fn bundled_catalog_value() -> Value {
+    let path = format!("{ROOT}/catalog/targets.json");
+    let raw = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("cannot read {path}: {e}"));
+    serde_json::from_str(&raw).expect("the shipped catalog is JSON")
+}
+
+/// The catalog as it stood when the gemini receipt was minted: the shipped
+/// catalog with the landed gemini capability withdrawn and the r14 declared
+/// gap restored.
+fn pre_landing_catalog() -> NativeCatalog {
+    let mut value = bundled_catalog_value();
+    let capabilities = value["capabilities"].as_array_mut().unwrap();
+    capabilities.retain(|c| c["harness_slug"] != json!("gemini"));
+    value["capability_gaps"]
+        .as_array_mut()
+        .unwrap()
+        .push(serde_json::from_str(R14_GEMINI_GAP).expect("the r14 gap parses"));
+    let raw = serde_json::to_string(&value).unwrap();
+    NativeCatalog::from_json(&raw).expect("the pre-landing catalog admits")
 }
 
 fn result_of(document: &Value, check: &str) -> String {
@@ -27,8 +76,39 @@ fn result_of(document: &Value, check: &str) -> String {
 }
 
 #[test]
-fn the_gemini_specimen_validates_against_the_intake_law() {
+fn the_landed_gemini_specimen_now_answers_the_shadowing_refusal() {
     let catalog = NativeCatalog::bundled().unwrap();
+    assert!(
+        catalog.capability("gemini").is_some(),
+        "the contribution landed at r15"
+    );
+    let document = validate_capability_document(&catalog, &gemini_specimen());
+    assert_eq!(document["valid"], json!(false), "{document}");
+    assert_eq!(result_of(&document, "schema-admission"), "pass");
+    assert_eq!(result_of(&document, "slug-alignment"), "pass");
+    assert_eq!(result_of(&document, "coverage-closure"), "fail");
+    let detail = document["checks"][2]["detail"].as_str().unwrap();
+    assert!(
+        detail.contains("already carries a declared capability"),
+        "the refusal names the landing: {detail}"
+    );
+    let raw = serde_json::to_string(&gemini_specimen()).unwrap();
+    assert!(
+        capability_contribution_receipt(
+            &catalog,
+            &gemini_specimen(),
+            "fixtures/capability-contributions/gemini.harness-capability.json",
+            &raw,
+            1_000,
+        )
+        .is_err(),
+        "a landed contribution is received no longer"
+    );
+}
+
+#[test]
+fn the_minting_law_that_landed_gemini_still_holds() {
+    let catalog = pre_landing_catalog();
     let document = validate_capability_document(&catalog, &gemini_specimen());
     assert_eq!(document["valid"], json!(true), "{document}");
     assert_eq!(document["harness_slug"], json!("gemini"));
@@ -36,7 +116,8 @@ fn the_gemini_specimen_validates_against_the_intake_law() {
         assert_eq!(result_of(&document, check), "pass", "{check} must pass");
     }
     // The receipt the contribution face mints carries the bytes' digest, the
-    // unchanged descriptor, and the owner landing edit.
+    // unchanged descriptor, and the owner landing edit — the receipt the
+    // owner landed at r15.
     let raw = serde_json::to_string(&gemini_specimen()).unwrap();
     let receipt = capability_contribution_receipt(
         &catalog,
