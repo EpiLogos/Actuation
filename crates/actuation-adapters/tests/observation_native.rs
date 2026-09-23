@@ -11,7 +11,7 @@ use std::{
 #[test]
 fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     let original = NativeCatalog::bundled().unwrap();
-    assert_eq!(original.revision(), 12);
+    assert_eq!(original.revision(), 14);
     assert_eq!(original.descriptors().len(), 18);
     assert_eq!(original.capabilities().len(), 4);
     assert_eq!(original.capability_gaps().len(), 14);
@@ -83,6 +83,111 @@ fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     assert!(extended.select(&["unknown".into()]).is_err());
     v["descriptors"].as_array_mut().unwrap().push(target);
     assert!(NativeCatalog::from_json(&v.to_string()).is_err());
+}
+#[test]
+fn codex_capability_declares_the_shipped_0_155_1_schema_surface() {
+    // O:I #113 A2: the source of truth is codex 0.155.1's own embedded
+    // draft-07 hook output wire schemas, not brand similarity.
+    let catalog = NativeCatalog::bundled().unwrap();
+    let codex = catalog
+        .capability("codex")
+        .expect("the bundled catalog declares codex")
+        .as_value()
+        .clone();
+    let events = codex["native_events"].as_array().unwrap();
+    let named = |name: &str| {
+        events
+            .iter()
+            .find(|e| e["native_name"] == json!(name))
+            .unwrap_or_else(|| panic!("codex ships {name}; the descriptor must declare it"))
+    };
+    // (a) PostCompact and Interrupt ship in codex's schemas.
+    for shipped in ["PostCompact", "Interrupt"] {
+        let event = named(shipped);
+        assert_eq!(
+            event["event"],
+            json!("custom"),
+            "{shipped} has no AIKit boundary kind"
+        );
+        assert_eq!(event["can_block"], json!(false));
+    }
+    // (b) Stop, UserPromptSubmit and SubagentStop ship decision:block + reason.
+    for blocking in ["Stop", "UserPromptSubmit", "SubagentStop"] {
+        assert_eq!(
+            named(blocking)["can_block"],
+            json!(true),
+            "{blocking} ships decision:block + reason in codex's own schemas"
+        );
+    }
+    // The block channels are named in the blocking semantics, in codex's own words.
+    let blocking_notes = codex["blocking_semantics"]["notes"].as_str().unwrap();
+    for blocking in ["Stop", "UserPromptSubmit", "SubagentStop"] {
+        assert!(
+            blocking_notes.contains(blocking),
+            "blocking semantics must name {blocking}: {blocking_notes}"
+        );
+    }
+    // (c) notify keeps a declared standing with local binary evidence in its
+    // provenance, not upstream docs alone.
+    let refs: Vec<&str> = codex["provenance"]["source_refs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|r| r.as_str())
+        .collect();
+    assert!(
+        refs.contains(&"survey:codex-notify-binary-scan-2026-09-23"),
+        "the notify claim carries the local binary scan as evidence: {refs:?}"
+    );
+    assert!(
+        refs.contains(&"survey:codex-0.155.1-shipped-hook-schemas-2026-09-23"),
+        "the correction cites the shipped hook schemas: {refs:?}"
+    );
+    assert!(
+        codex["provenance"]["catalog_revision"].as_i64().unwrap() >= 13,
+        "the shipped-schema correction landed at catalog r13"
+    );
+}
+#[test]
+fn codex_seam_is_the_codex_home_file_not_the_per_project_file() {
+    // O:I #113 A3: the descriptor's seam must name the file a dispatch
+    // projection actually writes. aikit's codex projection writes
+    // $CODEX_HOME/hooks.json (apply exit 0 on git projects, per-generation
+    // undo byte-exact); the per-project .codex/hooks.json codex also reads
+    // natively is named as native context, not as the seam.
+    let catalog = NativeCatalog::bundled().unwrap();
+    let codex = catalog
+        .capability("codex")
+        .expect("the bundled catalog declares codex")
+        .as_value()
+        .clone();
+    for seam in ["install_seam", "uninstall_seam"] {
+        assert_eq!(
+            codex[seam]["config_path"],
+            json!("$CODEX_HOME/hooks.json"),
+            "{seam} must declare the environment-scoped codex home file"
+        );
+    }
+    let entry_shape = codex["install_seam"]["entry_shape"].as_str().unwrap();
+    assert!(
+        entry_shape.contains("environment-scoped") && entry_shape.contains("CODEX_HOME"),
+        "the seam declares its scoping: {entry_shape}"
+    );
+    assert!(
+        entry_shape.contains(".codex/hooks.json"),
+        "the native per-project surface stays named as context: {entry_shape}"
+    );
+    let refs: Vec<&str> = codex["provenance"]["source_refs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|r| r.as_str())
+        .collect();
+    assert!(
+        refs.contains(&"aikit:codex-seam-reverify-2026-09-22"),
+        "the seam correction cites the aikit re-verify: {refs:?}"
+    );
+    assert_eq!(codex["provenance"]["catalog_revision"], json!(14));
 }
 #[test]
 fn capability_closure_is_structural_not_conventional() {

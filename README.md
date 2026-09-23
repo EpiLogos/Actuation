@@ -166,8 +166,10 @@ actuation harness catalog [--json]
 actuation harness detect [--only <slugs>] [--versions] [--json]
 actuation harness self [--json]
 actuation harness capability [<slug>] [--json]
+actuation harness capability validate <file|-> [--json]
 actuation system [--json]
 actuation config-contribution [--json]
+actuation config-contribution capability <file|-> [--json]
 actuation config validate [--json] [--setting <setting_ref>] [--scope <compact>] [--value <json> | --value-file <path|->]
 actuation config plan [--json] [--setting <setting_ref>] [--scope <compact>] [--value <json> | --value-file <path|->]
 actuation config apply [--json] [--plan-file <path|->] [--changeset <id>]
@@ -188,7 +190,11 @@ keychain; failures are disclosed, never folded into detection state).
 as configuration — its declared agency constitution (determination kinds,
 WorldBinding constraint categories, metagency operations, derivation and
 federation authority rules), its Return modes and its durable stream store
-selection. Every contributed subject is declared code, not applied
+selection. `config-contribution capability <file|->` is the public intake of
+harness capability descriptors: it validates a descriptor that fills a
+declared capability gap and mints a receipt the owner lands into the bundled
+catalog (see docs/HARNESS-CAPABILITY.md). Every contributed subject is
+declared code, not applied
 configuration: `writable` is false, and `plan`/`apply`/`reset` are
 structurally unavailable. The four config verbs implement the frozen
 owner-native transport (`config validate|plan|apply|reset --json`), and they
