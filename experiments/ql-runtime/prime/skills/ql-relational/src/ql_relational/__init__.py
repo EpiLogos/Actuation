@@ -579,6 +579,23 @@ async def representation_bind(request: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+async def techne_reading(target: dict[str, Any]) -> dict[str, Any]:
+    """Read one Wiki/subject target through QL's existing production Technē adapter."""
+    if not isinstance(target, dict):
+        raise ValueError("Technē target must be an object")
+    with tempfile.NamedTemporaryFile("w", suffix=".json", encoding="utf-8", delete=False) as handle:
+        json.dump(target, handle)
+        path = handle.name
+    try:
+        result = await _ql("techne", "reading", path)
+    finally:
+        Path(path).unlink(missing_ok=True)
+    if result.get("contract") != "ql.techne-reading/v1":
+        raise RuntimeError(f"native Technē reading contract mismatch: {result}")
+    await _receipt({"operation": "ql-techne-reading", "target": target}, result)
+    return result
+
+
 async def nara_activity_validate(activity: dict[str, Any]) -> dict[str, Any]:
     """Validate protected Nara activity spans, provenance and protection semantics."""
     result = await _epi_invoke(4, "nara.activity.validate", {"activity": activity})

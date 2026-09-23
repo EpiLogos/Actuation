@@ -165,6 +165,30 @@ fn epi_invoke(
     }
     Ok(value)
 }
+fn techne_reading(owner: &OwnerInstrument, target: &Value) -> Result<Value> {
+    if !target.is_object() {
+        return Err(Error::new(
+            "Technē reading requires a Wiki refraction target object",
+        ));
+    }
+    let mut file = tempfile::NamedTempFile::new()
+        .map_err(|_| Error::new("cannot create bounded Technē target"))?;
+    file.write_all(target.to_string().as_bytes())
+        .map_err(|_| Error::new("cannot write bounded Technē target"))?;
+    file.flush()
+        .map_err(|_| Error::new("cannot flush bounded Technē target"))?;
+    let path = file.path().to_string_lossy().into_owned();
+    let value = owner.invoke(json!({"operation":"cli","arguments":["techne","reading",path]}))?
+        ["result"]
+        .clone();
+    if value["contract"] != "ql.techne-reading/v1"
+        || !value["reading"].is_object()
+        || !value["selections"].is_array()
+    {
+        return Err(Error::new("QL owner returned a mismatched Technē reading"));
+    }
+    Ok(value)
+}
 fn invoke_owner(config: &FacultyConfig, owner: &OwnerInstrument, request: &Value) -> Result<Value> {
     let op = text(request, "operation")?;
     let cli = |args: Value| -> Result<Value> {
@@ -207,6 +231,7 @@ fn invoke_owner(config: &FacultyConfig, owner: &OwnerInstrument, request: &Value
         "representation-bind" => {
             epi_invoke(owner, 3, "representation.bind", request["request"].clone())
         }
+        "ql-techne-reading" => techne_reading(owner, &request["target"]),
         "nara-activity-validate" => epi_invoke(
             owner,
             4,
