@@ -1,6 +1,6 @@
 {
   "schema": "actuation.native-catalog/v1",
-  "catalog_revision": 12,
+  "catalog_revision": 13,
   "descriptors": [
     {
       "schema": "actuation.harness-detection/v1",
@@ -296,38 +296,190 @@
     {
       "schema": "actuation.harness-detection/v1",
       "document": "descriptor",
-      "slug": "grok-bot",
+      "slug": "grok",
       "native_kind": "harness",
-      "edition": "cli+service",
+      "edition": "cli",
       "native_owner": "xAI",
-      "summary": "grok-bot harness; runs as a background daemon, version probe may prompt the keychain",
-      "aliases": [
-        "gbot"
-      ],
+      "summary": "Grok Build agent CLI; xAI's coding harness (the grok-bot CLI is bot management, not coding \u2014 roster correction 2026-09-22)",
       "probe": {
         "executable": {
           "names": [
-            "grok-bot",
-            "gbot"
+            "grok"
           ],
           "version_args": [
             "--version"
           ]
         },
         "config-dir": {
-          "path": "~/.grokbot"
-        },
-        "service": {
-          "kind": "daemon",
-          "name": "grok-bot"
+          "path": "~/.grok"
+        }
+      },
+      "facets": {
+        "config": {
+          "path": "~/.grok/config.toml"
         }
       },
       "provenance": {
-        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
         "source_refs": [
-          "survey:local-machine-2026-09-05"
+          "doc:docs.x.ai/build/overview (Grok Build: binary grok, config ~/.grok/config.toml, headless grok -p --output-format streaming-json, ACP docs-declared)",
+          "aikit:clients/grok.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:grok-bot 0.2.2 on this machine 2026-09-22 (bot/group management only \u2014 the product the retired grok-bot row misdescribed)"
         ],
-        "catalog_revision": 1
+        "catalog_revision": 13
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "copilot",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "GitHub",
+      "summary": "GitHub Copilot CLI; first-party ACP face `copilot --acp` (public preview)",
+      "probe": {
+        "executable": {
+          "names": [
+            "copilot"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        }
+      },
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.github.com/en/copilot/reference/acp-server (first-party ACP face copilot --acp, public preview 2026-01-28)",
+          "aikit:clients/copilot.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 13
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "cline",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Cline",
+      "summary": "Cline CLI; first-party ACP face `cline --acp`, no batch headless JSON documented",
+      "probe": {
+        "executable": {
+          "names": [
+            "cline"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        }
+      },
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.cline.bot (first-party ACP face cline --acp; CLINE_API_KEY auth)",
+          "aikit:clients/cline.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 13
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "kiro-cli",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "AWS",
+      "summary": "Kiro CLI (renamed Amazon Q CLI); first-party ACP face `kiro-cli acp [--agent]`",
+      "probe": {
+        "executable": {
+          "names": [
+            "kiro-cli"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        }
+      },
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:kiro.dev/docs/cli/acp (first-party ACP face kiro-cli acp [--agent], JSON-RPC 2.0 over stdio)",
+          "aikit:clients/kiro_cli.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (the q/kiro binary-identity split is unresolved, so only kiro-cli is probed; not installed on this machine)"
+        ],
+        "catalog_revision": 13
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "qoder",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Qoder",
+      "summary": "Qoder CLI; first-party ACP face `qoder --acp`, headless undocumented",
+      "probe": {
+        "executable": {
+          "names": [
+            "qoder"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        }
+      },
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.qoder.com/cli/acp (first-party ACP face qoder --acp; QODER_PERSONAL_ACCESS_TOKEN auth)",
+          "aikit:clients/qoder.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 13
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "droid",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Factory",
+      "summary": "Factory Droid CLI; headless runner `droid exec --output-format stream-jsonrpc`, MCP config at ~/.factory/mcp.json",
+      "probe": {
+        "executable": {
+          "names": [
+            "droid"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.factory"
+        }
+      },
+      "facets": {
+        "mcp-config": {
+          "path": "~/.factory/mcp.json",
+          "inventory": {
+            "kind": "mcp-servers",
+            "source": "file",
+            "collection": "mcpServers"
+          }
+        }
+      },
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.factory.com (headless droid exec --output-format stream-jsonrpc; MCP client config ~/.factory/mcp.json and .factory/mcp.json, key mcpServers, `droid mcp add`)",
+          "aikit:clients/droid.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 13
       }
     },
     {
@@ -1304,20 +1456,127 @@
     {
       "schema": "actuation.harness-capability-gap/v1",
       "document": "capability-gap",
-      "harness_slug": "grok-bot",
-      "summary": "grok-bot harness; detected only, daemon wake unobserved",
-      "reason": "No capability descriptor authored at diagnosis (2026-09-14): AIKit's admission rides the detection record only, and the native surface \u2014 including whether the background daemon admits a wake \u2014 is unobserved. Wake optimism is not a transport, so nothing is declared.",
+      "harness_slug": "grok",
+      "summary": "Grok Build CLI; detected only, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-23): Grok Build's hook/event, blocking and wake surfaces are undocumented upstream and the CLI is not installed on this machine to observe. The retired grok-bot gap described a misidentified product (bot/group management), withdrawn with the roster correction. The catalog carries a disclosed gap rather than an invented descriptor.",
       "evidence_refs": [
-        "aikit:clients/grokbot.rs admission (ai-kit#186, closed 2026-09-08)",
-        "survey:local-machine-2026-09-05",
-        "diagnosis:harness-capability-coverage-2026-09-14"
+        "doc:docs.x.ai/build/overview (Grok Build: binary grok, config ~/.grok/config.toml, headless grok -p --output-format streaming-json, ACP docs-declared)",
+        "aikit:clients/grok.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:grok-bot 0.2.2 on this machine 2026-09-22 (bot/group management only \u2014 the product the retired grok-bot row misdescribed)"
       ],
       "provenance": {
-        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
         "source_refs": [
-          "diagnosis:harness-capability-coverage-2026-09-14"
+          "doc:docs.x.ai/build/overview (Grok Build: binary grok, config ~/.grok/config.toml, headless grok -p --output-format streaming-json, ACP docs-declared)",
+          "aikit:clients/grok.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:grok-bot 0.2.2 on this machine 2026-09-22 (bot/group management only \u2014 the product the retired grok-bot row misdescribed)"
         ],
-        "catalog_revision": 7
+        "catalog_revision": 13
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "copilot",
+      "summary": "GitHub Copilot CLI; detected only, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-23): the ACP public preview documents a session face but no hook/event, blocking or wake surface, and the CLI is not installed on this machine to observe. The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "doc:docs.github.com/en/copilot/reference/acp-server (first-party ACP face copilot --acp, public preview 2026-01-28)",
+        "aikit:clients/copilot.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+      ],
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.github.com/en/copilot/reference/acp-server (first-party ACP face copilot --acp, public preview 2026-01-28)",
+          "aikit:clients/copilot.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 13
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "cline",
+      "summary": "Cline CLI; detected only, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-23): cline documents a first-party ACP face and no hook/event, blocking or wake surface, and the CLI is not installed on this machine to observe. The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "doc:docs.cline.bot (first-party ACP face cline --acp; CLINE_API_KEY auth)",
+        "aikit:clients/cline.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+      ],
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.cline.bot (first-party ACP face cline --acp; CLINE_API_KEY auth)",
+          "aikit:clients/cline.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 13
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "kiro-cli",
+      "summary": "Kiro CLI; detected only, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-23): Kiro CLI's hook/event, blocking and wake surfaces are undocumented at authoring, and the q/kiro binary-identity split is unresolved on this machine, so nothing is observed. The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "doc:kiro.dev/docs/cli/acp (first-party ACP face kiro-cli acp [--agent], JSON-RPC 2.0 over stdio)",
+        "aikit:clients/kiro_cli.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+      ],
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:kiro.dev/docs/cli/acp (first-party ACP face kiro-cli acp [--agent], JSON-RPC 2.0 over stdio)",
+          "aikit:clients/kiro_cli.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 13
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "qoder",
+      "summary": "Qoder CLI; detected only, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-23): Qoder's hook/event, blocking and wake surfaces are undocumented at authoring and the CLI is not installed on this machine to observe. The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "doc:docs.qoder.com/cli/acp (first-party ACP face qoder --acp; QODER_PERSONAL_ACCESS_TOKEN auth)",
+        "aikit:clients/qoder.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+      ],
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.qoder.com/cli/acp (first-party ACP face qoder --acp; QODER_PERSONAL_ACCESS_TOKEN auth)",
+          "aikit:clients/qoder.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 13
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "droid",
+      "summary": "Factory Droid CLI; detected only, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-23): Droid's first-party face is the headless exec runner, which documents no hook/event, blocking or wake surface, and the CLI is not installed on this machine to observe. The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "doc:docs.factory.com (headless droid exec --output-format stream-jsonrpc; MCP client config ~/.factory/mcp.json and .factory/mcp.json, key mcpServers, `droid mcp add`)",
+        "aikit:clients/droid.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+      ],
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.factory.com (headless droid exec --output-format stream-jsonrpc; MCP client config ~/.factory/mcp.json and .factory/mcp.json, key mcpServers, `droid mcp add`)",
+          "aikit:clients/droid.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 13
       }
     },
     {

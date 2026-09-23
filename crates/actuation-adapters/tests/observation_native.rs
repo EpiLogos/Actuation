@@ -11,10 +11,10 @@ use std::{
 #[test]
 fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     let original = NativeCatalog::bundled().unwrap();
-    assert_eq!(original.revision(), 12);
-    assert_eq!(original.descriptors().len(), 18);
+    assert_eq!(original.revision(), 13);
+    assert_eq!(original.descriptors().len(), 23);
     assert_eq!(original.capabilities().len(), 4);
-    assert_eq!(original.capability_gaps().len(), 14);
+    assert_eq!(original.capability_gaps().len(), 19);
     for slug in [
         "claude-code",
         "codex",
@@ -27,9 +27,22 @@ fn declarative_catalog_is_extensible_without_generic_executable_changes() {
         "deepseek-harness",
         "goose",
         "qwen-code",
+        // Harness-connection roster expansion (catalog r13, 2026-09-23): the
+        // grok-bot row corrected to Grok Build, five expansion slugs declared.
+        "grok",
+        "copilot",
+        "cline",
+        "kiro-cli",
+        "qoder",
+        "droid",
     ] {
         assert!(original.descriptor(slug).is_some());
     }
+    assert!(
+        original.descriptor("grok-bot").is_none(),
+        "the grok-bot row was a misidentified product (bot management, not coding); \
+         the catalog declares Grok Build as grok instead"
+    );
     assert!(
         original.capability("opencode").is_none(),
         "opencode ships detected with a declared capability gap, not a guessed descriptor"

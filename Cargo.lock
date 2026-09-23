@@ -55,15 +55,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "actuation-migration-gate"
-version = "0.2.1"
-dependencies = [
- "serde",
- "serde_json",
- "sha2",
-]
-
-[[package]]
 name = "actuation-research"
 version = "0.2.1"
 dependencies = [
