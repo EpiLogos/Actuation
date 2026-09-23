@@ -18,11 +18,13 @@
 
 mod agency;
 mod composition;
+mod position;
 mod refs;
 mod wire;
 
 pub use agency::*;
 pub use composition::*;
+pub use position::*;
 pub use refs::*;
 pub use wire::{Error, Extensions, Invariant, NonEmpty, Record, Result, Slot};
 
