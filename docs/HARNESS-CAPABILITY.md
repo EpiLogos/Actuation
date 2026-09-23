@@ -141,9 +141,15 @@ surfaces during the 2026-09-22 adapter-acceptance campaign
 (`fixtures/capability-contributions/gemini.harness-capability.json`) is the
 worked specimen: its receipt (`capability-contribution:gemini:f1af4031414a`)
 was the route's first landing — catalog r15 applies its edit verbatim. The
+openclaw descriptor from the same campaign's bounded local census
+(`fixtures/capability-contributions/openclaw.harness-capability.json`)
+followed as the second landing — catalog r17 applies its receipt
+(`capability-contribution:openclaw:307591449de6`) verbatim, and stays
+deliberately conservative: no native event was observed, so `native_events`
+is empty and every channel note says unobserved, not unsupported. Each
 specimen's provenance travels unchanged (it names the revision its
-normalisation was recorded at); re-running the intake on the landed specimen
-now answers the coverage-closure refusal, since gemini carries a declared
+normalisation was recorded at); re-running the intake on a landed specimen
+now answers the coverage-closure refusal, since the slug carries a declared
 capability — the same law that refused a shadow before the landing existed.
 
 A contribution fills a gap. Correcting an already-declared capability — the
@@ -176,8 +182,14 @@ gemini capability descriptor received through `config-contribution
 capability` (the campaign specimen above) applied its receipt's edit — the
 r7-declared gemini gap withdrawn, gemini carrying a real account instead:
 eleven declared native events, a stdout-additional-context injection
-channel, deny-and-block, no wake. Thirteen gaps remain declared, each naming
-its true reason.
+channel, deny-and-block, no wake. Catalog r17 landed the second: the
+openclaw descriptor observed in a bounded local census (hooks inventory and
+config structure only — no openclaw server, session or probe target was
+started) applied its receipt's edit, the r7-declared openclaw gap withdrawn,
+the descriptor recording honestly what was not seen: `native_events` empty,
+and the injection, blocking and wake channels declared `none` as the
+least-committal encoding, each note naming its timeout-bounded evidence.
+Twelve gaps remain declared, each naming its true reason.
 
 ## Correction discipline
 

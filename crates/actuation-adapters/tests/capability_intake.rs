@@ -1,13 +1,14 @@
 //! The public intake law for harness capability descriptors (O:I #113 A1).
 //! The gemini specimen contributed by the uncoached external author was
 //! received and landed at catalog r15 (receipt
-//! capability-contribution:gemini:f1af4031414a), so against the shipped
-//! catalog the same specimen now answers the coverage-closure shadowing
-//! refusal — the law working as designed. The minting law that produced that
-//! receipt is proven against the reconstructed pre-landing catalog; a
-//! fabricated event kind is refused by the closed vocabulary; a descriptor
-//! that would shadow a declared capability fails coverage closure; an
-//! unknown slug fails slug alignment.
+//! capability-contribution:gemini:f1af4031414a), and the openclaw specimen
+//! followed at r17 (receipt capability-contribution:openclaw:307591449de6),
+//! so against the shipped catalog each landed specimen now answers the
+//! coverage-closure shadowing refusal — the law working as designed. The
+//! minting law that produced those receipts is proven against the
+//! reconstructed pre-landing catalog; a fabricated event kind is refused by
+//! the closed vocabulary; a descriptor that would shadow a declared
+//! capability fails coverage closure; an unknown slug fails slug alignment.
 use actuation_adapters::*;
 use serde_json::{json, Value};
 
@@ -17,6 +18,12 @@ fn gemini_specimen() -> Value {
     let path = format!("{ROOT}/fixtures/capability-contributions/gemini.harness-capability.json");
     let raw = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("cannot read {path}: {e}"));
     serde_json::from_str(&raw).expect("the gemini specimen is JSON")
+}
+
+fn openclaw_specimen() -> Value {
+    let path = format!("{ROOT}/fixtures/capability-contributions/openclaw.harness-capability.json");
+    let raw = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("cannot read {path}: {e}"));
+    serde_json::from_str(&raw).expect("the openclaw specimen is JSON")
 }
 
 /// The declared gemini capability gap exactly as catalog r14 shipped it —
@@ -98,6 +105,37 @@ fn the_landed_gemini_specimen_now_answers_the_shadowing_refusal() {
             &catalog,
             &gemini_specimen(),
             "fixtures/capability-contributions/gemini.harness-capability.json",
+            &raw,
+            1_000,
+        )
+        .is_err(),
+        "a landed contribution is received no longer"
+    );
+}
+
+#[test]
+fn the_landed_openclaw_specimen_now_answers_the_shadowing_refusal() {
+    let catalog = NativeCatalog::bundled().unwrap();
+    assert!(
+        catalog.capability("openclaw").is_some(),
+        "the contribution landed at r17"
+    );
+    let document = validate_capability_document(&catalog, &openclaw_specimen());
+    assert_eq!(document["valid"], json!(false), "{document}");
+    assert_eq!(result_of(&document, "schema-admission"), "pass");
+    assert_eq!(result_of(&document, "slug-alignment"), "pass");
+    assert_eq!(result_of(&document, "coverage-closure"), "fail");
+    let detail = document["checks"][2]["detail"].as_str().unwrap();
+    assert!(
+        detail.contains("already carries a declared capability"),
+        "the refusal names the landing: {detail}"
+    );
+    let raw = serde_json::to_string(&openclaw_specimen()).unwrap();
+    assert!(
+        capability_contribution_receipt(
+            &catalog,
+            &openclaw_specimen(),
+            "fixtures/capability-contributions/openclaw.harness-capability.json",
             &raw,
             1_000,
         )

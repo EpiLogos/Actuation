@@ -11,10 +11,10 @@ use std::{
 #[test]
 fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     let original = NativeCatalog::bundled().unwrap();
-    assert_eq!(original.revision(), 16);
+    assert_eq!(original.revision(), 17);
     assert_eq!(original.descriptors().len(), 18);
-    assert_eq!(original.capabilities().len(), 5);
-    assert_eq!(original.capability_gaps().len(), 13);
+    assert_eq!(original.capabilities().len(), 6);
+    assert_eq!(original.capability_gaps().len(), 12);
     for slug in [
         "claude-code",
         "codex",
@@ -49,6 +49,11 @@ fn declarative_catalog_is_extensible_without_generic_executable_changes() {
         "the gemini contribution landed at r15 (receipt capability-contribution:gemini:f1af4031414a)"
     );
     assert!(original.capability_gap("gemini").is_none());
+    assert!(
+        original.capability("openclaw").is_some(),
+        "the openclaw contribution landed at r17 (receipt capability-contribution:openclaw:307591449de6)"
+    );
+    assert!(original.capability_gap("openclaw").is_none());
     for d in original.descriptors() {
         let slug = d.slug();
         assert!(
