@@ -96,6 +96,7 @@ pub fn body(owner: &OwnerInstrument) -> Result<Value> {
             "supply":toolset::night_capability_supply(),
             "standing":"reference-supply; product Prime delivery remains skill/faculty mediated until the native Prime transport advertises these as first-class tools"
         },
+        "operative_variant_preservation":toolset::variant_disclosure(),
         "faculty_owner_basis":owner.basis(),
         "domain_constitution":constitution,
         "faculties":faculties,
@@ -108,7 +109,7 @@ pub fn body(owner: &OwnerInstrument) -> Result<Value> {
 
 fn position_for_operation(operation: &str) -> Option<u8> {
     match operation {
-        "anuttara-read" => Some(0),
+        "anuttara-read" | "ananda-m1-2" => Some(0),
         "tda-vietoris-rips" | "kernel-apply" | "mef-lenses" | "context-frames" => Some(1),
         "bimba-neighborhood" => Some(2),
         "representation-bind" | "ql-techne-reading" => Some(3),
@@ -181,6 +182,40 @@ pub fn run(
         "prepared_context_ref":request.prepared_context_ref,
         "resolved_body":resolved_body,
         "prime":prime,
+        "disclosure_chain":{
+            "requested":{
+                "body_ref":"agent-body/epi-prime-ql",
+                "host_mode":request.host_mode,
+                "prime_condition":request.prime.condition,
+                "refinement_authorised":request.prime.allow_refinement
+            },
+            "resolved":{
+                "body_schema":EPI_PRIME_QL_BODY_SCHEMA,
+                "ql_owner_revision":resolved_body["faculty_owner_basis"]["revision"],
+                "operative_reference":"ql-twelve",
+                "degraded_instruments_disclosed":true
+            },
+            "delivered":{
+                "inherited_skill":request.prime.skill_path.is_some(),
+                "native_faculty_bridge":request.prime.faculty_config.is_some(),
+                "research_binary":request.prime.research_binary.is_some(),
+                "provider":request.prime.provider,
+                "model":request.prime.model,
+                "standing":"what the launch was constituted with; delivery paths are not disclosed"
+            },
+            "invoked":{
+                "positions_observed":[
+                    {"position":"#0","invoked":invoked[0]},
+                    {"position":"#1","invoked":invoked[1]},
+                    {"position":"#2","invoked":invoked[2]},
+                    {"position":"#3","invoked":invoked[3]},
+                    {"position":"#4","invoked":invoked[4]},
+                    {"position":"#5","invoked":invoked[5]}
+                ],
+                "receipt_count":receipts.len(),
+                "standing":"actual native receipts; delivery and resolution are not invocation"
+            }
+        },
         "faculty_invocation":{
             "observed":[
                 {"position":"#0","invoked":invoked[0]},
@@ -209,6 +244,7 @@ mod tests {
     #[test]
     fn operation_to_faculty_mapping_keeps_zero_explicit() {
         assert_eq!(position_for_operation("anuttara-read"), Some(0));
+        assert_eq!(position_for_operation("ananda-m1-2"), Some(0));
         assert_eq!(position_for_operation("tda-vietoris-rips"), Some(1));
         assert_eq!(position_for_operation("bimba-neighborhood"), Some(2));
         assert_eq!(position_for_operation("representation-bind"), Some(3));
@@ -216,5 +252,28 @@ mod tests {
         assert_eq!(position_for_operation("nara-elemental-map"), Some(4));
         assert_eq!(position_for_operation("logos-return"), Some(5));
         assert_eq!(position_for_operation("capabilities"), None);
+    }
+
+    #[test]
+    fn variant_disclosure_retains_all_four_arities_without_superiority() {
+        let variants = toolset::variant_disclosure();
+        let rows = variants["conditions"].as_array().unwrap();
+        let arities: Vec<(String, usize)> = rows
+            .iter()
+            .map(|row| {
+                (
+                    row["condition"].as_str().unwrap().to_owned(),
+                    row["arity"].as_u64().unwrap() as usize,
+                )
+            })
+            .collect();
+        assert!(arities.contains(&("ql-tagged".into(), 4)));
+        assert!(arities.contains(&("ql-toolset".into(), 6)));
+        assert!(arities.contains(&("ql-eight".into(), 8)));
+        assert!(arities.contains(&("ql-twelve".into(), 12)));
+        assert!(variants["standing"]
+            .as_str()
+            .unwrap()
+            .contains("not a superiority claim"));
     }
 }

@@ -1,12 +1,14 @@
 name: Rust refoundation
 
-# Unique obligations only: the frozen compatibility oracle (corpus integrity,
-# never recaptured) and the native Rust parity gate across both release
-# targets. Since the R11 JavaScript retirement the frozen Node-written corpora
-# are replayed by the native gate (crates/actuation-migration-gate); no job
-# here provisions a Node runtime. The served product, `actuation verify`, the
-# Skills check and the research suites already run in native-cli.yml,
-# native-skills.yml and the experiment workflows; they are not repeated here.
+# The native gate across both release targets: fmt, clippy -D warnings, the
+# full workspace test suite, examples/bins and the release-binary
+# `actuation verify` certification. The frozen Node-era compatibility oracle
+# and its replay gate (actuation-migration-gate) were retired in
+# cleanup/retire-node-oracle-2026-09-22 — the product's own contract,
+# conformance and verify suites are the standing acceptance. The served
+# product, the Skills check and the research suites already run in
+# native-cli.yml, native-skills.yml and the experiment workflows; they are
+# not repeated here.
 
 on:
   pull_request:
@@ -21,34 +23,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  migration-oracle:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Record exact source basis
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p migration-evidence
-          git rev-parse HEAD > migration-evidence/source-commit.txt
-      - name: Enforce frozen compatibility oracle (never recapture in a passing gate)
-        shell: bash
-        run: |
-          set -euo pipefail
-          cargo build --locked -p actuation-migration-gate
-          target/debug/actuation-migration-gate corpus | tee migration-evidence/corpus-integrity.json
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: actuation-migration-evidence-${{ github.sha }}
-          path: migration-evidence/
-          if-no-files-found: error
-          retention-days: 30
-
   native-rust:
     strategy:
       fail-fast: false

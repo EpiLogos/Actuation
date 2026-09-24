@@ -11,7 +11,7 @@ use ql_mef::{
 use serde_json::{json, Value};
 use std::io::{self, Read};
 
-const OWNER_REVISION: &str = "89ca4088ea47fe626c23c2b11efe2d38bdfcd1f7";
+const OWNER_REVISION: &str = "8eff719b235703c65911f2461e4a7dd5872a32ad";
 const SCHEMA: &str = "actuation.ql-owner-operation/v1";
 const OPERATIONS: &[&str] = &[
     "capabilities",

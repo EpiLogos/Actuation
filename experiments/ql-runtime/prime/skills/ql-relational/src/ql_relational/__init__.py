@@ -163,6 +163,165 @@ async def _ql(*args: str) -> dict[str, Any]:
     return response
 
 
+
+def _central_owner() -> tuple[Path, Path]:
+    binary = os.environ.get("CENTRAL_CTRL_BIN", "").strip()
+    root_value = os.environ.get("CENTRAL_ROOT", "").strip()
+    if not binary or not root_value:
+        raise RuntimeError(
+            "CENTRAL_CTRL_BIN and CENTRAL_ROOT are required for native NOW handover"
+        )
+    ctrl = Path(binary).expanduser().resolve()
+    root = Path(root_value).expanduser().resolve()
+    if not ctrl.is_file():
+        raise RuntimeError(f"CENTRAL_CTRL_BIN is unavailable: {ctrl}")
+    if not root.is_dir():
+        raise RuntimeError(f"CENTRAL_ROOT is unavailable: {root}")
+    return ctrl, root
+
+
+async def _central_action(action: str, request: dict[str, Any]) -> dict[str, Any]:
+    ctrl, root = _central_owner()
+    response = await _run(
+        str(ctrl),
+        "--root",
+        str(root),
+        "--json",
+        "action",
+        "run",
+        action,
+        "-",
+        stdin=json.dumps(request),
+    )
+    if response.get("ok") is not True:
+        raise RuntimeError(
+            f"Central action {action} refused: "
+            + json.dumps(response, sort_keys=True, default=str)
+        )
+    await _record("central-action:" + action, request, response)
+    return response
+
+
+def _bounded_refs(values: list[str] | None, label: str) -> list[str]:
+    rows = list(values or [])
+    if len(rows) > 64 or any(
+        not isinstance(value, str)
+        or not value.strip()
+        or len(value) > 4096
+        or any(ord(ch) < 32 for ch in value)
+        for value in rows
+    ):
+        raise ValueError(f"{label} must contain at most 64 bounded non-empty refs")
+    return rows
+
+
+async def central_now_handover(
+    subject: str,
+    result: str,
+    *,
+    actor: str,
+    project: str | None = None,
+    status: str = "active",
+    handoff_id: str | None = None,
+    session_ref: str | None = None,
+    source_refs: list[str] | None = None,
+    evidence_refs: list[str] | None = None,
+    preserve_refs: list[str] | None = None,
+    work_refs: list[dict[str, str | None]] | None = None,
+) -> dict[str, Any]:
+    """Write one pithy Central-owned NOW handoff for worker replacement.
+
+    This is a native ProjectCentral return, not an Actuation transcript.  The
+    caller supplies the useful returned result plus exact source/evidence and
+    lane refs; the replacement worker can reopen it independently.
+    """
+    if not actor.strip() or not subject.strip() or not result.strip():
+        raise ValueError("actor, subject and result must be non-empty")
+    project = project or os.environ.get("CENTRAL_PROJECT", "").strip() or None
+    rows = list(work_refs or [])
+    if len(rows) > 64:
+        raise ValueError("work_refs must contain at most 64 lane claims")
+    normalized_work: list[dict[str, str | None]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            raise ValueError("work_refs entries must be objects")
+        repo = row.get("repo")
+        branch = row.get("branch")
+        worktree = row.get("worktree_path")
+        if (
+            not isinstance(repo, str)
+            or not repo.strip()
+            or not isinstance(branch, str)
+            or not branch.strip()
+            or (worktree is not None and (not isinstance(worktree, str) or not worktree.strip()))
+        ):
+            raise ValueError("work_refs require repo and branch, with optional worktree_path")
+        normalized_work.append(
+            {"repo": repo, "branch": branch, "worktree_path": worktree}
+        )
+    request: dict[str, Any] = {
+        "actor": actor,
+        "kind": "handoff",
+        "subject": subject,
+        "result": result,
+        "status": status,
+        "source_refs": _bounded_refs(source_refs, "source_refs"),
+        "evidence_refs": _bounded_refs(evidence_refs, "evidence_refs"),
+        "preserve_refs": _bounded_refs(preserve_refs, "preserve_refs"),
+        "work_refs": normalized_work,
+    }
+    if project is not None:
+        request["project"] = project
+    if handoff_id is not None:
+        request["id"] = handoff_id
+    effective_session = session_ref or os.environ.get("ACTUATION_RESEARCH_TRACE_REF")
+    if effective_session:
+        request["session_ref"] = effective_session
+    return await _central_action("projectcentral.now.return", request)
+
+
+async def central_now_inspect(project: str | None = None) -> dict[str, Any]:
+    """Read the native ProjectCentral NOW horizon without mutating it."""
+    project = project or os.environ.get("CENTRAL_PROJECT", "").strip() or None
+    if project is None:
+        raise RuntimeError("CENTRAL_PROJECT or explicit project is required for NOW inspection")
+    return await _central_action("projectcentral.now.inspect", {"project": project})
+
+
+async def central_now_handoff_read(
+    handoff_id: str, project: str | None = None
+) -> dict[str, Any]:
+    """Read one exact Central handoff for a replacement worker.
+
+    The read is reconstructed from Central's own NOW inspection; no parent
+    transcript or manually reconstructed investigation is transferred.
+    """
+    if not handoff_id.strip():
+        raise ValueError("handoff_id must be non-empty")
+    response = await central_now_inspect(project)
+    data = response.get("data")
+    if not isinstance(data, dict):
+        raise RuntimeError("Central NOW inspection returned no data object")
+    matches: list[dict[str, Any]] = []
+    for key in ("active_items", "open_questions", "inactive_items"):
+        rows = data.get(key)
+        if isinstance(rows, list):
+            matches.extend(
+                row for row in rows
+                if isinstance(row, dict) and row.get("id") == handoff_id
+            )
+    if len(matches) != 1:
+        raise RuntimeError(
+            f"Central NOW handoff {handoff_id!r} resolved to {len(matches)} records"
+        )
+    result = {
+        "schema": "actuation.prime-central-now-handoff-reading/v1",
+        "handoff": matches[0],
+        "standing": "Central-owned NOW record; source/evidence/work refs are continuation pointers, not transferred transcript",
+    }
+    await _record("central-now-handoff-read", {"id": handoff_id}, result)
+    return result
+
 async def capabilities() -> dict[str, Any]:
     """Return accepted QL/MEF CLI, kernel, MEF, Context Frame, VĀK and service capability disclosure."""
     result = await _ql("capabilities")
@@ -399,6 +558,18 @@ async def anuttara_read(reference: str, max_relations: int = 128) -> dict[str, A
     return result
 
 
+async def ananda_m1_2(engine_request: dict[str, Any]) -> dict[str, Any]:
+    """Read Ananda's native numerical-relational reading at M1-2 through the M1 engine.
+
+    The request is the engine's own ``ql.m1.engine/v1`` request; the selected
+    coordinate must resolve to an Ananda operation. The reading is numerical
+    and relational; it is never a semantic verifier.
+    """
+    result = await _epi_invoke(0, "ananda.m1-2", engine_request)
+    await _receipt({"operation": "ananda-m1-2", "request": engine_request}, result)
+    return result
+
+
 async def tda_vietoris_rips(request: dict[str, Any]) -> dict[str, Any]:
     """Run deterministic source-qualified Vietoris-Rips persistent H0/H1 over an explicit metric."""
     result = await _epi_invoke(1, "tda.vietoris-rips", request)
@@ -463,6 +634,70 @@ async def logos_return(request: dict[str, Any]) -> dict[str, Any]:
     result = await _epi_invoke(5, "logos.return", request)
     await _receipt({"operation": "logos-return", "request": request}, result)
     return result
+
+
+
+class _AgentMessage:
+    """Child-to-parent message seam over the encounter's bounded outbox.
+
+    The encounter adapter hands every Prime session a session-scoped
+    directory (`ACTUATION_CHILD_MESSAGE_DIR`); sending is one bounded JSON
+    record there, correlated to this child's locus digest exactly like the
+    faculty receipts. Text only: the channel carries words, never effects.
+    When the adapter did not supply a directory the send refuses with its
+    reason - never silence.
+    """
+
+    MAX_TEXT_CHARS = 4096  # the acceptance runner's own bounded-ref limit
+
+    async def send(self, text: str, receiver_role: str = "parent") -> dict[str, Any]:
+        if not isinstance(text, str) or not text.strip():
+            raise ValueError("agent_message.send requires non-empty text")
+        if len(text) > self.MAX_TEXT_CHARS:
+            raise ValueError(
+                f"agent_message text exceeds {self.MAX_TEXT_CHARS} characters"
+            )
+        directory = os.environ.get("ACTUATION_CHILD_MESSAGE_DIR", "").strip()
+        if not directory:
+            raise RuntimeError(
+                "agent_message is unavailable: this session supplied no "
+                "ACTUATION_CHILD_MESSAGE_DIR, so there is no parent channel"
+            )
+        path = Path(directory).expanduser().resolve()
+        if not path.is_dir():
+            raise RuntimeError(
+                f"agent_message is unavailable: message directory {path} is absent"
+            )
+        locus = _runtime_locus_ref() or "unattributed"
+        digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+        existing = sorted(path.glob("*.json"))
+        sequence = len(existing) + 1
+        record = {
+            "schema": "actuation.child-message/v1",
+            "from": locus,
+            "receiver_role": receiver_role,
+            "text": text,
+            "text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+            "sequence": sequence,
+        }
+        target = path / f"{sequence:04d}-{digest}.json"
+        handle = tempfile.NamedTemporaryFile(
+            "w", suffix=".json", dir=str(path), encoding="utf-8", delete=False
+        )
+        json.dump(record, handle, sort_keys=True)
+        handle.close()
+        Path(handle.name).replace(target)
+        await _record("agent-message:send", {"receiver_role": receiver_role}, record)
+        return {
+            "schema": "actuation.child-message-result/v1",
+            "sent": True,
+            "file": target.name,
+            "sequence": sequence,
+            "bytes": len(text.encode("utf-8")),
+        }
+
+
+agent_message = _AgentMessage()
 
 
 
