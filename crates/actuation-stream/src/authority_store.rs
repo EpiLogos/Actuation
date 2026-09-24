@@ -5,12 +5,19 @@
 //! allowed worlds. Events are append-only per authority source and
 //! revocation is an event, never a rewrite. The store folds events into the
 //! current state and nothing more: it does not admit, actualise or dispatch.
+//!
+//! Persistence follows the same discipline as the stream and occupancy stores:
+//! every read-check-append runs under a lock on the store directory (exclusive
+//! to mutate, shared to read), every open uses `O_NOFOLLOW`, and every append
+//! is `sync_data`'d — with the directory synced when a source is first created.
+//! Two racing issuers therefore serialise, so issuance stays a compare-and-swap
+//! and a crash cannot leave a torn line. The on-disk format is unchanged.
 
 use actuation_core::{Error, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::fs::OpenOptions;
-use std::io::Write;
+use std::fs::{self, File, OpenOptions};
+use std::io::{Read, Write};
 use std::path::PathBuf;
 
 fn io<T>(result: std::io::Result<T>) -> Result<T> {
@@ -86,10 +93,54 @@ impl AuthorityStore {
         ))
     }
 
-    fn read_events(&self, authority_source_ref: &str) -> Result<Vec<AuthorityEvent>> {
+    /// The store-directory inode is the lock locus, exactly as the stream and
+    /// occupancy stores do it: no lock file enters the public store directory,
+    /// and an atomic append cannot invalidate a held lock. An exclusive lock
+    /// serialises read-check-append so racing issuers see a consistent state;
+    /// a shared lock lets concurrent readers fold in parallel. `None` means the
+    /// store does not exist yet and a reader has nothing to lock.
+    fn lock(&self, exclusive: bool) -> Result<Option<File>> {
+        if exclusive {
+            io(fs::create_dir_all(&self.root))?;
+        } else if !self.root.exists() {
+            return Ok(None);
+        }
+        let directory = io(File::open(&self.root))?;
+        #[cfg(unix)]
+        {
+            if exclusive {
+                io(directory.lock())?;
+            } else {
+                io(directory.lock_shared())?;
+            }
+        }
+        #[cfg(not(unix))]
+        {
+            let _ = exclusive;
+            return Err(Error::new(
+                "authority store locking is not implemented on this target",
+            ));
+        }
+        Ok(Some(directory))
+    }
+
+    /// Refuse to open through a symlink, so a source file can never be
+    /// redirected out of the store directory.
+    fn file_options() -> OpenOptions {
+        let mut options = OpenOptions::new();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            options.custom_flags(libc::O_NOFOLLOW);
+        }
+        options
+    }
+
+    /// Read a source's raw events. The caller holds the appropriate lock.
+    fn read_events_unlocked(&self, authority_source_ref: &str) -> Result<Vec<AuthorityEvent>> {
         let path = self.path(authority_source_ref);
-        let text = match std::fs::read_to_string(&path) {
-            Ok(text) => text,
+        let mut file = match Self::file_options().read(true).open(&path) {
+            Ok(file) => file,
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
             Err(e) => {
                 return Err(Error::new(format!(
@@ -98,6 +149,8 @@ impl AuthorityStore {
                 )))
             }
         };
+        let mut text = String::new();
+        io(file.read_to_string(&mut text))?;
         let mut events = Vec::new();
         for (index, line) in text.lines().enumerate() {
             if line.trim().is_empty() {
@@ -115,10 +168,21 @@ impl AuthorityStore {
         Ok(events)
     }
 
-    fn append_event(&self, authority_source_ref: &str, event: &AuthorityEvent) -> Result<()> {
-        io(std::fs::create_dir_all(&self.root))?;
+    /// Append one event durably. The caller holds the exclusive lock and
+    /// passes its directory handle so a newly created source can make its own
+    /// directory entry durable too.
+    fn append_event_unlocked(
+        &self,
+        authority_source_ref: &str,
+        event: &AuthorityEvent,
+        directory: &File,
+    ) -> Result<()> {
         let path = self.path(authority_source_ref);
-        let mut file = OpenOptions::new()
+        // Under the exclusive lock this is race-free: a source that does not
+        // exist yet is being created by this append, so its directory entry
+        // must be synced as well, not only its bytes.
+        let is_new = !path.exists();
+        let mut file = Self::file_options()
             .create(true)
             .append(true)
             .open(&path)
@@ -132,12 +196,15 @@ impl AuthorityStore {
             .map_err(|e| Error::new(format!("could not encode authority event: {e}")))?;
         line.push('\n');
         file.write_all(line.as_bytes())
-            .and_then(|_| file.flush())
+            .and_then(|_| file.sync_data())
             .map_err(|e| {
                 Error::new(format!(
                     "could not write authority event for {authority_source_ref}: {e}"
                 ))
             })?;
+        if is_new {
+            io(directory.sync_all())?;
+        }
         Ok(())
     }
 
@@ -149,7 +216,10 @@ impl AuthorityStore {
         at_unix_seconds: u64,
         record: Value,
     ) -> Result<AuthorityState> {
-        if let Some(existing) = self.read(authority_source_ref)? {
+        let directory = self
+            .lock(true)?
+            .expect("an exclusive lock creates the store");
+        if let Some(existing) = self.read_unlocked(authority_source_ref)? {
             return Err(Error::new(format!(
                 "authority source {} already exists (issued at {}, revoked: {}); issue a new source ref instead",
                 authority_source_ref,
@@ -162,8 +232,8 @@ impl AuthorityStore {
             at_unix_seconds,
             record,
         };
-        self.append_event(authority_source_ref, &event)?;
-        self.read(authority_source_ref)?
+        self.append_event_unlocked(authority_source_ref, &event, &directory)?;
+        self.read_unlocked(authority_source_ref)?
             .ok_or_else(|| Error::new("authority record disappeared after issue"))
     }
 
@@ -175,7 +245,10 @@ impl AuthorityStore {
         at_unix_seconds: u64,
         reason: String,
     ) -> Result<AuthorityState> {
-        let state = self.read(authority_source_ref)?.ok_or_else(|| {
+        let directory = self
+            .lock(true)?
+            .expect("an exclusive lock creates the store");
+        let state = self.read_unlocked(authority_source_ref)?.ok_or_else(|| {
             Error::new(format!(
                 "authority source {} is unknown; nothing to revoke",
                 authority_source_ref
@@ -192,18 +265,24 @@ impl AuthorityStore {
             at_unix_seconds,
             reason,
         };
-        self.append_event(authority_source_ref, &event)?;
-        self.read(authority_source_ref)?
+        self.append_event_unlocked(authority_source_ref, &event, &directory)?;
+        self.read_unlocked(authority_source_ref)?
             .ok_or_else(|| Error::new("authority record disappeared after revoke"))
     }
 
     /// Fold the source's events into its current state, or `None` when the
     /// source has no events at all.
     pub fn read(&self, authority_source_ref: &str) -> Result<Option<AuthorityState>> {
+        let _lock = self.lock(false)?;
+        self.read_unlocked(authority_source_ref)
+    }
+
+    /// The fold itself, under a lock the caller already holds.
+    fn read_unlocked(&self, authority_source_ref: &str) -> Result<Option<AuthorityState>> {
         let mut record = None;
         let mut issued_at = None;
         let mut revoked = None;
-        for event in self.read_events(authority_source_ref)? {
+        for event in self.read_events_unlocked(authority_source_ref)? {
             match event {
                 AuthorityEvent::Issue {
                     at_unix_seconds,
@@ -323,5 +402,156 @@ mod tests {
     fn an_unknown_source_reads_as_absent_never_as_an_error() {
         let (_dir, store) = temp_store("unknown");
         assert!(store.read("authority-source:none").unwrap().is_none());
+    }
+
+    /// A store written by the pre-lock implementation is one JSON object per
+    /// line: issue, then optionally revoke, with a trailing newline. The
+    /// hardening must not change that on-disk format, so bytes in that exact
+    /// shape must still fold correctly.
+    #[test]
+    fn a_store_written_in_the_existing_format_still_loads() {
+        let (_dir, store) = temp_store("legacy");
+        let path = store.path("authority-source:main");
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        let bytes = concat!(
+            r#"{"op":"issue","schema":"actuation.authority-event/v1","at_unix_seconds":1726300000,"record":{"holder":"human:owner"}}"#,
+            "\n",
+            r#"{"op":"revoke","schema":"actuation.authority-event/v1","at_unix_seconds":1726300005,"reason":"owner withdrawal"}"#,
+            "\n",
+        );
+        std::fs::write(&path, bytes).unwrap();
+        let state = store.read("authority-source:main").unwrap().unwrap();
+        assert_eq!(state.record, serde_json::json!({"holder": "human:owner"}));
+        assert_eq!(state.issued_at_unix_seconds, 1726300000);
+        let revocation = state.revoked.expect("the revoke line folds in");
+        assert_eq!(revocation.at_unix_seconds, 1726300005);
+        assert_eq!(revocation.reason, "owner withdrawal");
+    }
+
+    /// A record this crate writes today is re-read after the hardening: format
+    /// stability holds across a write-then-read on the current code path.
+    #[test]
+    fn a_freshly_issued_record_reads_back_unchanged() {
+        let (_dir, store) = temp_store("round-trip");
+        let record = serde_json::json!({"holder": "human:owner", "scope": ["world:one"]});
+        store
+            .issue("authority-source:main", 1726300000, record.clone())
+            .unwrap();
+        // Re-read through a fresh store handle over the same directory: the
+        // durable bytes, not an in-memory cache, are what answers.
+        let reopened = AuthorityStore::new(store.root.clone()).unwrap();
+        let state = reopened.read("authority-source:main").unwrap().unwrap();
+        assert_eq!(state.record, record);
+        assert_eq!(state.issued_at_unix_seconds, 1726300000);
+        assert!(state.revoked.is_none());
+    }
+
+    fn shared_store() -> (tempfile::TempDir, std::sync::Arc<AuthorityStore>) {
+        let dir = tempfile::tempdir().unwrap();
+        let store = std::sync::Arc::new(
+            AuthorityStore::new(dir.path().join("authority"))
+                .expect("store root is a real directory"),
+        );
+        (dir, store)
+    }
+
+    fn intact_lines(store: &AuthorityStore, source: &str) -> Vec<AuthorityEvent> {
+        let raw = std::fs::read_to_string(store.path(source)).unwrap();
+        raw.lines()
+            .filter(|line| !line.trim().is_empty())
+            .map(|line| {
+                serde_json::from_str::<AuthorityEvent>(line)
+                    .unwrap_or_else(|e| panic!("torn or interleaved line {line:?}: {e}"))
+            })
+            .collect()
+    }
+
+    /// N threads each issue a distinct source at once. The directory lock
+    /// serialises the appends, so every source ends up with exactly one intact
+    /// event line and no torn or interleaved writes.
+    #[test]
+    fn concurrent_issuance_of_distinct_sources_writes_every_record_intact() {
+        let (_dir, store) = shared_store();
+        let count = 24u64;
+        let mut handles = Vec::new();
+        for i in 0..count {
+            let store = std::sync::Arc::clone(&store);
+            handles.push(std::thread::spawn(move || {
+                let source = format!("authority-source:racer-{i}");
+                store
+                    .issue(&source, 1726300000 + i, serde_json::json!({ "holder": i }))
+                    .expect("each distinct source issues once");
+            }));
+        }
+        for handle in handles {
+            handle.join().unwrap();
+        }
+        for i in 0..count {
+            let source = format!("authority-source:racer-{i}");
+            let state = store.read(&source).unwrap().expect("source exists");
+            assert_eq!(state.record, serde_json::json!({ "holder": i }));
+            assert!(state.revoked.is_none());
+            let lines = intact_lines(&store, &source);
+            assert_eq!(lines.len(), 1, "exactly one issue line per source");
+        }
+    }
+
+    /// N threads race to issue the *same* source. The lock makes read-check-
+    /// append a compare-and-swap: exactly one issuance wins, the rest are
+    /// refused, and a single intact record is on disk.
+    #[test]
+    fn concurrent_issuance_of_one_source_admits_exactly_one() {
+        let (_dir, store) = shared_store();
+        let count = 24u64;
+        let mut handles = Vec::new();
+        for i in 0..count {
+            let store = std::sync::Arc::clone(&store);
+            handles.push(std::thread::spawn(move || {
+                store
+                    .issue(
+                        "authority-source:contended",
+                        1726300000 + i,
+                        serde_json::json!({ "racer": i }),
+                    )
+                    .is_ok()
+            }));
+        }
+        let wins = handles
+            .into_iter()
+            .map(|handle| handle.join().unwrap())
+            .filter(|issued| *issued)
+            .count();
+        assert_eq!(
+            wins, 1,
+            "the directory lock makes read-check-append a compare-and-swap"
+        );
+        let state = store.read("authority-source:contended").unwrap().unwrap();
+        assert!(state.revoked.is_none());
+        let lines = intact_lines(&store, "authority-source:contended");
+        assert_eq!(lines.len(), 1, "only the winning issue is on disk");
+    }
+
+    /// O_NOFOLLOW must refuse to open a source file that is a symlink, so a
+    /// planted link cannot redirect an issuance out of the store directory.
+    #[cfg(unix)]
+    #[test]
+    fn a_symlinked_source_file_is_refused_not_followed() {
+        let (dir, store) = temp_store("nofollow");
+        std::fs::create_dir_all(&store.root).unwrap();
+        let target = dir.path().join("outside-the-store.jsonl");
+        std::fs::write(&target, "").unwrap();
+        let link = store.path("authority-source:link");
+        std::os::unix::fs::symlink(&target, &link).unwrap();
+        let result = store.issue(
+            "authority-source:link",
+            1726300000,
+            serde_json::json!({"a": 1}),
+        );
+        assert!(
+            result.is_err(),
+            "O_NOFOLLOW must refuse a symlinked source file rather than write through it"
+        );
+        // The link's target must not have been written through.
+        assert_eq!(std::fs::read_to_string(&target).unwrap(), "");
     }
 }
