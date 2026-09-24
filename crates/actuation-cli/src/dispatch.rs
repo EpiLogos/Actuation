@@ -4,7 +4,7 @@
 //! the capabilities listing and dispatch are all derived from the table, so a
 //! command cannot exist in one representation and be missing from another.
 use crate::surface::{cli_surface, ACTUATION_CLI_VERSION};
-use crate::{authority, commands};
+use crate::{authority, commands, occupancy};
 use actuation_core::Error;
 use serde_json::{json, Value};
 use std::io::Read;
@@ -79,6 +79,12 @@ static COMMANDS: &[CommandDescriptor] = &[
     command!("authority.issue", &["authority", "issue"], "actuation authority issue [--store <dir>] [--now <ts>] [file|-] [--json]", true, authority::authority_issue),
     command!("authority.resolve", &["authority", "resolve"], "actuation authority resolve [--store <dir>] [--now <ts>] [file|-] [--json]", true, authority::authority_resolve),
     command!("authority.revoke", &["authority", "revoke"], "actuation authority revoke <authority_source_ref> [--reason <text>] [--store <dir>] [--now <ts>] [--json]", false, authority::authority_revoke),
+    command!("occupancy.claim", &["occupancy", "claim"], "actuation occupancy claim --position <ref> --agent <ref> --agency <ref> [--agent-session <ref>] [--session-space <ref>] [--harness-composition <ref>] [--model <ref>] [--workcell <ref>] [--gateway-address <addr>] --reason <text> [--expect-vacant | --expect-generation <generation>] [--kind initial|handover|fresh|adopt] [--store <dir>] [--json]", false, occupancy::claim),
+    command!("occupancy.release", &["occupancy", "release"], "actuation occupancy release --position <ref> --generation <generation> --reason <text> [--store <dir>] [--json]", false, occupancy::release),
+    command!("occupancy.verify", &["occupancy", "verify"], "actuation occupancy verify --position <ref> --generation <generation> [--store <dir>] [--json]", false, occupancy::verify),
+    command!("occupancy.presence", &["occupancy", "presence"], "actuation occupancy presence --position <ref> --generation <generation> --presence active|idle|away|offline [--attention <text>] [--store <dir>] [--json]", false, occupancy::presence),
+    command!("occupancy.read", &["occupancy", "read"], "actuation occupancy read --position <ref> [--store <dir>] [--json]", false, occupancy::read),
+    command!("occupancy.list", &["occupancy", "list"], "actuation occupancy list [--store <dir>] [--json]", false, occupancy::list),
     command!("stream.read", &["stream"], "actuation stream [file|-] [--json]", true, commands::stream_read),
     command!("stream.open", &["stream", "open"], "actuation stream open [--store <dir>] [file|-] [--json]", true, commands::stream_open),
     command!("stream.record", &["stream", "record"], "actuation stream record [--store <dir>] [file|-] [--json]", true, commands::stream_record),
@@ -93,8 +99,10 @@ static COMMANDS: &[CommandDescriptor] = &[
     command!("harness.detect", &["harness", "detect"], "actuation harness detect [--only <slugs>] [--versions] [--json]", false, commands::harness_detect),
     command!("harness.self", &["harness", "self"], "actuation harness self [--json]", false, commands::harness_self),
     command!("harness.capability", &["harness", "capability"], "actuation harness capability [<slug>] [--json]", false, commands::harness_capability),
+    command!("harness.capability.validate", &["harness", "capability", "validate"], "actuation harness capability validate <file|-> [--json]", true, commands::harness_capability_validate),
     command!("system.read", &["system"], "actuation system [--json]", false, commands::system_read),
     command!("config.contribution", &["config-contribution"], "actuation config-contribution [--json]", false, commands::config_contribution),
+    command!("config.contribution.capability", &["config-contribution", "capability"], "actuation config-contribution capability <file|-> [--json]", true, commands::config_contribution_capability),
     command!("config.validate", &["config", "validate"], "actuation config validate [--json] [--setting <setting_ref>] [--scope <compact>] [--value <json> | --value-file <path|->]", false, commands::config_validate),
     command!("config.plan", &["config", "plan"], "actuation config plan [--json] [--setting <setting_ref>] [--scope <compact>] [--value <json> | --value-file <path|->]", false, commands::config_plan),
     command!("config.apply", &["config", "apply"], "actuation config apply [--json] [--plan-file <path|->] [--changeset <id>]", false, commands::config_apply),
@@ -136,6 +144,11 @@ pub fn execute(argv: &[String], stdin: &str) -> Result<Output, Error> {
         if command.as_deref() == Some("harness") {
             Error::new(format!(
                 "unknown harness subcommand {}; expected catalog, detect, self or capability",
+                args.get(1).cloned().unwrap_or_else(|| "(none)".into())
+            ))
+        } else if command.as_deref() == Some("occupancy") {
+            Error::new(format!(
+                "unknown occupancy subcommand {}; expected claim, release, verify, presence, read or list",
                 args.get(1).cloned().unwrap_or_else(|| "(none)".into())
             ))
         } else if command.as_deref() == Some("config") {
@@ -373,8 +386,14 @@ mod tests {
                 .map(str::to_owned)
                 .collect::<Vec<_>>()
                 .join(" ");
-            let words: Vec<&str> = cleaned.split(' ').skip(1).collect();
-            if words.first().is_some_and(|w| w.starts_with("--")) {
+            // The route is the leading words; required flags that follow
+            // (`--position <ref>`) are arguments, not route words.
+            let words: Vec<&str> = cleaned
+                .split(' ')
+                .skip(1)
+                .take_while(|w| !w.starts_with("--"))
+                .collect();
+            if words.is_empty() {
                 continue;
             }
             routes.push(words.join(" "));
@@ -459,6 +478,15 @@ mod tests {
             .to_string();
         assert!(
             error.contains("expected catalog, detect, self or capability"),
+            "{error}"
+        );
+    }
+
+    #[test]
+    fn bare_occupancy_names_its_subcommands() {
+        let error = execute(&argv(&["occupancy"]), "").unwrap_err().to_string();
+        assert!(
+            error.contains("expected claim, release, verify, presence, read or list"),
             "{error}"
         );
     }
