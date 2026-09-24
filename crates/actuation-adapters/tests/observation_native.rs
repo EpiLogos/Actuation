@@ -11,10 +11,10 @@ use std::{
 #[test]
 fn declarative_catalog_is_extensible_without_generic_executable_changes() {
     let original = NativeCatalog::bundled().unwrap();
-    assert_eq!(original.revision(), 17);
-    assert_eq!(original.descriptors().len(), 18);
+    assert_eq!(original.revision(), 18);
+    assert_eq!(original.descriptors().len(), 23);
     assert_eq!(original.capabilities().len(), 6);
-    assert_eq!(original.capability_gaps().len(), 12);
+    assert_eq!(original.capability_gaps().len(), 17);
     for slug in [
         "claude-code",
         "codex",
@@ -27,8 +27,30 @@ fn declarative_catalog_is_extensible_without_generic_executable_changes() {
         "deepseek-harness",
         "goose",
         "qwen-code",
+        // Harness-connection roster expansion (catalog r18, 2026-09-23): the
+        // grok-bot row corrected to Grok Build, five expansion slugs declared,
+        // each closing with a declared capability gap. This is the Actuation
+        // half of aikit's every_embedded_profile_slug_is_a_declared_catalog_slug
+        // join law.
+        "grok",
+        "copilot",
+        "cline",
+        "kiro-cli",
+        "qoder",
+        "droid",
     ] {
         assert!(original.descriptor(slug).is_some());
+    }
+    assert!(
+        original.descriptor("grok-bot").is_none(),
+        "the grok-bot row was a misidentified product (bot management, not coding); \
+         the catalog declares Grok Build as grok instead"
+    );
+    for slug in ["grok", "copilot", "cline", "kiro-cli", "qoder", "droid"] {
+        assert!(
+            original.capability(slug).is_none() && original.capability_gap(slug).is_some(),
+            "{slug} lands docs-sourced with a declared capability gap, not a guessed descriptor"
+        );
     }
     assert!(
         original.capability("opencode").is_none(),
