@@ -20,12 +20,14 @@ mod agency;
 mod composition;
 mod position;
 mod refs;
+mod system_one;
 mod wire;
 
 pub use agency::*;
 pub use composition::*;
 pub use position::*;
 pub use refs::*;
+pub use system_one::*;
 pub use wire::{Error, Extensions, Invariant, NonEmpty, Record, Result, Slot};
 
 pub const AGENCY_CONTRACT_VERSION: &str = "actuation.agency/v1";
