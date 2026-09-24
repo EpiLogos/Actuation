@@ -8,7 +8,7 @@
    "kind": "catalog",
    "input": {},
    "expected": {
-    "revision": 17,
+    "revision": 18,
     "harnesses": [
      {
       "schema": "actuation.harness-detection/v1",
@@ -308,38 +308,190 @@
      {
       "schema": "actuation.harness-detection/v1",
       "document": "descriptor",
-      "slug": "grok-bot",
+      "slug": "grok",
       "native_kind": "harness",
-      "edition": "cli+service",
+      "edition": "cli",
       "native_owner": "xAI",
-      "summary": "grok-bot harness; runs as a background daemon, version probe may prompt the keychain",
-      "aliases": [
-       "gbot"
-      ],
+      "summary": "Grok Build agent CLI; xAI's coding harness (the grok-bot CLI is bot management, not coding \u2014 roster correction 2026-09-22)",
       "probe": {
        "executable": {
         "names": [
-         "grok-bot",
-         "gbot"
+         "grok"
         ],
         "version_args": [
          "--version"
         ]
        },
        "config-dir": {
-        "path": "~/.grokbot"
-       },
-       "service": {
-        "kind": "daemon",
-        "name": "grok-bot"
+        "path": "~/.grok"
+       }
+      },
+      "facets": {
+       "config": {
+        "path": "~/.grok/config.toml"
        }
       },
       "provenance": {
-       "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+       "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
        "source_refs": [
-        "survey:local-machine-2026-09-05"
+        "doc:docs.x.ai/build/overview (Grok Build: binary grok, config ~/.grok/config.toml, headless grok -p --output-format streaming-json, ACP docs-declared)",
+        "aikit:clients/grok.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:grok-bot 0.2.2 on this machine 2026-09-22 (bot/group management only \u2014 the product the retired grok-bot row misdescribed)"
        ],
-       "catalog_revision": 1
+       "catalog_revision": 18
+      }
+     },
+     {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "copilot",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "GitHub",
+      "summary": "GitHub Copilot CLI; first-party ACP face `copilot --acp` (public preview)",
+      "probe": {
+       "executable": {
+        "names": [
+         "copilot"
+        ],
+        "version_args": [
+         "--version"
+        ]
+       }
+      },
+      "provenance": {
+       "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+       "source_refs": [
+        "doc:docs.github.com/en/copilot/reference/acp-server (first-party ACP face copilot --acp, public preview 2026-01-28)",
+        "aikit:clients/copilot.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+       ],
+       "catalog_revision": 18
+      }
+     },
+     {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "cline",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Cline",
+      "summary": "Cline CLI; first-party ACP face `cline --acp`, no batch headless JSON documented",
+      "probe": {
+       "executable": {
+        "names": [
+         "cline"
+        ],
+        "version_args": [
+         "--version"
+        ]
+       }
+      },
+      "provenance": {
+       "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+       "source_refs": [
+        "doc:docs.cline.bot (first-party ACP face cline --acp; CLINE_API_KEY auth)",
+        "aikit:clients/cline.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+       ],
+       "catalog_revision": 18
+      }
+     },
+     {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "kiro-cli",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "AWS",
+      "summary": "Kiro CLI (renamed Amazon Q CLI); first-party ACP face `kiro-cli acp [--agent]`",
+      "probe": {
+       "executable": {
+        "names": [
+         "kiro-cli"
+        ],
+        "version_args": [
+         "--version"
+        ]
+       }
+      },
+      "provenance": {
+       "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+       "source_refs": [
+        "doc:kiro.dev/docs/cli/acp (first-party ACP face kiro-cli acp [--agent], JSON-RPC 2.0 over stdio)",
+        "aikit:clients/kiro_cli.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (the q/kiro binary-identity split is unresolved, so only kiro-cli is probed; not installed on this machine)"
+       ],
+       "catalog_revision": 18
+      }
+     },
+     {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "qoder",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Qoder",
+      "summary": "Qoder CLI; first-party ACP face `qoder --acp`, headless undocumented",
+      "probe": {
+       "executable": {
+        "names": [
+         "qoder"
+        ],
+        "version_args": [
+         "--version"
+        ]
+       }
+      },
+      "provenance": {
+       "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+       "source_refs": [
+        "doc:docs.qoder.com/cli/acp (first-party ACP face qoder --acp; QODER_PERSONAL_ACCESS_TOKEN auth)",
+        "aikit:clients/qoder.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+       ],
+       "catalog_revision": 18
+      }
+     },
+     {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "droid",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Factory",
+      "summary": "Factory Droid CLI; headless runner `droid exec --output-format stream-jsonrpc`, MCP config at ~/.factory/mcp.json",
+      "probe": {
+       "executable": {
+        "names": [
+         "droid"
+        ],
+        "version_args": [
+         "--version"
+        ]
+       },
+       "config-dir": {
+        "path": "~/.factory"
+       }
+      },
+      "facets": {
+       "mcp-config": {
+        "path": "~/.factory/mcp.json",
+        "inventory": {
+         "kind": "mcp-servers",
+         "source": "file",
+         "collection": "mcpServers"
+        }
+       }
+      },
+      "provenance": {
+       "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+       "source_refs": [
+        "doc:docs.factory.com (headless droid exec --output-format stream-jsonrpc; MCP client config ~/.factory/mcp.json and .factory/mcp.json, key mcpServers, `droid mcp add`)",
+        "aikit:clients/droid.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+       ],
+       "catalog_revision": 18
       }
      },
      {
@@ -3644,7 +3796,7 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 17,
+      "catalog_revision": 18,
       "detector": {
        "implementation": "actuation surface-probes",
        "version": "0.2.0"
@@ -3723,7 +3875,7 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 17,
+      "catalog_revision": 18,
       "detector": {
        "implementation": "actuation surface-probes",
        "version": "0.2.0"
@@ -3822,7 +3974,7 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 17,
+      "catalog_revision": 18,
       "detector": {
        "implementation": "actuation surface-probes",
        "version": "0.2.0"
@@ -3939,7 +4091,7 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 17,
+      "catalog_revision": 18,
       "detector": {
        "implementation": "actuation surface-probes",
        "version": "0.2.0"
@@ -4044,7 +4196,7 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 17,
+      "catalog_revision": 18,
       "detector": {
        "implementation": "actuation surface-probes",
        "version": "0.2.0"
@@ -4109,7 +4261,7 @@
       "document": "detection",
       "detection_ref": "detection:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 17,
+      "catalog_revision": 18,
       "detector": {
        "implementation": "actuation surface-probes",
        "version": "0.2.0"
@@ -4254,28 +4406,98 @@
         ]
        },
        {
-        "slug": "grok-bot",
-        "harness_ref": "harness/grok-bot",
+        "slug": "grok",
+        "harness_ref": "harness/grok",
         "native_kind": "harness",
         "state": "not-installed",
         "probes": [
          {
           "kind": "executable",
           "result": "pass",
-          "spec": "grok-bot gbot",
+          "spec": "grok",
           "detail": "not found on PATH"
          },
          {
           "kind": "config-dir",
           "result": "pass",
-          "spec": "~/.grokbot",
+          "spec": "~/.grok",
           "detail": "not found"
+         }
+        ]
+       },
+       {
+        "slug": "copilot",
+        "harness_ref": "harness/copilot",
+        "native_kind": "harness",
+        "state": "not-installed",
+        "probes": [
+         {
+          "kind": "executable",
+          "result": "pass",
+          "spec": "copilot",
+          "detail": "not found on PATH"
+         }
+        ]
+       },
+       {
+        "slug": "cline",
+        "harness_ref": "harness/cline",
+        "native_kind": "harness",
+        "state": "not-installed",
+        "probes": [
+         {
+          "kind": "executable",
+          "result": "pass",
+          "spec": "cline",
+          "detail": "not found on PATH"
+         }
+        ]
+       },
+       {
+        "slug": "kiro-cli",
+        "harness_ref": "harness/kiro-cli",
+        "native_kind": "harness",
+        "state": "not-installed",
+        "probes": [
+         {
+          "kind": "executable",
+          "result": "pass",
+          "spec": "kiro-cli",
+          "detail": "not found on PATH"
+         }
+        ]
+       },
+       {
+        "slug": "qoder",
+        "harness_ref": "harness/qoder",
+        "native_kind": "harness",
+        "state": "not-installed",
+        "probes": [
+         {
+          "kind": "executable",
+          "result": "pass",
+          "spec": "qoder",
+          "detail": "not found on PATH"
+         }
+        ]
+       },
+       {
+        "slug": "droid",
+        "harness_ref": "harness/droid",
+        "native_kind": "harness",
+        "state": "not-installed",
+        "probes": [
+         {
+          "kind": "executable",
+          "result": "pass",
+          "spec": "droid",
+          "detail": "not found on PATH"
          },
          {
-          "kind": "service",
+          "kind": "config-dir",
           "result": "pass",
-          "spec": "daemon",
-          "detail": "declared, not verified"
+          "spec": "~/.factory",
+          "detail": "not found"
          }
         ]
        },
@@ -4494,7 +4716,12 @@
        "pi",
        "hermes",
        "hermes-acp",
-       "grok-bot",
+       "grok",
+       "copilot",
+       "cline",
+       "kiro-cli",
+       "qoder",
+       "droid",
        "ollama",
        "openclaw",
        "kimi",
@@ -4657,31 +4884,73 @@
      {
       "effect": "expandHome",
       "args": [
-       "~/.grokbot"
+       "~/.grok"
       ]
      },
      {
       "effect": "resolveExecutable",
       "args": [
        [
-        "grok-bot",
-        "gbot"
+        "grok"
        ]
       ]
      },
      {
       "effect": "statProbe",
       "args": [
-       "/home/oracle/.grokbot"
+       "/home/oracle/.grok"
       ]
      },
      {
-      "effect": "serviceProbe",
+      "effect": "resolveExecutable",
       "args": [
-       {
-        "kind": "daemon",
-        "name": "grok-bot"
-       }
+       [
+        "copilot"
+       ]
+      ]
+     },
+     {
+      "effect": "resolveExecutable",
+      "args": [
+       [
+        "cline"
+       ]
+      ]
+     },
+     {
+      "effect": "resolveExecutable",
+      "args": [
+       [
+        "kiro-cli"
+       ]
+      ]
+     },
+     {
+      "effect": "resolveExecutable",
+      "args": [
+       [
+        "qoder"
+       ]
+      ]
+     },
+     {
+      "effect": "expandHome",
+      "args": [
+       "~/.factory"
+      ]
+     },
+     {
+      "effect": "resolveExecutable",
+      "args": [
+       [
+        "droid"
+       ]
+      ]
+     },
+     {
+      "effect": "statProbe",
+      "args": [
+       "/home/oracle/.factory"
       ]
      },
      {
@@ -4958,7 +5227,7 @@
       "document": "self",
       "self_ref": "self:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 17,
+      "catalog_revision": 18,
       "matched": [],
       "resolved": null,
       "ambiguity": false,
@@ -5076,7 +5345,7 @@
       "document": "self",
       "self_ref": "self:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 17,
+      "catalog_revision": 18,
       "matched": [
        {
         "slug": "fixture-0",
@@ -5210,7 +5479,7 @@
       "document": "self",
       "self_ref": "self:2026-09-10T00:00:00.000Z",
       "observed_at": "2026-09-10T00:00:00.000Z",
-      "catalog_revision": 17,
+      "catalog_revision": 18,
       "matched": [
        {
         "slug": "fixture-0",
@@ -6646,7 +6915,7 @@
     "stdout": {
      "schema": "actuation.harness-detection/v1",
      "document": "catalog",
-     "catalog_revision": 17,
+     "catalog_revision": 18,
      "descriptors": [
       {
        "schema": "actuation.harness-detection/v1",
@@ -6946,38 +7215,190 @@
       {
        "schema": "actuation.harness-detection/v1",
        "document": "descriptor",
-       "slug": "grok-bot",
+       "slug": "grok",
        "native_kind": "harness",
-       "edition": "cli+service",
+       "edition": "cli",
        "native_owner": "xAI",
-       "summary": "grok-bot harness; runs as a background daemon, version probe may prompt the keychain",
-       "aliases": [
-        "gbot"
-       ],
+       "summary": "Grok Build agent CLI; xAI's coding harness (the grok-bot CLI is bot management, not coding \u2014 roster correction 2026-09-22)",
        "probe": {
         "executable": {
          "names": [
-          "grok-bot",
-          "gbot"
+          "grok"
          ],
          "version_args": [
           "--version"
          ]
         },
         "config-dir": {
-         "path": "~/.grokbot"
-        },
-        "service": {
-         "kind": "daemon",
-         "name": "grok-bot"
+         "path": "~/.grok"
+        }
+       },
+       "facets": {
+        "config": {
+         "path": "~/.grok/config.toml"
         }
        },
        "provenance": {
-        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
         "source_refs": [
-         "survey:local-machine-2026-09-05"
+         "doc:docs.x.ai/build/overview (Grok Build: binary grok, config ~/.grok/config.toml, headless grok -p --output-format streaming-json, ACP docs-declared)",
+         "aikit:clients/grok.rs (harness-connection roster expansion 2026-09-23)",
+         "survey:grok-bot 0.2.2 on this machine 2026-09-22 (bot/group management only \u2014 the product the retired grok-bot row misdescribed)"
         ],
-        "catalog_revision": 1
+        "catalog_revision": 18
+       }
+      },
+      {
+       "schema": "actuation.harness-detection/v1",
+       "document": "descriptor",
+       "slug": "copilot",
+       "native_kind": "harness",
+       "edition": "cli",
+       "native_owner": "GitHub",
+       "summary": "GitHub Copilot CLI; first-party ACP face `copilot --acp` (public preview)",
+       "probe": {
+        "executable": {
+         "names": [
+          "copilot"
+         ],
+         "version_args": [
+          "--version"
+         ]
+        }
+       },
+       "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+         "doc:docs.github.com/en/copilot/reference/acp-server (first-party ACP face copilot --acp, public preview 2026-01-28)",
+         "aikit:clients/copilot.rs (harness-connection roster expansion 2026-09-23)",
+         "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 18
+       }
+      },
+      {
+       "schema": "actuation.harness-detection/v1",
+       "document": "descriptor",
+       "slug": "cline",
+       "native_kind": "harness",
+       "edition": "cli",
+       "native_owner": "Cline",
+       "summary": "Cline CLI; first-party ACP face `cline --acp`, no batch headless JSON documented",
+       "probe": {
+        "executable": {
+         "names": [
+          "cline"
+         ],
+         "version_args": [
+          "--version"
+         ]
+        }
+       },
+       "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+         "doc:docs.cline.bot (first-party ACP face cline --acp; CLINE_API_KEY auth)",
+         "aikit:clients/cline.rs (harness-connection roster expansion 2026-09-23)",
+         "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 18
+       }
+      },
+      {
+       "schema": "actuation.harness-detection/v1",
+       "document": "descriptor",
+       "slug": "kiro-cli",
+       "native_kind": "harness",
+       "edition": "cli",
+       "native_owner": "AWS",
+       "summary": "Kiro CLI (renamed Amazon Q CLI); first-party ACP face `kiro-cli acp [--agent]`",
+       "probe": {
+        "executable": {
+         "names": [
+          "kiro-cli"
+         ],
+         "version_args": [
+          "--version"
+         ]
+        }
+       },
+       "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+         "doc:kiro.dev/docs/cli/acp (first-party ACP face kiro-cli acp [--agent], JSON-RPC 2.0 over stdio)",
+         "aikit:clients/kiro_cli.rs (harness-connection roster expansion 2026-09-23)",
+         "survey:2026-09-22 connection truth cards (the q/kiro binary-identity split is unresolved, so only kiro-cli is probed; not installed on this machine)"
+        ],
+        "catalog_revision": 18
+       }
+      },
+      {
+       "schema": "actuation.harness-detection/v1",
+       "document": "descriptor",
+       "slug": "qoder",
+       "native_kind": "harness",
+       "edition": "cli",
+       "native_owner": "Qoder",
+       "summary": "Qoder CLI; first-party ACP face `qoder --acp`, headless undocumented",
+       "probe": {
+        "executable": {
+         "names": [
+          "qoder"
+         ],
+         "version_args": [
+          "--version"
+         ]
+        }
+       },
+       "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+         "doc:docs.qoder.com/cli/acp (first-party ACP face qoder --acp; QODER_PERSONAL_ACCESS_TOKEN auth)",
+         "aikit:clients/qoder.rs (harness-connection roster expansion 2026-09-23)",
+         "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 18
+       }
+      },
+      {
+       "schema": "actuation.harness-detection/v1",
+       "document": "descriptor",
+       "slug": "droid",
+       "native_kind": "harness",
+       "edition": "cli",
+       "native_owner": "Factory",
+       "summary": "Factory Droid CLI; headless runner `droid exec --output-format stream-jsonrpc`, MCP config at ~/.factory/mcp.json",
+       "probe": {
+        "executable": {
+         "names": [
+          "droid"
+         ],
+         "version_args": [
+          "--version"
+         ]
+        },
+        "config-dir": {
+         "path": "~/.factory"
+        }
+       },
+       "facets": {
+        "mcp-config": {
+         "path": "~/.factory/mcp.json",
+         "inventory": {
+          "kind": "mcp-servers",
+          "source": "file",
+          "collection": "mcpServers"
+         }
+        }
+       },
+       "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+         "doc:docs.factory.com (headless droid exec --output-format stream-jsonrpc; MCP client config ~/.factory/mcp.json and .factory/mcp.json, key mcpServers, `droid mcp add`)",
+         "aikit:clients/droid.rs (harness-connection roster expansion 2026-09-23)",
+         "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 18
        }
       },
       {
@@ -7469,7 +7890,7 @@
     "stdout": {
      "schema": "actuation.harness-capability/v1",
      "document": "capability-catalog",
-     "catalog_revision": 17,
+     "catalog_revision": 18,
      "capabilities": [
       {
        "schema": "actuation.harness-capability/v1",
@@ -8299,7 +8720,7 @@
    "expected": {
     "code": 2,
     "stdout": "",
-    "stderr": "actuation: unknown harness slug(s): undeclared; catalog r17 declares: claude-code, codex, gemini, gemini-antigravity, pi, hermes, hermes-acp, grok-bot, ollama, openclaw, kimi, zcode, opencode, aider, cursor-cli, deepseek-harness, goose, qwen-code\n"
+    "stderr": "actuation: unknown harness slug(s): undeclared; catalog r18 declares: claude-code, codex, gemini, gemini-antigravity, pi, hermes, hermes-acp, grok, copilot, cline, kiro-cli, qoder, droid, ollama, openclaw, kimi, zcode, opencode, aider, cursor-cli, deepseek-harness, goose, qwen-code\n"
    }
   },
   {
