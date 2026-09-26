@@ -38,16 +38,19 @@ pub struct CommandDescriptor {
     pub name: &'static str,
     pub route: &'static [&'static str],
     pub usage: &'static str,
+    /// What the command is for, in one line: the outcome it produces.
+    pub outcome: &'static str,
     pub input: bool,
     pub run: Handler,
 }
 
 macro_rules! command {
-    ($name:literal, $route:expr, $usage:literal, $input:literal, $run:expr) => {
+    ($name:literal, $route:expr, $usage:literal, $outcome:literal, $input:literal, $run:expr) => {
         CommandDescriptor {
             name: $name,
             route: $route,
             usage: $usage,
+            outcome: $outcome,
             input: $input,
             run: $run,
         }
@@ -71,43 +74,43 @@ fn route_order() -> Vec<usize> {
 }
 
 static COMMANDS: &[CommandDescriptor] = &[
-    command!("capabilities", &["capabilities"], "actuation capabilities [--json]", false, commands::capabilities),
-    command!("contract.list", &["contract", "list"], "actuation contract list [--json]", false, commands::contract_list),
-    command!("agency.read", &["agency"], "actuation agency [file|-] [--json]", true, commands::agency_read),
-    command!("agency.actualise", &["agency", "actualise"], "actuation agency actualise <file|-> [--schema] [--json]", true, commands::agency_actualise),
-    command!("realised.read", &["realised"], "actuation realised [file|-] [--json]", true, commands::realised_read),
-    command!("authority.issue", &["authority", "issue"], "actuation authority issue [--store <dir>] [--now <ts>] [file|-] [--json]", true, authority::authority_issue),
-    command!("authority.resolve", &["authority", "resolve"], "actuation authority resolve [--store <dir>] [--now <ts>] [file|-] [--json]", true, authority::authority_resolve),
-    command!("authority.revoke", &["authority", "revoke"], "actuation authority revoke <authority_source_ref> [--reason <text>] [--store <dir>] [--now <ts>] [--json]", false, authority::authority_revoke),
-    command!("occupancy.claim", &["occupancy", "claim"], "actuation occupancy claim --position <ref> --agent <ref> --agency <ref> [--agent-session <ref>] [--session-space <ref>] [--harness-composition <ref>] [--model <ref>] [--workcell <ref>] [--gateway-address <addr>] --reason <text> [--expect-vacant | --expect-generation <generation>] [--kind initial|handover|fresh|adopt] [--store <dir>] [--json]", false, occupancy::claim),
-    command!("occupancy.release", &["occupancy", "release"], "actuation occupancy release --position <ref> --generation <generation> --reason <text> [--store <dir>] [--json]", false, occupancy::release),
-    command!("occupancy.verify", &["occupancy", "verify"], "actuation occupancy verify --position <ref> --generation <generation> [--store <dir>] [--json]", false, occupancy::verify),
-    command!("occupancy.presence", &["occupancy", "presence"], "actuation occupancy presence --position <ref> --generation <generation> --presence active|idle|away|offline [--attention <text>] [--store <dir>] [--json]", false, occupancy::presence),
-    command!("occupancy.read", &["occupancy", "read"], "actuation occupancy read --position <ref> [--store <dir>] [--json]", false, occupancy::read),
-    command!("occupancy.list", &["occupancy", "list"], "actuation occupancy list [--store <dir>] [--json]", false, occupancy::list),
-    command!("stream.read", &["stream"], "actuation stream [file|-] [--json]", true, commands::stream_read),
-    command!("stream.open", &["stream", "open"], "actuation stream open [--store <dir>] [file|-] [--json]", true, commands::stream_open),
-    command!("stream.record", &["stream", "record"], "actuation stream record [--store <dir>] [file|-] [--json]", true, commands::stream_record),
-    command!("stream.replay", &["stream", "replay"], "actuation stream replay <stream_ref> [--after <n>] [--limit <n>] [--store <dir>] [--json]", false, commands::stream_replay),
-    command!("stream.close", &["stream", "close"], "actuation stream close <stream_ref> [--state closed|interrupted|cancelled] [--ended-at <ts>] [--store <dir>] [--json]", false, commands::stream_close),
-    command!("activity.read", &["activity"], "actuation activity [file|-] [--json]", true, commands::activity_read),
-    command!("usage.read", &["usage"], "actuation usage [file|-] [--json]", true, commands::usage_read),
-    command!("stream.usage", &["stream", "usage"], "actuation stream usage [--store <dir>] [file|-] [--json] [adapter: claude-code-transcript|codex-exec-jsonl|observation]", true, commands::stream_usage),
-    command!("instantiation.read", &["instantiation"], "actuation instantiation [file|-] [--json]", true, commands::instantiation_read),
-    command!("instantiation.record", &["instantiation", "record"], "actuation instantiation record [--allow-unattributed] [--out <file>] [file|-] [--json]", true, commands::instantiation_record),
-    command!("harness.catalog", &["harness", "catalog"], "actuation harness catalog [--json]", false, commands::harness_catalog),
-    command!("harness.detect", &["harness", "detect"], "actuation harness detect [--only <slugs>] [--versions] [--json]", false, commands::harness_detect),
-    command!("harness.self", &["harness", "self"], "actuation harness self [--json]", false, commands::harness_self),
-    command!("harness.capability", &["harness", "capability"], "actuation harness capability [<slug>] [--json]", false, commands::harness_capability),
-    command!("harness.capability.validate", &["harness", "capability", "validate"], "actuation harness capability validate <file|-> [--json]", true, commands::harness_capability_validate),
-    command!("system.read", &["system"], "actuation system [--json]", false, commands::system_read),
-    command!("config.contribution", &["config-contribution"], "actuation config-contribution [--json]", false, commands::config_contribution),
-    command!("config.contribution.capability", &["config-contribution", "capability"], "actuation config-contribution capability <file|-> [--json]", true, commands::config_contribution_capability),
-    command!("config.validate", &["config", "validate"], "actuation config validate [--json] [--setting <setting_ref>] [--scope <compact>] [--value <json> | --value-file <path|->]", false, commands::config_validate),
-    command!("config.plan", &["config", "plan"], "actuation config plan [--json] [--setting <setting_ref>] [--scope <compact>] [--value <json> | --value-file <path|->]", false, commands::config_plan),
-    command!("config.apply", &["config", "apply"], "actuation config apply [--json] [--plan-file <path|->] [--changeset <id>]", false, commands::config_apply),
-    command!("config.reset", &["config", "reset"], "actuation config reset [--json] [--setting <setting_ref>] [--scope <compact>] [--changeset <id>]", false, commands::config_reset),
-    command!("verify", &["verify"], "actuation verify [--json]", false, commands::verify),
+    command!("capabilities", &["capabilities"], "actuation capabilities [--json]", "Operator discovery: the descriptors context-selected agents read", false, commands::capabilities),
+    command!("contract.list", &["contract", "list"], "actuation contract list [--json]", "List the served contract routes", false, commands::contract_list),
+    command!("agency.read", &["agency"], "actuation agency [file|-] [--json]", "The current agency reading for authorised agency work", true, commands::agency_read),
+    command!("agency.actualise", &["agency", "actualise"], "actuation agency actualise <file|-> [--schema] [--json]", "Actualise a composed agency request (normally called by the composed work path)", true, commands::agency_actualise),
+    command!("realised.read", &["realised"], "actuation realised [file|-] [--json]", "Read what execution actually realised", true, commands::realised_read),
+    command!("authority.issue", &["authority", "issue"], "actuation authority issue [--store <dir>] [--now <ts>] [file|-] [--json]", "Issue an explicit authority grant; never implicit in save, project, prepare or start", true, authority::authority_issue),
+    command!("authority.resolve", &["authority", "resolve"], "actuation authority resolve [--store <dir>] [--now <ts>] [file|-] [--json]", "Resolve an authority question against its source", true, authority::authority_resolve),
+    command!("authority.revoke", &["authority", "revoke"], "actuation authority revoke <authority_source_ref> [--reason <text>] [--store <dir>] [--now <ts>] [--json]", "Revoke an authority explicitly", false, authority::authority_revoke),
+    command!("occupancy.claim", &["occupancy", "claim"], "actuation occupancy claim --position <ref> --agent <ref> --agency <ref> [--agent-session <ref>] [--session-space <ref>] [--harness-composition <ref>] [--model <ref>] [--workcell <ref>] [--gateway-address <addr>] --reason <text> [--expect-vacant | --expect-generation <generation>] [--kind initial|handover|fresh|adopt] [--store <dir>] [--json]", "Claim a Position tenure (initial, handover, fresh or adopt) through the owning launcher", false, occupancy::claim),
+    command!("occupancy.release", &["occupancy", "release"], "actuation occupancy release --position <ref> --generation <generation> --reason <text> [--store <dir>] [--json]", "Release a Position tenure explicitly", false, occupancy::release),
+    command!("occupancy.verify", &["occupancy", "verify"], "actuation occupancy verify --position <ref> --generation <generation> [--store <dir>] [--json]", "Verify a tenure against its expected generation", false, occupancy::verify),
+    command!("occupancy.presence", &["occupancy", "presence"], "actuation occupancy presence --position <ref> --generation <generation> --presence active|idle|away|offline [--attention <text>] [--store <dir>] [--json]", "Protocol presence write; explicit operator diagnosis stays available", false, occupancy::presence),
+    command!("occupancy.read", &["occupancy", "read"], "actuation occupancy read --position <ref> [--store <dir>] [--json]", "Read the current participation at one Position", false, occupancy::read),
+    command!("occupancy.list", &["occupancy", "list"], "actuation occupancy list [--store <dir>] [--json]", "List tenures for participation and recovery", false, occupancy::list),
+    command!("stream.read", &["stream"], "actuation stream [file|-] [--json]", "Read an execution trajectory", true, commands::stream_read),
+    command!("stream.open", &["stream", "open"], "actuation stream open [--store <dir>] [file|-] [--json]", "Open a stream record (protocol lifecycle, not the real action itself)", true, commands::stream_open),
+    command!("stream.record", &["stream", "record"], "actuation stream record [--store <dir>] [file|-] [--json]", "Append an event to a stream (telemetry, not a substitute for the action)", true, commands::stream_record),
+    command!("stream.replay", &["stream", "replay"], "actuation stream replay <stream_ref> [--after <n>] [--limit <n>] [--store <dir>] [--json]", "Replay a trajectory after a point", false, commands::stream_replay),
+    command!("stream.close", &["stream", "close"], "actuation stream close <stream_ref> [--state closed|interrupted|cancelled] [--ended-at <ts>] [--store <dir>] [--json]", "Close a stream with its true terminal state", false, commands::stream_close),
+    command!("activity.read", &["activity"], "actuation activity [file|-] [--json]", "Read aggregated activity evidence", true, commands::activity_read),
+    command!("usage.read", &["usage"], "actuation usage [file|-] [--json]", "Read usage evidence", true, commands::usage_read),
+    command!("stream.usage", &["stream", "usage"], "actuation stream usage [--store <dir>] [file|-] [--json] [adapter: claude-code-transcript|codex-exec-jsonl|observation]", "Ingest an adapter transcript into the usage read model", true, commands::stream_usage),
+    command!("instantiation.read", &["instantiation"], "actuation instantiation [file|-] [--json]", "Read the instantiation read model", true, commands::instantiation_read),
+    command!("instantiation.record", &["instantiation", "record"], "actuation instantiation record [--allow-unattributed] [--out <file>] [file|-] [--json]", "Record a supplied instantiation; it cannot become independent observation", true, commands::instantiation_record),
+    command!("harness.catalog", &["harness", "catalog"], "actuation harness catalog [--json]", "Declare what this product can detect", false, commands::harness_catalog),
+    command!("harness.detect", &["harness", "detect"], "actuation harness detect [--only <slugs>] [--versions] [--json]", "Prove which harnesses exist on this machine", false, commands::harness_detect),
+    command!("harness.self", &["harness", "self"], "actuation harness self [--json]", "Identify which harness this process runs inside", false, commands::harness_self),
+    command!("harness.capability", &["harness", "capability"], "actuation harness capability [<slug>] [--json]", "Declare the dispatch-relevant harness capabilities", false, commands::harness_capability),
+    command!("harness.capability.validate", &["harness", "capability", "validate"], "actuation harness capability validate <file|-> [--json]", "Operator intake: validate a harness capability extension", true, commands::harness_capability_validate),
+    command!("system.read", &["system"], "actuation system [--json]", "Owner system disclosure", false, commands::system_read),
+    command!("config.contribution", &["config-contribution"], "actuation config-contribution [--json]", "Protocol: the owner configuration contribution document", false, commands::config_contribution),
+    command!("config.contribution.capability", &["config-contribution", "capability"], "actuation config-contribution capability <file|-> [--json]", "Protocol intake for a capability contribution", true, commands::config_contribution_capability),
+    command!("config.validate", &["config", "validate"], "actuation config validate [--json] [--setting <setting_ref>] [--scope <compact>] [--value <json> | --value-file <path|->]", "Validate settings without applying", false, commands::config_validate),
+    command!("config.plan", &["config", "plan"], "actuation config plan [--json] [--setting <setting_ref>] [--scope <compact>] [--value <json> | --value-file <path|->]", "Plan settings changes without applying", false, commands::config_plan),
+    command!("config.apply", &["config", "apply"], "actuation config apply [--json] [--plan-file <path|->] [--changeset <id>]", "Apply an owner settings plan", false, commands::config_apply),
+    command!("config.reset", &["config", "reset"], "actuation config reset [--json] [--setting <setting_ref>] [--scope <compact>] [--changeset <id>]", "Reset settings through the owner transport", false, commands::config_reset),
+    command!("verify", &["verify"], "actuation verify [--json]", "Everyday diagnostic: verify the served surface and read models", false, commands::verify),
 ];
 
 pub fn match_route(args: &[String]) -> Option<(&'static CommandDescriptor, Vec<String>)> {
@@ -171,13 +174,16 @@ pub fn execute(argv: &[String], stdin: &str) -> Result<Output, Error> {
 }
 
 pub fn help_text() -> String {
-    let usage = COMMANDS
+    // Every row states what it is for, not only how it is spelled. The usage
+    // strings stay the table's own (the README law pins them); the outcome
+    // lines are the same law's outcome half.
+    let rows = COMMANDS
         .iter()
-        .map(|entry| format!("  {}", entry.usage))
+        .map(|entry| format!("  {}\n      {}", entry.usage, entry.outcome))
         .collect::<Vec<_>>()
         .join("\n");
     format!(
-        "Actuation {ACTUATION_CLI_VERSION}\n\nUsage:\n  actuation --version\n{usage}\n\nRead-model commands project the matching Actuation contract; \"harness catalog\" declares what this product can detect, \"harness capability\" declares what the dispatch-relevant harnesses are, \"harness detect\" proves which of them exist on this machine, and \"harness self\" identifies which one this process runs inside."
+        "Actuation {ACTUATION_CLI_VERSION}\n\nUsage:\n  actuation --version\n{rows}\n\nAuthority is never implicit: issuing, revoking, claiming, releasing and actualising are explicit operator or launcher acts, and the stream lifecycle records evidence rather than performing the corresponding real action."
     )
 }
 
