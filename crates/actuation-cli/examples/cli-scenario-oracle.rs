@@ -97,6 +97,25 @@ fn run_cli_scenario(binary: &std::path::Path, input: &Value) -> Result<Value, St
             if parsed.contains_key("revision") {
                 parsed.insert("revision".into(), json!("$REVISION"));
             }
+            // R7 captured the pre-Nara command surface. Preserve that frozen
+            // oracle and compare every original command unchanged. The one
+            // explicit additive route is independently exercised by the real
+            // actor process tests, including exact capability-list parity.
+            if argv == ["capabilities", "--json"] {
+                let commands = parsed
+                    .get_mut("commands")
+                    .and_then(Value::as_array_mut)
+                    .ok_or("capabilities commands must be an array")?;
+                if commands
+                    .iter()
+                    .filter(|entry| *entry == "nara.serve")
+                    .count()
+                    != 1
+                {
+                    return Err("capabilities must disclose exactly one nara.serve route".into());
+                }
+                commands.retain(|entry| entry != "nara.serve");
+            }
             Value::Object(parsed)
         }
         _ => json!(stdout),

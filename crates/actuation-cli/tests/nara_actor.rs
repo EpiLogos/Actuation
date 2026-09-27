@@ -7,6 +7,35 @@ use std::process::{Child, ChildStdin, Command, Stdio};
 use std::sync::mpsc::{self, Receiver};
 use std::time::Duration;
 
+#[test]
+fn actual_capabilities_preserve_the_frozen_surface_and_add_only_nara_serve() {
+    let output = Command::new(env!("CARGO_BIN_EXE_actuation"))
+        .args(["capabilities", "--json"])
+        .output()
+        .expect("actual CLI must start");
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let mut actual: Value = serde_json::from_slice(&output.stdout).unwrap();
+    let corpus: Value =
+        serde_json::from_str(include_str!("../../../fixtures/migration/scenarios.json")).unwrap();
+    let mut expected = corpus["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["id"] == "cli-capabilities --json")
+        .unwrap()["expected"]["stdout"]
+        .clone();
+    expected["commands"]
+        .as_array_mut()
+        .unwrap()
+        .insert(0, json!("nara.serve"));
+    actual["revision"] = json!("$REVISION");
+    assert_eq!(
+        actual, expected,
+        "The new actor must not drift the existing CLI contract"
+    );
+}
+
 fn constitution(
     body: &str,
     agent_session: &str,
