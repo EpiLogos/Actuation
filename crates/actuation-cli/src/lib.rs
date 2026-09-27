@@ -7,6 +7,7 @@ pub mod commands;
 pub mod configuration;
 pub mod dispatch;
 pub mod epi_provider;
+pub mod nara_session;
 pub mod occupancy;
 pub mod render;
 pub mod surface;

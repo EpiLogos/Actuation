@@ -126,18 +126,16 @@ impl SpeechSession {
     /// Begin producing a response. `response_ref` names this response turn
     /// for later attribution.
     pub fn begin_response(&mut self, response_ref: ExternalRef) -> Result<()> {
-        if self.constitution.speech_capable() {
-            require_phase(
-                self.phase,
-                &[
-                    SpeechTurnPhase::Listening,
-                    SpeechTurnPhase::Idle,
-                    SpeechTurnPhase::Completed,
-                    SpeechTurnPhase::Interrupted,
-                ],
-                "a response",
-            )?;
-        }
+        require_phase(
+            self.phase,
+            &[
+                SpeechTurnPhase::Listening,
+                SpeechTurnPhase::Idle,
+                SpeechTurnPhase::Completed,
+                SpeechTurnPhase::Interrupted,
+            ],
+            "a response",
+        )?;
         self.phase = SpeechTurnPhase::Speaking;
         self.in_flight = Some(response_ref);
         Ok(())
@@ -256,6 +254,11 @@ impl SpeechSession {
         evidence_refs: Vec<ExternalRef>,
         at: &str,
     ) -> Result<SpeechConstitutionChange> {
+        if !next.body_usable() {
+            return Err(Error::new(
+                "a body recorded unavailable cannot replace a live session body; resolve another body",
+            ));
+        }
         let change = SpeechConstitutionChange::record(
             change_ref,
             self.constitution.clone(),

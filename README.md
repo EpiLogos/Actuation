@@ -145,6 +145,7 @@ contract versions and the git revision the binary was served from.
 
 ```text
 actuation capabilities [--json]
+actuation nara serve
 actuation contract list [--json]
 actuation agency [file|-] [--json]
 actuation agency actualise <file|-> [--schema] [--json]
@@ -182,6 +183,37 @@ actuation config apply [--json] [--plan-file <path|->] [--changeset <id>]
 actuation config reset [--json] [--setting <setting_ref>] [--scope <compact>] [--changeset <id>]
 actuation verify [--json]
 ```
+
+`nara serve` owns a bounded JSON-lines pipe. Each newline-terminated request
+uses `schema: "actuation.nara-session-request/v1"`, a unique `request_ref`, and
+`operation`. Replies use `actuation.nara-session-response/v1`, echo the request
+reference, and carry `ok` plus the native binding `reading` or an `error`.
+The actor flushes every reply before reading again; EOF or `close` releases
+this ephemeral actor, without destroying the canonical AIKit conversation or
+claiming provider cancellation. A line is limited to 256 KiB, a reply to 1 MiB,
+and an actor to 65,536 distinct request references. Oversized or unterminated
+lines end the actor with status 2. Malformed requests and reused references
+are refused without changing its binding. The pipe owner must inspect state
+after uncertain delivery; request references are not a retry protocol.
+
+The pipe owner admits the existing `actuation.speech-constitution/v1` and
+`ql.nara-dialogue-context/v1` as `constitution` and `dialogue_context` in
+`constitute`, alongside `allowed_action_refs` and `denied_action_refs` arrays.
+The operations are `read`, `context` (`dialogue_context`), `listen`, `response`
+(`response_ref`), `complete` (`response_ref`), `interrupt`, `reconnect`, and
+`close`. Completion must name the current response. Reconnect supplies a fresh
+constitution and context plus `change_ref`, `reason`, nonempty `evidence_refs`,
+and RFC3339 `at`; this pipe retains its original AgentSession.
+
+Interrupt requires `interruption_ref`, the current `response_ref`, `reason`,
+nonempty `evidence_refs`, RFC3339 `at`, and `effect` equal to `playback-stopped`
+or `provider-cancelled`. The caller supplies evidence of an already observed
+transport effect, never just a stop request. The native interruption receipt
+is accompanied by a separately attributed `transport_effect`: stopping local
+playback does not claim provider cancellation. The actor does not authenticate
+external evidence, open a microphone, stop audio, invoke a model, or provide a
+network endpoint; its parent broker owns admission and those actual effects.
+Contract-process tests establish native lifecycle behavior, not live voice.
 
 The command surface, help text and capabilities listing are all derived from
 one Rust-owned command table (`crates/actuation-cli/src/dispatch.rs`); parity
