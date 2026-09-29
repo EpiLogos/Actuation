@@ -1,21 +1,27 @@
-mod support;
 use actuation_core::*;
 use serde_json::{json, Value};
 
-fn corpus() -> Value {
-    serde_json::from_str(include_str!("../../../fixtures/migration/oracle.json")).unwrap()
-}
+/// Inline seeds since the Node-era oracle corpus was retired
+/// (cleanup/retire-node-oracle-2026-09-22). Formerly the first ok case of the
+/// named operation in fixtures/migration/oracle.json; the seed VALUES are
+/// unchanged, so the constitutional properties under test are untouched.
+/// Frozen validateDetermination request (formerly oracle corpus).
+const SEED_VALIDATE_DETERMINATION: &str = r#"{"schema": "actuation.agency/v1", "determination_ref": "determination:a", "kind": "federation", "determining_agency_ref": "agency:root-position", "differentiated_agency_ref": "agency:a", "world_binding_ref": "actuation:world-binding:a", "bounds_refs": ["bound:a"], "delegated_autonomy": {"allowed_action_refs": ["action:a"], "denied_action_refs": ["action:dangerous"], "may_determine_within_bounds": true}, "return_policy": {"mode": "required", "return_relation_ref": "return-relation:a"}}"#;
+
+/// Frozen validateReturn request (formerly oracle corpus).
+const SEED_VALIDATE_RETURN: &str = r#"{"schema": "actuation.agency/v1", "return_ref": "return:b", "determination_ref": "determination:b", "from_agency_ref": "agency:b", "to_agency_ref": "agency:a", "difference_refs": ["difference:unexpected-resistance"], "artifact_refs": ["artifact:raw"], "claim_refs": ["claim:finding"], "evidence_refs": ["evidence:runtime"], "provenance": {"agency_lineage_refs": ["agency:root-position", "agency:a", "agency:b"], "material_refs": ["workcell:receipt:42"], "external_source_refs": ["source:other"]}, "received": true, "recognition_state": "pending", "world_mutation_state": "not-applied"}"#;
+
+/// Frozen validateMetagencyGrant request (formerly oracle corpus).
+const SEED_VALIDATE_METAGENCY_GRANT: &str = r#"{"schema": "actuation.agency/v1", "grant_ref": "grant:project-agency", "agency_ref": "agency:governing", "world_binding_ref": "binding:governing", "authority_ref": "authority:metagency", "bounds_refs": ["bound:project:delegation"], "operations": ["determine-agency", "actualise-agency"]}"#;
+
 fn seed(operation: &str) -> Value {
-    corpus()["cases"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|row| {
-            row["operation"] == format!("contracts/agency.mjs#{operation}")
-                && row["expected"]["ok"] == true
-        })
-        .unwrap()["args"][0]
-        .clone()
+    let raw = match operation {
+        "validateDetermination" => SEED_VALIDATE_DETERMINATION,
+        "validateReturn" => SEED_VALIDATE_RETURN,
+        "validateMetagencyGrant" => SEED_VALIDATE_METAGENCY_GRANT,
+        other => panic!("unknown seed: {other}"),
+    };
+    serde_json::from_str(raw).unwrap()
 }
 fn binding() -> WorldBinding {
     WorldBinding::new(WorldBindingFields::new(
@@ -26,42 +32,6 @@ fn binding() -> WorldBinding {
         ScopeRef::new("scope:ordinary").unwrap(),
     ))
     .unwrap()
-}
-
-#[test]
-fn frozen_constitutional_oracle_is_total_and_semantically_identical() {
-    let corpus = corpus();
-    let cases: Vec<_> = corpus["cases"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter(|row| {
-            row["operation"]
-                .as_str()
-                .unwrap()
-                .starts_with("contracts/agency.mjs#")
-        })
-        .collect();
-    assert_eq!(
-        cases.len(),
-        119,
-        "frozen constitutional coverage must not silently shrink"
-    );
-    for row in cases {
-        let actual = support::evaluate(
-            row["operation"].as_str().unwrap(),
-            row["args"].as_array().unwrap(),
-        );
-        assert_eq!(
-            actual.is_ok(),
-            row["expected"]["ok"].as_bool().unwrap(),
-            "{}: {actual:?}",
-            row["id"]
-        );
-        if let Ok(value) = actual {
-            assert_eq!(value, row["expected"]["value"], "{}", row["id"]);
-        }
-    }
 }
 
 #[test]

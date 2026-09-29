@@ -6,16 +6,19 @@ use actuation_runtime::*;
 use runtime::block_on;
 use serde_json::{json, Value};
 
+/// Inline seeds since the Node-era oracle corpus was retired
+/// (cleanup/retire-node-oracle-2026-09-22). Formerly the first ok case of the
+/// named operation in fixtures/migration/oracle.json; the seed VALUES are
+/// unchanged, so the locus laws under test are untouched.
+const SEED_VALIDATE_RETURN: &str = r#"{"schema": "actuation.agency/v1", "return_ref": "return:b", "determination_ref": "determination:b", "from_agency_ref": "agency:b", "to_agency_ref": "agency:a", "difference_refs": ["difference:unexpected-resistance"], "artifact_refs": ["artifact:raw"], "claim_refs": ["claim:finding"], "evidence_refs": ["evidence:runtime"], "provenance": {"agency_lineage_refs": ["agency:root-position", "agency:a", "agency:b"], "material_refs": ["workcell:receipt:42"], "external_source_refs": ["source:other"]}, "received": true, "recognition_state": "pending", "world_mutation_state": "not-applied"}"#;
+const SEED_ACTUALISE_AGENCY: &str = r#"{"schema": "actuation.agency-actualisation/v1", "request_ref": "actualisation-request:delegation", "requester_ref": "human:owner", "governing_binding": {"schema": "actuation.agency/v1", "binding_ref": "binding:governing", "agent_ref": "agent:governor", "agency_ref": "agency:governing", "world_ref": "world:personal", "scope_ref": "scope:personal", "bounds_refs": ["bound:personal", "bound:project:delegation", "bound:secondary"], "authority_refs": ["authority:metagency", "authority:project:delegation"], "return_relation_ref": "return-relation:governing"}, "metagency_grant": {"schema": "actuation.agency/v1", "grant_ref": "grant:project-agency", "agency_ref": "agency:governing", "world_binding_ref": "binding:governing", "authority_ref": "authority:metagency", "bounds_refs": ["bound:project:delegation", "bound:secondary"], "operations": ["determine-agency", "actualise-agency"]}, "determination": {"schema": "actuation.agency/v1", "determination_ref": "determination:delegation", "kind": "delegation", "determining_agency_ref": "agency:governing", "differentiated_agency_ref": "agency:project:delegation", "world_binding_ref": "binding:project:delegation", "bounds_refs": ["bound:project:delegation", "bound:secondary"], "authority_refs": ["authority:project:delegation"], "delegated_autonomy": {"allowed_action_refs": ["action:bounded-work"], "denied_action_refs": ["action:source-mutation"], "may_determine_within_bounds": true}, "return_policy": {"mode": "required", "return_relation_ref": "return-relation:project:delegation"}}, "differentiated_binding": {"schema": "actuation.agency/v1", "binding_ref": "binding:project:delegation", "agent_ref": "agent:existing-1", "agency_ref": "agency:project:delegation", "world_ref": "central:project:Example", "scope_ref": "central:project:Example:scope", "determining_agency_ref": "agency:governing", "bounds_refs": ["bound:secondary", "bound:project:delegation"], "authority_refs": ["authority:project:delegation"], "return_relation_ref": "return-relation:project:delegation", "continuity_ref": "continuity:agent:existing-1"}, "agent_identity": {"standing": "existing", "evidence_refs": ["evidence:identity-registry"]}, "provenance": {"source_refs": ["actuation:#44"], "context_refs": []}}"#;
 fn seed(operation: &str) -> Value {
-    let corpus: Value =
-        serde_json::from_str(include_str!("../../../fixtures/migration/oracle.json")).unwrap();
-    corpus["cases"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|r| r["operation"] == operation && r["expected"]["ok"] == true)
-        .unwrap()["args"][0]
-        .clone()
+    let raw = match operation {
+        "contracts/agency.mjs#validateReturn" => SEED_VALIDATE_RETURN,
+        "contracts/agency-actualisation.mjs#actualiseAgency" => SEED_ACTUALISE_AGENCY,
+        other => panic!("unknown seed: {other}"),
+    };
+    serde_json::from_str(raw).unwrap()
 }
 fn binding() -> WorldBinding {
     WorldBinding::new(WorldBindingFields::new(
