@@ -16,15 +16,10 @@ fn actual_capabilities_preserve_the_frozen_surface_and_add_only_nara_serve() {
     assert!(output.status.success());
     assert!(output.stderr.is_empty());
     let mut actual: Value = serde_json::from_slice(&output.stdout).unwrap();
-    let corpus: Value =
-        serde_json::from_str(include_str!("../../../fixtures/migration/scenarios.json")).unwrap();
-    let mut expected = corpus["cases"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|row| row["id"] == "cli-capabilities --json")
-        .unwrap()["expected"]["stdout"]
-        .clone();
+    // The frozen surface, retained from the retired migration oracle (#119).
+    let frozen: Value =
+        serde_json::from_str(include_str!("fixtures/capabilities-frozen.json")).unwrap();
+    let mut expected = frozen["stdout"].clone();
     expected["commands"]
         .as_array_mut()
         .unwrap()
