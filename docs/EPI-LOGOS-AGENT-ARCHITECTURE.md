@@ -161,3 +161,35 @@ For application use, `actuation-epi-prime` is the installable Prime JSONL-RPC la
 The twelve-tool form remains the initial reference research supply. The current product transport truth is narrower: domain faculties reach Prime through the inherited Skill/faculty bridge until the Prime transport itself advertises them as first-class tool descriptors. The 4/6/8/12, prompt-only and tool-only conditions therefore remain real comparative conditions instead of being rewritten around the product candidate.
 
 Cloud evidence proves the Prime structural apparatus, inherited Skill compilation, native research boundaries, deep runtime and CLI/build surfaces. Credentialled Prime inference, inexpensive-child model choice, installed material/worktree restriction, Jev/EBM use and human experience are not inferred from those gates; they remain explicit joined/local acceptance conditions.
+
+
+## 10. Native NOW continuation — 2026-09-22 follow-up
+
+The worker-replacement branch is bound to Central's existing NOW owner rather
+than an Actuation handoff file. The inherited `ql-relational` Skill exposes
+`central_now_handover`, `central_now_inspect` and
+`central_now_handoff_read`. They invoke `ctrl action run
+projectcentral.now.return/inspect` and retain Central's
+`central.project-now.handoff/v1` identity, lifecycle and source.
+
+A handoff is deliberately pithy: returned difference, session/source/evidence/
+preserve refs, and exact repo/branch/optional-worktree lane refs. A replacement
+Prime worker re-reads that native record and continues from those refs; the
+parent transcript is not transferred. The optional owner requires the installed
+Central `ctrl` binary and Central root. Absence makes this continuation faculty
+unavailable without blocking ordinary QL work.
+
+The installable launcher also carries the installed AIKit executable explicitly
+so `spawn_child_cheapest` can resolve the live `CHEAPEST_ELIGIBLE` roster
+through credential-scoped launches. These paths are configuration inputs, not
+Agent identity or authority.
+
+This closes the native handover *mechanism*. It does not claim the commissioned
+per-worker material confinement: Prime 0.9.4's `rlm.run` host owns child
+process creation and exposes no child supervisor/write-boundary hook. Workcell's
+Linux Landlock boundary can confine a process tree that it launches, but
+wrapping the whole Prime body would not prove independently assigned child
+worktrees and a writable worker directory could still contain an editable copy.
+That material join remains an explicit native-host boundary until Prime exposes
+a child-launch hook or the worker is launched through a Workcell-owned session
+surface that can apply the restriction before exec.
