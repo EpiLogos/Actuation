@@ -1,6 +1,6 @@
 {
   "schema": "actuation.native-catalog/v1",
-  "catalog_revision": 18,
+  "catalog_revision": 19,
   "descriptors": [
     {
       "schema": "actuation.harness-detection/v1",
@@ -954,6 +954,45 @@
         ],
         "catalog_revision": 11
       }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "prime",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Prime Intellect",
+      "summary": "Prime Agent recursive agent harness (prime-agent)",
+      "aliases": [
+        "prime-agent"
+      ],
+      "probe": {
+        "executable": {
+          "names": [
+            "prime-agent"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.prime/agent"
+        }
+      },
+      "facets": {
+        "models": {
+          "path": "~/.prime/agent/prime-inference-models-cache.json"
+        }
+      },
+      "provenance": {
+        "authored_by": "Epi-Logos Prime-QL agent-correctness lane (installed-binary observation on this machine, 2026-09-23)",
+        "source_refs": [
+          "survey:local-machine-2026-09-23",
+          "detection:prime-agent 0.9.4 at ~/.npm-global/bin/prime-agent (prime-agent --version, 2026-09-23)",
+          "upstream:github.com/PrimeIntellect-ai/prime-agent pinned f771dfcedd684d1afff84ca2c6fa95c7a21efbc2"
+        ],
+        "catalog_revision": 14
+      }
     }
   ],
   "capabilities": [
@@ -1601,6 +1640,116 @@
           "local:perl -e 'alarm shift; exec @ARGV' 30 openclaw hooks list \u2014 ok, exit 0, sole escalation retry; boot-md, command-logger and session-memory ready; soul-evil missing; inventory is not a complete event grammar",
           "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw hooks info session-memory \u2014 timed-out, exit 142, no output; no retry; event identifiers and execution semantics remain unobserved"
         ]
+      }
+    },
+    {
+      "schema": "actuation.harness-capability/v1",
+      "document": "capability",
+      "harness_slug": "prime",
+      "summary": "Per-invocation recursive agent harness; provider and model are chosen per invocation (--provider/--model) from its own catalogue; skills ride per-launch --skill capsules; no observed stdout/JSON context-injection, deny-and-block or wake surface is declared here.",
+      "native_events": [],
+      "injection_channel": {
+        "kind": "none",
+        "mechanism": "no stdout/JSON context-injection channel is declared for prime 0.9.4. Additional context travels through Prime's own launch surface: skill capsules loaded per launch via --skill (verified from prime-agent --help on this machine) and its native prompt/session surface. Dispatch projections must use the skill capsule seam, never stdout.",
+        "notes": "prime also exposes --mode rpc (the AIKit Prime RPC encounter transport) and RLM child recursion; neither is an injection channel and neither is declared here."
+      },
+      "blocking_semantics": {
+        "kind": "none",
+        "notes": "no per-call blocking surface is declared: tool allowlists (-t/--tools, -nt, -nbt) are invocation flags set at launch, not dispatch hooks."
+      },
+      "wake_capability": {
+        "kind": "none",
+        "notes": "prime is per-invocation with an opt-in daemon; nothing declared here wakes a running session. A relay sender must not pretend prime can be woken."
+      },
+      "install_seam": {
+        "config_path": "per-launch argv (--skill <capsule-dir>); no on-disk projection seam is declared because prime's skill-discovery paths are unverified on this install",
+        "format": "skill-tree",
+        "entry_shape": "one directory per skill capsule, each carrying a SKILL.md front-matter document, passed to the launch as --skill <dir>",
+        "ownership_marker": "capsule directories written by the AIKit prime projection",
+        "preserves_foreign_entries": true
+      },
+      "uninstall_seam": {
+        "config_path": "per-launch argv (--skill <capsule-dir>); removing a projection means dropping the capsule from the launch argv, so nothing foreign is ever touched",
+        "format": "skill-tree",
+        "entry_shape": "capsule directories written by the AIKit prime projection are removed from the launch surface; foreign capsules and prime's own configuration are untouched",
+        "ownership_marker": "capsule directories written by the AIKit prime projection",
+        "preserves_foreign_entries": true
+      },
+      "model_dispatch": {
+        "kind": "native-provider-binding",
+        "providers": [
+          {
+            "provider_ref": "provider:deepseek",
+            "selector": {
+              "kind": "cli-flag",
+              "name": "--provider"
+            },
+            "credential": {
+              "required": true,
+              "hint": "prime reads DEEPSEEK_API_KEY from its process environment or resolves the key through its own auth surface (~/.prime/agent/auth.json)"
+            },
+            "notes": "model selected per invocation via --model; prime's own catalogue names deepseek-v4-flash and deepseek-v4-pro"
+          },
+          {
+            "provider_ref": "provider:kimi-coding",
+            "selector": {
+              "kind": "cli-flag",
+              "name": "--provider"
+            },
+            "credential": {
+              "required": true,
+              "hint": "prime resolves the Moonshot coding-plan key (KIMI_API_KEY/MOONSHOT_API_KEY) through its own auth surface (~/.prime/agent/auth.json) or its process environment"
+            },
+            "notes": "prime's own catalogue names k3, k3-256k, kimi-for-coding and kimi-for-coding-highspeed"
+          },
+          {
+            "provider_ref": "provider:minimax",
+            "selector": {
+              "kind": "cli-flag",
+              "name": "--provider"
+            },
+            "credential": {
+              "required": true,
+              "hint": "prime resolves the MiniMax key (MINIMAX_API_KEY) through its own auth surface or its process environment"
+            },
+            "notes": "prime's own catalogue names MiniMax-M2.7 and MiniMax-M2.7-highspeed"
+          },
+          {
+            "provider_ref": "provider:openrouter",
+            "selector": {
+              "kind": "cli-flag",
+              "name": "--provider"
+            },
+            "credential": {
+              "required": true,
+              "hint": "prime reads OPENROUTER_API_KEY from its process environment or its own auth store"
+            },
+            "notes": "prime's catalogue enumerates the openrouter offering; -latest rows are spelled with a leading '~' in prime's own listing"
+          },
+          {
+            "provider_ref": "provider:zai",
+            "selector": {
+              "kind": "cli-flag",
+              "name": "--provider"
+            },
+            "credential": {
+              "required": true,
+              "hint": "prime reads ZAI_API_KEY from its process environment or its own auth store"
+            },
+            "notes": "prime's own catalogue names glm-4.7, glm-5-turbo, glm-5.2, glm-5.2-highspeed, glm-5.3, glm-5.3-flash and glm-5.3-highspeed"
+          }
+        ],
+        "notes": "providers are exactly the rows prime-agent 0.9.4's own model catalogue discloses on this machine (prime-agent model list, 2026-09-23); the env-var names were read from the installed distribution's provider clients. Prime is provider-plural by design: provider and model are chosen per invocation. Actuation does not enumerate the providers' model ids here."
+      },
+      "provenance": {
+        "authored_by": "Epi-Logos Prime-QL agent-correctness lane (live prime-agent 0.9.4 observation on this machine, 2026-09-23)",
+        "source_refs": [
+          "survey:local-machine-2026-09-23",
+          "detection:prime-agent model list 0.9.4 (2026-09-23): 1 deepseek, 4 kimi-coding, 2 minimax, 297 openrouter, 7 zai rows",
+          "survey:prime-agent --help 0.9.4 (--provider/--model/--skill/--mode rpc)",
+          "survey:prime-agent installed distribution env-var reading (2026-09-23)"
+        ],
+        "catalog_revision": 19
       }
     }
   ],

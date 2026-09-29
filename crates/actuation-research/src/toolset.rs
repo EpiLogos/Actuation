@@ -152,6 +152,23 @@ pub fn night_capability_supply() -> Value {
     )
 }
 
+/// The retained arity conditions, disclosed with the resolved composition so a
+/// body readback shows that 4/6/8/12 remain independent research conditions.
+/// Twelve is the initial reference form; no superiority is claimed over the
+/// other arities or over prompt-only/tool-only/recurrence conditions.
+pub fn variant_disclosure() -> Value {
+    json!({
+        "schema":"actuation.ql-toolset-variants/v1",
+        "conditions":[
+            {"condition":"ql-tagged","arity":tagged_tools().len(),"supply":"explicate four, no loop verbs"},
+            {"condition":"ql-toolset","arity":TOOLSET_TOOLS.len(),"supply":"four world tools plus situate and close"},
+            {"condition":"ql-eight","arity":eight_capability_supply().as_array().map(Vec::len).unwrap_or_default(),"supply":"explicate four plus the Night middle, no return verbs"},
+            {"condition":"ql-twelve","arity":night_capability_supply().as_array().map(Vec::len).unwrap_or_default(),"supply":"full Day six plus Night six reference form"}
+        ],
+        "standing":"retained-comparative-conditions; twelve is the initial reference, not a superiority claim; prompt-only, tool-only and Prime-recursion conditions remain independently invocable"
+    })
+}
+
 /// The explicate eight: the four world tools plus the Night middle (three
 /// square readings and the mediator) — no return verbs (`ql-eight`).
 pub fn eight_capability_supply() -> Value {

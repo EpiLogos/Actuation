@@ -13,8 +13,9 @@
   },
   "ql_mef": {
     "repository": "EpiLogos/QL-MEF",
-    "accepted_main_revision": "08d14e89c6427cb885e117c2e9bc9dc61a0f90b7",
-    "observed_at": "2026-09-15T16:52:42Z",
+    "accepted_main_revision": "8eff719b235703c65911f2461e4a7dd5872a32ad",
+    "observed_at": "2026-09-23T00:00:00Z",
+    "lane_note": "epi-prime-ql/spec-complete-20260923 lane head: instrument-resolution disclosure and native ananda.m1-2; identical to main plus that one reviewed commit until the lane lands",
     "harmonic_research": {
       "issue": 31,
       "pull_request": 81,

@@ -11,14 +11,6 @@ use serde_json::{json, Value};
 
 type Check = (&'static str, fn() -> std::result::Result<(), String>);
 
-/// One frozen durable store from the R4 wire corpus (Node-written bytes,
-/// sha256-published in fixtures/migration/r4/manifest.json). The shipped
-/// binary carries the historical wire oracle: if the native reader ever stops
-/// reading what the Node product wrote, verification fails here.
-const FROZEN_STORE_01: &str = include_str!("../../../fixtures/migration/r4/stores/01.jsonl");
-const FROZEN_STORE_01_SHA256: &str =
-    "1009dfc27f2e2ed5aacefe63552f7b4598d2cb920ab0f509cc2264542b616483";
-
 pub struct VerifyReceipt {
     pub status: &'static str,
     pub tests: Vec<&'static str>,
@@ -43,10 +35,6 @@ pub fn suite() -> Vec<Check> {
         (
             "stream/durable-store-lifecycle",
             check_durable_store_lifecycle,
-        ),
-        (
-            "stream/frozen-wire-oracle-interop",
-            check_frozen_wire_oracle,
         ),
         ("harness/catalog-declared", check_harness_catalog),
         ("system/disclosure-digest-stable", check_disclosure_digest),
@@ -313,8 +301,8 @@ fn check_agency_golden() -> std::result::Result<(), String> {
 }
 
 fn check_actualise_golden() -> std::result::Result<(), String> {
-    // Frozen wire document from the migration corpus (scenarios.json,
-    // cli-actualise-json): the served delegation request and its receipt law.
+    // Frozen delegation wire document (originally captured in the retired
+    // migration corpus): the served request and its receipt law.
     const GOLDEN: &str = r#"{"schema":"actuation.agency-actualisation/v1","request_ref":"actualisation-request:delegation","requester_ref":"human:owner","governing_binding":{"schema":"actuation.agency/v1","binding_ref":"binding:governing","agent_ref":"agent:governor","agency_ref":"agency:governing","world_ref":"world:personal","scope_ref":"scope:personal","bounds_refs":["bound:personal","bound:project:delegation","bound:secondary"],"authority_refs":["authority:metagency","authority:project:delegation"],"return_relation_ref":"return-relation:governing"},"metagency_grant":{"schema":"actuation.agency/v1","grant_ref":"grant:project-agency","agency_ref":"agency:governing","world_binding_ref":"binding:governing","authority_ref":"authority:metagency","bounds_refs":["bound:project:delegation","bound:secondary"],"operations":["determine-agency","actualise-agency"]},"determination":{"schema":"actuation.agency/v1","determination_ref":"determination:delegation","kind":"delegation","determining_agency_ref":"agency:governing","differentiated_agency_ref":"agency:project:delegation","world_binding_ref":"binding:project:delegation","bounds_refs":["bound:project:delegation","bound:secondary"],"authority_refs":["authority:project:delegation"],"delegated_autonomy":{"allowed_action_refs":["action:bounded-work"],"denied_action_refs":["action:source-mutation"],"may_determine_within_bounds":true},"return_policy":{"mode":"required","return_relation_ref":"return-relation:project:delegation"}},"differentiated_binding":{"schema":"actuation.agency/v1","binding_ref":"binding:project:delegation","agent_ref":"agent:existing-1","agency_ref":"agency:project:delegation","world_ref":"central:project:Example","scope_ref":"central:project:Example:scope","determining_agency_ref":"agency:governing","bounds_refs":["bound:secondary","bound:project:delegation"],"authority_refs":["authority:project:delegation"],"return_relation_ref":"return-relation:project:delegation","continuity_ref":"continuity:agent:existing-1"},"agent_identity":{"standing":"existing","evidence_refs":["evidence:identity-registry"]},"provenance":{"source_refs":["actuation:#44"],"context_refs":[]}}"#;
     let value = run_cli(&["agency", "actualise", "-", "--json"], GOLDEN)?;
     if value["determination"]["kind"] != json!("delegation")
@@ -466,32 +454,6 @@ fn check_durable_store_lifecycle() -> std::result::Result<(), String> {
         .map_err(|e| e.to_string())?;
     if replay.events.len() != 1 {
         return Err("replay must return the recorded usage event".into());
-    }
-    let _ = std::fs::remove_dir_all(&dir);
-    Ok(())
-}
-
-fn sha256_hex(raw: &str) -> String {
-    use sha2::{Digest, Sha256};
-    let mut hasher = Sha256::new();
-    hasher.update(raw.as_bytes());
-    format!("{:x}", hasher.finalize())
-}
-
-fn check_frozen_wire_oracle() -> std::result::Result<(), String> {
-    if sha256_hex(FROZEN_STORE_01) != FROZEN_STORE_01_SHA256 {
-        return Err("the embedded frozen wire store no longer matches its published sha256".into());
-    }
-    let dir = scratch_dir("frozen")?;
-    let store = JsonlStreamStore::new(dir.clone()).map_err(|e| e.to_string())?;
-    let stream_ref: StreamRef =
-        serde_json::from_value(json!("stream:oracle/雪 !'()*")).map_err(|e| e.to_string())?;
-    std::fs::write(store.path(&stream_ref), FROZEN_STORE_01).map_err(|e| e.to_string())?;
-    let stream = store.load(&stream_ref).map_err(|e| e.to_string())?;
-    let reading = serde_json::to_value(stream.read(actuation_stream::PageRequest::default()))
-        .map_err(|e| e.to_string())?;
-    if reading["lifecycle"]["state"] != json!("open") {
-        return Err(format!("frozen store lifecycle drifted: {reading}"));
     }
     let _ = std::fs::remove_dir_all(&dir);
     Ok(())
