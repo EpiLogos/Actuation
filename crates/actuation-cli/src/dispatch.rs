@@ -4,7 +4,7 @@
 //! the capabilities listing and dispatch are all derived from the table, so a
 //! command cannot exist in one representation and be missing from another.
 use crate::surface::{cli_surface, ACTUATION_CLI_VERSION};
-use crate::{authority, commands, occupancy};
+use crate::{authority, commands, nara_session, occupancy};
 use actuation_core::Error;
 use serde_json::{json, Value};
 use std::io::Read;
@@ -74,6 +74,7 @@ fn route_order() -> Vec<usize> {
 }
 
 static COMMANDS: &[CommandDescriptor] = &[
+    command!("nara.serve", &["nara", "serve"], "actuation nara serve", "Serve the native Nara session lifecycle as bounded JSON lines (O:I speech route)", false, nara_session::serve),
     command!("capabilities", &["capabilities"], "actuation capabilities [--json]", "Operator discovery: the descriptors context-selected agents read", false, commands::capabilities),
     command!("contract.list", &["contract", "list"], "actuation contract list [--json]", "List the served contract routes", false, commands::contract_list),
     command!("agency.read", &["agency"], "actuation agency [file|-] [--json]", "The current agency reading for authorised agency work", true, commands::agency_read),

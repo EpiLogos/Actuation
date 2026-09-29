@@ -194,6 +194,8 @@ impl NaraBinding {
         evidence_refs: Vec<ExternalRef>,
         at: &str,
     ) -> Result<SpeechConstitutionChange> {
+        // Validate the complete replacement before changing the live session.
+        let next_reading = read_dialogue_context(&next_context, &next_constitution)?;
         let change = self.session.replace_body(
             change_ref,
             next_constitution.clone(),
@@ -201,7 +203,7 @@ impl NaraBinding {
             evidence_refs,
             at,
         )?;
-        self.context_reading = read_dialogue_context(&next_context, &next_constitution)?;
+        self.context_reading = next_reading;
         self.context = next_context;
         Ok(change)
     }

@@ -125,6 +125,106 @@ fn realtime_nara() -> NaraBinding {
     .unwrap()
 }
 
+#[test]
+fn rejected_reconnect_preserves_the_complete_live_binding() {
+    let mut binding = realtime_nara();
+    binding
+        .session_mut()
+        .begin_response(ExternalRef::new("response:original").unwrap())
+        .unwrap();
+    let before = binding.read();
+    let context_before = binding.context().clone();
+    let constitution_before = binding.session().constitution().as_value().clone();
+    let result = binding.reconnect(
+        "change:rejected",
+        constitution(
+            "replacement",
+            "session:nara-1",
+            true,
+            json!({"state":"supported"}),
+        ),
+        context("nara:someone-else", "session:nara-1"),
+        "replace body",
+        vec![ExternalRef::new("evidence:resolution").unwrap()],
+        "2026-09-27T12:00:00Z",
+    );
+    assert!(result.is_err());
+    assert_eq!(binding.read(), before);
+    assert_eq!(binding.context(), &context_before);
+    assert_eq!(
+        binding.session().constitution().as_value(),
+        &constitution_before
+    );
+}
+
+#[test]
+fn text_body_cannot_overwrite_an_active_native_response() {
+    let mut binding = NaraBinding::constitute(
+        constitution(
+            "text",
+            "session:nara-1",
+            false,
+            json!({"state":"unsupported","reason":"no speech"}),
+        ),
+        context("nara:canonical", "session:nara-1"),
+        vec![],
+        vec![],
+    )
+    .unwrap();
+    binding
+        .session_mut()
+        .begin_response(ExternalRef::new("response:first").unwrap())
+        .unwrap();
+    let before = binding.read();
+    assert!(binding
+        .session_mut()
+        .begin_response(ExternalRef::new("response:second").unwrap())
+        .is_err());
+    assert_eq!(binding.read(), before);
+    binding.session_mut().complete_response().unwrap();
+    binding
+        .session_mut()
+        .begin_response(ExternalRef::new("response:second").unwrap())
+        .unwrap();
+    assert_eq!(
+        binding.session().read()["in_flight_response_ref"],
+        "response:second"
+    );
+}
+
+#[test]
+fn unavailable_replacement_refuses_without_losing_the_current_response() {
+    let mut binding = realtime_nara();
+    binding
+        .session_mut()
+        .begin_response(ExternalRef::new("response:original").unwrap())
+        .unwrap();
+    let before = binding.read();
+    let mut next = constitution(
+        "unavailable",
+        "session:nara-1",
+        true,
+        json!({"state":"supported"}),
+    )
+    .as_value()
+    .clone();
+    next["conditions"] =
+        json!([{"condition":"unavailable","reason":"native provider cannot open this body"}]);
+    let next = SpeechConstitution::try_from(next).unwrap();
+    assert!(!next.body_usable());
+    assert!(binding
+        .reconnect(
+            "change:unavailable",
+            next,
+            context("nara:canonical", "session:nara-1"),
+            "fresh resolution",
+            vec![ExternalRef::new("evidence:resolution").unwrap()],
+            "2026-09-27T12:00:00Z"
+        )
+        .is_err());
+    assert_eq!(binding.read(), before);
+}
+
 /// Demand 1 + 2: one Nara across two speech-body materialisations; native
 /// realtime and composed cascade both inhabit the same semantic Nara.
 #[test]
