@@ -9,7 +9,8 @@ pub fn is_blank_reference(value: &str) -> bool {
 }
 
 macro_rules! references {
-    ($($name:ident),+ $(,)?) => {$ (
+    ($($(#[$meta:meta])* $name:ident),+ $(,)?) => {$ (
+        $(#[$meta])*
         #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
         #[serde(transparent)]
         pub struct $name(String);
@@ -76,7 +77,19 @@ references!(
     ModelSurfaceRef,
     ProviderSessionRef,
     TransportConnectionRef,
-    ExternalRef
+    ExternalRef,
+    /// A stable World Position: a durable address in a Local or Project World
+    /// (`central:position:<world>:<slug>`), defined in Central's ground and
+    /// carried here verbatim. Opaque and non-empty; Actuation never parses,
+    /// resolves or mints it.
+    ///
+    /// A World Position is not an Agent, an Agency, an AgentSession or a
+    /// `LocusRef`. A locus is a participation position inside one
+    /// composition and ends with it (docs/ACTUATION-RELATION.md §3); a World
+    /// Position outlives every composition, session, model, harness and
+    /// Workcell placement that ever occupies it. Occupancy of it is recorded
+    /// as tenures (see [`crate::Tenure`]).
+    WorldPositionRef
 );
 
 #[derive(Clone, Debug, Eq, PartialEq)]

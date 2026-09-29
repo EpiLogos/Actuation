@@ -374,6 +374,63 @@ pub fn capability(value: &Value) -> String {
     out
 }
 
+fn intake_checks(value: &Value) -> String {
+    value["checks"]
+        .as_array()
+        .map(|checks| {
+            checks
+                .iter()
+                .map(|check| {
+                    format!(
+                        "  {} {}: {}",
+                        text(&check["result"]),
+                        text(&check["check"]),
+                        text(&check["detail"]),
+                    )
+                })
+                .collect::<Vec<_>>()
+                .join("\n")
+        })
+        .unwrap_or_default()
+}
+
+pub fn capability_validation(value: &Value) -> String {
+    let verdict = if value["valid"] == serde_json::json!(true) {
+        "valid"
+    } else {
+        "INVALID"
+    };
+    format!(
+        "Capability validation: {} — {} (against catalog r{})\n{}",
+        text(&value["harness_slug"]),
+        verdict,
+        value["catalog_revision"],
+        intake_checks(value),
+    )
+}
+
+pub fn capability_contribution(value: &Value) -> String {
+    let landing = &value["landing"];
+    format!(
+        "Contribution received: {} (fills the declared capability gap for {})\nSource: {} (sha256 {})\nLanding: {}\n  {}\n{}",
+        text(&value["contribution_ref"]),
+        text(&value["harness_slug"]),
+        text(&value["source"]["origin"]),
+        text(&value["source"]["sha256"]),
+        text(&landing["edit"]),
+        text(&landing["merged_by"]),
+        value["obligations"]
+            .as_array()
+            .map(|obligations| obligations
+                .iter()
+                .filter_map(|o| o.as_str())
+                .map(|o| format!("Obligation: {o}"))
+                .collect::<Vec<_>>()
+                .join("\n"))
+            .unwrap_or_default(),
+    )
+}
+
 pub fn capability_catalog(value: &Value) -> String {
     let lines = value["capabilities"]
         .as_array()

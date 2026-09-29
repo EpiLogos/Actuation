@@ -4,7 +4,7 @@ mod runtime;
 use actuation_core::*;
 use actuation_runtime::*;
 use actuation_stream::*;
-use serde_json::{json, Value};
+use serde_json::json;
 fn setup() -> (tempfile::TempDir, JsonlStreamStore, OpenStream, Attribution) {
     let root = tempfile::tempdir().unwrap();
     let store = JsonlStreamStore::new(root.path()).unwrap();
@@ -18,15 +18,13 @@ fn setup() -> (tempfile::TempDir, JsonlStreamStore, OpenStream, Attribution) {
 #[test]
 fn ordinary_loop_evidence_is_replayable_actuality_without_factory_ancestry() {
     let (_root, store, o, actor) = setup();
-    let corpus: Value =
-        serde_json::from_str(include_str!("../../../fixtures/migration/runtime.json")).unwrap();
-    let input = corpus["cases"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|r| r["kind"] == "loop")
-        .unwrap()["input"]
-        .clone();
+    // A minimal scripted loop, inline since the Node-era runtime corpus was
+    // retired (cleanup/retire-node-oracle-2026-09-22): the law under test is
+    // replayable actuality without factory ancestry, not corpus parity.
+    let input = json!({
+        "models": [{"content": "done", "capabilityCalls": []}],
+        "request": {"taskId": "zero-tool", "input": "task input", "runId": "trace:zero-tool"}
+    });
     let request = LoopRequest::from_legacy(input["request"].clone()).unwrap();
     let mut host = runtime::ScriptedHost::new(&input);
     let mut observer = StreamRuntimeObserver::with_clock(

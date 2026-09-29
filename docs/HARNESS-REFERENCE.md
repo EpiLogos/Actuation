@@ -37,7 +37,8 @@ contract:
 
 - a harness is **detected** only when a probe proved presence, with receipts captured in the same run;
 - **unavailable** always carries a reason and is never silently read as absence;
-- **not-installed** requires probe evidence of absence — "could not run" never collapses into "ran and found nothing".
+- **not-installed** requires probe evidence of absence — "could not run" never collapses into "ran and found nothing";
+- **no probe may hang silently**: every probe that invokes an external binary or reads the outside world ends inside a hard wall-clock bound (10s engine default, overridable per probe with `timeout_ms` in the descriptor's probe spec), and every failure class carries a named outcome from the shared vocabulary `ok | credential-gated | unreachable | unsupported | timed-out | refused` — a timed-out target is `timed-out` with the elapsed bound, an exec that cannot start is `unreachable`, a target that exits non-zero is `refused`. A descriptor may also declare a credential presence signal (`credential: {"path": ...}`): the file is stat'ed only, never read, and its presence surfaces as `credential-gated` in the detection disclosure.
 
 Adding a harness is one descriptor entry in `catalog/targets.json` plus a
 `catalog_revision` bump: a small mechanical step that can be performed

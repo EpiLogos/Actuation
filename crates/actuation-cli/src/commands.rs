@@ -11,8 +11,9 @@ use crate::surface::{cli_surface, ACTUATION_CLI_CONTRACT, ACTUATION_CLI_VERSION}
 use crate::system::build_system_disclosure;
 use crate::verify;
 use actuation_adapters::{
-    attach_detection_evidence, effects::NativeEffects, usage, DetectionOptions, HarnessCapability,
-    InstantiationReceipt, NativeCatalog, HARNESS_CAPABILITY_VERSION,
+    attach_detection_evidence, capability_contribution_receipt, effects::NativeEffects, usage,
+    validate_capability_document, DetectionOptions, HarnessCapability, InstantiationReceipt,
+    NativeCatalog, HARNESS_CAPABILITY_VERSION,
 };
 use actuation_core::{agency_reading, Error, Result, StreamRef};
 use actuation_runtime::{ActualisationRequest, RealisedActuation};
@@ -512,6 +513,106 @@ pub fn harness_capability(command: &Command) -> Result<Output> {
     }
 }
 
+/// Public intake for harness capability descriptors (the contract's intake
+/// route, O:I #113 A1). `intake` selects the face: `false` is the validation
+/// face (`harness capability validate`), `true` the contribution face
+/// (`config-contribution capability`), which mints the owner-merge receipt
+/// when the intake law admits the descriptor. Exit codes: 0 valid/received,
+/// 1 refused with the named validation document on stdout, 2 for a handler
+/// refusal (unreadable or non-JSON input).
+fn capability_intake(command: &Command, intake: bool) -> Result<Output> {
+    let args = command.args.clone();
+    if let Some(extra) = args.iter().find(|arg| arg.starts_with("--")) {
+        return Err(Error::new(format!(
+            "capability intake takes a single file positional (or - for stdin); unexpected flag {extra}"
+        )));
+    }
+    let positionals: Vec<String> = args
+        .iter()
+        .filter(|arg| !arg.starts_with("--"))
+        .cloned()
+        .collect();
+    let path = match positionals.as_slice() {
+        [] => None,
+        [only] => Some(only.clone()),
+        [_, extra, ..] => {
+            return Err(Error::new(format!(
+                "capability intake takes a single file positional (or - for stdin); unexpected extra argument {extra}"
+            )))
+        }
+    };
+    let origin = path.clone().unwrap_or_else(|| "stdin".to_owned());
+    let raw = match path.as_deref() {
+        None | Some("-") => command.stdin.clone(),
+        Some(path) => std::fs::read_to_string(path)
+            .map_err(|e| Error::new(format!("cannot read capability document {path}: {e}")))?,
+    };
+    if raw.trim().is_empty() {
+        return Err(Error::new(format!(
+            "no capability document supplied for {origin}"
+        )));
+    }
+    let value: Value = serde_json::from_str(&raw)
+        .map_err(|e| Error::new(format!("{origin} is not valid JSON: {e}")))?;
+    let catalog = catalog()?;
+    if !intake {
+        let document = validate_capability_document(&catalog, &value);
+        let code = if document["valid"] == json!(true) {
+            0
+        } else {
+            1
+        };
+        return Ok(Output {
+            code,
+            stdout: if command.json {
+                serde_json::to_string_pretty(&document).map_err(|e| Error::new(e.to_string()))?
+            } else {
+                render::capability_validation(&document)
+            },
+            stderr: String::new(),
+        });
+    }
+    match capability_contribution_receipt(&catalog, &value, &origin, &raw, now_unix_ms()) {
+        Ok(receipt) => Ok(Output {
+            code: 0,
+            stdout: if command.json {
+                serde_json::to_string_pretty(&receipt).map_err(|e| Error::new(e.to_string()))?
+            } else {
+                render::capability_contribution(&receipt)
+            },
+            stderr: String::new(),
+        }),
+        Err(_) => {
+            // A refused intake still answers: the named validation document
+            // on stdout, exit 1. The error text travels in stderr.
+            let document = validate_capability_document(&catalog, &value);
+            Ok(Output {
+                code: 1,
+                stdout: if command.json {
+                    serde_json::to_string_pretty(&document)
+                        .map_err(|e| Error::new(e.to_string()))?
+                } else {
+                    render::capability_validation(&document)
+                },
+                stderr: String::new(),
+            })
+        }
+    }
+}
+
+/// `harness capability validate <file|->` — validate a capability descriptor
+/// document against the schema and the catalog laws, with named diagnostics.
+pub fn harness_capability_validate(command: &Command) -> Result<Output> {
+    capability_intake(command, false)
+}
+
+/// `config-contribution capability <file|->` — receive a capability
+/// descriptor contribution that fills a declared gap; the receipt holds it
+/// for the owner's merge into the bundled catalog.
+pub fn config_contribution_capability(command: &Command) -> Result<Output> {
+    capability_intake(command, true)
+}
+
 pub fn system_read(command: &Command) -> Result<Output> {
     let catalog = catalog()?;
     let mut effects = NativeEffects::from_environment()
@@ -559,6 +660,13 @@ pub fn config_contribution(command: &Command) -> Result<Output> {
     }
     lines.push(
         "\nMutation transport: plan/apply/reset are unavailable — Actuation performs no settings mutation; validate answers truthfully.".to_owned(),
+    );
+    lines.push(
+        "\nCapability-descriptor intake: `actuation config-contribution capability <file|->` \
+         receives a descriptor that fills a declared capability gap (validate first with \
+         `actuation harness capability validate <file|->`); the receipt holds it for the \
+         owner's merge into the bundled catalog."
+            .to_owned(),
     );
     Ok(Output {
         code: 0,

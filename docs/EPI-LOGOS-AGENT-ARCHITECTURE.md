@@ -149,3 +149,47 @@ This lock follows the owner's conversation through the final #0/1-versus-#0 corr
 Inspection bases for this publication: Actuation `8459d503542e3707dc03919ba6f467abb9f60e09`, QL-MEF `2bcdc78c2f97ce13312bf96011bd18bea7b73ea5`, O:I `fdb7958d16c94cc4538cc4208bf62f8192486ec2`. These are source bases, not an installed compatibility receipt.
 
 Return exact native operations, source/profile/tool versions, actual invocation and child lineage, selected/delivered/used context, material generations, mode UI evidence, failures/repairs and independent replay to #107/#220/#65 and QL-MEF #201. Source publication and CI do not report a live default agent, successful provider experiment or human Recognition. No machine mutation is performed by this documentation commission.
+
+## 9. Implemented acting-body candidate — 2026-09-22
+
+The runtime candidate is published in [#110](https://github.com/EpiLogos/Actuation/pull/110). `crates/actuation-research/src/epi_agent.rs` constitutes the **#0/1** body against the QL owner constitution and refuses a mismatched #0–#5 readback. `application.rs` exposes `epi-agent.body` and `epi-agent.run`; the existing Prime recursion remains the scheduler.
+
+The existing inherited `ql-relational` Skill now carries actual #0–#5 calls and leaves the same native faculty receipts at parent and child loci. It prefers an installed `QL_BIN` with an explicit `QL_OWNER_REVISION`; the source-checkout cargo path remains only the matched research fallback. `faculty.rs` verifies each QL invocation's position and operation instead of accepting an arbitrary wrapper result. The #3 branch also delegates `techne_reading(target)` to QL-MEF's existing production `ql techne reading` adapter; the native owner admits that exact command and the resulting `ql-techne-reading` receipt is attributed to Mahāmāyā rather than treating a catalogue entry as execution.
+
+For application use, `actuation-epi-prime` is the installable Prime JSONL-RPC launcher. It binds the admitted QL binary/revision, relational Skill, research/faculty bridge and RLM depth into Prime's native process. Provider/model are a paired explicit override: when AIKit has selected one, they are delivered and Prime must read them back; when no AIKit override is authored, Prime's own configured model is observed rather than invented by Actuation. Mode selection never authorises Continual refinement.
+
+The twelve-tool form remains the initial reference research supply. The current product transport truth is narrower: domain faculties reach Prime through the inherited Skill/faculty bridge until the Prime transport itself advertises them as first-class tool descriptors. The 4/6/8/12, prompt-only and tool-only conditions therefore remain real comparative conditions instead of being rewritten around the product candidate.
+
+Cloud evidence proves the Prime structural apparatus, inherited Skill compilation, native research boundaries, deep runtime and CLI/build surfaces. Credentialled Prime inference, inexpensive-child model choice, installed material/worktree restriction, Jev/EBM use and human experience are not inferred from those gates; they remain explicit joined/local acceptance conditions.
+
+
+## 10. Native NOW continuation — 2026-09-22 follow-up
+
+The worker-replacement branch is bound to Central's existing NOW owner rather
+than an Actuation handoff file. The inherited `ql-relational` Skill exposes
+`central_now_handover`, `central_now_inspect` and
+`central_now_handoff_read`. They invoke `ctrl action run
+projectcentral.now.return/inspect` and retain Central's
+`central.project-now.handoff/v1` identity, lifecycle and source.
+
+A handoff is deliberately pithy: returned difference, session/source/evidence/
+preserve refs, and exact repo/branch/optional-worktree lane refs. A replacement
+Prime worker re-reads that native record and continues from those refs; the
+parent transcript is not transferred. The optional owner requires the installed
+Central `ctrl` binary and Central root. Absence makes this continuation faculty
+unavailable without blocking ordinary QL work.
+
+The installable launcher also carries the installed AIKit executable explicitly
+so `spawn_child_cheapest` can resolve the live `CHEAPEST_ELIGIBLE` roster
+through credential-scoped launches. These paths are configuration inputs, not
+Agent identity or authority.
+
+This closes the native handover *mechanism*. It does not claim the commissioned
+per-worker material confinement: Prime 0.9.4's `rlm.run` host owns child
+process creation and exposes no child supervisor/write-boundary hook. Workcell's
+Linux Landlock boundary can confine a process tree that it launches, but
+wrapping the whole Prime body would not prove independently assigned child
+worktrees and a writable worker directory could still contain an editable copy.
+That material join remains an explicit native-host boundary until Prime exposes
+a child-launch hook or the worker is launched through a Workcell-owned session
+surface that can apply the restriction before exec.

@@ -1,6 +1,6 @@
 {
   "schema": "actuation.native-catalog/v1",
-  "catalog_revision": 12,
+  "catalog_revision": 19,
   "descriptors": [
     {
       "schema": "actuation.harness-detection/v1",
@@ -125,6 +125,9 @@
       "aliases": [
         "gemini-cli"
       ],
+      "credential": {
+        "path": "~/.gemini/oauth_creds.json"
+      },
       "probe": {
         "executable": {
           "names": [
@@ -161,7 +164,8 @@
         "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
         "source_refs": [
           "survey:local-machine-2026-09-05",
-          "survey:mcp-config-facet-2026-09-16"
+          "survey:mcp-config-facet-2026-09-16",
+          "acceptance:gemini-oauth-hang-2026-09-23"
         ],
         "catalog_revision": 1
       }
@@ -296,38 +300,190 @@
     {
       "schema": "actuation.harness-detection/v1",
       "document": "descriptor",
-      "slug": "grok-bot",
+      "slug": "grok",
       "native_kind": "harness",
-      "edition": "cli+service",
+      "edition": "cli",
       "native_owner": "xAI",
-      "summary": "grok-bot harness; runs as a background daemon, version probe may prompt the keychain",
-      "aliases": [
-        "gbot"
-      ],
+      "summary": "Grok Build agent CLI; xAI's coding harness (the grok-bot CLI is bot management, not coding \u2014 roster correction 2026-09-22)",
       "probe": {
         "executable": {
           "names": [
-            "grok-bot",
-            "gbot"
+            "grok"
           ],
           "version_args": [
             "--version"
           ]
         },
         "config-dir": {
-          "path": "~/.grokbot"
-        },
-        "service": {
-          "kind": "daemon",
-          "name": "grok-bot"
+          "path": "~/.grok"
+        }
+      },
+      "facets": {
+        "config": {
+          "path": "~/.grok/config.toml"
         }
       },
       "provenance": {
-        "authored_by": "O:I detection programme (agent survey of this machine, 2026-09-05)",
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
         "source_refs": [
-          "survey:local-machine-2026-09-05"
+          "doc:docs.x.ai/build/overview (Grok Build: binary grok, config ~/.grok/config.toml, headless grok -p --output-format streaming-json, ACP docs-declared)",
+          "aikit:clients/grok.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:grok-bot 0.2.2 on this machine 2026-09-22 (bot/group management only \u2014 the product the retired grok-bot row misdescribed)"
         ],
-        "catalog_revision": 1
+        "catalog_revision": 18
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "copilot",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "GitHub",
+      "summary": "GitHub Copilot CLI; first-party ACP face `copilot --acp` (public preview)",
+      "probe": {
+        "executable": {
+          "names": [
+            "copilot"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        }
+      },
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.github.com/en/copilot/reference/acp-server (first-party ACP face copilot --acp, public preview 2026-01-28)",
+          "aikit:clients/copilot.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 18
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "cline",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Cline",
+      "summary": "Cline CLI; first-party ACP face `cline --acp`, no batch headless JSON documented",
+      "probe": {
+        "executable": {
+          "names": [
+            "cline"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        }
+      },
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.cline.bot (first-party ACP face cline --acp; CLINE_API_KEY auth)",
+          "aikit:clients/cline.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 18
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "kiro-cli",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "AWS",
+      "summary": "Kiro CLI (renamed Amazon Q CLI); first-party ACP face `kiro-cli acp [--agent]`",
+      "probe": {
+        "executable": {
+          "names": [
+            "kiro-cli"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        }
+      },
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:kiro.dev/docs/cli/acp (first-party ACP face kiro-cli acp [--agent], JSON-RPC 2.0 over stdio)",
+          "aikit:clients/kiro_cli.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (the q/kiro binary-identity split is unresolved, so only kiro-cli is probed; not installed on this machine)"
+        ],
+        "catalog_revision": 18
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "qoder",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Qoder",
+      "summary": "Qoder CLI; first-party ACP face `qoder --acp`, headless undocumented",
+      "probe": {
+        "executable": {
+          "names": [
+            "qoder"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        }
+      },
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.qoder.com/cli/acp (first-party ACP face qoder --acp; QODER_PERSONAL_ACCESS_TOKEN auth)",
+          "aikit:clients/qoder.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 18
+      }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "droid",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Factory",
+      "summary": "Factory Droid CLI; headless runner `droid exec --output-format stream-jsonrpc`, MCP config at ~/.factory/mcp.json",
+      "probe": {
+        "executable": {
+          "names": [
+            "droid"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.factory"
+        }
+      },
+      "facets": {
+        "mcp-config": {
+          "path": "~/.factory/mcp.json",
+          "inventory": {
+            "kind": "mcp-servers",
+            "source": "file",
+            "collection": "mcpServers"
+          }
+        }
+      },
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.factory.com (headless droid exec --output-format stream-jsonrpc; MCP client config ~/.factory/mcp.json and .factory/mcp.json, key mcpServers, `droid mcp add`)",
+          "aikit:clients/droid.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 18
       }
     },
     {
@@ -798,6 +954,45 @@
         ],
         "catalog_revision": 11
       }
+    },
+    {
+      "schema": "actuation.harness-detection/v1",
+      "document": "descriptor",
+      "slug": "prime",
+      "native_kind": "harness",
+      "edition": "cli",
+      "native_owner": "Prime Intellect",
+      "summary": "Prime Agent recursive agent harness (prime-agent)",
+      "aliases": [
+        "prime-agent"
+      ],
+      "probe": {
+        "executable": {
+          "names": [
+            "prime-agent"
+          ],
+          "version_args": [
+            "--version"
+          ]
+        },
+        "config-dir": {
+          "path": "~/.prime/agent"
+        }
+      },
+      "facets": {
+        "models": {
+          "path": "~/.prime/agent/prime-inference-models-cache.json"
+        }
+      },
+      "provenance": {
+        "authored_by": "Epi-Logos Prime-QL agent-correctness lane (installed-binary observation on this machine, 2026-09-23)",
+        "source_refs": [
+          "survey:local-machine-2026-09-23",
+          "detection:prime-agent 0.9.4 at ~/.npm-global/bin/prime-agent (prime-agent --version, 2026-09-23)",
+          "upstream:github.com/PrimeIntellect-ai/prime-agent pinned f771dfcedd684d1afff84ca2c6fa95c7a21efbc2"
+        ],
+        "catalog_revision": 14
+      }
     }
   ],
   "capabilities": [
@@ -930,7 +1125,7 @@
       "schema": "actuation.harness-capability/v1",
       "document": "capability",
       "harness_slug": "codex",
-      "summary": "Per-project hooks.json covers SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop, PreCompact, SessionEnd and the subagent/permission events; hook JSON output carries hookSpecificOutput.additionalContext; PreToolUse permissionDecision deny vetoes the tool call; config.toml notify still invokes an external program at turn completion.",
+      "summary": "CODEX_HOME hooks.json covers the 12 hook events codex 0.155.1 ships (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop, PreCompact, PostCompact, SessionEnd, SubagentStart, SubagentStop, Interrupt, PermissionRequest); hook JSON output carries hookSpecificOutput.additionalContext on five events; PreToolUse permissionDecision deny vetoes the tool call and Stop, UserPromptSubmit and SubagentStop ship decision:block plus a required reason; config.toml notify invokes an external program at turn completion.",
       "native_events": [
         {
           "event": "session-start",
@@ -944,9 +1139,9 @@
           "event": "user-prompt-submit",
           "native_name": "UserPromptSubmit",
           "transport": "hooks-json-file",
-          "can_block": false,
+          "can_block": true,
           "context_channel": "stdout-additional-context",
-          "notes": "UserPromptSubmitHookSpecificOutputWire.additionalContext declared in the shipped schema; no deny channel observed for this event."
+          "notes": "UserPromptSubmitHookSpecificOutputWire.additionalContext declared in the shipped schema; the same shipped output schema declares decision:'block' (BlockDecisionWire) plus reason \u2014 a block channel the r12 correction missed."
         },
         {
           "event": "pre-tool-use",
@@ -968,9 +1163,9 @@
           "event": "stop",
           "native_name": "Stop",
           "transport": "hooks-json-file",
-          "can_block": false,
+          "can_block": true,
           "context_channel": "none",
-          "notes": "Stop is a declared hook event in the shipped schema; no continuation-forcing output channel is evidenced."
+          "notes": "shipped 0.155.1 stop.command.output declares decision:'block' (BlockDecisionWire) plus reason \u2014 a continuation-forcing channel \u2014 and stop_hook_active rides the input to guard continuation loops; codex enforces that reason is required when decision is block during output parsing (its own schema text: \"Claude requires `reason` when `decision` is `block`\")."
         },
         {
           "event": "session-end",
@@ -1000,9 +1195,9 @@
           "event": "custom",
           "native_name": "SubagentStop",
           "transport": "hooks-json-file",
-          "can_block": false,
+          "can_block": true,
           "context_channel": "none",
-          "notes": "declared hook event in the shipped schema."
+          "notes": "shipped 0.155.1 subagent-stop.command.output declares decision:'block' (BlockDecisionWire) plus reason, with stop_hook_active in the input; codex enforces that reason is required when decision is block during output parsing."
         },
         {
           "event": "custom",
@@ -1011,6 +1206,22 @@
           "can_block": true,
           "context_channel": "none",
           "notes": "the hook engine records a denied approval ('PermissionRequest hook denied approval'); the event gates approvals, not context."
+        },
+        {
+          "event": "custom",
+          "native_name": "PostCompact",
+          "transport": "hooks-json-file",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "shipped 0.155.1 post-compact.command.output declares only continue/stopReason/suppressOutput/systemMessage \u2014 advisory; the input carries trigger manual/auto."
+        },
+        {
+          "event": "custom",
+          "native_name": "Interrupt",
+          "transport": "hooks-json-file",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "shipped 0.155.1 interrupt.command.output declares only systemMessage \u2014 observability on user interrupt; no decision or context channel."
         }
       ],
       "injection_channel": {
@@ -1020,23 +1231,23 @@
       },
       "blocking_semantics": {
         "kind": "deny-and-block",
-        "notes": "PreToolUse permissionDecision:deny (with non-empty permissionDecisionReason) vetoes the tool call; PermissionRequest can deny an approval. A dispatch gate rides the hook decision."
+        "notes": "PreToolUse permissionDecision:deny (with non-empty permissionDecisionReason) vetoes the tool call; PermissionRequest can deny an approval; Stop, UserPromptSubmit and SubagentStop ship decision:'block' plus a required reason \u2014 codex 0.155.1 deliberately mirrors Claude's hook blocking contract (its own schema text: \"Claude requires `reason` when `decision` is `block`\"). A dispatch gate rides the hook decision."
       },
       "wake_capability": {
         "kind": "none",
         "notes": "unchanged by the correction: hooks and notify execute inside or beside a running session; nothing observed wakes the harness from outside. A relay sender must not pretend codex can be woken."
       },
       "install_seam": {
-        "config_path": ".codex/hooks.json",
+        "config_path": "$CODEX_HOME/hooks.json",
         "format": "json",
-        "entry_shape": "per-event hook command entries under camelCase event names (SessionStart / UserPromptSubmit / PreToolUse / PostToolUse / Stop / PreCompact / SessionEnd / SubagentStart / SubagentStop / PermissionRequest); notify listener configured separately in config.toml; hook trust state recorded in hooks.state",
+        "entry_shape": "environment-scoped: the seam is the hooks.json inside the codex home named by CODEX_HOME (default ~/.codex), not the per-project .codex/hooks.json the harness also reads natively \u2014 corrected 2026-09-23 against the aikit codex projection (apply exit 0 on git projects, per-generation undo byte-exact). Per-event hook command entries under camelCase event names (SessionStart / UserPromptSubmit / PreToolUse / PostToolUse / Stop / PreCompact / PostCompact / SessionEnd / SubagentStart / SubagentStop / Interrupt / PermissionRequest); notify listener configured separately in config.toml; hook trust state recorded in hooks.state",
         "ownership_marker": "hook command resolves to the AIKit dispatch executable",
         "preserves_foreign_entries": true
       },
       "uninstall_seam": {
-        "config_path": ".codex/hooks.json",
+        "config_path": "$CODEX_HOME/hooks.json",
         "format": "json",
-        "entry_shape": "entries whose command matches the ownership marker are removed; foreign entries and config.toml notify are untouched",
+        "entry_shape": "environment-scoped: entries in $CODEX_HOME/hooks.json whose command matches the ownership marker are removed; foreign entries and config.toml notify are untouched",
         "ownership_marker": "hook command resolves to the AIKit dispatch executable",
         "preserves_foreign_entries": true
       },
@@ -1058,15 +1269,18 @@
         ]
       },
       "provenance": {
-        "authored_by": "O:I capability descriptor programme (corrected 2026-09-21 against codex-cli 0.155.1 installed on this machine: shipped hook output wire schema and hook-engine refusal strings; supersedes the 0.153.0 surface)",
+        "authored_by": "O:I capability descriptor programme (corrected 2026-09-23 against codex-cli 0.155.1's own embedded draft-07 hook output wire schemas \u2014 declares the shipped PostCompact and Interrupt events and the Stop/UserPromptSubmit/SubagentStop decision:block channels the 2026-09-21 correction missed \u2014 and against a local binary scan locating the notify config key in the installed 0.155.1 config field table; the notify invocation-at-turn-completion behaviour remains upstream-declared; install/uninstall seams redeclared 2026-09-23 to the environment-scoped $CODEX_HOME/hooks.json the dispatch projection actually writes)",
         "source_refs": [
           "survey:local-machine-2026-09-06",
           "survey:local-machine-2026-09-21",
           "upstream:openai-codex-cli-0.153.0",
           "upstream:openai-codex-cli-0.155.1",
-          "upstream:openai-codex-cli-config-reference"
+          "upstream:openai-codex-cli-config-reference",
+          "survey:codex-0.155.1-shipped-hook-schemas-2026-09-23",
+          "survey:codex-notify-binary-scan-2026-09-23",
+          "aikit:codex-seam-reverify-2026-09-22"
         ],
-        "catalog_revision": 12
+        "catalog_revision": 14
       }
     },
     {
@@ -1222,28 +1436,324 @@
         ],
         "catalog_revision": 8
       }
+    },
+    {
+      "schema": "actuation.harness-capability/v1",
+      "document": "capability",
+      "harness_slug": "gemini",
+      "summary": "Hooks dispatched from the settings.json hooks map across project/user/system/extension layers; stdin JSON in, stdout JSON out; exit 2 and decision deny block tools, turns and results with BeforeAgent/AfterAgent turn control; SessionStart, BeforeAgent and AfterTool carry an additional-context channel; no wake; native Gemini provider dispatch credential-gated on this machine.",
+      "native_events": [
+        {
+          "event": "session-start",
+          "native_name": "SessionStart",
+          "transport": "settings-json-hooks-map",
+          "can_block": false,
+          "context_channel": "stdout-additional-context",
+          "notes": "matcher values startup/resume/clear; hookSpecificOutput.additionalContext becomes the first history turn (interactive) or is prepended to the prompt (non-interactive); decision and continue are ignored - startup is never blocked."
+        },
+        {
+          "event": "session-end",
+          "native_name": "SessionEnd",
+          "transport": "settings-json-hooks-map",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "matcher values exit/clear/logout/prompt_input_exit/other; the CLI does not wait for the hook and ignores all flow-control fields."
+        },
+        {
+          "event": "custom",
+          "native_name": "BeforeAgent",
+          "transport": "settings-json-hooks-map",
+          "can_block": true,
+          "context_channel": "stdout-additional-context",
+          "notes": "exit 2 (or decision deny) blocks the turn and discards the prompt; continue:false blocks the turn but saves the prompt to history; hookSpecificOutput.additionalContext is appended to the prompt for this turn."
+        },
+        {
+          "event": "custom",
+          "native_name": "AfterAgent",
+          "transport": "settings-json-hooks-map",
+          "can_block": true,
+          "context_channel": "none",
+          "notes": "decision deny rejects the final response and forces a retry turn with reason as the new prompt; continue:false stops the session; hookSpecificOutput.clearContext:true clears conversation history; no text-append context channel."
+        },
+        {
+          "event": "custom",
+          "native_name": "BeforeModel",
+          "transport": "settings-json-hooks-map",
+          "can_block": true,
+          "context_channel": "none",
+          "notes": "decision deny (or exit 2) aborts the turn and skips the LLM call; hookSpecificOutput.llm_request overrides the outgoing request (model, generation config) and llm_response supplies a synthetic response that skips the call entirely; these are rewrites, not context injection."
+        },
+        {
+          "event": "custom",
+          "native_name": "AfterModel",
+          "transport": "settings-json-hooks-map",
+          "can_block": true,
+          "context_channel": "none",
+          "notes": "fires per streamed chunk; decision deny (or exit 2) discards the chunk and blocks the turn; hookSpecificOutput.llm_response replaces the chunk (redaction); continue:false kills the loop."
+        },
+        {
+          "event": "custom",
+          "native_name": "BeforeToolSelection",
+          "transport": "settings-json-hooks-map",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "filters the toolset: hookSpecificOutput.toolConfig.mode AUTO/ANY/NONE (NONE disables all tools) and allowedFunctionNames whitelist, combined across hooks; supports no decision, continue or systemMessage."
+        },
+        {
+          "event": "pre-tool-use",
+          "native_name": "BeforeTool",
+          "transport": "settings-json-hooks-map",
+          "can_block": true,
+          "context_channel": "none",
+          "notes": "decision deny (or exit 2) prevents execution and sends reason to the agent as a tool error; hookSpecificOutput.tool_input merges over the model's arguments (rewrite); matcher is a regex over tool names, MCP tools named mcp_<server>_<tool>; no additionalContext field on this event."
+        },
+        {
+          "event": "post-tool-use",
+          "native_name": "AfterTool",
+          "transport": "settings-json-hooks-map",
+          "can_block": true,
+          "context_channel": "stdout-additional-context",
+          "notes": "decision deny (or exit 2) hides the real tool output and replaces it with reason - the executed tool is not undone; hookSpecificOutput.additionalContext is appended to the tool result; tailToolCallRequest can substitute a further tool call; continue:false kills the loop."
+        },
+        {
+          "event": "pre-compact",
+          "native_name": "PreCompress",
+          "transport": "settings-json-hooks-map",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "matcher values auto/manual; fired asynchronously before history compression; cannot block or modify compression; flow-control fields ignored."
+        },
+        {
+          "event": "notification",
+          "native_name": "Notification",
+          "transport": "settings-json-hooks-map",
+          "can_block": false,
+          "context_channel": "none",
+          "notes": "outbound: fires on system alerts (notification_type ToolPermission observed in the reference); observability only, cannot block or auto-grant."
+        }
+      ],
+      "injection_channel": {
+        "kind": "stdout-additional-context",
+        "mechanism": "hookSpecificOutput.additionalContext in the hook's stdout JSON is the context channel: SessionStart (first history turn; prepended to the prompt headless), BeforeAgent (appended to the turn prompt), AfterTool (appended to the tool result). exit 2 stderr is the deny/reason channel, never a context channel. BeforeModel/AfterModel rewrite llm_request/llm_response and BeforeToolSelection filters toolConfig - rewrites and filters, not context injection.",
+        "notes": "observed on the gemini 0.29.5 surface: the hooks subcommand, the settings.json hooks schema and the sanitized hook environment (GEMINI_PROJECT_DIR, GEMINI_SESSION_ID, GEMINI_CWD, CLAUDE_PROJECT_DIR alias); hook event behaviour per the upstream reference for this release line (docs/hooks/reference.md). Non-JSON stdout pollution defaults the outcome to Allow - a dispatch consumer must emit strict JSON only."
+      },
+      "blocking_semantics": {
+        "kind": "deny-and-block",
+        "notes": "exit code 2 is a system block (tool call, turn, result or response aborted; stderr is the rejection reason); exit 0 stdout JSON decision deny|block denies per-event: BeforeTool prevents execution, BeforeAgent discards the prompt, AfterAgent forces a retry, AfterModel discards the chunk, AfterTool hides the result, BeforeModel skips the LLM call; continue:false kills the agent loop from any event that supports it; non-zero non-2 exits and stdout pollution are warnings that proceed with original parameters (fail-open)."
+      },
+      "wake_capability": {
+        "kind": "none",
+        "notes": "hooks execute only inside a running session; no daemon, listener or file-wake surface is observed on gemini 0.29.5. --experimental-acp is a client-driven stdio agent protocol in which the client spawns the gemini process - it is a dispatch entrypoint, not a wake of an existing session. A relay sender must not pretend gemini can be woken."
+      },
+      "install_seam": {
+        "config_path": "~/.gemini/settings.json (user) and .gemini/settings.json (project, highest precedence); /etc/gemini-cli/settings.json (system) and installed extensions also feed the hooks map",
+        "format": "json",
+        "entry_shape": "hooks.<EventName>[] entries, each {matcher?, sequential?, hooks: [{type: \"command\", command, name?, timeout?, description?}]}",
+        "ownership_marker": "hook command string carries the dispatch projection's marker (e.g. resolves to the dispatch executable path); entries without the marker are foreign",
+        "preserves_foreign_entries": true
+      },
+      "uninstall_seam": {
+        "config_path": "~/.gemini/settings.json (user) and .gemini/settings.json (project)",
+        "format": "json",
+        "entry_shape": "hooks.<EventName>[] entries whose hook command matches the ownership marker are removed (whole matcher-group when its last hook is removed); entries without the marker are untouched",
+        "ownership_marker": "hook command string carries the dispatch projection's marker (e.g. resolves to the dispatch executable path); entries without the marker are foreign",
+        "preserves_foreign_entries": true
+      },
+      "model_dispatch": {
+        "kind": "native-provider-binding",
+        "providers": [
+          {
+            "provider_ref": "provider:google",
+            "selector": {
+              "kind": "config-key",
+              "name": "model"
+            },
+            "credential": {
+              "required": true,
+              "hint": "Google account OAuth (observed state on this machine: security.auth.selectedType=oauth-personal with an expired/non-interactive session - headless use is blocked pending interactive re-authorization), or a GEMINI_API_KEY / Vertex Application Default Credentials"
+            },
+            "notes": "model is named by the settings.json model key or the -m/--model CLI flag; Actuation does not enumerate Google's model catalogue here."
+          }
+        ]
+      },
+      "provenance": {
+        "authored_by": "oi65-l6-author external integration agent (public-surface authorship only: live observation of gemini 0.29.5 on this machine, 2026-09-22, + upstream google-gemini/gemini-cli hooks documentation; no Actuation source access); normalized on public intake 2026-09-23: the event field carries Actuation's own boundary vocabulary (native_name keeps the harness's event name), so gemini events were mapped onto it by function - session-start/session-end/notification as their own kinds, BeforeTool -> pre-tool-use, AfterTool -> post-tool-use, PreCompress -> pre-compact, and BeforeAgent, AfterAgent, BeforeModel, AfterModel, BeforeToolSelection as custom (no AIKit boundary kind)",
+        "source_refs": [
+          "detection:2026-09-22T21:15:18.82Z gemini:detected exe:/opt/homebrew/bin/gemini config-facet ~/.gemini (extensions count 2, settings.json present, antigravity count 13, mcp-config inventory 1)",
+          "local:gemini --version -> 0.29.5 (homebrew gemini-cli 0.29.5, /opt/homebrew/Cellar/gemini-cli/0.29.5)",
+          "local:gemini --help -> hooks/skills/extensions/mcp subcommands, --approval-mode default|auto_edit|yolo|plan, --experimental-acp, -o text|json|stream-json, --allowed-tools/--allowed-mcp-server-names",
+          "local:gemini hooks --help -> hooks migrate (Claude Code hook migration) and /hooks panel surface",
+          "local:settings.json structure observed (keys only, values not read except security.auth.selectedType=oauth-personal)",
+          "local:NO_BROWSER=true gemini --list-sessions -> interactive OAuth authorization-code prompt (Please visit the following URL... Enter the authorization code) - headless use credential-blocked; gemini extensions list -> FatalAuthenticationError exitCode 41",
+          "local:SessionStart hook probe in a scratch project did not fire - auth wall precedes session start in headless mode; hook event behaviour therefore rests on the upstream reference, disclosed here",
+          "upstream:github.com/google-gemini/gemini-cli docs/hooks/index.md + docs/hooks/reference.md (11 events, exit-code and hookSpecificOutput schemas, settings.json hooks schema, config layer precedence)"
+        ],
+        "catalog_revision": 13
+      }
+    },
+    {
+      "schema": "actuation.harness-capability/v1",
+      "document": "capability",
+      "harness_slug": "openclaw",
+      "summary": "OpenClaw 2026.1.30: observed internal-hook configuration and bundled hook inventory; lifecycle dispatch, context, blocking and wake semantics remain unobserved.",
+      "native_events": [],
+      "injection_channel": {
+        "kind": "none",
+        "mechanism": "Unobserved: no verified additional-context field or pipe in the bounded census.",
+        "notes": "none is the required least-committal encoding, not a claim of unsupported functionality. openclaw hooks list completed on its 30-second retry and advertised boot-md (run BOOT.md on gateway startup), command-logger (log command events), session-memory (save session context on /new), and soul-evil (swap SOUL files). These are hook names and descriptions, not verified native event identifiers or context transport grammar; native_events is therefore empty. hooks info session-memory timed out after 10 seconds. No session-level probe or server was started."
+      },
+      "blocking_semantics": {
+        "kind": "none",
+        "notes": "Unobserved, not unsupported. Root help advertises approvals and hooks, but no blocking contract was observed. hooks --help printed internal hook management commands but timed out at both 10 and 30 seconds; neither outcome licenses runtime semantics."
+      },
+      "wake_capability": {
+        "kind": "none",
+        "notes": "Unobserved, not unsupported. Root help advertises system events, heartbeat and presence; system --help timed out at 10 seconds with no output. No listener was launched or verified."
+      },
+      "install_seam": {
+        "config_path": "/Users/admin/.openclaw/openclaw.json",
+        "format": "json",
+        "entry_shape": "Observed structure: hooks.internal.enabled is boolean; hooks.internal.entries maps a hook name to an object containing enabled:boolean. session-memory is an existing entry. This accounts for the named configuration seam only, not an unobserved executable-handler installation contract.",
+        "ownership_marker": "Contributor policy, not a native marker: only a newly created, collision-checked hooks.internal.entries key prefixed actuation-owned- is owned. Existing keys, including session-memory, are foreign. No entry was created during this census.",
+        "preserves_foreign_entries": true
+      },
+      "uninstall_seam": {
+        "config_path": "/Users/admin/.openclaw/openclaw.json",
+        "format": "json",
+        "entry_shape": "Reverse the proposed named-entry contribution by removing only its newly created, recorded hooks.internal.entries key. Preserve every other key and value, including hooks.internal.enabled. Do not remove the whole hooks or entries object. Reversibility is a contribution policy; no install or uninstall was executed.",
+        "ownership_marker": "Contributor policy: exact recorded actuation-owned- key created by the contributor after a collision check; a matching prefix alone does not establish ownership.",
+        "preserves_foreign_entries": true
+      },
+      "provenance": {
+        "authored_by": "Codex, local bounded harness census, 2026-09-23. Followed /tmp/t3-skill/skills/harness-plug-in/SKILL.md only. No repository source, campaign directories, external documentation, secret values, session execution, MCP server, daemon or REPL inspected or launched. Optional model_dispatch omitted: models --help timed out; config model key names alone do not settle binding or credential requirements.",
+        "source_refs": [
+          "detection:actuation harness capability openclaw \u2014 exit 2, explicit declared capability gap; diagnosis:harness-capability-coverage-2026-09-14. Named repository evidence in that response was not opened.",
+          "local:which openclaw \u2014 ok, /Users/admin/Library/pnpm/openclaw",
+          "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw --version \u2014 ok, exit 0, 2026.1.30",
+          "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw --help \u2014 ok, exit 0, version 2026.1.30 (76b5208), setup names ~/.openclaw/openclaw.json; hooks, models, system, approvals and agent commands advertised",
+          "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw hooks --help \u2014 timed-out, exit 142; partial help advertises internal hook list/info/check/enable/disable/install/update; behavior remains unobserved",
+          "local:perl -e 'alarm shift; exec @ARGV' 30 openclaw hooks --help \u2014 sole escalation retry timed-out, exit 142; partial help repeated; behavior remains unobserved",
+          "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw system --help \u2014 timed-out, exit 142, no output; wake remains unobserved",
+          "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw models --help \u2014 timed-out, exit 142, no output; model binding remains unobserved",
+          "local:/Users/admin/.openclaw/openclaw.json \u2014 ok, exists and parses as JSON; bounded Python structure-only traversal emitted key names and types, never scalar values. hooks.internal.enabled:boolean and hooks.internal.entries.session-memory.enabled:boolean observed. Ownership and preservation rules above are proposed contributor policy over this observed structure, not measured native behavior.",
+          "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw hooks list \u2014 timed-out, exit 142, no output",
+          "local:perl -e 'alarm shift; exec @ARGV' 30 openclaw hooks list \u2014 ok, exit 0, sole escalation retry; boot-md, command-logger and session-memory ready; soul-evil missing; inventory is not a complete event grammar",
+          "local:perl -e 'alarm shift; exec @ARGV' 10 openclaw hooks info session-memory \u2014 timed-out, exit 142, no output; no retry; event identifiers and execution semantics remain unobserved"
+        ]
+      }
+    },
+    {
+      "schema": "actuation.harness-capability/v1",
+      "document": "capability",
+      "harness_slug": "prime",
+      "summary": "Per-invocation recursive agent harness; provider and model are chosen per invocation (--provider/--model) from its own catalogue; skills ride per-launch --skill capsules; no observed stdout/JSON context-injection, deny-and-block or wake surface is declared here.",
+      "native_events": [],
+      "injection_channel": {
+        "kind": "none",
+        "mechanism": "no stdout/JSON context-injection channel is declared for prime 0.9.4. Additional context travels through Prime's own launch surface: skill capsules loaded per launch via --skill (verified from prime-agent --help on this machine) and its native prompt/session surface. Dispatch projections must use the skill capsule seam, never stdout.",
+        "notes": "prime also exposes --mode rpc (the AIKit Prime RPC encounter transport) and RLM child recursion; neither is an injection channel and neither is declared here."
+      },
+      "blocking_semantics": {
+        "kind": "none",
+        "notes": "no per-call blocking surface is declared: tool allowlists (-t/--tools, -nt, -nbt) are invocation flags set at launch, not dispatch hooks."
+      },
+      "wake_capability": {
+        "kind": "none",
+        "notes": "prime is per-invocation with an opt-in daemon; nothing declared here wakes a running session. A relay sender must not pretend prime can be woken."
+      },
+      "install_seam": {
+        "config_path": "per-launch argv (--skill <capsule-dir>); no on-disk projection seam is declared because prime's skill-discovery paths are unverified on this install",
+        "format": "skill-tree",
+        "entry_shape": "one directory per skill capsule, each carrying a SKILL.md front-matter document, passed to the launch as --skill <dir>",
+        "ownership_marker": "capsule directories written by the AIKit prime projection",
+        "preserves_foreign_entries": true
+      },
+      "uninstall_seam": {
+        "config_path": "per-launch argv (--skill <capsule-dir>); removing a projection means dropping the capsule from the launch argv, so nothing foreign is ever touched",
+        "format": "skill-tree",
+        "entry_shape": "capsule directories written by the AIKit prime projection are removed from the launch surface; foreign capsules and prime's own configuration are untouched",
+        "ownership_marker": "capsule directories written by the AIKit prime projection",
+        "preserves_foreign_entries": true
+      },
+      "model_dispatch": {
+        "kind": "native-provider-binding",
+        "providers": [
+          {
+            "provider_ref": "provider:deepseek",
+            "selector": {
+              "kind": "cli-flag",
+              "name": "--provider"
+            },
+            "credential": {
+              "required": true,
+              "hint": "prime reads DEEPSEEK_API_KEY from its process environment or resolves the key through its own auth surface (~/.prime/agent/auth.json)"
+            },
+            "notes": "model selected per invocation via --model; prime's own catalogue names deepseek-v4-flash and deepseek-v4-pro"
+          },
+          {
+            "provider_ref": "provider:kimi-coding",
+            "selector": {
+              "kind": "cli-flag",
+              "name": "--provider"
+            },
+            "credential": {
+              "required": true,
+              "hint": "prime resolves the Moonshot coding-plan key (KIMI_API_KEY/MOONSHOT_API_KEY) through its own auth surface (~/.prime/agent/auth.json) or its process environment"
+            },
+            "notes": "prime's own catalogue names k3, k3-256k, kimi-for-coding and kimi-for-coding-highspeed"
+          },
+          {
+            "provider_ref": "provider:minimax",
+            "selector": {
+              "kind": "cli-flag",
+              "name": "--provider"
+            },
+            "credential": {
+              "required": true,
+              "hint": "prime resolves the MiniMax key (MINIMAX_API_KEY) through its own auth surface or its process environment"
+            },
+            "notes": "prime's own catalogue names MiniMax-M2.7 and MiniMax-M2.7-highspeed"
+          },
+          {
+            "provider_ref": "provider:openrouter",
+            "selector": {
+              "kind": "cli-flag",
+              "name": "--provider"
+            },
+            "credential": {
+              "required": true,
+              "hint": "prime reads OPENROUTER_API_KEY from its process environment or its own auth store"
+            },
+            "notes": "prime's catalogue enumerates the openrouter offering; -latest rows are spelled with a leading '~' in prime's own listing"
+          },
+          {
+            "provider_ref": "provider:zai",
+            "selector": {
+              "kind": "cli-flag",
+              "name": "--provider"
+            },
+            "credential": {
+              "required": true,
+              "hint": "prime reads ZAI_API_KEY from its process environment or its own auth store"
+            },
+            "notes": "prime's own catalogue names glm-4.7, glm-5-turbo, glm-5.2, glm-5.2-highspeed, glm-5.3, glm-5.3-flash and glm-5.3-highspeed"
+          }
+        ],
+        "notes": "providers are exactly the rows prime-agent 0.9.4's own model catalogue discloses on this machine (prime-agent model list, 2026-09-23); the env-var names were read from the installed distribution's provider clients. Prime is provider-plural by design: provider and model are chosen per invocation. Actuation does not enumerate the providers' model ids here."
+      },
+      "provenance": {
+        "authored_by": "Epi-Logos Prime-QL agent-correctness lane (live prime-agent 0.9.4 observation on this machine, 2026-09-23)",
+        "source_refs": [
+          "survey:local-machine-2026-09-23",
+          "detection:prime-agent model list 0.9.4 (2026-09-23): 1 deepseek, 4 kimi-coding, 2 minimax, 297 openrouter, 7 zai rows",
+          "survey:prime-agent --help 0.9.4 (--provider/--model/--skill/--mode rpc)",
+          "survey:prime-agent installed distribution env-var reading (2026-09-23)"
+        ],
+        "catalog_revision": 19
+      }
     }
   ],
   "capability_gaps": [
-    {
-      "schema": "actuation.harness-capability-gap/v1",
-      "document": "capability-gap",
-      "harness_slug": "gemini",
-      "summary": "Gemini CLI agent harness; adapter consumes the detection record, descriptor not authored",
-      "reason": "No capability descriptor authored at diagnosis (2026-09-14): the gemini CLI's native event/blocking surface has not been observed into descriptor form. AIKit's adapter cites the detection record for discovery (ai-kit#186 round-2 migration) and records the undeclared capability state honestly; authoring the descriptor is Actuation-side work that had not happened.",
-      "evidence_refs": [
-        "aikit:clients/gemini.rs (ai-kit#186 round-2 migration, commit 971e8fa)",
-        "survey:local-machine-2026-09-05",
-        "diagnosis:harness-capability-coverage-2026-09-14"
-      ],
-      "provenance": {
-        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
-        "source_refs": [
-          "diagnosis:harness-capability-coverage-2026-09-14"
-        ],
-        "catalog_revision": 7
-      }
-    },
     {
       "schema": "actuation.harness-capability-gap/v1",
       "document": "capability-gap",
@@ -1304,20 +1814,127 @@
     {
       "schema": "actuation.harness-capability-gap/v1",
       "document": "capability-gap",
-      "harness_slug": "grok-bot",
-      "summary": "grok-bot harness; detected only, daemon wake unobserved",
-      "reason": "No capability descriptor authored at diagnosis (2026-09-14): AIKit's admission rides the detection record only, and the native surface \u2014 including whether the background daemon admits a wake \u2014 is unobserved. Wake optimism is not a transport, so nothing is declared.",
+      "harness_slug": "grok",
+      "summary": "Grok Build CLI; detected only, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-23): Grok Build's hook/event, blocking and wake surfaces are undocumented upstream and the CLI is not installed on this machine to observe. The retired grok-bot gap described a misidentified product (bot/group management), withdrawn with the roster correction. The catalog carries a disclosed gap rather than an invented descriptor.",
       "evidence_refs": [
-        "aikit:clients/grokbot.rs admission (ai-kit#186, closed 2026-09-08)",
-        "survey:local-machine-2026-09-05",
-        "diagnosis:harness-capability-coverage-2026-09-14"
+        "doc:docs.x.ai/build/overview (Grok Build: binary grok, config ~/.grok/config.toml, headless grok -p --output-format streaming-json, ACP docs-declared)",
+        "aikit:clients/grok.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:grok-bot 0.2.2 on this machine 2026-09-22 (bot/group management only \u2014 the product the retired grok-bot row misdescribed)"
       ],
       "provenance": {
-        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
         "source_refs": [
-          "diagnosis:harness-capability-coverage-2026-09-14"
+          "doc:docs.x.ai/build/overview (Grok Build: binary grok, config ~/.grok/config.toml, headless grok -p --output-format streaming-json, ACP docs-declared)",
+          "aikit:clients/grok.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:grok-bot 0.2.2 on this machine 2026-09-22 (bot/group management only \u2014 the product the retired grok-bot row misdescribed)"
         ],
-        "catalog_revision": 7
+        "catalog_revision": 18
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "copilot",
+      "summary": "GitHub Copilot CLI; detected only, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-23): the ACP public preview documents a session face but no hook/event, blocking or wake surface, and the CLI is not installed on this machine to observe. The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "doc:docs.github.com/en/copilot/reference/acp-server (first-party ACP face copilot --acp, public preview 2026-01-28)",
+        "aikit:clients/copilot.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+      ],
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.github.com/en/copilot/reference/acp-server (first-party ACP face copilot --acp, public preview 2026-01-28)",
+          "aikit:clients/copilot.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 18
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "cline",
+      "summary": "Cline CLI; detected only, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-23): cline documents a first-party ACP face and no hook/event, blocking or wake surface, and the CLI is not installed on this machine to observe. The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "doc:docs.cline.bot (first-party ACP face cline --acp; CLINE_API_KEY auth)",
+        "aikit:clients/cline.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+      ],
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.cline.bot (first-party ACP face cline --acp; CLINE_API_KEY auth)",
+          "aikit:clients/cline.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 18
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "kiro-cli",
+      "summary": "Kiro CLI; detected only, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-23): Kiro CLI's hook/event, blocking and wake surfaces are undocumented at authoring, and the q/kiro binary-identity split is unresolved on this machine, so nothing is observed. The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "doc:kiro.dev/docs/cli/acp (first-party ACP face kiro-cli acp [--agent], JSON-RPC 2.0 over stdio)",
+        "aikit:clients/kiro_cli.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+      ],
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:kiro.dev/docs/cli/acp (first-party ACP face kiro-cli acp [--agent], JSON-RPC 2.0 over stdio)",
+          "aikit:clients/kiro_cli.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 18
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "qoder",
+      "summary": "Qoder CLI; detected only, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-23): Qoder's hook/event, blocking and wake surfaces are undocumented at authoring and the CLI is not installed on this machine to observe. The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "doc:docs.qoder.com/cli/acp (first-party ACP face qoder --acp; QODER_PERSONAL_ACCESS_TOKEN auth)",
+        "aikit:clients/qoder.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+      ],
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.qoder.com/cli/acp (first-party ACP face qoder --acp; QODER_PERSONAL_ACCESS_TOKEN auth)",
+          "aikit:clients/qoder.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 18
+      }
+    },
+    {
+      "schema": "actuation.harness-capability-gap/v1",
+      "document": "capability-gap",
+      "harness_slug": "droid",
+      "summary": "Factory Droid CLI; detected only, no capability descriptor authored",
+      "reason": "No capability descriptor authored (2026-09-23): Droid's first-party face is the headless exec runner, which documents no hook/event, blocking or wake surface, and the CLI is not installed on this machine to observe. The catalog carries a disclosed gap rather than an invented descriptor.",
+      "evidence_refs": [
+        "doc:docs.factory.com (headless droid exec --output-format stream-jsonrpc; MCP client config ~/.factory/mcp.json and .factory/mcp.json, key mcpServers, `droid mcp add`)",
+        "aikit:clients/droid.rs (harness-connection roster expansion 2026-09-23)",
+        "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+      ],
+      "provenance": {
+        "authored_by": "Harness-connection roster expansion (connection truth cards 2026-09-22), 2026-09-23",
+        "source_refs": [
+          "doc:docs.factory.com (headless droid exec --output-format stream-jsonrpc; MCP client config ~/.factory/mcp.json and .factory/mcp.json, key mcpServers, `droid mcp add`)",
+          "aikit:clients/droid.rs (harness-connection roster expansion 2026-09-23)",
+          "survey:2026-09-22 connection truth cards (not installed on this machine; probes report that honestly)"
+        ],
+        "catalog_revision": 18
       }
     },
     {
@@ -1330,25 +1947,6 @@
         "aikit:clients/ollama.rs admission (ai-kit#186, closed 2026-09-08)",
         "survey:local-machine-2026-09-05",
         "upstream:github.com/ollama/ollama/blob/main/docs/api.md",
-        "diagnosis:harness-capability-coverage-2026-09-14"
-      ],
-      "provenance": {
-        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
-        "source_refs": [
-          "diagnosis:harness-capability-coverage-2026-09-14"
-        ],
-        "catalog_revision": 7
-      }
-    },
-    {
-      "schema": "actuation.harness-capability-gap/v1",
-      "document": "capability-gap",
-      "harness_slug": "openclaw",
-      "summary": "OpenClaw agent harness; detected only",
-      "reason": "No capability descriptor authored at diagnosis (2026-09-14): AIKit's admission rides the detection record only; the native event/blocking surface is unobserved.",
-      "evidence_refs": [
-        "aikit:clients/openclaw.rs admission (ai-kit#186, closed 2026-09-08)",
-        "survey:local-machine-2026-09-05",
         "diagnosis:harness-capability-coverage-2026-09-14"
       ],
       "provenance": {

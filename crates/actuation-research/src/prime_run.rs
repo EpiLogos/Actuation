@@ -94,6 +94,56 @@ fn apply_relational_environment(
         .insert("PYTHONPATH".into(), joined.to_string_lossy().into_owned());
     Ok(())
 }
+
+fn child_faculty_evidence(family: &Value, receipts: Option<&[Value]>) -> Value {
+    let children = family["child_nodes"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    let rows = receipts.unwrap_or(&[]);
+    let mut correlated = Vec::new();
+    let mut material_loci = 0usize;
+    for child in children {
+        let Some(digest) = child["session_dir_sha256"].as_str() else {
+            continue;
+        };
+        material_loci += 1;
+        let prefix = format!("prime-rlm-session-sha256:{digest}:depth:");
+        let invocations = rows
+            .iter()
+            .filter(|receipt| {
+                receipt["declared_locus_ref"]
+                    .as_str()
+                    .is_some_and(|locus| locus.starts_with(&prefix))
+            })
+            .map(|receipt| {
+                json!({
+                    "operation":receipt["operation"],
+                    "success":receipt["success"],
+                    "ql_mef_revision":receipt["ql_mef_revision"],
+                    "response_digest":receipt["response_digest"]
+                })
+            })
+            .collect::<Vec<_>>();
+        if !invocations.is_empty() {
+            correlated.push(json!({
+                "rlm_child_id":child["rlm_child_id"],
+                "active_session_id":child["active_session_id"],
+                "model":child["model"],
+                "depth":child["depth"],
+                "session_dir_sha256":digest,
+                "invocations":invocations
+            }));
+        }
+    }
+    json!({
+        "observed":!correlated.is_empty(),
+        "observed_child_loci_with_host_session_dir":material_loci,
+        "correlated_children":correlated,
+        "standing":"Prime-host child session-directory digest correlated to native Actuation faculty receipt; local path withheld; not an OS sandbox or Agency identity claim"
+    })
+}
+
 /// Call with a dedicated empty World. No existing personal Control is touched.
 /// `owner` is required for relational conditions; not a local formal fallback.
 pub fn run_prime(
@@ -379,6 +429,7 @@ pub fn run_prime(
     })();
     let faculty_error = faculty_result.as_ref().err().map(|e| e.to_string());
     let faculty_records = faculty_result.ok().flatten();
+    let child_faculty = child_faculty_evidence(&family, faculty_records.as_deref());
     let faculty_exercised = if condition["relational"] != true {
         json!(false)
     } else {
@@ -429,7 +480,7 @@ pub fn run_prime(
             &secrets,
         ),
     )?);
-    let record = json!({"schema":"actuation.prime-recursive-experiment/v1","execution_status":status,"error":error,"condition":condition,"task":task.candidate(),"source":{"lock":lock.as_value(),"ql_owner":ql,"task_revision":task.revision()},"prime":{"observed_version":observed,"provider":request.provider,"model":request.model,"selection_standing":"supplied-not-resolved-by-Actuation","final_state":final_state,"session_stats":stats,"messages":messages,"requested_rlm_max_depth":condition["maxDepth"],"family":family,"prime_acceptance":acceptance_result,"rpc_records":client.records(),"stderr":client.stderr_text()?},"workspace":{"before":before,"after":after_task,"after_refinement":after_refinement,"excluded_generated_prefix":".prime/"},"faculty":{"receipts":faculty_records,"collection_error":faculty_error,"standing":"native-invocation-receipts; caller-locus-labels-not-authenticated"},"outcome":output,"verification":verification,"continual_refinement":refinement,"refinement_verification":refinement_verification,"evidence_refs":evidence,"claims":{"fixture_provider":request.fixture_provider,"live_prime_run":if request.fixture_provider{json!(false)}else{Value::Null},"prime_body_executed":true,"ql_relational_faculty_exercised":faculty_exercised,"relational_operations":relational_operations,"observed_child_loci":family["child_nodes"].as_array().unwrap().len(),"observed_lineage_edges":family["edges"].as_array().unwrap().len(),"observed_nested_child_edges":family["nested_edges"].as_array().unwrap().len(),"continual_refinement_invoked":client.refinement_attempted(),"provider_evidence":"not-assessed","owner_machine_evidence":false,"human_acceptance":false}});
+    let record = json!({"schema":"actuation.prime-recursive-experiment/v1","execution_status":status,"error":error,"condition":condition,"task":task.candidate(),"source":{"lock":lock.as_value(),"ql_owner":ql,"task_revision":task.revision()},"prime":{"observed_version":observed,"provider":request.provider,"model":request.model,"selection_standing":"supplied-not-resolved-by-Actuation","final_state":final_state,"session_stats":stats,"messages":messages,"requested_rlm_max_depth":condition["maxDepth"],"family":family,"prime_acceptance":acceptance_result,"rpc_records":client.records(),"stderr":client.stderr_text()?},"workspace":{"before":before,"after":after_task,"after_refinement":after_refinement,"excluded_generated_prefix":".prime/"},"faculty":{"receipts":faculty_records,"child_inheritance":child_faculty,"collection_error":faculty_error,"standing":"native-invocation-receipts; child correlation uses Prime-host material-locus digests; Agency identity remains separate"},"outcome":output,"verification":verification,"continual_refinement":refinement,"refinement_verification":refinement_verification,"evidence_refs":evidence,"claims":{"fixture_provider":request.fixture_provider,"live_prime_run":if request.fixture_provider{json!(false)}else{Value::Null},"prime_body_executed":true,"ql_relational_faculty_exercised":faculty_exercised,"relational_operations":relational_operations,"observed_child_loci":family["child_nodes"].as_array().unwrap().len(),"observed_lineage_edges":family["edges"].as_array().unwrap().len(),"observed_nested_child_edges":family["nested_edges"].as_array().unwrap().len(),"child_faculty_inheritance_observed":child_faculty["observed"],"continual_refinement_invoked":client.refinement_attempted(),"provider_evidence":"not-assessed","owner_machine_evidence":false,"human_acceptance":false}});
     Ok(sanitize(&record, &secrets))
 }
 
@@ -461,6 +512,45 @@ mod tests {
             research_binary: Some("/bin/true".into()),
             faculty_config: Some("/tmp/faculty.json".into()),
         }
+    }
+
+    #[test]
+    fn child_faculty_requires_host_locus_and_native_receipt_to_meet() {
+        let digest = crate::evidence::bytes_digest(b"/private/prime/sub-a");
+        let family = json!({
+            "child_nodes":[{
+                "rlm_child_id":"sub-a",
+                "active_session_id":"session-a",
+                "model":"provider/model-a",
+                "depth":1,
+                "session_dir_sha256":digest
+            }]
+        });
+        let miss = child_faculty_evidence(
+            &family,
+            Some(&[json!({
+                "declared_locus_ref":"agent-session/root",
+                "operation":"anuttara-read",
+                "success":true
+            })]),
+        );
+        assert_eq!(miss["observed"], false);
+        let hit = child_faculty_evidence(
+            &family,
+            Some(&[json!({
+                "declared_locus_ref":format!("prime-rlm-session-sha256:{digest}:depth:1"),
+                "operation":"anuttara-read",
+                "success":true,
+                "ql_mef_revision":"q",
+                "response_digest":"r"
+            })]),
+        );
+        assert_eq!(hit["observed"], true);
+        assert_eq!(hit["correlated_children"][0]["model"], "provider/model-a");
+        assert_eq!(
+            hit["correlated_children"][0]["invocations"][0]["operation"],
+            "anuttara-read"
+        );
     }
 
     #[test]

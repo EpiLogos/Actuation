@@ -13,6 +13,23 @@ use std::{
 };
 
 pub type ProbeResult<T> = std::result::Result<T, String>;
+
+/// The wall-clock bound one probe observation may take. A probe that invokes
+/// an external binary or reads the outside world can always hang; the bound
+/// is the engine's own hard refusal, and the detection read model names a
+/// probe that ends this way `timed-out` instead of bubbling the error.
+pub const DEFAULT_PROBE_BOUND: Duration = Duration::from_secs(10);
+
+/// Readable bound for a named timeout: whole seconds above one second,
+/// milliseconds below.
+pub(crate) fn bound_text(bound: Duration) -> String {
+    if bound.as_secs() >= 1 {
+        format!("{}s", bound.as_secs())
+    } else {
+        format!("{}ms", bound.as_millis())
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct FileObservation {
     pub is_directory: bool,
@@ -41,6 +58,11 @@ impl ServiceObservation {
 /// Native defaults and controlled tests both enter the same detection engine.
 pub trait ProbeEffects {
     fn expand_home(&mut self, path: &str) -> ProbeResult<String>;
+    /// Set the wall-clock bound the following external observations may take.
+    /// The engine default is [`DEFAULT_PROBE_BOUND`]; a descriptor may declare
+    /// a tighter per-probe override. Scripted transports carry no clock and
+    /// keep the no-op default.
+    fn set_probe_bound(&mut self, _bound: Duration) {}
     fn resolve_executable(&mut self, names: &[String]) -> ProbeResult<Option<String>>;
     fn stat(&mut self, path: &str) -> ProbeResult<Option<FileObservation>>;
     fn hash(&mut self, path: &str) -> ProbeResult<String>;
@@ -64,6 +86,7 @@ pub struct NativeEffects {
     pub(crate) search_path: Vec<PathBuf>,
     pub(crate) environment: BTreeMap<String, String>,
     pub(crate) timeout: Duration,
+    pub(crate) http_timeout: Duration,
     http: ureq::Agent,
 }
 impl NativeEffects {
@@ -83,9 +106,9 @@ impl NativeEffects {
         search_path: Vec<PathBuf>,
         environment: BTreeMap<String, String>,
     ) -> Self {
-        let timeout = Duration::from_secs(5);
+        let http_timeout = Duration::from_secs(4);
         let http = ureq::Agent::config_builder()
-            .timeout_global(Some(Duration::from_secs(4)))
+            .timeout_global(Some(http_timeout))
             .http_status_as_error(false)
             .max_redirects(0)
             .proxy(None)
@@ -96,7 +119,8 @@ impl NativeEffects {
             cwd,
             search_path,
             environment,
-            timeout,
+            timeout: DEFAULT_PROBE_BOUND,
+            http_timeout,
             http,
         }
     }
@@ -121,6 +145,10 @@ impl NativeEffects {
             ureq::Error::Io(io) if io.kind() == ErrorKind::ConnectionRefused => {
                 "connection refused".to_owned()
             }
+            ureq::Error::Timeout(_) => format!(
+                "observation timed out after {}",
+                bound_text(self.http_timeout)
+            ),
             _ => format!("endpoint observation failed: {e}"),
         })
     }
@@ -140,6 +168,9 @@ impl NativeEffects {
     }
 }
 impl ProbeEffects for NativeEffects {
+    fn set_probe_bound(&mut self, bound: Duration) {
+        self.timeout = bound;
+    }
     fn expand_home(&mut self, path: &str) -> ProbeResult<String> {
         let p = if let Some(suffix) = path.strip_prefix('~') {
             self.home
@@ -224,8 +255,14 @@ impl ProbeEffects for NativeEffects {
                 break;
             }
             bytes += n as u64;
-            if bytes > LIMIT || start.elapsed() > self.timeout {
+            if bytes > LIMIT {
                 return Err("executable fingerprint budget exhausted".into());
+            }
+            if start.elapsed() > self.timeout {
+                return Err(format!(
+                    "executable fingerprint timed out after {}",
+                    bound_text(self.timeout)
+                ));
             }
             h.update(&b[..n]);
         }
@@ -245,8 +282,14 @@ impl ProbeEffects for NativeEffects {
         for entry in entries {
             entry.map_err(|e| e.to_string())?;
             count += 1;
-            if count > 1_000_000 || start.elapsed() > self.timeout {
+            if count > 1_000_000 {
                 return Err("directory count incomplete: observation budget exhausted".into());
+            }
+            if start.elapsed() > self.timeout {
+                return Err(format!(
+                    "directory count timed out after {}",
+                    bound_text(self.timeout)
+                ));
             }
         }
         Ok(Some(count))
@@ -306,7 +349,13 @@ impl ProbeEffects for NativeEffects {
     fn version(&mut self, path: &str, args: &[String]) -> ProbeResult<String> {
         let run = self.process(path, args, 64 * 1024)?;
         if run.code != Some(0) {
-            return Err(format!("exit {:?}", run.code));
+            // The target ran and refused the probe; the detection read model
+            // names this outcome `refused`.
+            let code = run
+                .code
+                .map(|c| c.to_string())
+                .unwrap_or_else(|| "signal".into());
+            return Err(format!("exit {code}"));
         }
         let stdout = String::from_utf8_lossy(&run.stdout);
         let line = stdout
@@ -376,9 +425,7 @@ pub(crate) fn bounded_process(
         use std::os::unix::process::CommandExt;
         command.process_group(0);
     }
-    let mut child = command
-        .spawn()
-        .map_err(|e| format!("spawn failed: {}", e.kind()))?;
+    let mut child = command.spawn().map_err(|e| format!("spawn failed: {e}"))?;
     let group = rustix::process::Pid::from_raw(child.id() as i32);
     let start = Instant::now();
     let status = loop {
@@ -394,7 +441,10 @@ pub(crate) fn bounded_process(
             Ok(Some(status)) => break Ok(status),
             Err(e) => break Err(format!("process observation failed: {}", e.kind())),
             Ok(None) if start.elapsed() >= timeout => {
-                break Err("process observation timed out".into())
+                break Err(format!(
+                    "process observation timed out after {}",
+                    bound_text(timeout)
+                ))
             }
             _ => thread::sleep(Duration::from_millis(5)),
         }

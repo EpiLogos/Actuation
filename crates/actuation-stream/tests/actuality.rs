@@ -32,14 +32,9 @@ fn boundary(index: usize) -> BoundaryOccurrence {
     )
 }
 fn usage() -> UsageOccurrence {
-    let corpus = support::corpus();
-    let mut v = corpus["cases"][1]["input"]["actions"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|a| a["label"] == "usage")
-        .unwrap()["args"]
-        .clone();
+    // Relocated to a test-local fixture when the Node-era scenarios corpus was
+    // retired (cleanup/retire-node-oracle-2026-09-22).
+    let mut v: Value = serde_json::from_str(include_str!("fixtures/usage-actions.json")).unwrap();
     v["stream_ref"] = json!(opening().stream_ref);
     v["observation"]["actuation_ref"] = json!(opening().actuation_ref);
     v["observation"]["correlation"]["agency_ref"] = json!(opening().agency_ref);

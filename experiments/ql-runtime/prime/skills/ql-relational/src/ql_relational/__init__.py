@@ -22,10 +22,10 @@ def _root() -> Path:
     return root
 
 
-async def _run(*args: str, stdin: str | None = None) -> dict[str, Any]:
+async def _run(*args: str, stdin: str | None = None, cwd: Path | None = None) -> dict[str, Any]:
     proc = await asyncio.create_subprocess_exec(
         *args,
-        cwd=str(_root()),
+        cwd=str(cwd) if cwd is not None else None,
         stdin=asyncio.subprocess.PIPE if stdin is not None else asyncio.subprocess.DEVNULL,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
@@ -41,7 +41,12 @@ async def _run(*args: str, stdin: str | None = None) -> dict[str, Any]:
 
 
 async def _git_revision() -> str:
-    result = await _run("git", "rev-parse", "HEAD")
+    declared = os.environ.get("QL_OWNER_REVISION", "").strip()
+    if declared:
+        if len(declared) != 40 or any(ch not in "0123456789abcdef" for ch in declared):
+            raise RuntimeError("QL_OWNER_REVISION must be a lowercase 40-hex revision")
+        return declared
+    result = await _run("git", "rev-parse", "HEAD", cwd=_root())
     return str(result.get("stdout", "")).strip()
 
 
@@ -69,6 +74,29 @@ async def _record(operation: str, request: Any, response: Any) -> None:
         handle.write(json.dumps(row, sort_keys=True) + "\n")
 
 
+def _runtime_locus_ref() -> str | None:
+    """Attribute a faculty call to Prime's current runtime locus without leaking paths.
+
+    Prime's host supplies every descendant with RLM_DEPTH and its own
+    RLM_SESSION_DIR.  The directory is material execution evidence but may
+    contain a private/local path, so receipts carry only its SHA-256.  Root
+    calls retain the Actuation-supplied locus ref.
+    """
+    declared = os.environ.get("ACTUATION_RESEARCH_LOCUS_REF")
+    depth_raw = os.environ.get("RLM_DEPTH", "").strip()
+    try:
+        depth = int(depth_raw) if depth_raw else 0
+    except ValueError as exc:
+        raise RuntimeError("Prime supplied a non-integer RLM_DEPTH") from exc
+    if depth <= 0:
+        return declared
+    session_dir = os.environ.get("RLM_SESSION_DIR", "").strip()
+    if not session_dir:
+        return f"prime-rlm-depth:{depth}:session-dir-unobserved"
+    digest = hashlib.sha256(session_dir.encode("utf-8")).hexdigest()
+    return f"prime-rlm-session-sha256:{digest}:depth:{depth}"
+
+
 async def _receipt(native_request: dict[str, Any], response: Any) -> None:
     """File the native Actuation faculty receipt for one executed operation.
 
@@ -94,7 +122,7 @@ async def _receipt(native_request: dict[str, Any], response: Any) -> None:
         "configuration": configuration,
         "request": native_request,
         "trace_ref": os.environ.get("ACTUATION_RESEARCH_TRACE_REF"),
-        "declared_locus_ref": os.environ.get("ACTUATION_RESEARCH_LOCUS_REF"),
+        "declared_locus_ref": _runtime_locus_ref(),
     }
     proc = await asyncio.create_subprocess_exec(
         research_bin,
@@ -120,13 +148,179 @@ async def _receipt(native_request: dict[str, Any], response: Any) -> None:
 
 async def _ql(*args: str) -> dict[str, Any]:
     request = list(args)
-    response = await _run(
-        "cargo", "run", "--quiet", "--manifest-path", str(_root() / "Cargo.toml"),
-        "-p", "ql-cli", "--", *args, "--json"
-    )
+    binary = os.environ.get("QL_BIN", "").strip()
+    if binary:
+        ql = Path(binary).expanduser().resolve()
+        if not ql.is_file():
+            raise RuntimeError(f"QL_BIN is not an installed executable file: {ql}")
+        response = await _run(str(ql), *args, "--json")
+    else:
+        response = await _run(
+            "cargo", "run", "--quiet", "--manifest-path", str(_root() / "Cargo.toml"),
+            "-p", "ql-cli", "--", *args, "--json", cwd=_root()
+        )
     await _record("ql-cli:" + ".".join(args[:2]), request, response)
     return response
 
+
+
+def _central_owner() -> tuple[Path, Path]:
+    binary = os.environ.get("CENTRAL_CTRL_BIN", "").strip()
+    root_value = os.environ.get("CENTRAL_ROOT", "").strip()
+    if not binary or not root_value:
+        raise RuntimeError(
+            "CENTRAL_CTRL_BIN and CENTRAL_ROOT are required for native NOW handover"
+        )
+    ctrl = Path(binary).expanduser().resolve()
+    root = Path(root_value).expanduser().resolve()
+    if not ctrl.is_file():
+        raise RuntimeError(f"CENTRAL_CTRL_BIN is unavailable: {ctrl}")
+    if not root.is_dir():
+        raise RuntimeError(f"CENTRAL_ROOT is unavailable: {root}")
+    return ctrl, root
+
+
+async def _central_action(action: str, request: dict[str, Any]) -> dict[str, Any]:
+    ctrl, root = _central_owner()
+    response = await _run(
+        str(ctrl),
+        "--root",
+        str(root),
+        "--json",
+        "action",
+        "run",
+        action,
+        "-",
+        stdin=json.dumps(request),
+    )
+    if response.get("ok") is not True:
+        raise RuntimeError(
+            f"Central action {action} refused: "
+            + json.dumps(response, sort_keys=True, default=str)
+        )
+    await _record("central-action:" + action, request, response)
+    return response
+
+
+def _bounded_refs(values: list[str] | None, label: str) -> list[str]:
+    rows = list(values or [])
+    if len(rows) > 64 or any(
+        not isinstance(value, str)
+        or not value.strip()
+        or len(value) > 4096
+        or any(ord(ch) < 32 for ch in value)
+        for value in rows
+    ):
+        raise ValueError(f"{label} must contain at most 64 bounded non-empty refs")
+    return rows
+
+
+async def central_now_handover(
+    subject: str,
+    result: str,
+    *,
+    actor: str,
+    project: str | None = None,
+    status: str = "active",
+    handoff_id: str | None = None,
+    session_ref: str | None = None,
+    source_refs: list[str] | None = None,
+    evidence_refs: list[str] | None = None,
+    preserve_refs: list[str] | None = None,
+    work_refs: list[dict[str, str | None]] | None = None,
+) -> dict[str, Any]:
+    """Write one pithy Central-owned NOW handoff for worker replacement.
+
+    This is a native ProjectCentral return, not an Actuation transcript.  The
+    caller supplies the useful returned result plus exact source/evidence and
+    lane refs; the replacement worker can reopen it independently.
+    """
+    if not actor.strip() or not subject.strip() or not result.strip():
+        raise ValueError("actor, subject and result must be non-empty")
+    project = project or os.environ.get("CENTRAL_PROJECT", "").strip() or None
+    rows = list(work_refs or [])
+    if len(rows) > 64:
+        raise ValueError("work_refs must contain at most 64 lane claims")
+    normalized_work: list[dict[str, str | None]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            raise ValueError("work_refs entries must be objects")
+        repo = row.get("repo")
+        branch = row.get("branch")
+        worktree = row.get("worktree_path")
+        if (
+            not isinstance(repo, str)
+            or not repo.strip()
+            or not isinstance(branch, str)
+            or not branch.strip()
+            or (worktree is not None and (not isinstance(worktree, str) or not worktree.strip()))
+        ):
+            raise ValueError("work_refs require repo and branch, with optional worktree_path")
+        normalized_work.append(
+            {"repo": repo, "branch": branch, "worktree_path": worktree}
+        )
+    request: dict[str, Any] = {
+        "actor": actor,
+        "kind": "handoff",
+        "subject": subject,
+        "result": result,
+        "status": status,
+        "source_refs": _bounded_refs(source_refs, "source_refs"),
+        "evidence_refs": _bounded_refs(evidence_refs, "evidence_refs"),
+        "preserve_refs": _bounded_refs(preserve_refs, "preserve_refs"),
+        "work_refs": normalized_work,
+    }
+    if project is not None:
+        request["project"] = project
+    if handoff_id is not None:
+        request["id"] = handoff_id
+    effective_session = session_ref or os.environ.get("ACTUATION_RESEARCH_TRACE_REF")
+    if effective_session:
+        request["session_ref"] = effective_session
+    return await _central_action("projectcentral.now.return", request)
+
+
+async def central_now_inspect(project: str | None = None) -> dict[str, Any]:
+    """Read the native ProjectCentral NOW horizon without mutating it."""
+    project = project or os.environ.get("CENTRAL_PROJECT", "").strip() or None
+    if project is None:
+        raise RuntimeError("CENTRAL_PROJECT or explicit project is required for NOW inspection")
+    return await _central_action("projectcentral.now.inspect", {"project": project})
+
+
+async def central_now_handoff_read(
+    handoff_id: str, project: str | None = None
+) -> dict[str, Any]:
+    """Read one exact Central handoff for a replacement worker.
+
+    The read is reconstructed from Central's own NOW inspection; no parent
+    transcript or manually reconstructed investigation is transferred.
+    """
+    if not handoff_id.strip():
+        raise ValueError("handoff_id must be non-empty")
+    response = await central_now_inspect(project)
+    data = response.get("data")
+    if not isinstance(data, dict):
+        raise RuntimeError("Central NOW inspection returned no data object")
+    matches: list[dict[str, Any]] = []
+    for key in ("active_items", "open_questions", "inactive_items"):
+        rows = data.get(key)
+        if isinstance(rows, list):
+            matches.extend(
+                row for row in rows
+                if isinstance(row, dict) and row.get("id") == handoff_id
+            )
+    if len(matches) != 1:
+        raise RuntimeError(
+            f"Central NOW handoff {handoff_id!r} resolved to {len(matches)} records"
+        )
+    result = {
+        "schema": "actuation.prime-central-now-handoff-reading/v1",
+        "handoff": matches[0],
+        "standing": "Central-owned NOW record; source/evidence/work refs are continuation pointers, not transferred transcript",
+    }
+    await _record("central-now-handoff-read", {"id": handoff_id}, result)
+    return result
 
 async def capabilities() -> dict[str, Any]:
     """Return accepted QL/MEF CLI, kernel, MEF, Context Frame, VĀK and service capability disclosure."""
@@ -179,6 +373,7 @@ async def wiki_refract(request: dict[str, Any]) -> dict[str, Any]:
         "cargo", "run", "--quiet", "--manifest-path", str(_root() / "Cargo.toml"),
         "-p", "ql-wiki", "--bin", "ql-wiki-refraction",
         stdin=payload,
+        cwd=_root(),
     )
     await _record("ql-wiki:refract", request, response)
     await _receipt({"operation": "wiki-refract", "request": request}, response)
@@ -320,6 +515,297 @@ fn main() {
     await _receipt({"operation": "harmonic-snapshot", "basis": basis}, result)
     return result
 
+
+async def epi_constitution() -> dict[str, Any]:
+    """Return the native Epi-Logos Prime-QL constitution and #0..#5 faculty disclosure."""
+    result = await _ql("epi-agent", "constitution")
+    await _receipt({"operation": "epi-constitution"}, result)
+    return result
+
+
+async def epi_faculty(position: int) -> dict[str, Any]:
+    """Return one source-qualified Epi faculty descriptor (#0..#5)."""
+    if position not in range(6):
+        raise ValueError("position must be 0..5")
+    result = await _ql("epi-agent", "faculty", f"#{position}")
+    await _receipt({"operation": "epi-faculty", "position": f"#{position}"}, result)
+    return result
+
+
+async def _epi_invoke(position: int, operation: str, input_value: dict[str, Any]) -> dict[str, Any]:
+    if position not in range(6):
+        raise ValueError("position must be 0..5")
+    envelope = {
+        "schema": "ql.epi-logos-agent-invocation/v1",
+        "position": f"#{position}",
+        "operation": operation,
+        "input": input_value,
+    }
+    with tempfile.NamedTemporaryFile("w", suffix=".json", encoding="utf-8", delete=False) as handle:
+        json.dump(envelope, handle)
+        path = handle.name
+    try:
+        result = await _ql("epi-agent", "invoke", path)
+    finally:
+        Path(path).unlink(missing_ok=True)
+    return result
+
+
+async def anuttara_read(reference: str, max_relations: int = 128) -> dict[str, Any]:
+    """Read one full Anuttara language row joined to current Bimba relations."""
+    result = await _epi_invoke(0, "anuttara.read", {"reference": reference, "max_relations": max_relations})
+    await _receipt({"operation": "anuttara-read", "reference": reference, "max_relations": max_relations}, result)
+    return result
+
+
+async def ananda_m1_2(engine_request: dict[str, Any]) -> dict[str, Any]:
+    """Read Ananda's native numerical-relational reading at M1-2 through the M1 engine.
+
+    The request is the engine's own ``ql.m1.engine/v1`` request; the selected
+    coordinate must resolve to an Ananda operation. The reading is numerical
+    and relational; it is never a semantic verifier.
+    """
+    result = await _epi_invoke(0, "ananda.m1-2", engine_request)
+    await _receipt({"operation": "ananda-m1-2", "request": engine_request}, result)
+    return result
+
+
+async def tda_vietoris_rips(request: dict[str, Any]) -> dict[str, Any]:
+    """Run deterministic source-qualified Vietoris-Rips persistent H0/H1 over an explicit metric."""
+    result = await _epi_invoke(1, "tda.vietoris-rips", request)
+    await _receipt({"operation": "tda-vietoris-rips", "request": request}, result)
+    return result
+
+
+async def bimba_neighborhood(reference: str, max_relations: int = 256) -> dict[str, Any]:
+    """Read exact source-graph adjacency without substituting GDS or learned inference."""
+    result = await _epi_invoke(2, "bimba.neighborhood", {"reference": reference, "max_relations": max_relations})
+    await _receipt({"operation": "bimba-neighborhood", "reference": reference, "max_relations": max_relations}, result)
+    return result
+
+
+async def representation_bind(request: dict[str, Any]) -> dict[str, Any]:
+    """Bind source/form/representation/asset/temporal provenance for a Mahamaya representation."""
+    result = await _epi_invoke(3, "representation.bind", request)
+    await _receipt({"operation": "representation-bind", "request": request}, result)
+    return result
+
+
+async def techne_reading(target: dict[str, Any]) -> dict[str, Any]:
+    """Read one Wiki/subject target through QL's existing production Technē adapter."""
+    if not isinstance(target, dict):
+        raise ValueError("Technē target must be an object")
+    with tempfile.NamedTemporaryFile("w", suffix=".json", encoding="utf-8", delete=False) as handle:
+        json.dump(target, handle)
+        path = handle.name
+    try:
+        result = await _ql("techne", "reading", path)
+    finally:
+        Path(path).unlink(missing_ok=True)
+    if result.get("contract") != "ql.techne-reading/v1":
+        raise RuntimeError(f"native Technē reading contract mismatch: {result}")
+    await _receipt({"operation": "ql-techne-reading", "target": target}, result)
+    return result
+
+
+async def nara_activity_validate(activity: dict[str, Any]) -> dict[str, Any]:
+    """Validate protected Nara activity spans, provenance and protection semantics."""
+    result = await _epi_invoke(4, "nara.activity.validate", {"activity": activity})
+    await _receipt({"operation": "nara-activity-validate", "activity": activity}, result)
+    return result
+
+
+async def nara_elemental_map(request: dict[str, Any]) -> dict[str, Any]:
+    """Map typed EFWA contributions to the native quaternion while retaining confidence separately."""
+    result = await _epi_invoke(4, "nara.elemental-map", request)
+    await _receipt({"operation": "nara-elemental-map", "request": request}, result)
+    return result
+
+
+async def nara_personal_receive(request: dict[str, Any]) -> dict[str, Any]:
+    """Receive one exact coupled M1/M2/M3 event through the native Nara personal field."""
+    result = await _epi_invoke(4, "nara.personal-receive", request)
+    await _receipt({"operation": "nara-personal-receive", "request": request}, result)
+    return result
+
+
+async def logos_return(request: dict[str, Any]) -> dict[str, Any]:
+    """Form the complete T/C/T-prime/C-prime Epii Return envelope without promoting it."""
+    result = await _epi_invoke(5, "logos.return", request)
+    await _receipt({"operation": "logos-return", "request": request}, result)
+    return result
+
+
+
+class _AgentMessage:
+    """Child-to-parent message seam over the encounter's bounded outbox.
+
+    The encounter adapter hands every Prime session a session-scoped
+    directory (`ACTUATION_CHILD_MESSAGE_DIR`); sending is one bounded JSON
+    record there, correlated to this child's locus digest exactly like the
+    faculty receipts. Text only: the channel carries words, never effects.
+    When the adapter did not supply a directory the send refuses with its
+    reason - never silence.
+    """
+
+    MAX_TEXT_CHARS = 4096  # the acceptance runner's own bounded-ref limit
+
+    async def send(self, text: str, receiver_role: str = "parent") -> dict[str, Any]:
+        if not isinstance(text, str) or not text.strip():
+            raise ValueError("agent_message.send requires non-empty text")
+        if len(text) > self.MAX_TEXT_CHARS:
+            raise ValueError(
+                f"agent_message text exceeds {self.MAX_TEXT_CHARS} characters"
+            )
+        directory = os.environ.get("ACTUATION_CHILD_MESSAGE_DIR", "").strip()
+        if not directory:
+            raise RuntimeError(
+                "agent_message is unavailable: this session supplied no "
+                "ACTUATION_CHILD_MESSAGE_DIR, so there is no parent channel"
+            )
+        path = Path(directory).expanduser().resolve()
+        if not path.is_dir():
+            raise RuntimeError(
+                f"agent_message is unavailable: message directory {path} is absent"
+            )
+        locus = _runtime_locus_ref() or "unattributed"
+        digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+        existing = sorted(path.glob("*.json"))
+        sequence = len(existing) + 1
+        record = {
+            "schema": "actuation.child-message/v1",
+            "from": locus,
+            "receiver_role": receiver_role,
+            "text": text,
+            "text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+            "sequence": sequence,
+        }
+        target = path / f"{sequence:04d}-{digest}.json"
+        handle = tempfile.NamedTemporaryFile(
+            "w", suffix=".json", dir=str(path), encoding="utf-8", delete=False
+        )
+        json.dump(record, handle, sort_keys=True)
+        handle.close()
+        Path(handle.name).replace(target)
+        await _record("agent-message:send", {"receiver_role": receiver_role}, record)
+        return {
+            "schema": "actuation.child-message-result/v1",
+            "sent": True,
+            "file": target.name,
+            "sequence": sequence,
+            "bytes": len(text.encode("utf-8")),
+        }
+
+
+agent_message = _AgentMessage()
+
+
+
+async def spawn_child_cheapest(
+    task: str,
+    *,
+    name: str,
+    use_type: str = "agent-child",
+    thinking: str | None = None,
+) -> dict[str, Any]:
+    """Spawn a Prime child using AIKit's current CHEAPEST_ELIGIBLE resolution.
+
+    AIKit chooses the canonical Model/route under the current Project context.
+    Prime then independently resolves the exact configured provider/model
+    selector; disagreement is a refusal rather than a guessed mapping.
+    """
+    if not task.strip() or not name.strip():
+        raise ValueError("task and name must be non-empty")
+    aikit_bin = os.environ.get("AIKIT_BIN", "").strip()
+    if not aikit_bin:
+        raise RuntimeError(
+            "AIKIT_BIN is required for cheapest-eligible child selection"
+        )
+    aikit = Path(aikit_bin).expanduser().resolve()
+    if not aikit.is_file():
+        raise RuntimeError(f"AIKIT_BIN is unavailable: {aikit}")
+    resolution = await _run(
+        str(aikit),
+        "--json",
+        "model-resolve",
+        "--use-type",
+        use_type,
+        "--ranking-policy",
+        "CHEAPEST_ELIGIBLE",
+    )
+    if resolution.get("ok") is not True or not isinstance(resolution.get("data"), dict):
+        raise RuntimeError(f"AIKit cheapest-eligible resolution failed: {resolution}")
+    selected = resolution["data"].get("selected")
+    if not isinstance(selected, dict):
+        raise RuntimeError("AIKit resolution returned no selected model route")
+    provider_ref = selected.get("provider")
+    native_id = selected.get("provider_native_id")
+    model_ref = selected.get("model")
+    if not all(isinstance(value, str) and value for value in (provider_ref, native_id, model_ref)):
+        raise RuntimeError("AIKit resolution returned incomplete model identity")
+    provider = provider_ref.removeprefix("provider:")
+    import rlm as prime_rlm
+
+    candidates = await prime_rlm.find_models(native_id, limit=20)
+    exact = [
+        candidate
+        for candidate in candidates
+        if candidate.provider == provider and candidate.id == native_id
+    ]
+    if len(exact) != 1:
+        observed = [
+            {"provider": candidate.provider, "id": candidate.id, "selector": candidate.selector}
+            for candidate in candidates
+        ]
+        raise RuntimeError(
+            "Prime model catalogue does not uniquely confirm AIKit's cheapest-eligible route: "
+            + json.dumps(
+                {
+                    "aikit_provider": provider_ref,
+                    "provider_native_id": native_id,
+                    "prime_candidates": observed,
+                },
+                sort_keys=True,
+            )
+        )
+    requested: dict[str, Any] = {"name": name, "model": exact[0].selector}
+    if thinking is not None:
+        requested["thinking"] = thinking
+    handle = await prime_rlm.run(task, **requested)
+    observed_model = getattr(handle, "model", None)
+    if observed_model != exact[0].selector:
+        raise RuntimeError(
+            f"Prime child observed model {observed_model!r}, expected {exact[0].selector!r}"
+        )
+    session_dir = str(handle.session_dir)
+    result = {
+        "schema": "actuation.prime-child-model-selection/v1",
+        "requested": {
+            "policy": "CHEAPEST_ELIGIBLE",
+            "use_type": use_type,
+            "name": name,
+        },
+        "resolved": {
+            "model_ref": model_ref,
+            "provider_ref": provider_ref,
+            "provider_native_id": native_id,
+            "prime_selector": exact[0].selector,
+            "why": resolution["data"].get("why"),
+        },
+        "observed": {
+            "rlm_child_id": handle.rlm_child_id,
+            "name": handle.name,
+            "model": observed_model,
+            "session_dir_sha256": hashlib.sha256(session_dir.encode("utf-8")).hexdigest(),
+        },
+        "standing": "AIKit roster resolution + Prime live model-catalog confirmation + admitted child handle; child result arrives separately",
+    }
+    await _record(
+        "prime-child-model:cheapest-eligible",
+        {"task_digest": _digest(task), "name": name, "use_type": use_type},
+        result,
+    )
+    return result
 
 def return_envelope(
     subject_ref: str,
