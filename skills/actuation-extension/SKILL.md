@@ -32,7 +32,7 @@ Extend the public ontology; do not edit generated/projected runtime state and ca
 
 ## Representative specimen
 
-`crates/actuation-core/src/agency.rs` and its tests are the executable specimen for extending the portable contract: they construct world bindings, root scopes, grants, determinations and Returns through the native validated constructors, with the frozen parity corpus (`fixtures/migration/oracle.json`) preserving the accepted wire meaning. Follow that pattern for a small extension before wiring any UI or harness-specific presentation.
+`crates/actuation-core/src/agency.rs` and its tests are the executable specimen for extending the portable contract: they construct world bindings, root scopes, grants, determinations and Returns through the native validated constructors, and those tests pin the accepted wire meaning (the Node-era migration parity corpus was retired in #119). Follow that pattern for a small extension before wiring any UI or harness-specific presentation.
 
 ## Self-improvement route
 
