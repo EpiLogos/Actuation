@@ -169,7 +169,7 @@ dependencies = [
 [[package]]
 name = "ql-adapters"
 version = "0.1.0"
-source = "git+https://github.com/EpiLogos/QL-MEF?rev=ec33764868b22e98cd6ebff8f6565097f67bdb03#ec33764868b22e98cd6ebff8f6565097f67bdb03"
+source = "git+https://github.com/EpiLogos/QL-MEF?rev=6a81fc441e4dda477f4de3a7ebd59c368cb28f37#6a81fc441e4dda477f4de3a7ebd59c368cb28f37"
 dependencies = [
  "ql-core",
  "ql-mef",
@@ -183,7 +183,7 @@ dependencies = [
 [[package]]
 name = "ql-cli"
 version = "0.1.0"
-source = "git+https://github.com/EpiLogos/QL-MEF?rev=ec33764868b22e98cd6ebff8f6565097f67bdb03#ec33764868b22e98cd6ebff8f6565097f67bdb03"
+source = "git+https://github.com/EpiLogos/QL-MEF?rev=6a81fc441e4dda477f4de3a7ebd59c368cb28f37#6a81fc441e4dda477f4de3a7ebd59c368cb28f37"
 dependencies = [
  "ql-adapters",
  "ql-core",
@@ -199,12 +199,12 @@ dependencies = [
 [[package]]
 name = "ql-core"
 version = "0.1.0"
-source = "git+https://github.com/EpiLogos/QL-MEF?rev=ec33764868b22e98cd6ebff8f6565097f67bdb03#ec33764868b22e98cd6ebff8f6565097f67bdb03"
+source = "git+https://github.com/EpiLogos/QL-MEF?rev=6a81fc441e4dda477f4de3a7ebd59c368cb28f37#6a81fc441e4dda477f4de3a7ebd59c368cb28f37"
 
 [[package]]
 name = "ql-mef"
 version = "0.1.0"
-source = "git+https://github.com/EpiLogos/QL-MEF?rev=ec33764868b22e98cd6ebff8f6565097f67bdb03#ec33764868b22e98cd6ebff8f6565097f67bdb03"
+source = "git+https://github.com/EpiLogos/QL-MEF?rev=6a81fc441e4dda477f4de3a7ebd59c368cb28f37#6a81fc441e4dda477f4de3a7ebd59c368cb28f37"
 dependencies = [
  "blake3",
  "ql-core",
@@ -216,7 +216,7 @@ dependencies = [
 [[package]]
 name = "ql-semantic"
 version = "0.1.0"
-source = "git+https://github.com/EpiLogos/QL-MEF?rev=ec33764868b22e98cd6ebff8f6565097f67bdb03#ec33764868b22e98cd6ebff8f6565097f67bdb03"
+source = "git+https://github.com/EpiLogos/QL-MEF?rev=6a81fc441e4dda477f4de3a7ebd59c368cb28f37#6a81fc441e4dda477f4de3a7ebd59c368cb28f37"
 dependencies = [
  "ql-core",
  "ql-mef",
@@ -225,7 +225,7 @@ dependencies = [
 [[package]]
 name = "ql-service"
 version = "0.1.0"
-source = "git+https://github.com/EpiLogos/QL-MEF?rev=ec33764868b22e98cd6ebff8f6565097f67bdb03#ec33764868b22e98cd6ebff8f6565097f67bdb03"
+source = "git+https://github.com/EpiLogos/QL-MEF?rev=6a81fc441e4dda477f4de3a7ebd59c368cb28f37#6a81fc441e4dda477f4de3a7ebd59c368cb28f37"
 dependencies = [
  "ql-semantic",
 ]
@@ -233,7 +233,7 @@ dependencies = [
 [[package]]
 name = "ql-wiki"
 version = "0.1.0"
-source = "git+https://github.com/EpiLogos/QL-MEF?rev=ec33764868b22e98cd6ebff8f6565097f67bdb03#ec33764868b22e98cd6ebff8f6565097f67bdb03"
+source = "git+https://github.com/EpiLogos/QL-MEF?rev=6a81fc441e4dda477f4de3a7ebd59c368cb28f37#6a81fc441e4dda477f4de3a7ebd59c368cb28f37"
 dependencies = [
  "ql-core",
  "ql-mef",
