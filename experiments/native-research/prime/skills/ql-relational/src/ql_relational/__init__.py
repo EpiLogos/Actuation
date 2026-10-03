@@ -25,8 +25,9 @@ def _invoke(value: dict[str, Any]) -> dict[str, Any]:
     # executable owns operation bounds; this is only its installed-language ABI.
     with tempfile.TemporaryFile() as out, tempfile.TemporaryFile() as err:
         try:
+            timeout = 190 if value.get("request", {}).get("operation") == "ql-decide" else 60
             result = subprocess.run([str(binary)], input=data, stdout=out, stderr=err,
-                                    env={}, timeout=60, check=False)
+                                    env={}, timeout=timeout, check=False)
         except subprocess.TimeoutExpired:
             raise RuntimeError("native faculty transport timed out") from None
         out.seek(0)
@@ -59,6 +60,30 @@ async def _faculty(operation: str, **arguments: Any) -> dict[str, Any]:
 
 async def capabilities() -> dict[str, Any]:
     return await _faculty("capabilities")
+
+
+async def ql_project_event(request: dict[str, Any]) -> dict[str, Any]:
+    return await _faculty("ql-project-event", request=request)
+
+
+async def ql_decision_frame(request: dict[str, Any]) -> dict[str, Any]:
+    return await _faculty("ql-decision-frame", request=request)
+
+
+async def ql_decide(request: dict[str, Any]) -> dict[str, Any]:
+    return await _faculty("ql-decide", request=request)
+
+
+async def ql_validate_determination(request: dict[str, Any]) -> dict[str, Any]:
+    return await _faculty("ql-validate-determination", request=request)
+
+
+async def ql_harmonic_read(request: dict[str, Any]) -> dict[str, Any]:
+    return await _faculty("ql-harmonic-read", request=request)
+
+
+async def ql_invoke(request: dict[str, Any]) -> dict[str, Any]:
+    return await _faculty("ql-invoke", request=request)
 
 
 async def kernel_apply(operator: str, address: str) -> dict[str, Any]:

@@ -43,12 +43,14 @@ pub struct ProcessResult {
 struct OwnedChild {
     child: Child,
     stopped: bool,
+    termination_grace: Duration,
 }
 impl OwnedChild {
     fn new(child: Child) -> Self {
         Self {
             child,
             stopped: false,
+            termination_grace: Duration::ZERO,
         }
     }
 }
@@ -58,6 +60,19 @@ impl OwnedChild {
             return;
         }
         self.stopped = true;
+        #[cfg(unix)]
+        if !self.termination_grace.is_zero() {
+            if let Some(p) = rustix::process::Pid::from_raw(self.child.id() as i32) {
+                let _ = rustix::process::kill_process_group(p, rustix::process::Signal::TERM);
+            }
+            let deadline = Instant::now() + self.termination_grace;
+            while Instant::now() < deadline {
+                if matches!(self.child.try_wait(), Ok(Some(_))) {
+                    break;
+                }
+                thread::sleep(Duration::from_millis(5));
+            }
+        }
         #[cfg(unix)]
         if let Some(p) = rustix::process::Pid::from_raw(self.child.id() as i32) {
             let _ = rustix::process::kill_process_group(p, rustix::process::Signal::KILL);
@@ -102,6 +117,19 @@ impl ProcessSpec {
         Ok(c)
     }
     pub fn run(&self, input: &[u8]) -> Result<ProcessResult> {
+        self.run_with_termination_grace(input, Duration::ZERO)
+    }
+    /// Explicit decision instruments may own a separately grouped native client.
+    /// Let their TERM handler reap it before the final group KILL. Ordinary
+    /// process/RPC callers retain their existing immediate cleanup policy.
+    pub fn run_with_termination_grace(
+        &self,
+        input: &[u8],
+        termination_grace: Duration,
+    ) -> Result<ProcessResult> {
+        if termination_grace > Duration::from_secs(3) {
+            return Err(Error::new("process termination grace exceeds bound"));
+        }
         if input.len() > 16 * 1024 * 1024 {
             return Err(Error::new("specimen input exceeds bound"));
         }
@@ -115,6 +143,7 @@ impl ProcessSpec {
             .stdout(stdout.try_clone().map_err(io)?)
             .stderr(stderr.try_clone().map_err(io)?);
         let mut child = OwnedChild::new(c.spawn().map_err(io)?);
+        child.termination_grace = termination_grace;
         let start = Instant::now();
         let status = loop {
             check_size(&stdout, &stderr, self.output_limit)?;
