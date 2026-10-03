@@ -7,6 +7,7 @@ pub struct OwnerInstrument {
     spec: ProcessSpec,
     revision: String,
     binary_digest: String,
+    native_cli: bool,
 }
 impl OwnerInstrument {
     pub fn bind(spec: ProcessSpec, revision: &str) -> Result<Self> {
@@ -17,10 +18,31 @@ impl OwnerInstrument {
             spec,
             revision: revision.into(),
             binary_digest: digest,
+            native_cli: false,
         };
         let c = owner.invoke(json!({"operation":"capabilities"}))?;
         if c["result"]["formal_owner"] != "EpiLogos/QL-MEF" {
             return Err(Error::new("instrument did not disclose QL formal owner"));
+        }
+        Ok(owner)
+    }
+    /// Bind the current owner's native CLI directly. The supplied binary is
+    /// byte-bound; no separate library build or QL interpretation is installed
+    /// in this body. The historical instrument transport remains available.
+    pub fn bind_native_cli(spec: ProcessSpec, revision: &str) -> Result<Self> {
+        full_revision(&json!(revision), "QL owner revision")?;
+        spec.validate()?;
+        let owner = Self {
+            binary_digest: Self::digest(&spec)?,
+            spec,
+            revision: revision.into(),
+            native_cli: true,
+        };
+        let capabilities = owner.invoke(json!({"operation":"capabilities"}))?;
+        if capabilities["result"]["contract"] != "ql.cli/v1"
+            || capabilities["result"]["product"] != "quaternal-logic"
+        {
+            return Err(Error::new("native CLI did not disclose the QL owner"));
         }
         Ok(owner)
     }
@@ -50,16 +72,57 @@ impl OwnerInstrument {
         let operation = request["operation"]
             .as_str()
             .ok_or_else(|| Error::new("owner operation required"))?;
-        let r = self.spec.run(
-            &serde_json::to_vec(&request).map_err(|_| Error::new("owner request encode failed"))?,
-        )?;
+        let r = if self.native_cli {
+            let mut spec = self.spec.clone();
+            let arguments = if operation == "capabilities" {
+                vec!["capabilities".to_owned()]
+            } else if operation == "cli" {
+                request["arguments"]
+                    .as_array()
+                    .ok_or_else(|| Error::new("native CLI arguments required"))?
+                    .iter()
+                    .map(|value| {
+                        value
+                            .as_str()
+                            .map(str::to_owned)
+                            .ok_or_else(|| Error::new("native CLI arguments must be strings"))
+                    })
+                    .collect::<Result<Vec<_>>>()?
+            } else {
+                return Err(Error::new(
+                    "operation requires the historical owner instrument transport",
+                ));
+            };
+            if arguments.is_empty()
+                || arguments.len() > 32
+                || arguments.iter().any(|arg| arg.len() > 1_048_576)
+            {
+                return Err(Error::new(
+                    "native CLI arguments exceed the bounded owner surface",
+                ));
+            }
+            spec.args.extend(arguments);
+            spec.args.push("--json".into());
+            spec.run(&[])?
+        } else {
+            self.spec.run(
+                &serde_json::to_vec(&request)
+                    .map_err(|_| Error::new("owner request encode failed"))?,
+            )?
+        };
         if r.code != Some(0) {
             return Err(Error::new(
                 "QL owner refused operation; no local formal fallback",
             ));
         }
-        let v: Value =
+        let reply: Value =
             serde_json::from_str(&r.stdout).map_err(|_| Error::new("invalid owner reply"))?;
+        let v = if self.native_cli {
+            json!({"schema":"actuation.ql-owner-operation/v1","owner_repository":"EpiLogos/QL-MEF",
+                "owner_revision":self.revision,"operation":operation,"result":reply})
+        } else {
+            reply
+        };
         if v["schema"] != "actuation.ql-owner-operation/v1"
             || v["owner_repository"] != "EpiLogos/QL-MEF"
             || v["owner_revision"] != self.revision
@@ -74,7 +137,8 @@ impl OwnerInstrument {
         Ok(v)
     }
     pub fn basis(&self) -> Value {
-        json!({"repository":"EpiLogos/QL-MEF","revision":self.revision,"instrument_sha256":self.binary_digest})
+        json!({"repository":"EpiLogos/QL-MEF","revision":self.revision,"instrument_sha256":self.binary_digest,
+            "transport":if self.native_cli{"ql-cli"}else{"owner-instrument"}})
     }
 }
 

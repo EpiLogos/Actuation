@@ -29,6 +29,8 @@ static SEQUENCE: AtomicU64 = AtomicU64::new(0);
 pub struct OwnerBinding {
     pub process: ProcessSpec,
     pub revision: String,
+    #[serde(default)]
+    pub native_cli: bool,
 }
 #[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -46,6 +48,10 @@ pub struct FacultyConfig {
     pub source: Option<SourceBinding>,
     #[serde(default)]
     pub evidence_root: Option<PathBuf>,
+    /// Explicit shared QL/AIKit decision instrument. Entry, ordinary faculties
+    /// and deterministic QL never launch it implicitly.
+    #[serde(default)]
+    pub decision: Option<ProcessSpec>,
 }
 impl FacultyConfig {
     pub fn load(path: &Path) -> Result<Self> {
@@ -71,6 +77,9 @@ impl FacultyConfig {
         if c.schema != "actuation.prime-faculty/v1" {
             return Err(Error::new("wrong faculty configuration schema"));
         }
+        if let Some(decision) = &c.decision {
+            decision.validate()?;
+        }
         if let Some(root) = &c.evidence_root {
             World::open(root)?;
         }
@@ -85,7 +94,11 @@ impl FacultyConfig {
         Ok(c)
     }
     pub fn bind(&self) -> Result<OwnerInstrument> {
-        OwnerInstrument::bind(self.owner.process.clone(), &self.owner.revision)
+        if self.owner.native_cli {
+            OwnerInstrument::bind_native_cli(self.owner.process.clone(), &self.owner.revision)
+        } else {
+            OwnerInstrument::bind(self.owner.process.clone(), &self.owner.revision)
+        }
     }
     fn source_file(&self, path: &str) -> Result<Value> {
         if !SOURCE_FILES.contains(&path) {
@@ -189,12 +202,82 @@ fn techne_reading(owner: &OwnerInstrument, target: &Value) -> Result<Value> {
     }
     Ok(value)
 }
+
+fn agent_event(owner: &OwnerInstrument, operation: &str, request: &Value) -> Result<Value> {
+    native_json(owner, "agent-event", operation, request)
+}
+fn native_json(
+    owner: &OwnerInstrument,
+    kind: &str,
+    operation: &str,
+    request: &Value,
+) -> Result<Value> {
+    let bytes = request.to_string();
+    if bytes.len() > 1_048_576 {
+        return Err(Error::new(
+            "native QL request exceeds 1 MiB transport bound",
+        ));
+    }
+    let mut file = tempfile::NamedTempFile::new()
+        .map_err(|_| Error::new("cannot create bounded QL event request"))?;
+    file.write_all(bytes.as_bytes())
+        .map_err(|_| Error::new("cannot write bounded QL event request"))?;
+    file.flush()
+        .map_err(|_| Error::new("cannot flush QL event request"))?;
+    Ok(owner.invoke(
+        json!({"operation":"cli","arguments":[kind,operation,file.path().to_string_lossy()]}),
+    )?["result"]
+        .clone())
+}
 fn invoke_owner(config: &FacultyConfig, owner: &OwnerInstrument, request: &Value) -> Result<Value> {
     let op = text(request, "operation")?;
     let cli = |args: Value| -> Result<Value> {
         Ok(owner.invoke(json!({"operation":"cli","arguments":args}))?["result"].clone())
     };
     match op {
+        "ql-invoke" => native_json(owner, "epi-agent", "invoke", &request["request"]),
+        "ql-project-event" => agent_event(owner, "project", &request["request"]),
+        "ql-decision-frame" => agent_event(owner, "frame", &request["request"]),
+        "ql-harmonic-read" => agent_event(owner, "harmonic", &request["request"]),
+        "ql-validate-determination" => agent_event(owner, "validate", &request["request"]),
+        "ql-decide" => {
+            let original = agent_event(owner, "project", &request["request"])?;
+            if original["decision_head_ids"]
+                .as_array()
+                .is_some_and(Vec::is_empty)
+            {
+                return Ok(original);
+            }
+            let process = config.decision.as_ref().ok_or_else(|| {
+                Error::new("no QL decision instrument elected; deterministic QL remains available")
+            })?;
+            let result = process.run_with_termination_grace(
+                request["request"].to_string().as_bytes(),
+                std::time::Duration::from_millis(2500),
+            )?;
+            if result.code != Some(0) {
+                return Err(Error::new(
+                    "QL decision instrument failed; ordinary QL remains available",
+                ));
+            }
+            let value: Value = serde_json::from_str(&result.stdout)
+                .map_err(|_| Error::new("QL decision instrument returned invalid JSON"))?;
+            if value["schema"] != "ql.agent-decision-admission/v1" || !value["response"].is_object()
+            {
+                return Err(Error::new(
+                    "QL decision instrument must retain the raw response for native admission",
+                ));
+            }
+            // The external instrument's projected fields are never operative
+            // authority. Re-admit its raw proposal through this body's own
+            // byte-bound QL owner against the original event/kernel basis.
+            Ok(agent_event(
+                owner,
+                "validate",
+                &json!({"projection":request["request"],"response":value["response"]}),
+            )?["projection"]
+                .clone())
+        }
         "capabilities" => cli(json!(["capabilities"])),
         "epi-constitution" => cli(json!(["epi-agent", "constitution"])),
         "epi-faculty" => {
