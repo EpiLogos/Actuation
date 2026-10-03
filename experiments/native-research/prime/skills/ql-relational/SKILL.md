@@ -7,6 +7,11 @@ Import `ql_relational` in the Prime Python kernel. The installed native faculty
 and configuration are supplied through `ACTUATION_RESEARCH_BIN` and
 `ACTUATION_RESEARCH_FACULTY_CONFIG`.
 
+When installed, the six typed `ql_*` tools provide the same owner operations.
+Use `/ql-mode on` to carry their exact native receipts into later reasoning and
+`/ql-status` to inspect the body/session basis. `/ql-mode off` stops implicit
+receipt context while preserving ordinary tools. Mode changes start no model.
+
 Project the exact sourced event with `await ql_relational.ql_project_event(request)`.
 Keep observed, derived, learned, validated and unresolved fields distinct.
 Request only relevant heads. Deterministic events bypass the decision provider.
