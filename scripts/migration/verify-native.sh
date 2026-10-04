@@ -57,7 +57,7 @@ DIRECTORY = FLAGS | os.O_DIRECTORY
 SHA_COST = {"bytes": 0, "seconds": 0.0,
             "profile": "actual wall time hashing data; image measurements include read/copy IO, not isolated CPU"}
 MODULES = [
-    ("research", "crates/actuation-research/src/process.rs", "native_retirement_tests", 10),
+    ("research", "crates/actuation-research/src/process.rs", "native_retirement_tests", 12),
     ("research", "crates/actuation-research/src/sdk.rs", "native_finish_tests", 2),
     ("core", "crates/actuation-core/src/wire.rs", "causal_error_tests", 1),
 ]
@@ -180,8 +180,89 @@ def native_facts(value):
     return result
 
 
+def terminal_causes(value, allowed=None):
+    assert type(value) is list and len(value) <= 32
+    result = []
+    for row in value:
+        assert type(row) is dict and set(row) == {"phase", "io"}
+        label = row["phase"]
+        if allowed is None:
+            label = phase(label)
+        else:
+            assert type(label) is str and label in allowed
+        result.append({"phase": label, "io": io_fact(row["io"])})
+    return result
+
+
+def optional_boolean(value):
+    assert value is None or type(value) is bool
+    return value
+
+
+def optional_integer(value):
+    assert value is None or type(value) is int
+    return value
+
+
+def terminal_case_record(value):
+    # These are actual test-emitted scalar profiles, not arbitrary returned
+    # Values. Never copy fixture paths, scripts, requests, capture or messages.
+    case = value["case"]
+    assert type(case) is str and case in ("terminal-spawn-group", "terminal-external-reap")
+    if set(value) == {"case", "phase", "actual_io"}:
+        expected = {"terminal-spawn-group": "leader_spawn", "terminal-external-reap": "spawn"}
+        assert value["phase"] == expected[case]
+        actual = io_fact(value["actual_io"])
+        assert actual is not None, "native spawn failure must retain actual IO"
+        return {"case": case, "phase": expected[case], "actual_io": actual}
+    if case == "terminal-spawn-group":
+        keys = {"case", "terminal_observed", "member_group_matches", "leader_retirement",
+                "leader_secondary", "leader_group_absence", "member_reaped", "member_exit_code",
+                "member_signal", "unrelated_was_live_after_original_group_effect",
+                "unrelated_retirement", "unrelated_secondary", "actual_errors"}
+        assert set(value) == keys, "unknown terminal group scalar shape"
+        for key in ("terminal_observed", "member_reaped"):
+            assert type(value[key]) is bool
+        result = {"case": case, "terminal_observed": value["terminal_observed"],
+                  "member_reaped": value["member_reaped"],
+                  "member_group_matches": optional_boolean(value["member_group_matches"]),
+                  "member_exit_code": optional_integer(value["member_exit_code"]),
+                  "member_signal": optional_integer(value["member_signal"]),
+                  "unrelated_was_live_after_original_group_effect":
+                      optional_boolean(value["unrelated_was_live_after_original_group_effect"]),
+                  "leader_retirement": observation(value["leader_retirement"]),
+                  "leader_secondary": terminal_causes(value["leader_secondary"]),
+                  "leader_group_absence": terminal_causes(value["leader_group_absence"],
+                                                           {"group_term", "group_kill"})}
+        assert type(value["actual_errors"]) is list and len(value["actual_errors"]) <= 3
+        result["actual_errors"] = terminal_causes(value["actual_errors"],
+                                                  {"native_setup", "unrelated_observation", "member_reap"})
+        result["unrelated_retirement"] = (None if value["unrelated_retirement"] is None
+                                           else observation(value["unrelated_retirement"]))
+        result["unrelated_secondary"] = (None if value["unrelated_secondary"] is None
+                                          else terminal_causes(value["unrelated_secondary"]))
+        return result
+    keys = {"case", "terminal_observed", "external_wait_actually_reaped_exact_child", "external_io",
+            "prerequisite_io", "actual_retirement", "actual_secondary", "memoized_same_record",
+            "fixture_disposition"}
+    assert set(value) == keys, "unknown terminal external-reap scalar shape"
+    for key in ("terminal_observed", "external_wait_actually_reaped_exact_child", "memoized_same_record"):
+        assert type(value[key]) is bool
+    assert value["fixture_disposition"] == "retained-owner-unavailable"
+    return {"case": case, "terminal_observed": value["terminal_observed"],
+            "external_wait_actually_reaped_exact_child": value["external_wait_actually_reaped_exact_child"],
+            "external_io": io_fact(value["external_io"]),
+            "prerequisite_io": io_fact(value["prerequisite_io"]),
+            "actual_retirement": observation(value["actual_retirement"]),
+            "actual_secondary": terminal_causes(value["actual_secondary"]),
+            "memoized_same_record": value["memoized_same_record"],
+            "fixture_disposition": "retained-owner-unavailable"}
+
+
 def scalar_record(value):
     assert type(value) is dict
+    if "case" in value:
+        return terminal_case_record(value)
     if "attachment" in value:
         return native_facts(value)
     if "phase" in value:
@@ -294,8 +375,8 @@ def source_roster():
         owner = Path(relative).stem
         cases.extend({"role": role, "name": f"{owner}::{module}::{name}",
                       "source": relative} for name in names)
-    assert len(cases) == 13
-    write("source-native-roster.json", {"research": 12, "core": 1, "ignored": 0, "cases": cases})
+    assert len(cases) == 15
+    write("source-native-roster.json", {"research": 14, "core": 1, "ignored": 0, "cases": cases})
     return cases
 
 
@@ -431,7 +512,7 @@ def execute():
                       "scalar_custody_limit": "success-disposed actual-result files unavailable; no values inferred",
                       "outer_libtest_return_is_not_inner_retirement": True}
             results.append(record)
-            write("native-case-results.json", {"required": 13, "executed": len(results),
+            write("native-case-results.json", {"required": 15, "executed": len(results),
                   "remaining_not_executed": [c["name"] for c in cases[len(results):]], "cases": results})
             assert passed, "actual native case failed/skipped/wrong census; raw failure retained, no retry"
         for role, (fd, path, initial, image) in roles.items():
@@ -453,8 +534,11 @@ def execute():
             write(f"image-{role}-final.json", {"same_held_and_named_basis": True,
                   "same_sha256": True, "sha256": h.hexdigest(), "bytes": count})
         final_source()
-        write("native-13-qualified.json", {"executed": 13, "research": 12, "core": 1,
-              "passed": 13, "failed": 0, "ignored": 0, "standing": "actual hosted native unit cases only",
+        # Historical filename retained for artifact consumers; contents qualify exact15, not13.
+        write("native-13-qualified.json", {"executed": 15, "research": 14, "core": 1,
+              "passed": 15, "failed": 0, "ignored": 0, "standing": "actual hosted native unit cases only",
+              "required_case_count": 15, "original_cases": 13, "new_terminal_cases": 2,
+              "historical_filename": "native-13-qualified.json; count is declared by contents",
               "full_scalar_observation_emission": False,
               "provider_model_installed_original_H_claim": False})
     finally:

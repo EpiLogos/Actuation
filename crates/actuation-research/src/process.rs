@@ -217,10 +217,22 @@ struct OwnedChild {
     termination_grace: Duration,
     observation: ProcessObservation,
     retired: Option<std::sync::Arc<Retirement>>,
+    #[cfg(unix)]
+    spawned_group: Option<rustix::process::Pid>,
 }
 impl OwnedChild {
-    fn new(child: Child) -> Self {
-        Self {
+    // The owner itself creates this group. An arbitrary Child cannot assert
+    // group authority by being wrapped after somebody else's spawn.
+    fn spawn(mut command: Command) -> std::io::Result<Self> {
+        #[cfg(unix)]
+        {
+            use std::os::unix::process::CommandExt;
+            command.process_group(0);
+        }
+        let child = command.spawn()?;
+        #[cfg(unix)]
+        let spawned_group = rustix::process::Pid::from_raw(child.id() as i32);
+        Ok(Self {
             child,
             termination_grace: Duration::ZERO,
             observation: ProcessObservation {
@@ -229,7 +241,9 @@ impl OwnedChild {
                 ..Default::default()
             },
             retired: None,
-        }
+            #[cfg(unix)]
+            spawned_group,
+        })
     }
     #[cfg(any(target_os = "linux", target_os = "macos"))]
     fn peek(&mut self) -> Result<bool> {
@@ -281,9 +295,22 @@ impl OwnedChild {
                 "numeric signal is unavailable after lost or reaped ownership",
             ));
         }
-        self.peek()?;
+        let terminal = self.peek()?;
         let pid = rustix::process::Pid::from_raw(self.child.id() as i32)
             .ok_or_else(|| Error::new("owned child identity unavailable"))?;
+        if self.spawned_group != Some(pid) {
+            self.observation.signal_forbidden = true;
+            return Err(Error::new("native spawn group witness unavailable"));
+        }
+        // WNOWAIT retains this exact child's PID until our later wait. The
+        // original group was created by spawn(0); its number cannot be reused
+        // while that PID is held. A terminal Mac child is not a live proc_find
+        // target for getpgid. Do not turn that lookup's ESRCH into lost custody,
+        // or chase a different group. Each effect still reobserves WNOWAIT.
+        if terminal {
+            self.observation.unreaped_owner_observed_before_signal = true;
+            return Ok(pid);
+        }
         match rustix::process::getpgid(Some(pid)) {
             Ok(group) if group == pid => {
                 self.observation.unreaped_owner_observed_before_signal = true;
@@ -603,7 +630,7 @@ impl ProcessSpec {
         c.stdin(stdin)
             .stdout(stdout.try_clone().map_err(io)?)
             .stderr(stderr.try_clone().map_err(io)?);
-        let spawned = c.spawn().map_err(|e| {
+        let mut child = OwnedChild::spawn(c).map_err(|e| {
             process_failure(
                 io(e),
                 &Retirement::default(),
@@ -614,7 +641,6 @@ impl ProcessSpec {
                 false,
             )
         })?;
-        let mut child = OwnedChild::new(spawned);
         child.termination_grace = termination_grace;
         let start = Instant::now();
         let outcome = (|| -> Result<()> {
@@ -724,7 +750,7 @@ impl RpcClient {
         c.stdin(Stdio::piped())
             .stdout(stdout.try_clone().map_err(io)?)
             .stderr(stderr.try_clone().map_err(io)?);
-        let spawned = c.spawn().map_err(|e| {
+        let mut child = OwnedChild::spawn(c).map_err(|e| {
             process_failure(
                 io(e),
                 &Retirement::default(),
@@ -735,7 +761,6 @@ impl RpcClient {
                 false,
             )
         })?;
-        let mut child = OwnedChild::new(spawned);
         let setup = (|| {
             let stdin = child
                 .child
@@ -1471,7 +1496,7 @@ pub(crate) mod native_retirement_tests {
     fn native_immediate_group_signal_uses_unreaped_terminal_owner_before_wait() {
         let fixture = Fixture::new();
         let spec = fixture.script("#!/bin/sh\nexit 0\n", 1000, 1024);
-        let mut child = OwnedChild::new(spec.command().unwrap().spawn().unwrap());
+        let mut child = OwnedChild::spawn(spec.command().unwrap()).unwrap();
         let deadline = Instant::now() + Duration::from_secs(1);
         while !child.peek().unwrap() {
             if Instant::now() >= deadline {
@@ -1501,7 +1526,7 @@ pub(crate) mod native_retirement_tests {
     fn native_external_reap_suppresses_later_numeric_signal_and_drop_retry() {
         let fixture = Fixture::new();
         let spec = fixture.script("#!/bin/sh\nexit 0\n", 1000, 1024);
-        let mut child = OwnedChild::new(spec.command().unwrap().spawn().unwrap());
+        let mut child = OwnedChild::spawn(spec.command().unwrap()).unwrap();
         let pid = rustix::process::Pid::from_raw(child.child.id() as i32).unwrap();
         external_reap(pid);
         let first = child.retire();
@@ -1654,5 +1679,234 @@ pub(crate) mod native_retirement_tests {
         fixture.record(json!({"native_failure":facts,"retained_supplemental":supplemental}));
         drop(client);
         // Retain unknown native retirement; no arbitrary kill/wait retry.
+    }
+    #[test]
+    fn native_terminal_spawn_group_retires_member_and_preserves_separate_group() {
+        use std::os::unix::process::{CommandExt, ExitStatusExt};
+        let fixture = Fixture::new();
+        let spec = fixture.script(
+            "#!/bin/sh\ni=0\nwhile [ ! -f member-ready ] && [ \"$i\" -lt 200 ]; do i=$((i+1)); /bin/sleep 0.01; done\n[ -f member-ready ] || exit 70\nexit 0\n",
+            3000,
+            1024,
+        );
+        let mut leader = match OwnedChild::spawn(spec.command().unwrap()) {
+            Ok(child) => child,
+            Err(error) => {
+                fixture.record(json!({"case":"terminal-spawn-group", "phase":"leader_spawn",
+                    "actual_io":io_fact(&io(error))}));
+                panic!("actual leader spawn failed; fixture retained");
+            }
+        };
+        let mut member: Option<Child> = None;
+        let mut unrelated: Option<OwnedChild> = None;
+        let mut errors: Vec<(&'static str, Error)> = Vec::new();
+        let mut terminal_observed = false;
+        let mut member_group_matches = None;
+        let setup = (|| -> Result<()> {
+            let group = leader
+                .spawned_group
+                .ok_or_else(|| Error::new("native leader group witness unavailable"))?;
+            let mut command = Command::new("/bin/sh");
+            command.args(["-c", "printf ready > member-ready; i=0; while [ \"$i\" -lt 500 ]; do i=$((i+1)); /bin/sleep 0.01; done; exit 0"])
+                .current_dir(&fixture.root)
+                .env_clear()
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .process_group(group.as_raw_nonzero().get());
+            member = Some(command.spawn().map_err(io)?);
+            let mut command = Command::new("/bin/sh");
+            command.args(["-c", "printf ready > unrelated-ready; i=0; while [ \"$i\" -lt 600 ]; do i=$((i+1)); /bin/sleep 0.01; done; exit 0"])
+                .current_dir(&fixture.root)
+                .env_clear()
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null());
+            unrelated = Some(OwnedChild::spawn(command).map_err(io)?);
+            let deadline = Instant::now() + Duration::from_secs(2);
+            loop {
+                let ready = match fs::read(fixture.root.join("unrelated-ready")) {
+                    Ok(bytes) => bytes == b"ready",
+                    Err(error) if error.kind() == std::io::ErrorKind::NotFound => false,
+                    Err(error) => return Err(io(error)),
+                };
+                if ready && leader.peek()? {
+                    terminal_observed = true;
+                    break;
+                }
+                if Instant::now() >= deadline {
+                    return Err(Error::new("actual native group readiness deadline exhausted"));
+                }
+                thread::sleep(Duration::from_millis(5));
+            }
+            let member_pid = member
+                .as_ref()
+                .and_then(|child| rustix::process::Pid::from_raw(child.id() as i32))
+                .ok_or_else(|| Error::new("actual member identity unavailable"))?;
+            member_group_matches = Some(
+                rustix::process::getpgid(Some(member_pid)).map_err(|error| io(error.into()))?
+                    == group,
+            );
+            Ok(())
+        })();
+        if let Err(error) = setup {
+            errors.push(("native_setup", error));
+        }
+        let leader_retirement = leader.retire();
+        let unrelated_was_live = match unrelated.as_mut().map(|child| child.peek()) {
+            Some(Ok(terminal)) => Some(!terminal),
+            Some(Err(error)) => {
+                errors.push(("unrelated_observation", error));
+                None
+            }
+            None => None,
+        };
+        // Independently retire only the separately spawned group after observing
+        // its actual survival. No effect on a numeric group after leader reap.
+        let unrelated_retirement = unrelated.as_mut().map(|child| child.retire());
+        let mut member_status = None;
+        if let Some(child) = member.as_mut() {
+            let deadline = Instant::now() + Duration::from_secs(6);
+            loop {
+                match child.try_wait() {
+                    Ok(Some(status)) => {
+                        member_status = Some(status);
+                        break;
+                    }
+                    Ok(None) => {}
+                    Err(error) => {
+                        errors.push(("member_reap", io(error)));
+                        break;
+                    }
+                }
+                if Instant::now() >= deadline {
+                    errors.push((
+                        "member_reap",
+                        Error::new("actual member retirement deadline exhausted"),
+                    ));
+                    break;
+                }
+                thread::sleep(Duration::from_millis(5));
+            }
+        }
+        fixture.record(json!({"case":"terminal-spawn-group",
+            "terminal_observed":terminal_observed, "member_group_matches":member_group_matches,
+            "leader_retirement":leader_retirement.observation,
+            "leader_secondary":leader_retirement.errors.iter().map(|cause|
+                json!({"phase":cause.phase,"io":io_fact(&cause.error)})).collect::<Vec<_>>(),
+            "leader_group_absence":leader_retirement.absence.iter().map(|cause|
+                json!({"phase":cause.phase,"io":io_fact(&cause.error)})).collect::<Vec<_>>(),
+            "member_reaped":member_status.is_some(),
+            "member_exit_code":member_status.as_ref().and_then(|status| status.code()),
+            "member_signal":member_status.as_ref().and_then(|status| status.signal()),
+            "unrelated_was_live_after_original_group_effect":unrelated_was_live,
+            "unrelated_retirement":unrelated_retirement.as_ref().map(|r| &r.observation),
+            "unrelated_secondary":unrelated_retirement.as_ref().map(|r| r.errors.iter().map(|cause|
+                json!({"phase":cause.phase,"io":io_fact(&cause.error)})).collect::<Vec<_>>()),
+            "actual_errors":errors.iter().map(|(phase,error)|
+                json!({"phase":phase,"io":io_fact(error)})).collect::<Vec<_>>()}));
+        // Real scalars and original IO are retained before every new assertion.
+        assert!(
+            errors.is_empty(),
+            "actual native timing prerequisite failed; inspect retained result"
+        );
+        assert!(terminal_observed);
+        assert_eq!(member_group_matches, Some(true));
+        assert!(leader_retirement.clean());
+        assert!(leader_retirement.observation.kill_signal_attempted);
+        assert!(leader_retirement.observation.unreaped_owner_observed_before_signal);
+        assert!(!leader_retirement.observation.signal_forbidden);
+        assert_eq!(leader_retirement.observation.exit_code, Some(0));
+        assert_eq!(
+            member_status.as_ref().and_then(|status| status.signal()),
+            Some(9)
+        );
+        assert_eq!(unrelated_was_live, Some(true));
+        assert!(unrelated_retirement.as_ref().is_some_and(|r| r.clean()));
+        drop(member);
+        drop(unrelated);
+        drop(leader);
+        fixture.dispose_after_known_retirement();
+    }
+
+    #[test]
+    fn native_terminal_owner_external_reap_checkpoint_forbids_all_later_signals() {
+        let fixture = Fixture::new();
+        let spec = fixture.script("#!/bin/sh\nexit 0\n", 1000, 1024);
+        let mut child = match OwnedChild::spawn(spec.command().unwrap()) {
+            Ok(child) => child,
+            Err(error) => {
+                fixture.record(json!({"case":"terminal-external-reap", "phase":"spawn",
+                    "actual_io":io_fact(&io(error))}));
+                panic!("actual native spawn failed; fixture retained");
+            }
+        };
+        let mut terminal = false;
+        let mut prerequisite = None;
+        let deadline = Instant::now() + Duration::from_secs(1);
+        loop {
+            match child.peek() {
+                Ok(true) => {
+                    terminal = true;
+                    break;
+                }
+                Ok(false) => {}
+                Err(error) => {
+                    prerequisite = Some(error);
+                    break;
+                }
+            }
+            if Instant::now() >= deadline {
+                prerequisite = Some(Error::new(
+                    "actual terminal observation deadline exhausted",
+                ));
+                break;
+            }
+            thread::sleep(Duration::from_millis(5));
+        }
+        let external = std::rc::Rc::new(std::cell::RefCell::new(None));
+        let recorded = external.clone();
+        if terminal {
+            retirement_checkpoint(move |pid| {
+                *recorded.borrow_mut() = Some(
+                    rustix::process::waitpid(Some(pid), rustix::process::WaitOptions::NOHANG)
+                        .map_err(std::io::Error::from),
+                );
+            });
+        }
+        let first = child.retire();
+        let repeated = child.retire();
+        let (external_reaped, external_io) = match external.borrow().as_ref() {
+            Some(Ok(Some((observed, _)))) => (
+                rustix::process::Pid::from_raw(child.child.id() as i32) == Some(*observed),
+                None,
+            ),
+            Some(Err(error)) => (
+                false,
+                Some(json!({"kind":format!("{:?}",error.kind()),
+                    "raw_os_error":error.raw_os_error()})),
+            ),
+            _ => (false, None),
+        };
+        fixture.record(json!({"case":"terminal-external-reap", "terminal_observed":terminal,
+            "external_wait_actually_reaped_exact_child":external_reaped, "external_io":external_io,
+            "prerequisite_io":prerequisite.as_ref().map(io_fact),
+            "actual_retirement":first.observation,
+            "actual_secondary":first.errors.iter().map(|cause|
+                json!({"phase":cause.phase,"io":io_fact(&cause.error)})).collect::<Vec<_>>(),
+            "memoized_same_record":std::sync::Arc::ptr_eq(&first,&repeated),
+            "fixture_disposition":"retained-owner-unavailable"}));
+        assert!(prerequisite.is_none());
+        assert!(terminal && external_reaped);
+        assert!(first.observation.signal_forbidden);
+        assert!(!first.observation.direct_child_reaped);
+        assert!(!first.observation.term_signal_attempted);
+        assert!(!first.observation.kill_signal_attempted);
+        assert!(!first.observation.direct_kill_attempted);
+        assert!(first.errors.iter().any(|cause| actual_io(&cause.error)
+            .is_some_and(|error| error.raw_os_error()
+                == Some(rustix::io::Errno::CHILD.raw_os_error()))));
+        assert!(std::sync::Arc::ptr_eq(&first, &repeated));
+        drop(child); // Memoized unknown owner; never a late numeric retry.
     }
 }
