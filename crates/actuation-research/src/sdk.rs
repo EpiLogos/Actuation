@@ -163,7 +163,8 @@ impl NativeSdkBody {
             .ok_or_else(|| Error::new("SDK has not started"))?;
         let reply = client.exchange(command, time)?;
         if reply["command"] != expected {
-            return Err(client.finish_after_error(Error::new("SDK reply requires exact operation correlation")));
+            return Err(client
+                .finish_after_error(Error::new("SDK reply requires exact operation correlation")));
         }
         if reply["success"] != true {
             return Err(Error::new("SDK refused operation; response retained"));
@@ -252,7 +253,8 @@ impl ModelBody for NativeSdkBody {
             (json!([]), Value::Null, None)
         };
         if let Some(error) = &retirement_error {
-            self.failures.push(json!({"operation":"native_finish","error":error.to_string()}));
+            self.failures
+                .push(json!({"operation":"native_finish","error":error.to_string()}));
         }
         // A completed semantic reply remains data even when physical retirement
         // fails. The top-level status must not acknowledge clean completion.
@@ -417,7 +419,8 @@ exit 0
             json!({"source":"owned-native-fixture"}),
             true,
             2000,
-        ).unwrap();
+        )
+        .unwrap();
         let completion = body.complete(&json!({
             "request":{"input":"actual controlled native completion","successConditions":["reply observed"]},
             "payload":{},"capabilities":["read_file"]
@@ -434,9 +437,18 @@ exit 0
         let receipt = body.finish(&json!({"observed":"actual-owned-fixture"}));
         assert_eq!(receipt["status"], "completed");
         assert_eq!(receipt["finalization_status"], "completed");
-        assert_eq!(receipt["finalization"]["retained_semantic_data"], "PRIVATE-FINALIZATION-CANARY");
-        assert_eq!(receipt["process_retirement"]["observation"]["direct_child_reaped"], true);
-        assert_eq!(receipt["process_retirement"]["observation"]["reply_observed"], true);
+        assert_eq!(
+            receipt["finalization"]["retained_semantic_data"],
+            "PRIVATE-FINALIZATION-CANARY"
+        );
+        assert_eq!(
+            receipt["process_retirement"]["observation"]["direct_child_reaped"],
+            true
+        );
+        assert_eq!(
+            receipt["process_retirement"]["observation"]["reply_observed"],
+            true
+        );
         assert_eq!(body.finish(&json!({"different":"not-replayed"})), receipt);
         assert_eq!(receipt["responses"].as_array().unwrap().len(), 3);
         fixture.record(json!({"status":receipt["status"],
@@ -453,14 +465,20 @@ exit 0
         let receipt = body.finish(&json!({"observed":"actual-owned-fixture"}));
         assert_eq!(receipt["status"], "failed");
         assert_eq!(receipt["finalization_status"], "completed");
-        assert_eq!(receipt["finalization"]["retained_semantic_data"], "PRIVATE-FINALIZATION-CANARY");
+        assert_eq!(
+            receipt["finalization"]["retained_semantic_data"],
+            "PRIVATE-FINALIZATION-CANARY"
+        );
         let facts = &receipt["process_retirement"];
         assert_eq!(facts["observation"]["reply_observed"], true);
         assert_eq!(facts["observation"]["signal_forbidden"], true);
         assert_eq!(facts["observation"]["direct_child_reaped"], false);
         assert_eq!(facts["observation"]["kill_signal_attempted"], false);
-        assert!(facts["secondary"].as_array().unwrap().iter().any(|cause|
-            cause["io"]["raw_os_error"] == rustix::io::Errno::CHILD.raw_os_error()));
+        assert!(facts["secondary"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|cause| cause["io"]["raw_os_error"] == rustix::io::Errno::CHILD.raw_os_error()));
         assert!(!facts.to_string().contains("PRIVATE"));
         assert_eq!(receipt["responses"].as_array().unwrap().len(), 3);
         assert_eq!(body.finish(&json!({"different":"no-replay"})), receipt);
@@ -469,4 +487,3 @@ exit 0
         // Unknown native owner retirement retains the already-created fixture.
     }
 }
-
