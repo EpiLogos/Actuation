@@ -64,6 +64,7 @@ MODULES = [
 BOOLS = {
     "spawned", "direct_child_reaped", "signal_forbidden", "term_signal_attempted",
     "kill_signal_attempted", "direct_kill_attempted", "group_absent",
+    "terminal_group_owner_only_observed",
     "unreaped_owner_observed_before_signal", "retirement_deadline_exhausted",
     "reply_observed", "capture_truncated", "capture_read_failed",
 }
@@ -124,7 +125,7 @@ def phase(value):
     allowed = {"running", "spawn", "execution", "capture", "retirement", "rpc_setup",
                "rpc_finish", "owner_identity", "group_term", "group_kill", "grace_wait",
                "direct_kill", "reap", "capture_metadata", "capture_stdout", "capture_stderr",
-               "late_rpc_capture"}
+               "late_rpc_capture", "group_membership"}
     assert type(value) is str and value in allowed, "unknown native owner phase"
     return value
 
@@ -208,7 +209,20 @@ def terminal_case_record(value):
     # These are actual test-emitted scalar profiles, not arbitrary returned
     # Values. Never copy fixture paths, scripts, requests, capture or messages.
     case = value["case"]
-    assert type(case) is str and case in ("terminal-spawn-group", "terminal-external-reap")
+    assert type(case) is str and case in ("terminal-spawn-group", "terminal-external-reap",
+                                          "terminal-membership-probe")
+    if case == "terminal-membership-probe":
+        keys = {"case", "slots", "probe_refused", "owner_only", "actual_io", "observation"}
+        assert set(value) == keys, "unknown native membership probe shape"
+        assert type(value["slots"]) is int and value["slots"] in (1, 2)
+        assert type(value["probe_refused"]) is bool
+        owner_only = optional_boolean(value["owner_only"])
+        assert (owner_only is None) == value["probe_refused"]
+        actual = io_fact(value["actual_io"])
+        assert actual is None or value["probe_refused"]
+        return {"case": case, "slots": value["slots"], "probe_refused": value["probe_refused"],
+                "owner_only": owner_only, "actual_io": actual,
+                "observation": observation(value["observation"])}
     if set(value) == {"case", "phase", "actual_io"}:
         expected = {"terminal-spawn-group": "leader_spawn", "terminal-external-reap": "spawn"}
         assert value["phase"] == expected[case]
