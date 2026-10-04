@@ -87,6 +87,8 @@ jobs:
           path: aikit-capture
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@1.98.0
+        with:
+          components: rustfmt, clippy
       - name: Freeze pristine sources, locks, overlay and actual build context
         id: source
         shell: bash
