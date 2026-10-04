@@ -42,7 +42,10 @@ handoff = await ql_relational.central_now_handover(
     evidence_refs=["evidence:..."],
     work_refs=[{"repo":"EpiLogos/O-I","branch":"feature/...","worktree_path":"/actual/path"}],
 )
-await ql_relational.central_now_handoff_read(handoff["data"]["handoff"]["id"])
+await ql_relational.central_now_handoff_read(
+    handoff["data"]["handoff"]["id"],
+    read_path=handoff["data"].get("read_path"),
+)
 ql_relational.return_envelope(...)
 await ql_relational.agent_message.send("CHILD_QL_OK", receiver_role="parent")
 ```
@@ -94,15 +97,32 @@ instead of transferring the parent transcript or inventing a handoff file.
 
 `central_now_handover(...)` calls the installed `ctrl` owner through
 `projectcentral.now.return`. It requires `CENTRAL_CTRL_BIN` and
-`CENTRAL_ROOT`; `CENTRAL_PROJECT` supplies the default Project key. The
-record keeps the worker/session ref, source/evidence/preserve refs, and exact
+`CENTRAL_ROOT`; the optional `CENTRAL_PROJECT` supplies the default Work
+Project member. With no Project, the same owner writes the root ordinary
+return. The record keeps the worker/session ref, source/evidence/preserve refs, and exact
 repo/branch/optional-worktree lane claim. Central owns its lifecycle and DAY
 rollover.
 
-A replacement worker uses `central_now_handoff_read(id)` to re-read that exact
-record from Central's current NOW inspection and continues from the referenced
-source/evidence/next action. These calls are optional: absence of Central makes
-the continuation faculty unavailable and never blocks ordinary QL work.
+A replacement worker retains the native return's `read_path` with its handoff
+ID and uses `central_now_handoff_read(id, read_path=read_path)` to read that exact
+current file through `central.files.read`. The SDK admits only this fixed
+Action, the selected register/member and the same ID; Central validates its own
+opaque location and current file admission. Actual file revision and binding
+metadata accompany the decoded handoff. Neither the SDK nor the replacement
+formats a native ref, copies a transcript or invents an allocated NOW identity.
+
+Without a route, the existing Project `central_now_handoff_read(id, project=...)`
+continues to use `projectcentral.now.inspect`. A root read without the native
+route is explicitly unavailable, including an actual older owner's successful
+return without route metadata. A null route with `read_path_unavailable` also
+keeps the successful return; retain it and diagnose the owner rather than
+resending. Optional Central absence never blocks ordinary QL work.
+
+Selected delivery is not a full root NOW inspection or a claim of atomic
+freshness. The native reader's final cause/freshness limits and the SDK's
+existing unbounded subprocess capture remain separate obligations. Real tests
+must be run through an admitted finite native capture owner; a timeout is
+failure with retained fixture evidence, not a successful missing-owner result.
 
 Do not put private transcript text, credentials or protected material in the
 handoff merely to make it look complete. Keep it pithy: returned difference,
