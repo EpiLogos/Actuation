@@ -37,7 +37,7 @@ impl Error {
     }
     pub fn secondary_sources(
         &self,
-    ) -> impl Iterator<Item = &(dyn std::error::Error + Send + Sync)> {
+    ) -> impl Iterator<Item = &(dyn std::error::Error + Send + Sync + 'static)> {
         self.secondary.iter().map(|e| e.as_ref())
     }
 }
