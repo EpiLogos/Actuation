@@ -38,10 +38,11 @@ fn main() {
     match result {
         Ok(v) => println!("{v}"),
         Err(e) => {
-            println!(
-                "{}",
-                json!({"schema":"actuation.research-error/v1","error":e.to_string()})
-            );
+            let mut result = json!({"schema":"actuation.research-error/v1","error":e.to_string()});
+            if let Some(facts) = actuation_research::process::failure_details(&e) {
+                result["process"] = facts;
+            }
+            println!("{result}");
             std::process::exit(1);
         }
     }

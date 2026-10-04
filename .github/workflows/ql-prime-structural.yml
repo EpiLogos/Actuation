@@ -42,7 +42,7 @@ jobs:
     timeout-minutes: 30
     env:
       CARGO_INCREMENTAL: "0"
-      CENTRAL_CURRENT_SOURCE: ab6b343632fc9fe4c6a209306605e10dbac8631d
+      CENTRAL_CURRENT_SOURCE: f596baecb469e07ef0f704a03b45d38454b01369
       CENTRAL_LEGACY_SOURCE: 5e4510a6bd61d6e151c84d755f884b61b693db27
       AIKIT_CAPTURE_SOURCE: 900bce05483c6fd39cfd320ebf95c2e2b5aa4d29
     steps:
@@ -153,7 +153,7 @@ jobs:
         run: |
           set -euo pipefail
           cd central-current
-          for selection in workspace integration clippy format; do
+          for selection in format clippy workspace integration; do
             set +e
             case "$selection" in
               workspace) cargo test --locked --workspace > "$HANDOFF_EVIDENCE/raw/central-$selection.stdout" 2> "$HANDOFF_EVIDENCE/raw/central-$selection.stderr" ;;

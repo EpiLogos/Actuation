@@ -391,8 +391,26 @@ pub fn run_prime(
         }
         Ok(())
     })();
-    client.stop();
-    world.verify_root()?;
+    let native_finish = client.finish();
+    let native_finish_error = native_finish.err();
+    let process_retirement = native_finish_error.as_ref()
+        .and_then(crate::process::failure_details)
+        .unwrap_or_else(|| json!({"observation":client.retirement_observation()}));
+    let retained_primary = match (execution.as_ref().err(), native_finish_error.as_ref()) {
+        (Some(primary), Some(finish)) => {
+            Some(primary.clone().with_secondary_source(finish.clone()))
+        }
+        (Some(primary), None) => Some(primary.clone()),
+        (None, Some(finish)) => Some(finish.clone()),
+        (None, None) => None,
+    };
+    let preserve_primary = |error: Error| {
+        match &retained_primary {
+            Some(primary) => primary.clone().with_secondary_source(error),
+            None => error,
+        }
+    };
+    world.verify_root().map_err(preserve_primary)?;
     let family = extract_prime_family(client.records());
     let acceptance = task.candidate()["primeAcceptance"].clone();
     let acceptance_result = if acceptance.is_object() {
@@ -456,7 +474,7 @@ pub fn run_prime(
             })
             .unwrap_or(Value::Null)
     };
-    let status = if execution.is_ok() && faculty_error.is_none() {
+    let status = if execution.is_ok() && faculty_error.is_none() && native_finish_error.is_none() {
         "completed"
     } else {
         "failed"
@@ -464,7 +482,8 @@ pub fn run_prime(
     let error = execution
         .err()
         .map(|e| e.to_string())
-        .or_else(|| faculty_error.clone());
+        .or_else(|| faculty_error.clone())
+        .or_else(|| native_finish_error.as_ref().map(ToString::to_string));
     evidence.push(observe(
         observer,
         &request.trace_ref,
@@ -479,8 +498,9 @@ pub fn run_prime(
             &json!({"error":error,"refinement_attempted":client.refinement_attempted()}),
             &secrets,
         ),
-    )?);
-    let record = json!({"schema":"actuation.prime-recursive-experiment/v1","execution_status":status,"error":error,"condition":condition,"task":task.candidate(),"source":{"lock":lock.as_value(),"ql_owner":ql,"task_revision":task.revision()},"prime":{"observed_version":observed,"provider":request.provider,"model":request.model,"selection_standing":"supplied-not-resolved-by-Actuation","final_state":final_state,"session_stats":stats,"messages":messages,"requested_rlm_max_depth":condition["maxDepth"],"family":family,"prime_acceptance":acceptance_result,"rpc_records":client.records(),"stderr":client.stderr_text()?},"workspace":{"before":before,"after":after_task,"after_refinement":after_refinement,"excluded_generated_prefix":".prime/"},"faculty":{"receipts":faculty_records,"child_inheritance":child_faculty,"collection_error":faculty_error,"standing":"native-invocation-receipts; child correlation uses Prime-host material-locus digests; Agency identity remains separate"},"outcome":output,"verification":verification,"continual_refinement":refinement,"refinement_verification":refinement_verification,"evidence_refs":evidence,"claims":{"fixture_provider":request.fixture_provider,"live_prime_run":if request.fixture_provider{json!(false)}else{Value::Null},"prime_body_executed":true,"ql_relational_faculty_exercised":faculty_exercised,"relational_operations":relational_operations,"observed_child_loci":family["child_nodes"].as_array().unwrap().len(),"observed_lineage_edges":family["edges"].as_array().unwrap().len(),"observed_nested_child_edges":family["nested_edges"].as_array().unwrap().len(),"child_faculty_inheritance_observed":child_faculty["observed"],"continual_refinement_invoked":client.refinement_attempted(),"provider_evidence":"not-assessed","owner_machine_evidence":false,"human_acceptance":false}});
+    ).map_err(preserve_primary)?);
+    let stderr = client.stderr_text().map_err(preserve_primary)?;
+    let record = json!({"schema":"actuation.prime-recursive-experiment/v1","execution_status":status,"error":error,"process_retirement":process_retirement,"condition":condition,"task":task.candidate(),"source":{"lock":lock.as_value(),"ql_owner":ql,"task_revision":task.revision()},"prime":{"observed_version":observed,"provider":request.provider,"model":request.model,"selection_standing":"supplied-not-resolved-by-Actuation","final_state":final_state,"session_stats":stats,"messages":messages,"requested_rlm_max_depth":condition["maxDepth"],"family":family,"prime_acceptance":acceptance_result,"rpc_records":client.records(),"stderr":stderr},"workspace":{"before":before,"after":after_task,"after_refinement":after_refinement,"excluded_generated_prefix":".prime/"},"faculty":{"receipts":faculty_records,"child_inheritance":child_faculty,"collection_error":faculty_error,"standing":"native-invocation-receipts; child correlation uses Prime-host material-locus digests; Agency identity remains separate"},"outcome":output,"verification":verification,"continual_refinement":refinement,"refinement_verification":refinement_verification,"evidence_refs":evidence,"claims":{"fixture_provider":request.fixture_provider,"live_prime_run":if request.fixture_provider{json!(false)}else{Value::Null},"prime_body_executed":true,"ql_relational_faculty_exercised":faculty_exercised,"relational_operations":relational_operations,"observed_child_loci":family["child_nodes"].as_array().unwrap().len(),"observed_lineage_edges":family["edges"].as_array().unwrap().len(),"observed_nested_child_edges":family["nested_edges"].as_array().unwrap().len(),"child_faculty_inheritance_observed":child_faculty["observed"],"continual_refinement_invoked":client.refinement_attempted(),"provider_evidence":"not-assessed","owner_machine_evidence":false,"human_acceptance":false}});
     Ok(sanitize(&record, &secrets))
 }
 
