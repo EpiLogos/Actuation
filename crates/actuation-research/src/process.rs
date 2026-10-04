@@ -159,15 +159,27 @@ fn native_failure_in<'a>(
 pub fn failure_details(error: &Error) -> Option<Value> {
     const CAUSE_LIMIT: usize = 32;
     let supplemental_count = error.secondary_sources().count();
-    let supplemental = error.secondary_sources().take(CAUSE_LIMIT).map(|e| {
-        actual_io(e).map(|io| json!({"kind":format!("{:?}",io.kind()),"raw_os_error":io.raw_os_error()}))
-    }).collect::<Vec<_>>();
+    let supplemental = error
+        .secondary_sources()
+        .take(CAUSE_LIMIT)
+        .map(|e| {
+            actual_io(e).map(
+                |io| json!({"kind":format!("{:?}",io.kind()),"raw_os_error":io.raw_os_error()}),
+            )
+        })
+        .collect::<Vec<_>>();
     // A later publisher/read failure can retain the process failure as an
     // actual supplemental source beside the original semantic cause. Do not
     // lose that owner observation, or label it the outer operation's primary.
     let (failure, attachment) = match native_failure_in(error) {
         Some(failure) => (failure, "primary_source"),
-        None => (error.secondary_sources().take(CAUSE_LIMIT).find_map(|e| native_failure_in(e))?, "supplemental_source"),
+        None => (
+            error
+                .secondary_sources()
+                .take(CAUSE_LIMIT)
+                .find_map(|e| native_failure_in(e))?,
+            "supplemental_source",
+        ),
     };
     Some(json!({
         "attachment":attachment,
@@ -211,7 +223,11 @@ impl OwnedChild {
         Self {
             child,
             termination_grace: Duration::ZERO,
-            observation: ProcessObservation { spawned: true, phase: "running", ..Default::default() },
+            observation: ProcessObservation {
+                spawned: true,
+                phase: "running",
+                ..Default::default()
+            },
             retired: None,
         }
     }
@@ -220,7 +236,10 @@ impl OwnedChild {
         use rustix::process::{waitid, Pid, WaitId, WaitIdOptions};
         let pid = Pid::from_raw(self.child.id() as i32)
             .ok_or_else(|| Error::new("owned child identity unavailable"))?;
-        match waitid(WaitId::Pid(pid), WaitIdOptions::EXITED | WaitIdOptions::NOHANG | WaitIdOptions::NOWAIT) {
+        match waitid(
+            WaitId::Pid(pid),
+            WaitIdOptions::EXITED | WaitIdOptions::NOHANG | WaitIdOptions::NOWAIT,
+        ) {
             Ok(Some(status)) => {
                 self.observation.exit_code = status.exit_status();
                 self.observation.signal = status.terminating_signal();
@@ -236,7 +255,9 @@ impl OwnedChild {
     #[cfg(all(unix, not(any(target_os = "linux", target_os = "macos"))))]
     fn peek(&mut self) -> Result<bool> {
         self.observation.signal_forbidden = true;
-        Err(Error::new("safe unreaped process observation is unavailable on this platform"))
+        Err(Error::new(
+            "safe unreaped process observation is unavailable on this platform",
+        ))
     }
     #[cfg(not(unix))]
     fn peek(&mut self) -> Result<bool> {
@@ -256,7 +277,9 @@ impl OwnedChild {
     #[cfg(unix)]
     fn held_identity(&mut self) -> Result<rustix::process::Pid> {
         if self.observation.signal_forbidden || self.observation.direct_child_reaped {
-            return Err(Error::new("numeric signal is unavailable after lost or reaped ownership"));
+            return Err(Error::new(
+                "numeric signal is unavailable after lost or reaped ownership",
+            ));
         }
         self.peek()?;
         let pid = rustix::process::Pid::from_raw(self.child.id() as i32)
@@ -265,7 +288,7 @@ impl OwnedChild {
             Ok(group) if group == pid => {
                 self.observation.unreaped_owner_observed_before_signal = true;
                 Ok(pid)
-            },
+            }
             Ok(_) => {
                 self.observation.signal_forbidden = true;
                 Err(Error::new("owned child process group changed"))
@@ -277,12 +300,20 @@ impl OwnedChild {
         }
     }
     #[cfg(unix)]
-    fn group_signal(&mut self, signal: rustix::process::Signal, phase: &'static str, r: &mut Retirement) {
+    fn group_signal(
+        &mut self,
+        signal: rustix::process::Signal,
+        phase: &'static str,
+        r: &mut Retirement,
+    ) {
         let pid = match self.held_identity() {
             Ok(pid) => pid,
             Err(error) => {
                 self.observation.signal_forbidden = true;
-                r.errors.push(ObservedCause { phase: "owner_identity", error });
+                r.errors.push(ObservedCause {
+                    phase: "owner_identity",
+                    error,
+                });
                 return;
             }
         };
@@ -292,12 +323,18 @@ impl OwnedChild {
             self.observation.kill_signal_attempted = true;
         }
         match rustix::process::kill_process_group(pid, signal) {
-            Ok(()) => {},
+            Ok(()) => {}
             Err(e) if e == rustix::io::Errno::SRCH => {
                 self.observation.group_absent = true;
-                r.absence.push(ObservedCause { phase, error: io(e.into()) });
+                r.absence.push(ObservedCause {
+                    phase,
+                    error: io(e.into()),
+                });
             }
-            Err(e) => r.errors.push(ObservedCause { phase, error: io(e.into()) }),
+            Err(e) => r.errors.push(ObservedCause {
+                phase,
+                error: io(e.into()),
+            }),
         }
     }
     fn retire(&mut self) -> std::sync::Arc<Retirement> {
@@ -325,7 +362,10 @@ impl OwnedChild {
                         Ok(true) => break,
                         Ok(false) => thread::sleep(Duration::from_millis(5)),
                         Err(error) => {
-                            r.errors.push(ObservedCause { phase: "grace_wait", error });
+                            r.errors.push(ObservedCause {
+                                phase: "grace_wait",
+                                error,
+                            });
                             break;
                         }
                     }
@@ -341,10 +381,16 @@ impl OwnedChild {
                     Ok(_) => {
                         self.observation.direct_kill_attempted = true;
                         if let Err(e) = self.child.kill() {
-                            r.errors.push(ObservedCause { phase: "direct_kill", error: io(e) });
+                            r.errors.push(ObservedCause {
+                                phase: "direct_kill",
+                                error: io(e),
+                            });
                         }
                     }
-                    Err(error) => r.errors.push(ObservedCause { phase: "owner_identity", error }),
+                    Err(error) => r.errors.push(ObservedCause {
+                        phase: "owner_identity",
+                        error,
+                    }),
                 }
             }
         }
@@ -354,11 +400,17 @@ impl OwnedChild {
                 Ok(false) => {
                     self.observation.direct_kill_attempted = true;
                     if let Err(e) = self.child.kill() {
-                        r.errors.push(ObservedCause { phase: "direct_kill", error: io(e) });
+                        r.errors.push(ObservedCause {
+                            phase: "direct_kill",
+                            error: io(e),
+                        });
                     }
                 }
-                Ok(true) => {},
-                Err(error) => r.errors.push(ObservedCause { phase: "owner_identity", error }),
+                Ok(true) => {}
+                Err(error) => r.errors.push(ObservedCause {
+                    phase: "owner_identity",
+                    error,
+                }),
             }
         }
         let deadline = Instant::now() + Duration::from_secs(2);
@@ -374,10 +426,13 @@ impl OwnedChild {
                     }
                     break;
                 }
-                Ok(None) => {},
+                Ok(None) => {}
                 Err(e) => {
                     self.observation.signal_forbidden = true;
-                    r.errors.push(ObservedCause { phase: "reap", error: io(e) });
+                    r.errors.push(ObservedCause {
+                        phase: "reap",
+                        error: io(e),
+                    });
                     break;
                 }
             }
@@ -418,21 +473,32 @@ fn capture_file(file: &File, cap: usize) -> (Vec<u8>, Option<std::io::Error>) {
             Ok(n) => n,
             Err(error) => return (bytes, Some(error)),
         };
-        if n == 0 { break; }
+        if n == 0 {
+            break;
+        }
         bytes.extend_from_slice(&block[..n]);
     }
     (bytes, None)
 }
-fn process_failure(primary: Error, retirement: &Retirement, out: &File, err: &File, limit: usize, phase: &'static str, reply_observed: bool) -> Error {
+fn process_failure(
+    primary: Error,
+    retirement: &Retirement,
+    out: &File,
+    err: &File,
+    limit: usize,
+    phase: &'static str,
+    reply_observed: bool,
+) -> Error {
     let mut observation = retirement.observation.clone();
     observation.phase = phase;
     observation.reply_observed = reply_observed;
     let mut secondary = retirement.errors.clone();
-    let mut observe = |file: &File, field: &mut Option<u64>| {
-        match file.metadata() {
-            Ok(m) => *field = Some(m.len()),
-            Err(e) => secondary.push(ObservedCause { phase: "capture_metadata", error: io(e) }),
-        }
+    let mut observe = |file: &File, field: &mut Option<u64>| match file.metadata() {
+        Ok(m) => *field = Some(m.len()),
+        Err(e) => secondary.push(ObservedCause {
+            phase: "capture_metadata",
+            error: io(e),
+        }),
     };
     observe(out, &mut observation.stdout_observed_bytes);
     observe(err, &mut observation.stderr_observed_bytes);
@@ -443,19 +509,33 @@ fn process_failure(primary: Error, retirement: &Retirement, out: &File, err: &Fi
     let (stderr, stderr_error) = capture_file(err, cap.saturating_sub(stdout.len()));
     observation.capture_read_failed = stdout_error.is_some() || stderr_error.is_some();
     if let Some(e) = stdout_error {
-        secondary.push(ObservedCause { phase: "capture_stdout", error: io(e) });
+        secondary.push(ObservedCause {
+            phase: "capture_stdout",
+            error: io(e),
+        });
     }
     if let Some(e) = stderr_error {
-        secondary.push(ObservedCause { phase: "capture_stderr", error: io(e) });
+        secondary.push(ObservedCause {
+            phase: "capture_stderr",
+            error: io(e),
+        });
     }
     observation.captured_stdout_bytes = stdout.len();
     observation.captured_stderr_bytes = stderr.len();
-    observation.capture_truncated = observation.stdout_observed_bytes
+    observation.capture_truncated = observation
+        .stdout_observed_bytes
         .is_some_and(|n| n > stdout.len() as u64)
-        || observation.stderr_observed_bytes.is_some_and(|n| n > stderr.len() as u64);
+        || observation
+            .stderr_observed_bytes
+            .is_some_and(|n| n > stderr.len() as u64);
     let message = primary.to_string();
     Error::new(message).with_source(NativeProcessFailure {
-        primary, secondary, absence: retirement.absence.clone(), observation, stdout, stderr,
+        primary,
+        secondary,
+        absence: retirement.absence.clone(),
+        observation,
+        stdout,
+        stderr,
     })
 }
 impl ProcessSpec {
@@ -478,7 +558,9 @@ impl ProcessSpec {
         self.validate()?;
         #[cfg(all(unix, not(any(target_os = "linux", target_os = "macos"))))]
         {
-            Err(Error::new("safe unreaped process observation is unavailable on this platform"))
+            Err(Error::new(
+                "safe unreaped process observation is unavailable on this platform",
+            ))
         }
         #[cfg(not(all(unix, not(any(target_os = "linux", target_os = "macos")))))]
         {
@@ -521,9 +603,17 @@ impl ProcessSpec {
         c.stdin(stdin)
             .stdout(stdout.try_clone().map_err(io)?)
             .stderr(stderr.try_clone().map_err(io)?);
-        let spawned = c.spawn().map_err(|e| process_failure(
-            io(e), &Retirement::default(), &stdout, &stderr, self.output_limit, "spawn", false,
-        ))?;
+        let spawned = c.spawn().map_err(|e| {
+            process_failure(
+                io(e),
+                &Retirement::default(),
+                &stdout,
+                &stderr,
+                self.output_limit,
+                "spawn",
+                false,
+            )
+        })?;
         let mut child = OwnedChild::new(spawned);
         child.termination_grace = termination_grace;
         let start = Instant::now();
@@ -531,7 +621,9 @@ impl ProcessSpec {
             loop {
                 check_size(&stdout, &stderr, self.output_limit)?;
                 // WNOWAIT keeps the original owner until intended group effects.
-                if child.peek()? { return Ok(()); }
+                if child.peek()? {
+                    return Ok(());
+                }
                 if start.elapsed() >= Duration::from_millis(self.timeout_ms) {
                     return Err(Error::new("specimen process timed out"));
                 }
@@ -540,12 +632,26 @@ impl ProcessSpec {
         })();
         let retirement = child.retire();
         if let Err(primary) = outcome {
-            return Err(process_failure(primary, &retirement, &stdout, &stderr,
-                self.output_limit, "execution", false));
+            return Err(process_failure(
+                primary,
+                &retirement,
+                &stdout,
+                &stderr,
+                self.output_limit,
+                "execution",
+                false,
+            ));
         }
         if !retirement.clean() {
-            return Err(process_failure(Error::new("specimen process retirement unconfirmed"),
-                &retirement, &stdout, &stderr, self.output_limit, "retirement", false));
+            return Err(process_failure(
+                Error::new("specimen process retirement unconfirmed"),
+                &retirement,
+                &stdout,
+                &stderr,
+                self.output_limit,
+                "retirement",
+                false,
+            ));
         }
         let result = (|| {
             check_size(&stdout, &stderr, self.output_limit)?;
@@ -555,8 +661,17 @@ impl ProcessSpec {
                 stderr: read_final(&mut stderr, self.output_limit)?,
             })
         })();
-        result.map_err(|primary| process_failure(primary, &retirement, &stdout, &stderr,
-            self.output_limit, "capture", false))
+        result.map_err(|primary| {
+            process_failure(
+                primary,
+                &retirement,
+                &stdout,
+                &stderr,
+                self.output_limit,
+                "capture",
+                false,
+            )
+        })
     }
 }
 fn check_size(out: &File, err: &File, limit: usize) -> Result<()> {
@@ -579,7 +694,8 @@ fn read_final(f: &mut File, limit: usize) -> Result<String> {
     if b.len() > limit {
         return Err(Error::new("specimen output exceeds bound"));
     }
-    String::from_utf8(b).map_err(|e| Error::new("specimen output is not UTF8").with_source(e.utf8_error()))
+    String::from_utf8(b)
+        .map_err(|e| Error::new("specimen output is not UTF8").with_source(e.utf8_error()))
 }
 /// Serial JSONL RPC retains unsolicited records while matching the exact reply.
 /// File-backed reads use read_at, never changing the child's output offset.
@@ -608,12 +724,23 @@ impl RpcClient {
         c.stdin(Stdio::piped())
             .stdout(stdout.try_clone().map_err(io)?)
             .stderr(stderr.try_clone().map_err(io)?);
-        let spawned = c.spawn().map_err(|e| process_failure(
-            io(e), &Retirement::default(), &stdout, &stderr, spec.output_limit, "spawn", false,
-        ))?;
+        let spawned = c.spawn().map_err(|e| {
+            process_failure(
+                io(e),
+                &Retirement::default(),
+                &stdout,
+                &stderr,
+                spec.output_limit,
+                "spawn",
+                false,
+            )
+        })?;
         let mut child = OwnedChild::new(spawned);
         let setup = (|| {
-            let stdin = child.child.stdin.take()
+            let stdin = child
+                .child
+                .stdin
+                .take()
                 .ok_or_else(|| Error::new("RPC stdin unavailable"))?;
             let flags = rustix::fs::fcntl_getfl(&stdin).map_err(|e| io(e.into()))?;
             rustix::fs::fcntl_setfl(&stdin, flags | rustix::fs::OFlags::NONBLOCK)
@@ -624,8 +751,15 @@ impl RpcClient {
             Ok(stdin) => stdin,
             Err(primary) => {
                 let retirement = child.retire();
-                return Err(process_failure(primary, &retirement, &stdout, &stderr,
-                    spec.output_limit, "rpc_setup", false));
+                return Err(process_failure(
+                    primary,
+                    &retirement,
+                    &stdout,
+                    &stderr,
+                    spec.output_limit,
+                    "rpc_setup",
+                    false,
+                ));
             }
         };
         Ok(Self {
@@ -718,7 +852,10 @@ impl RpcClient {
     /// process. Prime's request() keeps its existing stop-on-refusal behaviour.
     pub fn exchange(&mut self, command: Value, timeout: Duration) -> Result<Value> {
         match self.request_inner(command, timeout) {
-            Ok(reply) => { self.reply_observed = true; Ok(reply) },
+            Ok(reply) => {
+                self.reply_observed = true;
+                Ok(reply)
+            }
             Err(primary) => Err(self.finish_after_error(primary)),
         }
     }
@@ -760,12 +897,12 @@ impl RpcClient {
             if written < bytes.len() {
                 match self.stdin.write(&bytes[written..]) {
                     Ok(0) => {
-                                return Err(Error::new("RPC input closed"));
+                        return Err(Error::new("RPC input closed"));
                     }
                     Ok(n) => written += n,
                     Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {}
                     Err(e) => {
-                                return Err(io(e));
+                        return Err(io(e));
                     }
                 }
             }
@@ -892,7 +1029,10 @@ impl RpcClient {
         let late = self.consume().err();
         let primary = match (primary, late) {
             (Some(primary), Some(error)) => {
-                retirement.errors.push(ObservedCause { phase: "late_rpc_capture", error });
+                retirement.errors.push(ObservedCause {
+                    phase: "late_rpc_capture",
+                    error,
+                });
                 Some(primary)
             }
             (Some(primary), None) => Some(primary),
@@ -901,8 +1041,15 @@ impl RpcClient {
             (None, None) => None,
         };
         let result = match primary {
-            Some(primary) => Err(process_failure(primary, &retirement, &self.stdout,
-                &self.stderr, self.spec.output_limit, "rpc_finish", self.reply_observed)),
+            Some(primary) => Err(process_failure(
+                primary,
+                &retirement,
+                &self.stdout,
+                &self.stderr,
+                self.spec.output_limit,
+                "rpc_finish",
+                self.reply_observed,
+            )),
             None => Ok(()),
         };
         self.finish_result = Some(result.clone());
@@ -910,7 +1057,9 @@ impl RpcClient {
     }
     pub(crate) fn finish_after_error(&mut self, error: Error) -> Error {
         // A primary semantic failure remains a failure even on clean retirement.
-        self.finish_with_primary(Some(error.clone())).err().unwrap_or(error)
+        self.finish_with_primary(Some(error.clone()))
+            .err()
+            .unwrap_or(error)
     }
     /// Acknowledgement requires actual reaping and retained cleanup/capture truth.
     pub fn finish(&mut self) -> Result<()> {
@@ -1132,8 +1281,10 @@ pub(crate) mod native_retirement_tests {
                     "root":root,"device":identity.0,"inode":identity.1,
                     "disposition":"retained-before-effects",
                     "semantic_world_identity_inferred":false
-                })).unwrap(),
-            ).unwrap();
+                }))
+                .unwrap(),
+            )
+            .unwrap();
             Self { root, identity }
         }
         pub(crate) fn script(&self, body: &str, timeout: u64, limit: usize) -> ProcessSpec {
@@ -1150,15 +1301,21 @@ pub(crate) mod native_retirement_tests {
             }
         }
         pub(crate) fn record(&self, facts: Value) {
-            fs::write(self.root.join("actual-result.json"), serde_json::to_vec(&facts).unwrap())
-                .expect("retain actual native result");
+            fs::write(
+                self.root.join("actual-result.json"),
+                serde_json::to_vec(&facts).unwrap(),
+            )
+            .expect("retain actual native result");
         }
         pub(crate) fn dispose_after_known_retirement(self) {
             let metadata = fs::symlink_metadata(&self.root).expect("current fixture affiliation");
             assert!(metadata.is_dir() && !metadata.file_type().is_symlink());
             assert_eq!((metadata.dev(), metadata.ino()), self.identity);
             fs::remove_dir_all(&self.root).unwrap_or_else(|error| {
-                panic!("owned fixture cleanup failed at {}: {error}", self.root.display())
+                panic!(
+                    "owned fixture cleanup failed at {}: {error}",
+                    self.root.display()
+                )
             });
         }
     }
@@ -1166,7 +1323,10 @@ pub(crate) mod native_retirement_tests {
         fn drop(&mut self) {
             // No automatic recursive removal after unknown/unwound lifecycle.
             if self.root.exists() {
-                eprintln!("native fixture retained for owner inspection: {}", self.root.display());
+                eprintln!(
+                    "native fixture retained for owner inspection: {}",
+                    self.root.display()
+                );
             }
         }
     }
@@ -1191,7 +1351,10 @@ pub(crate) mod native_retirement_tests {
                 Ok(None) => {}
                 Err(error) => panic!("actual external wait failed: {error}"),
             }
-            assert!(Instant::now() < deadline, "actual child did not terminate before external reap");
+            assert!(
+                Instant::now() < deadline,
+                "actual child did not terminate before external reap"
+            );
             thread::sleep(Duration::from_millis(5));
         }
     }
@@ -1234,7 +1397,10 @@ pub(crate) mod native_retirement_tests {
         assert!(failure.observation().stdout_observed_bytes.unwrap() >= 8192);
         assert_eq!(failure.private_capture().0.len(), 32);
         assert!(failure.observation().capture_truncated);
-        assert!(actual_io(failure.primary()).is_none(), "budget is not fictitious IO");
+        assert!(
+            actual_io(failure.primary()).is_none(),
+            "budget is not fictitious IO"
+        );
         fixture.record(failure_details(&error).unwrap());
         spec.output_limit = 16384;
         let positive = spec.run(b"actual-restored-echo").unwrap();
@@ -1245,15 +1411,24 @@ pub(crate) mod native_retirement_tests {
 
     #[test]
     fn native_spawn_absence_and_real_nonroot_eacces_keep_original_io() {
-        assert!(!rustix::process::geteuid().is_root(), "genuine EACCES prerequisite: nonroot");
+        assert!(
+            !rustix::process::geteuid().is_root(),
+            "genuine EACCES prerequisite: nonroot"
+        );
         let fixture = Fixture::new();
         let mut spec = fixture.script("#!/bin/sh\nprintf restored\n", 1000, 1024);
         let executable = spec.program.clone();
         spec.program = fixture.root.join("genuinely-absent-executable");
         let missing = spec.run(b"").unwrap_err();
         let absent = failure(&missing);
-        assert_eq!(actual_io(absent.primary()).unwrap().kind(), std::io::ErrorKind::NotFound);
-        assert!(actual_io(absent.primary()).unwrap().raw_os_error().is_some());
+        assert_eq!(
+            actual_io(absent.primary()).unwrap().kind(),
+            std::io::ErrorKind::NotFound
+        );
+        assert!(actual_io(absent.primary())
+            .unwrap()
+            .raw_os_error()
+            .is_some());
         assert!(!absent.observation().spawned);
         assert!(!absent.observation().kill_signal_attempted);
         spec.program = executable.clone();
@@ -1261,7 +1436,10 @@ pub(crate) mod native_retirement_tests {
         let denied = spec.run(b"").unwrap_err();
         let original = actual_io(failure(&denied).primary()).unwrap();
         assert_eq!(original.kind(), std::io::ErrorKind::PermissionDenied);
-        assert_eq!(original.raw_os_error(), Some(rustix::io::Errno::ACCESS.raw_os_error()));
+        assert_eq!(
+            original.raw_os_error(),
+            Some(rustix::io::Errno::ACCESS.raw_os_error())
+        );
         fixture.record(failure_details(&denied).unwrap());
         fs::set_permissions(&executable, fs::Permissions::from_mode(0o755)).unwrap();
         let restored = spec.run(b"").unwrap();
@@ -1282,7 +1460,10 @@ pub(crate) mod native_retirement_tests {
         assert!(failure.observation().direct_child_reaped);
         assert_eq!(failure.private_capture().0[0], 255);
         assert!(!format!("{error:?} {failure:?}").contains("CANARY"));
-        assert!(!failure_details(&error).unwrap().to_string().contains("CANARY"));
+        assert!(!failure_details(&error)
+            .unwrap()
+            .to_string()
+            .contains("CANARY"));
         fixture.dispose_after_known_retirement();
     }
 
@@ -1307,8 +1488,10 @@ pub(crate) mod native_retirement_tests {
         assert!(actual.observation.kill_signal_attempted);
         assert!(actual.observation.unreaped_owner_observed_before_signal);
         assert_eq!(actual.observation.exit_code, Some(0));
-        assert_eq!(rustix::process::waitpid(Some(pid), rustix::process::WaitOptions::NOHANG)
-            .unwrap_err(), rustix::io::Errno::CHILD);
+        assert_eq!(
+            rustix::process::waitpid(Some(pid), rustix::process::WaitOptions::NOHANG).unwrap_err(),
+            rustix::io::Errno::CHILD
+        );
         fixture.record(json!(actual.observation));
         drop(child);
         fixture.dispose_after_known_retirement();
@@ -1327,16 +1510,15 @@ pub(crate) mod native_retirement_tests {
         assert!(!first.observation.term_signal_attempted);
         assert!(!first.observation.kill_signal_attempted);
         assert!(!first.observation.direct_kill_attempted);
-        assert!(first.errors.iter().any(|cause|
-            actual_io(&cause.error).is_some_and(|io|
-                io.raw_os_error() == Some(rustix::io::Errno::CHILD.raw_os_error()))));
+        assert!(first.errors.iter().any(|cause| actual_io(&cause.error)
+            .is_some_and(|io| io.raw_os_error() == Some(rustix::io::Errno::CHILD.raw_os_error()))));
         let repeated = child.retire();
         assert!(std::sync::Arc::ptr_eq(&first, &repeated));
         fixture.record(json!({"actual_retirement":first.observation,
             "external_wait_observed":true,"fixture_disposition":"retained-owner-unavailable"}));
         drop(child); // memoized retirement: no new numeric effect
-        // Owner unavailable remains a retained fixture, even though this test's
-        // independent actual wait reaped the original child.
+                     // Owner unavailable remains a retained fixture, even though this test's
+                     // independent actual wait reaped the original child.
     }
 
     #[test]
@@ -1346,13 +1528,18 @@ pub(crate) mod native_retirement_tests {
             "#!/bin/sh\n/bin/sleep 5 &\nclient=$!\ntrap 'kill \"$client\"; wait \"$client\"; printf actual-client-reaped > client-reaped; exit 0' TERM\nprintf ready\nwait \"$client\"\n",
             150, 4096,
         );
-        let error = spec.run_with_termination_grace(b"", Duration::from_millis(2500)).unwrap_err();
+        let error = spec
+            .run_with_termination_grace(b"", Duration::from_millis(2500))
+            .unwrap_err();
         let actual = failure(&error);
         assert!(actual.observation().term_signal_attempted);
         assert!(actual.observation().unreaped_owner_observed_before_signal);
         assert!(actual.observation().direct_child_reaped);
         assert_eq!(actual.observation().exit_code, Some(0));
-        assert_eq!(fs::read(fixture.root.join("client-reaped")).unwrap(), b"actual-client-reaped");
+        assert_eq!(
+            fs::read(fixture.root.join("client-reaped")).unwrap(),
+            b"actual-client-reaped"
+        );
         assert!(actual.secondary().next().is_none());
         fixture.record(failure_details(&error).unwrap());
         fixture.dispose_after_known_retirement();
@@ -1366,7 +1553,8 @@ pub(crate) mod native_retirement_tests {
             1000, 4096,
         );
         let mut client = RpcClient::start(spec).unwrap();
-        let error = client.request(json!({"type":"get_state"}), Duration::from_millis(100))
+        let error = client
+            .request(json!({"type":"get_state"}), Duration::from_millis(100))
             .unwrap_err();
         let actual = failure(&error);
         assert!(actual.primary().to_string().contains("timed out"));
@@ -1374,7 +1562,10 @@ pub(crate) mod native_retirement_tests {
         assert!(!actual.observation().reply_observed);
         assert_eq!(client.records()[0]["type"], "native_progress");
         assert_eq!(client.records()[0]["body"], "PRIVATE-LATE-CANARY");
-        assert!(!failure_details(&error).unwrap().to_string().contains("PRIVATE"));
+        assert!(!failure_details(&error)
+            .unwrap()
+            .to_string()
+            .contains("PRIVATE"));
         let again = client.finish().unwrap_err();
         assert_eq!(again.to_string(), error.to_string());
         fixture.record(failure_details(&error).unwrap());
@@ -1390,7 +1581,9 @@ pub(crate) mod native_retirement_tests {
             1000, 4096,
         );
         let mut client = RpcClient::start(spec).unwrap();
-        let reply = client.exchange(json!({"type":"get_state"}), Duration::from_secs(1)).unwrap();
+        let reply = client
+            .exchange(json!({"type":"get_state"}), Duration::from_secs(1))
+            .unwrap();
         assert_eq!(reply["data"]["token"], "PRIVATE-REPLY-CANARY");
         retirement_checkpoint(external_reap);
         let error = client.finish().unwrap_err();
@@ -1399,9 +1592,12 @@ pub(crate) mod native_retirement_tests {
         assert!(actual.observation().signal_forbidden);
         assert!(!actual.observation().kill_signal_attempted);
         assert_eq!(client.records()[0], reply);
-        assert!(actual.secondary().any(|(_,error)| actual_io(error)
+        assert!(actual.secondary().any(|(_, error)| actual_io(error)
             .is_some_and(|io| io.raw_os_error() == Some(rustix::io::Errno::CHILD.raw_os_error()))));
-        assert!(!failure_details(&error).unwrap().to_string().contains("PRIVATE"));
+        assert!(!failure_details(&error)
+            .unwrap()
+            .to_string()
+            .contains("PRIVATE"));
         fixture.record(failure_details(&error).unwrap());
         drop(client);
         // Unknown owner retirement retains actual completed reply and fixture.
@@ -1415,30 +1611,44 @@ pub(crate) mod native_retirement_tests {
             1000, 4096,
         );
         let mut client = RpcClient::start(spec).unwrap();
-        client.exchange(json!({"type":"get_state"}), Duration::from_secs(1)).unwrap();
-        let write_only = OpenOptions::new().write(true).create_new(true)
-            .open(fixture.root.join("actual-write-only-capture")).unwrap();
+        client
+            .exchange(json!({"type":"get_state"}), Duration::from_secs(1))
+            .unwrap();
+        let write_only = OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(fixture.root.join("actual-write-only-capture"))
+            .unwrap();
         client.stdout = write_only;
         retirement_checkpoint(external_reap);
         let error = client.finish().unwrap_err();
         let actual = failure(&error);
-        assert_eq!(actual_io(actual.primary()).unwrap().raw_os_error(),
-            Some(rustix::io::Errno::BADF.raw_os_error()));
-        assert!(actual.secondary().any(|(_,error)| actual_io(error)
+        assert_eq!(
+            actual_io(actual.primary()).unwrap().raw_os_error(),
+            Some(rustix::io::Errno::BADF.raw_os_error())
+        );
+        assert!(actual.secondary().any(|(_, error)| actual_io(error)
             .is_some_and(|io| io.raw_os_error() == Some(rustix::io::Errno::CHILD.raw_os_error()))));
         assert!(actual.observation().capture_read_failed);
         let facts = failure_details(&error).unwrap();
-        assert_eq!(facts["primary_io"]["raw_os_error"], rustix::io::Errno::BADF.raw_os_error());
+        assert_eq!(
+            facts["primary_io"]["raw_os_error"],
+            rustix::io::Errno::BADF.raw_os_error()
+        );
         assert!(facts["secondary"].as_array().unwrap().len() >= 2);
-        let actual_prior = File::open(fixture.root.join("actual-prior-absent-member"))
-            .unwrap_err();
+        let actual_prior = File::open(fixture.root.join("actual-prior-absent-member")).unwrap_err();
         assert_eq!(actual_prior.kind(), std::io::ErrorKind::NotFound);
         let combined = io(actual_prior).with_secondary_source(error.clone());
-        assert_eq!(actual_io(&combined).unwrap().kind(), std::io::ErrorKind::NotFound);
+        assert_eq!(
+            actual_io(&combined).unwrap().kind(),
+            std::io::ErrorKind::NotFound
+        );
         let supplemental = failure_details(&combined).unwrap();
         assert_eq!(supplemental["attachment"], "supplemental_source");
-        assert_eq!(supplemental["primary_io"]["raw_os_error"],
-            rustix::io::Errno::BADF.raw_os_error());
+        assert_eq!(
+            supplemental["primary_io"]["raw_os_error"],
+            rustix::io::Errno::BADF.raw_os_error()
+        );
         assert_eq!(supplemental["observation"], facts["observation"]);
         assert!(!format!("{combined:?}").contains("actual-prior-absent-member"));
         fixture.record(json!({"native_failure":facts,"retained_supplemental":supplemental}));

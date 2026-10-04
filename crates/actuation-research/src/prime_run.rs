@@ -393,7 +393,8 @@ pub fn run_prime(
     })();
     let native_finish = client.finish();
     let native_finish_error = native_finish.err();
-    let process_retirement = native_finish_error.as_ref()
+    let process_retirement = native_finish_error
+        .as_ref()
         .and_then(crate::process::failure_details)
         .unwrap_or_else(|| json!({"observation":client.retirement_observation()}));
     let retained_primary = match (execution.as_ref().err(), native_finish_error.as_ref()) {
@@ -404,11 +405,9 @@ pub fn run_prime(
         (None, Some(finish)) => Some(finish.clone()),
         (None, None) => None,
     };
-    let preserve_primary = |error: Error| {
-        match &retained_primary {
-            Some(primary) => primary.clone().with_secondary_source(error),
-            None => error,
-        }
+    let preserve_primary = |error: Error| match &retained_primary {
+        Some(primary) => primary.clone().with_secondary_source(error),
+        None => error,
     };
     world.verify_root().map_err(preserve_primary)?;
     let family = extract_prime_family(client.records());
@@ -484,21 +483,24 @@ pub fn run_prime(
         .map(|e| e.to_string())
         .or_else(|| faculty_error.clone())
         .or_else(|| native_finish_error.as_ref().map(ToString::to_string));
-    evidence.push(observe(
-        observer,
-        &request.trace_ref,
-        runtime,
-        &mut sequence,
-        if error.is_some() {
-            "prime_run_failed"
-        } else {
-            "prime_run_completed"
-        },
-        sanitize(
-            &json!({"error":error,"refinement_attempted":client.refinement_attempted()}),
-            &secrets,
-        ),
-    ).map_err(preserve_primary)?);
+    evidence.push(
+        observe(
+            observer,
+            &request.trace_ref,
+            runtime,
+            &mut sequence,
+            if error.is_some() {
+                "prime_run_failed"
+            } else {
+                "prime_run_completed"
+            },
+            sanitize(
+                &json!({"error":error,"refinement_attempted":client.refinement_attempted()}),
+                &secrets,
+            ),
+        )
+        .map_err(preserve_primary)?,
+    );
     let stderr = client.stderr_text().map_err(preserve_primary)?;
     let record = json!({"schema":"actuation.prime-recursive-experiment/v1","execution_status":status,"error":error,"process_retirement":process_retirement,"condition":condition,"task":task.candidate(),"source":{"lock":lock.as_value(),"ql_owner":ql,"task_revision":task.revision()},"prime":{"observed_version":observed,"provider":request.provider,"model":request.model,"selection_standing":"supplied-not-resolved-by-Actuation","final_state":final_state,"session_stats":stats,"messages":messages,"requested_rlm_max_depth":condition["maxDepth"],"family":family,"prime_acceptance":acceptance_result,"rpc_records":client.records(),"stderr":stderr},"workspace":{"before":before,"after":after_task,"after_refinement":after_refinement,"excluded_generated_prefix":".prime/"},"faculty":{"receipts":faculty_records,"child_inheritance":child_faculty,"collection_error":faculty_error,"standing":"native-invocation-receipts; child correlation uses Prime-host material-locus digests; Agency identity remains separate"},"outcome":output,"verification":verification,"continual_refinement":refinement,"refinement_verification":refinement_verification,"evidence_refs":evidence,"claims":{"fixture_provider":request.fixture_provider,"live_prime_run":if request.fixture_provider{json!(false)}else{Value::Null},"prime_body_executed":true,"ql_relational_faculty_exercised":faculty_exercised,"relational_operations":relational_operations,"observed_child_loci":family["child_nodes"].as_array().unwrap().len(),"observed_lineage_edges":family["edges"].as_array().unwrap().len(),"observed_nested_child_edges":family["nested_edges"].as_array().unwrap().len(),"child_faculty_inheritance_observed":child_faculty["observed"],"continual_refinement_invoked":client.refinement_attempted(),"provider_evidence":"not-assessed","owner_machine_evidence":false,"human_acceptance":false}});
     Ok(sanitize(&record, &secrets))

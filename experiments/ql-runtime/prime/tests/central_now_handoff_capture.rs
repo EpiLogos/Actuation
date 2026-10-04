@@ -17,7 +17,7 @@ mod gate {
     use std::time::{Duration, Instant};
 
     type Result<T> = std::result::Result<T, Box<dyn Error>>;
-    const CENTRAL: &str = "a3bd680619de0743d4faa313aa1932c8375abc95";
+    const CENTRAL: &str = "f596baecb469e07ef0f704a03b45d38454b01369";
     const LEGACY: &str = "5e4510a6bd61d6e151c84d755f884b61b693db27";
     const SDK: &str = "01d2df70d8e0cf8718be213f0ef0bd35fc793a85e4423183bc9af6252e7f1e75";
     const DRIVER: &str = "48c86f8bc9a778911266615fd6ed0e09e11a3bc347b5fe27abf394c4086276e7";
