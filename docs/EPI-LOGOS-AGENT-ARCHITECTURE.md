@@ -168,9 +168,15 @@ Cloud evidence proves the Prime structural apparatus, inherited Skill compilatio
 The worker-replacement branch is bound to Central's existing NOW owner rather
 than an Actuation handoff file. The inherited `ql-relational` Skill exposes
 `central_now_handover`, `central_now_inspect` and
-`central_now_handoff_read`. They invoke `ctrl action run
-projectcentral.now.return/inspect` and retain Central's
-`central.project-now.handoff/v1` identity, lifecycle and source.
+`central_now_handoff_read`. Return invokes `projectcentral.now.return`: a
+present Project retains the existing Work member contract, while absent Project
+writes the same ordinary return in the root register. The native return adds an
+optional `read_path` for `central.files.read`; the SDK accepts that selected
+route and the exact handoff ID, preserving the current owner revision and
+binding. Supported v1/v2 handoff identities and record bytes stay with Central.
+Project ID-only reads retain `projectcentral.now.inspect`; root ID-only reads
+are unavailable. `central.now.read` selects an allocated clearing NOWRef and is
+not an alias for reading this ordinary handoff.
 
 A handoff is deliberately pithy: returned difference, session/source/evidence/
 preserve refs, and exact repo/branch/optional-worktree lane refs. A replacement
@@ -184,7 +190,12 @@ so `spawn_child_cheapest` can resolve the live `CHEAPEST_ELIGIBLE` roster
 through credential-scoped launches. These paths are configuration inputs, not
 Agent identity or authority.
 
-This closes the native handover *mechanism*. It does not claim the commissioned
+This is a source implementation of the selected handover relation, pending
+real old/current-owner and joined SDK qualification. A successful legacy return
+with an unavailable optional route remains a successful publication, with its
+actual cause/stage; the SDK does not resubmit or invent a replacement identity.
+Reader final cause/freshness, ordinary writer publication and unbounded SDK
+capture remain attributable owner obligations. It does not claim the commissioned
 per-worker material confinement: Prime 0.9.4's `rlm.run` host owns child
 process creation and exposes no child supervisor/write-boundary hook. Workcell's
 Linux Landlock boundary can confine a process tree that it launches, but
