@@ -288,16 +288,126 @@ async def central_now_inspect(project: str | None = None) -> dict[str, Any]:
     return await _central_action("projectcentral.now.inspect", {"project": project})
 
 
-async def central_now_handoff_read(
-    handoff_id: str, project: str | None = None
+def _handoff_read_input(
+    handoff_id: str, project: str | None, read_path: dict[str, Any]
 ) -> dict[str, Any]:
-    """Read one exact Central handoff for a replacement worker.
+    """Decode only the supported selected-read protocol, not native ref grammar."""
+    if not isinstance(read_path, dict) or set(read_path) != {"action", "input"}:
+        raise ValueError("read_path must be the native selected-read object")
+    if read_path["action"] != "central.files.read":
+        raise ValueError("handoff read_path may select only central.files.read")
+    request = read_path["input"]
+    if not isinstance(request, dict) or set(request) != {"location"}:
+        raise ValueError("handoff read_path input requires exactly location")
+    location = request["location"]
+    if not isinstance(location, dict) or set(location) != {"schema", "ref", "root", "path"}:
+        raise ValueError("handoff read_path requires a supported native location")
+    if location["schema"] != "central.path-ref/v1":
+        raise ValueError("handoff read_path location schema is unsupported")
+    for field in ("ref", "root", "path"):
+        value = location[field]
+        if not isinstance(value, str) or not value or len(value.encode("utf-8")) > 32768:
+            raise ValueError("handoff read_path location fields must be bounded native text")
+    member = Path(location["path"])
+    if member.is_absolute() or ".." in member.parts:
+        raise ValueError("handoff read_path must retain an ordinary relative member")
+    # This compares physical membership with the explicit selector. It neither
+    # formats an opaque ref nor infers a semantic Project ID from Work names.
+    if project is None:
+        parent = ("Control", "agents", "now", "agents")
+    else:
+        if not isinstance(project, str) or not project or Path(project).is_absolute():
+            raise ValueError("selected Project must be a native relative Work member")
+        parts = Path(project).parts
+        if not parts or ".." in parts:
+            raise ValueError("selected Project must be a native relative Work member")
+        parent = ("Work", *parts, "ProjectCentral", "now", "agents")
+    if member.parts != (*parent, handoff_id + ".json"):
+        raise ValueError("handoff read_path does not match the selected register and ID")
+    # Central alone validates the opaque ref, configured root and live IO.
+    return {"location": dict(location)}
 
-    The read is reconstructed from Central's own NOW inspection; no parent
-    transcript or manually reconstructed investigation is transferred.
+
+def _handoff_file_reading(
+    handoff_id: str, request: dict[str, Any], response: dict[str, Any]
+) -> dict[str, Any]:
+    data = response.get("data")
+    if not isinstance(data, dict) or data.get("schema") != "central.file-reading/v1":
+        raise RuntimeError("Central returned no supported current file reading")
+    content = data.get("content")
+    length = data.get("byte_len")
+    revision = data.get("revision")
+    if (
+        data.get("location") != request["location"]
+        or data.get("content_encoding") != "utf-8"
+        or data.get("automatic_agent_or_model_invocation") is not False
+        or not isinstance(content, str)
+        or type(length) is not int
+        or not 0 <= length <= 4 * 1024 * 1024
+        or len(content.encode("utf-8")) != length
+        or not isinstance(revision, str)
+        or not revision
+    ):
+        raise RuntimeError("Central selected handoff file protocol is inconsistent")
+    try:
+        handoff = json.loads(content)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("Current selected handoff is not JSON") from exc
+    if (
+        not isinstance(handoff, dict)
+        or handoff.get("schema") not in {
+            "central.project-now.handoff/v1", "central.project-now.handoff/v2"
+        }
+        or handoff.get("id") != handoff_id
+        or type(handoff.get("recorded_at_unix_seconds")) is not int
+        or handoff["recorded_at_unix_seconds"] < 0
+    ):
+        raise RuntimeError("Current selected handoff identity/schema is unsupported")
+    for field in ("provenance", "actor", "kind", "subject", "result", "status"):
+        if not isinstance(handoff.get(field), str):
+            raise RuntimeError("Current selected handoff scalar protocol is unsupported")
+        try:
+            handoff[field].encode("utf-8")
+        except UnicodeEncodeError as exc:
+            raise RuntimeError("Current selected handoff text is not UTF-8") from exc
+    # Protocol decoding is not Central's write validator or a policy inspection.
+    # Keep actual owner revision and binding; do not create another body copy.
+    metadata = {
+        "location": data["location"], "revision": revision, "byte_len": length,
+        "source": data.get("source"), "project": data.get("project"),
+    }
+    return {
+        "schema": "actuation.prime-central-now-handoff-reading/v1",
+        "handoff": handoff,
+        "source_reading": metadata,
+        "standing": "Current Central file reading of the selected NOW handoff; continuation pointers are not authority or a transferred transcript",
+    }
+
+
+async def central_now_handoff_read(
+    handoff_id: str, project: str | None = None, *,
+    read_path: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Read the actual selected return source, or the legacy Project horizon.
+
+    Root reads require the native return's read_path. An ID is not an allocated
+    NOWRef, and this function never reconstructs an opaque native file ref.
     """
-    if not handoff_id.strip():
+    if not isinstance(handoff_id, str) or not handoff_id.strip():
         raise ValueError("handoff_id must be non-empty")
+    effective_project = project or os.environ.get("CENTRAL_PROJECT", "").strip() or None
+    if read_path is not None:
+        request = _handoff_read_input(handoff_id, effective_project, read_path)
+        response = await _central_action("central.files.read", request)
+        result = _handoff_file_reading(handoff_id, request, response)
+        await _record("central-now-handoff-read", {"id": handoff_id, "read_path": read_path}, result)
+        return result
+    if effective_project is None:
+        raise RuntimeError(
+            "Root NOW handoff reading is unavailable without the native return read_path; "
+            "retain the owner's route or use a supported Central owner, never resend automatically"
+        )
+    # Keep the original Project reading contract and output verbatim.
     response = await central_now_inspect(project)
     data = response.get("data")
     if not isinstance(data, dict):
