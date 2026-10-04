@@ -124,3 +124,96 @@ non-UTF8 Root case retains its genuine EILSEQ prerequisite limitation. This
 optional capture harness supplies no production SDK-capture repair, current
 AIKit session, installed Factory undertaking or human acceptance. Earlier failed
 capture/format/compile cuts remain historical results; they are not relabelled.
+
+## Local governing authority
+
+At inspected Source `185f972d685a33bf7a0703dff205f9566c387046`,
+`actuation authority issue/resolve/revoke` dispatch to the
+[local authority owner](../crates/actuation-cli/src/authority.rs).
+[AuthorityStore](../crates/actuation-stream/src/authority_store.rs) retains
+separate append-only issue/revoke JSONL records under `--store`,
+`ACTUATION_AUTHORITY_STORE` or `~/.actuation/authority`. A directory lock covers
+read/check/append; file opens refuse symlink redirection and appends sync data.
+Resolution reads the stored governing binding/grant and checks revocation,
+expiry, holder, allowed World, operations and exact requested bounds. It returns
+admitted/refused/unavailable with an assembled request only when admitted.
+Actualisation is the next semantic operation; runtime launch, physical
+permissions and Central source mutation keep their own owners. This separation
+prevents a saved plan, participation or copied JSON grant from silently becoming
+acting authority. The record is local owner material, not a provider credential
+or independently authenticated claim about a remote requester.
+
+## Position tenure and presence
+
+`actuation occupancy claim/read/list/presence/verify/release` reaches the
+[CLI](../crates/actuation-cli/src/occupancy.rs) and
+[Position ledger](../crates/actuation-stream/src/occupancy_store.rs), under
+`--store`, `ACTUATION_OCCUPANCY_STORE` or `~/.actuation/occupancy`. Each Position's
+SHA-256-named JSONL records tenure-began, tenure-ended and presence. The current
+occupant is the single open generation; explicit vacancy/current-generation
+expectations are checked under the append lock. Supersession and release retain
+history; old generations cannot verify as current. Torn or ambiguous ledgers
+refuse instead of choosing the newest line or silently repairing history.
+Claim returns tenure, generation, occupancy and environment bindings; identities
+and placement refs are supplied by the caller. Presence is a protocol statement,
+not proof of a live process. Tenure is distinct from Workcell physical custody,
+Agent enduring identity and metagency grants. Consumers must apply their own
+current-generation/authority gates before effects; this ledger does not grant
+those powers. The [real executable tests](../crates/actuation-cli/tests/occupancy_command.rs)
+exercise initial claim, handover, stale generations, release, races and corruption.
+
+## Configuration and harness intake
+
+`config-contribution` and `config validate/plan/apply/reset` route through
+[commands](../crates/actuation-cli/src/commands.rs) to the
+[configuration owner](../crates/actuation-cli/src/configuration.rs). The bare
+contribution discloses declared code settings; validation answers truthfully in
+its document. This Source mints no new settings plans and performs no settings
+mutation: plan/apply/reset return structured owner errors with nonzero exits,
+after addressing, scope, schema and authority checks. Existing executed receipt
+keys can replay as no-op; the historical receipt ledger is not evidence that a
+fresh setting changed. [Configuration tests](../crates/actuation-cli/tests/config_plane.rs)
+use the real binary in an isolated home to verify those distinctions.
+
+`harness capability validate` and `config-contribution capability` share
+[descriptor intake](../crates/actuation-adapters/src/contribution.rs): schema,
+known slug and declared-gap closure. Validation emits named checks; contribution
+emits exact supplied-byte digest, provenance and an owner landing instruction.
+Neither mutates the compiled catalogue. This boundary lets an outside contributor
+return a reviewable descriptor without silently changing what a resident binary
+can detect, install or invoke. [CLI intake tests](../crates/actuation-cli/tests/capability_intake.rs)
+keep admitted gap filling distinct from shadowing refusal and malformed input.
+
+## Bounded Nara session actor
+
+`actuation nara serve` owns a bounded JSON-lines
+[ephemeral actor](../crates/actuation-cli/src/nara_session.rs) over the native
+[Nara binding](../crates/actuation-runtime/src/nara.rs). Constitution admits the
+body relation, canonical AgentSession and QL dialogue context; the pipe retains
+response state and supports context, listen/response/complete, interruption,
+reconnect and close. Correlated request IDs cannot be reused; invalid or stale
+operations preserve the prior admitted binding. Limits are 256 KiB per complete
+line, 1 MiB per reply and 65,536 admitted request identifiers. A fresh pipe starts
+unconstituted and needs its basis resupplied; close/EOF does not destroy the
+canonical AgentSession or persist this actor state.
+
+The actor performs no audio or provider I/O. Interruption evidence is explicitly
+caller-reported and scoped to playback/provider response; native cancellation
+standing and actual transport effects stay distinct, including unsupported
+interruption. Reconnect preserves the actor's one canonical AgentSession while
+changing an admitted body/context. This boundary retains the richer coordinate,
+Expression, private personal basis and session relations without turning a
+transport socket into the enduring Nara or accepting a generic profile page.
+The [real process tests](../crates/actuation-cli/tests/nara_actor.rs) verify flush,
+request/turn currency, interruption scope, reconnect preservation and framing;
+contract specimens do not prove a live microphone, provider, saved personal
+world or completed Nara/Epii answer.
+
+The new operation relations above are inspected at `185`; their named CLI tests
+actually pass on both hosts in [the `50` refoundation run](https://github.com/EpiLogos/Actuation/actions/runs/37219849074),
+and the cited handler/store/test bytes are identical between those cuts. The
+separate authority-store revocation library case passes on Linux only; macOS
+does not reach those later stream-store unit tests after its research failure.
+Other macOS research failures and its unreached controlled process gate remain open.
+The existing capability identities, domain seed, standing and diagram meanings
+are retained; these mappings do not add numerical/domain decisions or H credit.
