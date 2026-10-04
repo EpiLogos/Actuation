@@ -1692,8 +1692,10 @@ pub(crate) mod native_retirement_tests {
         let mut leader = match OwnedChild::spawn(spec.command().unwrap()) {
             Ok(child) => child,
             Err(error) => {
-                fixture.record(json!({"case":"terminal-spawn-group", "phase":"leader_spawn",
-                    "actual_io":io_fact(&io(error))}));
+                fixture.record(
+                    json!({"case":"terminal-spawn-group", "phase":"leader_spawn",
+                    "actual_io":io_fact(&io(error))}),
+                );
                 panic!("actual leader spawn failed; fixture retained");
             }
         };
@@ -1735,7 +1737,9 @@ pub(crate) mod native_retirement_tests {
                     break;
                 }
                 if Instant::now() >= deadline {
-                    return Err(Error::new("actual native group readiness deadline exhausted"));
+                    return Err(Error::new(
+                        "actual native group readiness deadline exhausted",
+                    ));
                 }
                 thread::sleep(Duration::from_millis(5));
             }
@@ -1814,7 +1818,11 @@ pub(crate) mod native_retirement_tests {
         assert_eq!(member_group_matches, Some(true));
         assert!(leader_retirement.clean());
         assert!(leader_retirement.observation.kill_signal_attempted);
-        assert!(leader_retirement.observation.unreaped_owner_observed_before_signal);
+        assert!(
+            leader_retirement
+                .observation
+                .unreaped_owner_observed_before_signal
+        );
         assert!(!leader_retirement.observation.signal_forbidden);
         assert_eq!(leader_retirement.observation.exit_code, Some(0));
         assert_eq!(
@@ -1857,9 +1865,7 @@ pub(crate) mod native_retirement_tests {
                 }
             }
             if Instant::now() >= deadline {
-                prerequisite = Some(Error::new(
-                    "actual terminal observation deadline exhausted",
-                ));
+                prerequisite = Some(Error::new("actual terminal observation deadline exhausted"));
                 break;
             }
             thread::sleep(Duration::from_millis(5));
@@ -1888,14 +1894,16 @@ pub(crate) mod native_retirement_tests {
             ),
             _ => (false, None),
         };
-        fixture.record(json!({"case":"terminal-external-reap", "terminal_observed":terminal,
+        fixture.record(
+            json!({"case":"terminal-external-reap", "terminal_observed":terminal,
             "external_wait_actually_reaped_exact_child":external_reaped, "external_io":external_io,
             "prerequisite_io":prerequisite.as_ref().map(io_fact),
             "actual_retirement":first.observation,
             "actual_secondary":first.errors.iter().map(|cause|
                 json!({"phase":cause.phase,"io":io_fact(&cause.error)})).collect::<Vec<_>>(),
             "memoized_same_record":std::sync::Arc::ptr_eq(&first,&repeated),
-            "fixture_disposition":"retained-owner-unavailable"}));
+            "fixture_disposition":"retained-owner-unavailable"}),
+        );
         assert!(prerequisite.is_none());
         assert!(terminal && external_reaped);
         assert!(first.observation.signal_forbidden);
@@ -1903,9 +1911,12 @@ pub(crate) mod native_retirement_tests {
         assert!(!first.observation.term_signal_attempted);
         assert!(!first.observation.kill_signal_attempted);
         assert!(!first.observation.direct_kill_attempted);
-        assert!(first.errors.iter().any(|cause| actual_io(&cause.error)
-            .is_some_and(|error| error.raw_os_error()
-                == Some(rustix::io::Errno::CHILD.raw_os_error()))));
+        assert!(first
+            .errors
+            .iter()
+            .any(|cause| actual_io(&cause.error).is_some_and(
+                |error| error.raw_os_error() == Some(rustix::io::Errno::CHILD.raw_os_error())
+            )));
         assert!(std::sync::Arc::ptr_eq(&first, &repeated));
         drop(child); // Memoized unknown owner; never a late numeric retry.
     }
