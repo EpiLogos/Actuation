@@ -61,6 +61,10 @@ or decision is returned.
 
 ## Current selected-handoff source relation — 4 October 2026
 
+This is the retained `ac036` inspection before the later hosted qualification.
+Its pending statements belong to that cut; the current evidence and remaining
+process boundary are stated in the successor below.
+
 Actuation Source `ac03605c47c66c0f0a1a574e871d0451917164cb` includes the
 [selected native handoff consumer](EPI-LOGOS-AGENT-ARCHITECTURE.md#10-native-now-continuation--2026-09-22-follow-up).
 The inherited [`ql-relational` SDK](../experiments/ql-runtime/prime/skills/ql-relational/src/ql_relational/__init__.py)
@@ -81,3 +85,42 @@ are definitions, not executed acceptance. Central
 and its separate hosted learning-reader result do not qualify this joined
 handoff relation, installed operation or human Recognition. No diagram arrow
 or Epi numerical/domain mapping is changed by this source reading.
+
+## Native process ownership and qualified handoff
+
+Inspected process Source is Actuation
+`50ac3991dc7546d3268af27e06c39d8837cf4299`. The research
+[process module](../crates/actuation-research/src/process.rs) owns spawning,
+held private capture, direct-child wait and process-group retirement. The
+[SDK](../crates/actuation-research/src/sdk.rs) consumes that result and keeps a
+completed reply distinct from confirmed retirement. Core
+[wire errors](../crates/actuation-core/src/wire.rs) share original typed causes
+across clones; core performs no process operation. Public failure projections
+retain selected scalar observation/cause facts; private stdout/stderr remain an
+explicit owner access. Capture bounds are checked over held files after the
+activity: they do not establish a hard while-running disk/RSS limit or control
+escaped descendants. These boundaries keep causal and material evidence without
+publishing a private body or pretending that outer completion proves retirement.
+
+[Hosted refoundation run 37219849074](https://github.com/EpiLogos/Actuation/actions/runs/37219849074)
+at this Source passes Linux format, clippy, whole tests and all thirteen original
+named native cases (twelve research, one core; zero failed or ignored). Its
+retained case record explicitly withholds full scalar-observation emission and
+installed/provider/Original/H credit. macOS compiles, then the whole research
+libtest returns 101 with 116 passed, 15 failed and zero ignored; its separate
+controlled thirteen-case gate is not reached. The process-retirement join on
+macOS remains a real failed boundary, not an architectural choice or a completed
+cross-platform power.
+
+The [joined handoff run 37218103369](https://github.com/EpiLogos/Actuation/actions/runs/37218103369)
+uses Actuation `b91b3fbe0e1f397846276d7dff6274fd15ab4960`, current Central
+`f596baecb469e07ef0f704a03b45d38454b01369` and an attributed example over
+historical AIKit `900bce05483c6fd39cfd320ebf95c2e2b5aa4d29`. Each hosted platform
+executes the exact eleven Root cases and seven unchanged SDK cases: capture exit
+zero, seven passed, zero skipped and 33 native calls. Actual source archives,
+compiler receipts and four retained compiled-image byte hashes are joined;
+before-operation custody and original SDK/driver digests are preserved. macOS's
+non-UTF8 Root case retains its genuine EILSEQ prerequisite limitation. This
+optional capture harness supplies no production SDK-capture repair, current
+AIKit session, installed Factory undertaking or human acceptance. Earlier failed
+capture/format/compile cuts remain historical results; they are not relabelled.
