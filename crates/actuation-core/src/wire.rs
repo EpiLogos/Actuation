@@ -5,22 +5,71 @@ use std::{collections::BTreeMap, fmt};
 pub type Result<T> = std::result::Result<T, Error>;
 pub type Extensions = BTreeMap<String, Value>;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Error(String);
+/// Equality remains diagnostic message equality; causal identity is not Eq.
+/// Clone shares the original typed source. Core owns no IO/process operation.
+#[derive(Clone)]
+pub struct Error {
+    message: String,
+    source: Option<std::sync::Arc<dyn std::error::Error + Send + Sync>>,
+    secondary: Vec<std::sync::Arc<dyn std::error::Error + Send + Sync>>,
+}
 impl Error {
     pub fn new(message: impl Into<String>) -> Self {
-        Self(message.into())
+        Self {
+            message: message.into(),
+            source: None,
+            secondary: Vec::new(),
+        }
+    }
+    pub fn with_source<E>(mut self, source: E) -> Self
+    where
+        E: std::error::Error + Send + Sync + 'static,
+    {
+        self.source = Some(std::sync::Arc::new(source));
+        self
+    }
+    pub fn with_secondary_source<E>(mut self, source: E) -> Self
+    where
+        E: std::error::Error + Send + Sync + 'static,
+    {
+        self.secondary.push(std::sync::Arc::new(source));
+        self
+    }
+    pub fn secondary_sources(
+        &self,
+    ) -> impl Iterator<Item = &(dyn std::error::Error + Send + Sync + 'static)> {
+        self.secondary.iter().map(|e| e.as_ref())
+    }
+}
+impl PartialEq for Error {
+    fn eq(&self, other: &Self) -> bool {
+        self.message == other.message
+    }
+}
+impl Eq for Error {}
+impl fmt::Debug for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Error")
+            .field("has_source", &self.source.is_some())
+            .field("secondary_count", &self.secondary.len())
+            .finish()
     }
 }
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.0.fmt(f)
+        self.message.fmt(f)
     }
 }
-impl std::error::Error for Error {}
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        self.source
+            .as_deref()
+            .map(|e| e as &(dyn std::error::Error + 'static))
+    }
+}
 impl From<serde_json::Error> for Error {
     fn from(error: serde_json::Error) -> Self {
-        Self(error.to_string())
+        Self::new(error.to_string()).with_source(error)
     }
 }
 
@@ -169,5 +218,53 @@ impl<T: Invariant + DeserializeOwned> TryFrom<Value> for Record<T> {
     type Error = Error;
     fn try_from(value: Value) -> Result<Self> {
         serde_json::from_value(value).map_err(Into::into)
+    }
+}
+
+#[cfg(test)]
+mod causal_error_tests {
+    use super::*;
+
+    #[test]
+    fn actual_io_sources_are_shared_with_clone_while_debug_omits_private_causes() {
+        let source = std::fs::File::open(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("PRIVATE-ORIGINAL-CAUSE-ABSENT"),
+        )
+        .unwrap_err();
+        let secondary = std::fs::File::open(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("PRIVATE-SUPPLEMENTAL-CAUSE-ABSENT"),
+        )
+        .unwrap_err();
+        let error = Error::new("owner operation failed")
+            .with_source(source)
+            .with_secondary_source(secondary);
+        let cloned = error.clone();
+        let original = std::error::Error::source(&error)
+            .unwrap()
+            .downcast_ref::<std::io::Error>()
+            .unwrap();
+        let copied = std::error::Error::source(&cloned)
+            .unwrap()
+            .downcast_ref::<std::io::Error>()
+            .unwrap();
+        assert!(std::ptr::eq(original, copied));
+        assert_eq!(original.kind(), std::io::ErrorKind::NotFound);
+        assert!(original.raw_os_error().is_some());
+        let second = error
+            .secondary_sources()
+            .next()
+            .unwrap()
+            .downcast_ref::<std::io::Error>()
+            .unwrap();
+        assert_eq!(second.kind(), std::io::ErrorKind::NotFound);
+        assert_eq!(
+            error,
+            Error::new("owner operation failed"),
+            "Eq remains diagnostic"
+        );
+        assert_eq!(error.to_string(), "owner operation failed");
+        assert!(!format!("{error:?} {cloned:?}").contains("PRIVATE"));
+        assert_eq!(cloned.secondary_sources().count(), 1);
     }
 }

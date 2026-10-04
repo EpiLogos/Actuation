@@ -31,3 +31,331 @@ jobs:
         run: cargo test --locked -p actuation-research prime
       - name: QL relational Python skill syntax
         run: python -m py_compile experiments/ql-runtime/prime/skills/ql-relational/src/ql_relational/__init__.py
+
+  central-handoff-native:
+    name: Native Central handoff (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      CARGO_INCREMENTAL: "0"
+      CENTRAL_CURRENT_SOURCE: f596baecb469e07ef0f704a03b45d38454b01369
+      CENTRAL_LEGACY_SOURCE: 5e4510a6bd61d6e151c84d755f884b61b693db27
+      AIKIT_CAPTURE_SOURCE: 900bce05483c6fd39cfd320ebf95c2e2b5aa4d29
+    steps:
+      - name: Admit exclusive hosted evidence before native effects
+        id: admission
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os,stat,sys
+          root=Path(os.environ['GITHUB_WORKSPACE']).resolve(strict=True)/'native-evidence'/('central-handoff-'+os.environ['RUNNER_OS'])
+          root.parent.mkdir(exist_ok=True);root.mkdir(mode=0o700)
+          if os.name!='posix' or os.geteuid()==0:raise SystemExit('Mandatory supported nonroot host prerequisite')
+          st=root.lstat()
+          if not stat.S_ISDIR(st.st_mode) or root.resolve(strict=True)!=root:raise SystemExit('Actual ordinary hosted root required')
+          for name in ['raw','source','images','gate','fixtures','fixture-snapshot','scratch']:(root/name).mkdir(mode=0o700)
+          (root/'admission.json').write_text(json.dumps({'root':str(root),'device':st.st_dev,'inode':st.st_ino,'uid':os.geteuid(),'requested_actuation':os.environ['GITHUB_SHA'],'run_id':os.environ['GITHUB_RUN_ID'],'attempt':os.environ['GITHUB_RUN_ATTEMPT'],'fixture_disposition':'retain on success/failure; no inner retirement inferred'},indent=2)+'\n')
+          with open(os.environ['GITHUB_ENV'],'a') as out:
+              out.write('HANDOFF_EVIDENCE='+str(root)+'\nTMPDIR='+str(root/'scratch')+'\n')
+          PY
+      - uses: actions/checkout@v4
+        with:
+          path: actuation-source
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: EpiLogos/Central
+          ref: ${{ env.CENTRAL_CURRENT_SOURCE }}
+          path: central-current
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: EpiLogos/Central
+          ref: ${{ env.CENTRAL_LEGACY_SOURCE }}
+          path: central-legacy
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: EpiLogos/ai-kit
+          ref: ${{ env.AIKIT_CAPTURE_SOURCE }}
+          path: aikit-capture
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@1.98.0
+        with:
+          components: rustfmt, clippy
+      - name: Freeze pristine sources, locks, overlay and actual build context
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,platform,re,shutil,stat,subprocess,tarfile,time
+          p=Path(os.environ['HANDOFF_EVIDENCE']);w=Path(os.environ['GITHUB_WORKSPACE']);admit=json.loads((p/'admission.json').read_text())
+          def owner():
+              v=p.lstat()
+              if not stat.S_ISDIR(v.st_mode) or (v.st_dev,v.st_ino)!=(admit['device'],admit['inode']) or p.resolve(strict=True)!=p:raise SystemExit('Hosted evidence owner changed')
+          costs=[]
+          def sha(path):
+              start=time.monotonic();h=hashlib.sha256();n=0
+              with path.open('rb') as f:
+                  while b:=f.read(1<<20):h.update(b);n+=len(b)
+              costs.append({'path':str(path),'bytes':n,'seconds':time.monotonic()-start});return h.hexdigest()
+          def git(repo,*args):return subprocess.check_output(['git',*args],cwd=repo,text=True).strip()
+          workflow=w/'actuation-source/.github/workflows/ql-prime-structural.yml'
+          source=workflow.read_text()
+          names=['Keep current Central whole regressions and native integration gates','Compile real current and historical ctrl binaries before execution','Compile the attributed native capture example before execution','Bind actual CompilerArtifacts and independently retain their image bytes','Execute actual compiled Root eleven with exact native roster','Run the unchanged seven-case driver through the same finite native owner']
+          markers=['\n      - name: '+name+'\n' for name in names]
+          if any(source.count(marker)!=1 for marker in markers):raise SystemExit('Exact native qualification Source step required')
+          positions=[source.index(marker) for marker in markers]
+          if positions!=sorted(positions):raise SystemExit('Regression/compile/image/native execution Source order differs')
+          post_image=source[positions[3]:]
+          compiler_tokens=re.findall(r'\b(?:cargo|rustc)\b',post_image)
+          if compiler_tokens:raise SystemExit('Compiler invocation after native image admission is forbidden')
+          owner();(p/'source-ordering.json').write_text(json.dumps({'workflow_sha256':sha(workflow),'ordered_steps':names,'positions':positions,'post_image_compiler_tokens':compiler_tokens,'scope':'literal Source command invariant; actual compiled image custody and native outcomes remain independently required'},indent=2)+'\n')
+          owner();rows=[]
+          for label,repo,expected in [('actuation',w/'actuation-source',None),('current',w/'central-current',os.environ['CENTRAL_CURRENT_SOURCE']),('legacy',w/'central-legacy',os.environ['CENTRAL_LEGACY_SOURCE']),('capture',w/'aikit-capture',os.environ['AIKIT_CAPTURE_SOURCE'])]:
+              revision=git(repo,'rev-parse','HEAD');tree=git(repo,'rev-parse','HEAD^{tree}')
+              if expected and revision!=expected:raise SystemExit('Actual source pin differs: '+label)
+              archive=p/'source'/(label+'.tar');subprocess.run(['git','archive','--format=tar','--output='+str(archive),revision],cwd=repo,check=True)
+              lock=p/'source'/(label+'.Cargo.lock');shutil.copyfile(repo/'Cargo.lock',lock)
+              rows.append({'role':label,'source_revision':revision,'tree':tree,'source_archive_sha256':sha(archive),'cargo_lock_sha256':sha(lock),'source_root':str(repo)})
+          sdk=w/'actuation-source/experiments/ql-runtime/prime/skills/ql-relational/src/ql_relational/__init__.py'
+          driver=w/'actuation-source/experiments/ql-runtime/prime/tests/central_now_handoff_native.py'
+          if sha(sdk)!='01d2df70d8e0cf8718be213f0ef0bd35fc793a85e4423183bc9af6252e7f1e75' or sha(driver)!='48c86f8bc9a778911266615fd6ed0e09e11a3bc347b5fe27abf394c4086276e7':raise SystemExit('Actual frozen consumer source required')
+          helper=w/'actuation-source/experiments/ql-runtime/prime/tests/central_now_handoff_capture.rs'
+          overlay=w/'aikit-capture/crates/aikit-adapters/examples/central_now_handoff_capture.rs'
+          if os.path.lexists(overlay):raise SystemExit('Test overlay must not replace native source')
+          overlay.parent.mkdir(exist_ok=True);shutil.copyfile(helper,overlay)
+          native_scratch=w/'central-current/ProjectCentral/now/tmp';native_scratch.mkdir(parents=True,exist_ok=True)
+          native_st=native_scratch.lstat()
+          if not stat.S_ISDIR(native_st.st_mode) or native_scratch.resolve(strict=True)!=native_scratch:raise SystemExit('Native Project Run scratch must be an ordinary current coordinate')
+          (p/'native-root-fixture-custody.json').write_text(json.dumps({'root':str(native_scratch),'device':native_st.st_dev,'inode':native_st.st_ino,'before_entries':sorted(x.name for x in native_scratch.iterdir()),'producer':'actual compiled current Central Root fixture; no semantic World from test path'},indent=2)+'\n')
+          augmented=p/'source/capture-augmented.tar';shutil.copyfile(p/'source/capture.tar',augmented)
+          with tarfile.open(augmented,'a') as tf:tf.add(overlay,arcname='crates/aikit-adapters/examples/central_now_handoff_capture.rs',recursive=False)
+          if sha(w/'aikit-capture/Cargo.lock')!=rows[3]['cargo_lock_sha256']:raise SystemExit('Overlay changed actual capture lock')
+          for label,command in [('rustc',['rustc','-Vv']),('cargo',['cargo','-V']),('python',['python3','--version'])]:
+              with (p/'raw'/(label+'.stdout')).open('wb') as out,(p/'raw'/(label+'.stderr')).open('wb') as err:
+                  status=subprocess.run(command,stdout=out,stderr=err).returncode
+              (p/'raw'/(label+'.status')).write_text(str(status)+'\n')
+              if status:raise SystemExit('Actual toolchain observation failed')
+          owner();(p/'source-manifest.json').write_text(json.dumps({'sources':rows,'pristine_capture_source':rows[3],'augmented_archive_sha256':sha(augmented),'overlay_relative':'crates/aikit-adapters/examples/central_now_handoff_capture.rs','overlay_sha256':sha(overlay),'driver_sha256':sha(driver),'sdk_sha256':sha(sdk),'host':platform.platform(),'sha2_cost':costs,'source_proof':'actual pristine archives/locks plus separately attributed example overlay; compiler receipts follow'},indent=2)+'\n')
+          PY
+      - name: Keep current Central whole regressions and native integration gates
+        id: central_regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd central-current
+          for selection in format clippy workspace integration; do
+            set +e
+            case "$selection" in
+              workspace) cargo test --locked --workspace > "$HANDOFF_EVIDENCE/raw/central-$selection.stdout" 2> "$HANDOFF_EVIDENCE/raw/central-$selection.stderr" ;;
+              integration) cargo test --locked -p ctrl --test projectcentral_now -- --nocapture > "$HANDOFF_EVIDENCE/raw/central-$selection.stdout" 2> "$HANDOFF_EVIDENCE/raw/central-$selection.stderr" ;;
+              clippy) cargo clippy --locked --workspace --all-targets -- -D warnings > "$HANDOFF_EVIDENCE/raw/central-$selection.stdout" 2> "$HANDOFF_EVIDENCE/raw/central-$selection.stderr" ;;
+              format) cargo fmt --all -- --check > "$HANDOFF_EVIDENCE/raw/central-$selection.stdout" 2> "$HANDOFF_EVIDENCE/raw/central-$selection.stderr" ;;
+            esac
+            status=$?
+            set -e
+            printf '%s\n' "$status" > "$HANDOFF_EVIDENCE/raw/central-$selection.status"
+            if [ "$status" -ne 0 ]; then exit "$status"; fi
+          done
+      - name: Compile real current and historical ctrl binaries before execution
+        id: central_compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          for role in current legacy; do
+            set +e
+            (cd "central-$role" && cargo build --locked -p ctrl --bin ctrl --message-format=json) > "$HANDOFF_EVIDENCE/raw/$role-bin-compiler.jsonl" 2> "$HANDOFF_EVIDENCE/raw/$role-bin-compiler.stderr"
+            status=$?
+            set -e
+            printf '%s\n' "$status" > "$HANDOFF_EVIDENCE/raw/$role-bin-compiler.status"
+            if [ "$status" -ne 0 ]; then exit "$status"; fi
+          done
+          set +e
+          (cd central-current && cargo test --locked -p ctrl --lib projectcentral_now::root_scope_tests --no-run --message-format=json) > "$HANDOFF_EVIDENCE/raw/current-lib-compiler.jsonl" 2> "$HANDOFF_EVIDENCE/raw/current-lib-compiler.stderr"
+          status=$?
+          set -e
+          printf '%s\n' "$status" > "$HANDOFF_EVIDENCE/raw/current-lib-compiler.status"
+          exit "$status"
+      - name: Compile the attributed native capture example before execution
+        id: capture_compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          (cd aikit-capture && cargo build --locked -p aikit-adapters --example central_now_handoff_capture --message-format=json) > "$HANDOFF_EVIDENCE/raw/capture-compiler.jsonl" 2> "$HANDOFF_EVIDENCE/raw/capture-compiler.stderr"
+          status=$?
+          set -e
+          printf '%s\n' "$status" > "$HANDOFF_EVIDENCE/raw/capture-compiler.status"
+          exit "$status"
+      - name: Bind actual CompilerArtifacts and independently retain their image bytes
+        id: image
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,stat,time
+          p=Path(os.environ['HANDOFF_EVIDENCE']);sources=json.loads((p/'source-manifest.json').read_text());admit=json.loads((p/'admission.json').read_text())
+          def owner():
+              v=p.lstat()
+              if not stat.S_ISDIR(v.st_mode) or (v.st_dev,v.st_ino)!=(admit['device'],admit['inode']):raise SystemExit('Current admitted evidence owner changed')
+          def basis(v):return (v.st_dev,v.st_ino,v.st_mode,v.st_nlink,v.st_size,v.st_mtime_ns,v.st_ctime_ns)
+          def image(log,label,name,kind,test):
+              owner();records=[json.loads(x) for x in (p/'raw'/log).read_text().splitlines() if x.startswith('{')]
+              items=[x for x in records if x.get('reason')=='compiler-artifact' and x.get('target',{}).get('name')==name and x.get('target',{}).get('kind')==kind and bool(x.get('profile',{}).get('test'))==test and x.get('executable')]
+              if len(items)!=1:raise SystemExit('Exactly one actual native CompilerArtifact required: '+label)
+              artifact=items[0];source=Path(artifact['executable']);before=basis(source.lstat())
+              if source.resolve(strict=True)!=source or not stat.S_ISREG(before[2]) or not before[2]&0o111:raise SystemExit('Actual ordinary executable required')
+              fd=os.open(source,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK|os.O_CLOEXEC)
+              try:
+                  if basis(os.fstat(fd))!=before:raise SystemExit('Actual held image basis differs')
+                  start=time.monotonic();h=hashlib.sha256();count=0;copy=p/'images'/label
+                  with os.fdopen(fd,'rb',closefd=False) as inp,copy.open('xb') as out:
+                      while b:=inp.read(1<<20):h.update(b);count+=len(b);out.write(b)
+                  copy.chmod(stat.S_IMODE(before[2]))
+                  if basis(os.fstat(fd))!=before or basis(source.lstat())!=before:raise SystemExit('Actual image changed during retention')
+                  digest=h.hexdigest();again=hashlib.sha256()
+                  with copy.open('rb') as inp:
+                      while b:=inp.read(1<<20):again.update(b)
+                  if again.hexdigest()!=digest:raise SystemExit('Retained actual image bytes differ')
+                  return {'compiler_artifact':artifact,'executable':str(source),'sha256':digest,'physical_basis':before,'retained_image':str(copy),'retained_image_sha256':again.hexdigest(),'sha2_cost':{'bytes':count*2,'seconds':time.monotonic()-start}}
+              finally:os.close(fd)
+          manifests=[]
+          for role in ['current','legacy']:
+              record=image(role+'-bin-compiler.jsonl',role+'-ctrl','ctrl',['bin'],False);record.update(next(x for x in sources['sources'] if x['role']==role));record['role']=role
+              (p/(role+'-build.json')).write_text(json.dumps(record,indent=2)+'\n');manifests.append(record)
+          library=image('current-lib-compiler.jsonl','current-root-libtest','central_ctrl',['lib'],True)
+          capture=image('capture-compiler.jsonl','capture-example','central_now_handoff_capture',['example'],False)
+          capture['augmented_source_archive_sha256']=sources['augmented_archive_sha256'];capture['pristine_source']=sources['pristine_capture_source'];capture['overlay_sha256']=sources['overlay_sha256']
+          (p/'compiled-images.json').write_text(json.dumps({'ctrl':manifests,'library':library,'capture':capture},indent=2)+'\n')
+          with open(os.environ['GITHUB_ENV'],'a') as out:out.write('CURRENT_ROOT_LIBTEST='+library['executable']+'\nNATIVE_CAPTURE_EXAMPLE='+capture['executable']+'\n')
+          PY
+      - name: Execute actual compiled Root eleven with exact native roster
+        id: root_cases
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$CURRENT_ROOT_LIBTEST" --list > "$HANDOFF_EVIDENCE/raw/root-list.stdout" 2> "$HANDOFF_EVIDENCE/raw/root-list.stderr"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os
+          p=Path(os.environ['HANDOFF_EVIDENCE']);prefix='projectcentral_now::root_scope_tests::'
+          names=['absent_project_writes_root_register_return','present_project_return_is_unchanged','root_scope_return_keeps_project_record_validation','root_native_read_path_roundtrips_source_bytes_and_identity','project_native_read_path_uses_actual_work_member_not_project_id','unchanged_root_alias_returns_same_owner_read_path','retargeted_root_after_publication_retains_success_and_original_source','replaced_parent_after_publication_does_not_disclose_a_fresh_route','actual_final_symlink_directory_and_fifo_withhold_optional_route','native_route_capture_eacces_keeps_legacy_publication_and_actual_cause','actual_non_utf8_root_has_no_fabricated_native_location']
+          wanted=sorted(prefix+x for x in names);actual=sorted(x[:-6] for x in (p/'raw/root-list.stdout').read_text().splitlines() if x.startswith(prefix) and x.endswith(': test'))
+          if actual!=wanted:raise SystemExit('Actual compiled Root eleven differs')
+          (p/'root-roster.json').write_text(json.dumps({'expected':wanted,'actual':actual,'mac_non_utf8_case':'genuine filesystem EILSEQ prerequisite; no owner operation or alternative root','linux_non_utf8_case':'full genuine owner route oracle'},indent=2)+'\n')
+          PY
+          set +e
+          "$CURRENT_ROOT_LIBTEST" projectcentral_now::root_scope_tests:: --nocapture > "$HANDOFF_EVIDENCE/raw/root-execution.stdout" 2> "$HANDOFF_EVIDENCE/raw/root-execution.stderr"
+          status=$?
+          set -e
+          printf '%s\n' "$status" > "$HANDOFF_EVIDENCE/raw/root-execution.status"
+          if [ "$status" -ne 0 ]; then exit "$status"; fi
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os,re
+          p=Path(os.environ['HANDOFF_EVIDENCE']);text=(p/'raw/root-execution.stdout').read_text();expected=json.loads((p/'root-roster.json').read_text())['expected']
+          actual=re.findall(r'^test (projectcentral_now::root_scope_tests::\S+) \.\.\. ok$',text,re.M)
+          if sorted(actual)!=expected or not re.search(r'test result: ok\. 11 passed; 0 failed; 0 ignored;',text):raise SystemExit('Eleven actual executed native Root bodies required')
+          (p/'root-results.json').write_text(json.dumps({'executed':actual,'passed':11,'failed':0,'ignored':0},indent=2)+'\n')
+          PY
+      - name: Run the unchanged seven-case driver through the same finite native owner
+        id: joined_cases
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os,sys
+          p=Path(os.environ['HANDOFF_EVIDENCE']);w=Path(os.environ['GITHUB_WORKSPACE'])
+          (p/'capture-config.json').write_text(json.dumps({'schema':'actuation.central-handoff-capture-config/v1','evidence_root':str(p/'gate'),'artifact_root':str(p/'fixtures'),'driver':str(w/'actuation-source/experiments/ql-runtime/prime/tests/central_now_handoff_native.py'),'sdk_source':str(w/'actuation-source/experiments/ql-runtime/prime/skills/ql-relational/src/ql_relational/__init__.py'),'current_build':str(p/'current-build.json'),'legacy_build':str(p/'legacy-build.json'),'python':str(Path(sys.executable).resolve(strict=True))},indent=2)+'\n')
+          PY
+          set +e
+          "$NATIVE_CAPTURE_EXAMPLE" "$HANDOFF_EVIDENCE/capture-config.json" > "$HANDOFF_EVIDENCE/raw/capture-example.stdout" 2> "$HANDOFF_EVIDENCE/raw/capture-example.stderr"
+          status=$?
+          set -e
+          printf '%s\n' "$status" > "$HANDOFF_EVIDENCE/raw/capture-example.status"
+          exit "$status"
+      - name: Retain bounded ordinary fixture snapshots without reading unsafe forms
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,stat
+          raw=os.environ.get('HANDOFF_EVIDENCE')
+          if not raw:raise SystemExit('No admitted evidence owner; no guessed retention path')
+          root=Path(raw);admit=json.loads((root/'admission.json').read_text());st=root.lstat()
+          if not stat.S_ISDIR(st.st_mode) or (st.st_dev,st.st_ino)!=(admit['device'],admit['inode']) or root.resolve(strict=True)!=root:raise SystemExit('Retention refused: original owner changed')
+          rows=[];budget=16*1024*1024;target=root/'fixture-snapshot';origin=root/'fixtures'
+          def basis(v):return (v.st_dev,v.st_ino,v.st_mode,v.st_nlink,v.st_size,v.st_mtime_ns,v.st_ctime_ns)
+          def visit(directory,origin,label,only_new=None):
+              before=basis(directory.lstat())
+              if not stat.S_ISDIR(before[2]) or directory.resolve(strict=True)!=directory:raise RuntimeError('Refuse unsafe snapshot directory')
+              with os.scandir(directory) as items:
+                  for item in sorted(items,key=lambda x:x.name):
+                      global budget
+                      if only_new is not None and item.name in only_new:continue
+                      path=Path(item.path);v=path.lstat();b=basis(v);row={'origin':label,'relative':str(path.relative_to(origin)),'basis':b,'copied':False};rows.append(row)
+                      if stat.S_ISDIR(v.st_mode):visit(path,origin,label)
+                      elif stat.S_ISREG(v.st_mode) and v.st_nlink==1 and v.st_size<=4*1024*1024 and v.st_size<=budget:
+                          fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK|os.O_CLOEXEC)
+                          try:
+                              if basis(os.fstat(fd))!=b:raise RuntimeError('Fixture changed before held read')
+                              with os.fdopen(fd,'rb',closefd=False) as f:body=f.read(v.st_size+1)
+                              if len(body)!=v.st_size or basis(os.fstat(fd))!=b or basis(path.lstat())!=b:raise RuntimeError('Fixture changed during held read')
+                              copy='entry-'+str(len(rows));(target/copy).write_bytes(body);budget-=len(body)
+                              row.update(copied=True,copy_relative=copy,sha256=hashlib.sha256(body).hexdigest())
+                          finally:os.close(fd)
+                      else:row['reason']='metadata only: nonregular, linked or outside finite snapshot profile'
+              after=basis(directory.lstat())
+              if after[:2]!=before[:2]:raise RuntimeError('Fixture directory affiliation changed')
+          try:
+              visit(origin,origin,'seven-case driver')
+              custody=root/'native-root-fixture-custody.json'
+              if custody.is_file():
+                  record=json.loads(custody.read_text());native=Path(record['root']);v=native.lstat()
+                  if not stat.S_ISDIR(v.st_mode) or (v.st_dev,v.st_ino)!=(record['device'],record['inode']):raise RuntimeError('Native Root fixture source scratch changed')
+                  visit(native,native,'current Central native Root scratch',set(record['before_entries']))
+          finally:
+              st=root.lstat()
+              if (st.st_dev,st.st_ino)!=(admit['device'],admit['inode']):raise RuntimeError('Original owner unavailable; no retention write')
+              (target/'inventory.json').write_text(json.dumps({'rows':rows,'copied_byte_limit':16*1024*1024,'remaining_bytes':budget,'ordinary_per_file_profile':4*1024*1024,'original_fixtures':'retained; no cleanup/retirement inferred; no FIFO/symlink reads'},indent=2)+'\n')
+          PY
+      - name: Upload actual source, lock, compiler, image and partial native evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: actuation-central-handoff-${{ matrix.os }}-${{ github.sha }}
+          path: |
+            native-evidence/
+            !native-evidence/**/fixtures/**
+            !native-evidence/**/scratch/**
+          if-no-files-found: error
+          retention-days: 7
+      - name: Require every real joined qualification outcome
+        if: always()
+        env:
+          ADMISSION: ${{ steps.admission.outcome }}
+          SOURCE: ${{ steps.source.outcome }}
+          CENTRAL_COMPILE: ${{ steps.central_compile.outcome }}
+          CAPTURE_COMPILE: ${{ steps.capture_compile.outcome }}
+          IMAGE: ${{ steps.image.outcome }}
+          ROOT_CASES: ${{ steps.root_cases.outcome }}
+          REGRESSIONS: ${{ steps.central_regressions.outcome }}
+          JOINED_CASES: ${{ steps.joined_cases.outcome }}
+        run: |
+          python3 - <<'PY'
+          import os
+          names=['ADMISSION','SOURCE','CENTRAL_COMPILE','CAPTURE_COMPILE','IMAGE','ROOT_CASES','REGRESSIONS','JOINED_CASES']
+          if any(os.environ.get(name)!='success' for name in names):raise SystemExit('Actual joined native qualification failed or was not executed')
+          PY
