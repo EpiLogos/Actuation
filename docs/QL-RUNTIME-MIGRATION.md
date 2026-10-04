@@ -1,10 +1,17 @@
 # QL Agent Runtime migration
 
-**Status:** active migration plan  
+**Status:** historical migration plan; implementation superseded by the Rust retirement below
 **Source repository:** `EpiLogos/agent-system-design`  
 **Source Wayfinder:** issue `#94` — QL Agent Runtime Experiments  
 **Source integration PR:** `#130` — `ql/deep-runtime`  
 **Pinned source head:** `a654c62f68b82236061986d9215b23257fe53b17`
+
+**Implementation successor:** [R11 — JavaScript retirement](rust-refoundation/R11-JS-RETIREMENT.md)
+supersedes the earlier JavaScript retention decision. Current research operations
+live in `crates/actuation-research`; its separate JSON executable is not a research
+leaf in the public Actuation CLI. Offline receipt parity is distinct from the
+pending first Rust-collected live-provider acceptance. The paths and live-run
+counts below describe the pinned migration boundary, not today's installation.
 
 **Current composed-agent continuation (22 September 2026):** [Epi-Logos agent architecture](EPI-LOGOS-AGENT-ARCHITECTURE.md), [Actuation #107](https://github.com/EpiLogos/Actuation/issues/107), under O:I #220/#65 and QL-MEF #201. It distinguishes the containing Prime–QL loop/tooling at `#0/1` from the explicit Anuttara–Jev–EBM faculty at `#0`, retains the full #1–#5 intelligence body, and specifies the default Epi-Logos agent option in Expressions and Technē. Consume current Rust/Prime/native faculties; do not replay this historical migration or treat its original live-run count as today's state. Publication is not installed-mode acceptance.
 

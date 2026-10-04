@@ -1,5 +1,9 @@
 # Actuation Constitution
 
+[Implementation-facing architecture navigation](ARCHITECTURE-NAVIGATION.md)
+locates native Agency/WorldBinding, occupancy generation and Stream/Return
+owners. It is an attributed reading, subordinate to this constitutional source.
+
 **Status:** proposed foundation, v0.1  
 **Scope:** generic first-class agency and actuation semantics  
 **Repository:** `EpiLogos/Actuation`
