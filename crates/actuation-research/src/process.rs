@@ -222,40 +222,32 @@ pub(crate) fn retirement_checkpoint(f: impl FnOnce(rustix::process::Pid) + 'stat
 /// one-owner result is complete only with an unused second slot. Full buffers
 /// never certify singleton membership, and no errno is classified as absence.
 #[cfg(target_os = "macos")]
-fn macos_terminal_owner_only(
-    pid: rustix::process::Pid,
-    members: &mut [libc::pid_t],
-) -> Result<bool> {
+fn macos_terminal_owner_only(pid: rustix::process::Pid, members: &mut [u32]) -> Result<bool> {
     if members.is_empty() || members.len() > 2 {
         return Err(Error::new("native group membership buffer outside bound"));
     }
     let owner = pid.as_raw_nonzero().get();
-    // SAFETY: the writable PID slice is alive for this synchronous native read,
-    // with its exact byte size (at most8). __error is this thread's native errno.
-    // Clearing it separates a healthy empty result from a real libproc failure;
-    // only the actual errno set by this invocation becomes a typed IO cause.
-    let count = unsafe {
-        *libc::__error() = 0;
-        libc::proc_listpgrppids(
-            owner,
-            members.as_mut_ptr().cast(),
-            std::mem::size_of_val(members) as libc::c_int,
-        )
-    };
-    if count <= 0 {
-        let error = std::io::Error::last_os_error();
-        return Err(if error.raw_os_error().is_some_and(|value| value != 0) {
-            io(error)
-        } else {
-            Error::new("native group membership unavailable; owner not observed")
-        });
+    let owner = u32::try_from(owner)
+        .map_err(|_| Error::new("native group owner outside positive PID range"))?;
+    let count = libproc::processes::pids_by_type_into(
+        libproc::processes::ProcFilter::ByProgramGroup { pgrpid: owner },
+        members,
+    )
+    .map_err(io)?;
+    if count == 0 {
+        return Err(Error::new(
+            "native group membership unavailable; owner not observed",
+        ));
     }
-    let count = count as usize;
     if count > members.len() {
         return Err(Error::new("native group membership count outside bound"));
     }
     let observed = &members[..count];
-    if observed.iter().any(|member| *member <= 0) || (count == 2 && observed[0] == observed[1]) {
+    if observed
+        .iter()
+        .any(|member| *member == 0 || i32::try_from(*member).is_err())
+        || (count == 2 && observed[0] == observed[1])
+    {
         return Err(Error::new("native group membership identity inconsistent"));
     }
     if count < members.len() && !observed.contains(&owner) {

@@ -19,3 +19,6 @@ libc = "0.2"
 
 [lints]
 workspace = true
+
+[target.'cfg(target_os = "macos")'.dependencies]
+libproc = { git = "https://github.com/EpiLogos/libproc-rs", rev = "67354674ffa30e7181d484fc0fd74abb3d9baa63" }
