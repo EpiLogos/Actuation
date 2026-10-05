@@ -66,3 +66,14 @@ An `observed` receipt must cite evidence. Targets that cannot disclose a faculty
 AIKit may consume the stable refs and observed faculties from this receipt when deciding how to provision the same Actuation. AIKit can then project Skills, Methods, ContextSources, models, tools, lifecycle hooks, Surfaces and compact orientation through the target's native faculties.
 
 That changes the effective operative world without moving Agent/Actuation semantic ownership into AIKit. A later AIKit activation observation is evidence about how the target received that provisioning; it is not evidence that the Actuation only began to exist at activation time.
+
+
+## Exact native turn deadline port
+
+The optional `actuation.native-turn-deadline/cooperative/v1` port restricts an already admitted turn. A forwarded `actuation.native-turn-bound/v1` condition grants no Agency, Source, provider or Factory authority. The host admits under its existing native Task, Agency and audience checks; Factory retains the original dispatch clock (before preparation), immutable total duration/current intent and total-wall Return guard. Host admission never replenishes the original total allowance and never certifies a forwarded Factory epoch.
+
+`NativeTurnBound::canonical_bytes` is the sole condition basis: UTF-8 JSON of the fixed-order nested arrays defined in that method, without map ordering, an admission or a self-digest. Consumers compute `blake3-v1:` followed by 64 lowercase hexadecimal BLAKE3 characters. Legacy omitted conditions remain omitted; strict unknown condition fields refuse. Actual admission binds that digest to the current owner clock incarnation/tick, exact delivery, connection generation and native prompt token. Queue time consumes the same live allowance; replay returns the first receipt; lost/restarted clock continuity refuses before Prompt.
+
+The existing event drain drives `NativeTurnDeadline::step`. The same native port must check the whole selector before adapter permission mutation and its cancellation burst. Requested or written cancellation, provider-observed cancellation, useful late completion and actual owned-process retirement are separate facts. This port cannot terminate a shared body. A required owned-process condition is unsupported before Prompt. Provider non-response and a blocked existing transport write remain uncertain; this cooperative port does not establish a hard process lifetime.
+
+These are additive v0.x Rust source APIs. Existing LocusDriver default cancellation and its requirement for an actually observed Cancelled phase are unchanged. Native compiler/platform/provider gates and genuine current/previous caller checks are required before adoption; source definitions are not execution evidence.
