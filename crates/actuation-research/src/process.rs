@@ -52,10 +52,6 @@ pub struct ProcessObservation {
     pub kill_signal_attempted: bool,
     pub direct_kill_attempted: bool,
     pub group_absent: bool,
-    /// The latest admitted macOS group checkpoint found only the terminal,
-    /// still unreaped spawned owner. This is not group absence or a future
-    /// membership guarantee. No group signal was needed at that checkpoint.
-    pub terminal_group_owner_only_observed: bool,
     pub unreaped_owner_observed_before_signal: bool,
     pub retirement_deadline_exhausted: bool,
     pub reply_observed: bool,
@@ -216,53 +212,6 @@ pub(crate) fn retirement_checkpoint(f: impl FnOnce(rustix::process::Pid) + 'stat
         *slot.borrow_mut() = Some(Box::new(f));
     });
 }
-/// Read-only macOS group membership, not signal authority. The caller must
-/// hold and reobserve the native spawn owner before using this result. libproc
-/// returns a PID count; the kernel includes live and zombie members. A short
-/// one-owner result is complete only with an unused second slot. Full buffers
-/// never certify singleton membership, and no errno is classified as absence.
-#[cfg(target_os = "macos")]
-fn macos_terminal_owner_only(pid: rustix::process::Pid, members: &mut [u32]) -> Result<bool> {
-    if members.is_empty() || members.len() > 2 {
-        return Err(Error::new("native group membership buffer outside bound"));
-    }
-    let owner = pid.as_raw_nonzero().get();
-    let owner = u32::try_from(owner)
-        .map_err(|_| Error::new("native group owner outside positive PID range"))?;
-    let count = libproc::processes::pids_by_type_into(
-        libproc::processes::ProcFilter::ByProgramGroup { pgrpid: owner },
-        members,
-    )
-    .map_err(io)?;
-    if count == 0 {
-        return Err(Error::new(
-            "native group membership unavailable; owner not observed",
-        ));
-    }
-    if count > members.len() {
-        return Err(Error::new("native group membership count outside bound"));
-    }
-    let observed = &members[..count];
-    if observed
-        .iter()
-        .any(|member| *member == 0 || i32::try_from(*member).is_err())
-        || (count == 2 && observed[0] == observed[1])
-    {
-        return Err(Error::new("native group membership identity inconsistent"));
-    }
-    if count < members.len() && !observed.contains(&owner) {
-        return Err(Error::new("native group membership omitted held owner"));
-    }
-    if observed.iter().any(|member| *member != owner) {
-        // Even at capacity there is an actual other member. This is not a
-        // complete census; it preserves the existing native group effect.
-        return Ok(false);
-    }
-    if count < members.len() {
-        return Ok(true);
-    }
-    Err(Error::new("native group membership incomplete at capacity"))
-}
 struct OwnedChild {
     child: Child,
     termination_grace: Duration,
@@ -340,7 +289,7 @@ impl OwnedChild {
         }
     }
     #[cfg(unix)]
-    fn held_identity(&mut self) -> Result<(rustix::process::Pid, bool)> {
+    fn held_identity(&mut self) -> Result<rustix::process::Pid> {
         if self.observation.signal_forbidden || self.observation.direct_child_reaped {
             return Err(Error::new(
                 "numeric signal is unavailable after lost or reaped ownership",
@@ -360,12 +309,12 @@ impl OwnedChild {
         // or chase a different group. Each effect still reobserves WNOWAIT.
         if terminal {
             self.observation.unreaped_owner_observed_before_signal = true;
-            return Ok((pid, true));
+            return Ok(pid);
         }
         match rustix::process::getpgid(Some(pid)) {
             Ok(group) if group == pid => {
                 self.observation.unreaped_owner_observed_before_signal = true;
-                Ok((pid, false))
+                Ok(pid)
             }
             Ok(_) => {
                 self.observation.signal_forbidden = true;
@@ -384,11 +333,8 @@ impl OwnedChild {
         phase: &'static str,
         r: &mut Retirement,
     ) {
-        // Each intended group effect needs a fresh native relation. A former
-        // singleton checkpoint cannot admit a later effect or lost owner.
-        self.observation.terminal_group_owner_only_observed = false;
-        let (pid, terminal) = match self.held_identity() {
-            Ok(identity) => identity,
+        let pid = match self.held_identity() {
+            Ok(pid) => pid,
             Err(error) => {
                 self.observation.signal_forbidden = true;
                 r.errors.push(ObservedCause {
@@ -398,46 +344,6 @@ impl OwnedChild {
                 return;
             }
         };
-        #[cfg(not(target_os = "macos"))]
-        let _ = terminal;
-        #[cfg(target_os = "macos")]
-        if terminal {
-            let owner_only = match macos_terminal_owner_only(pid, &mut [0; 2]) {
-                Ok(owner_only) => owner_only,
-                Err(error) => {
-                    r.errors.push(ObservedCause {
-                        phase: "group_membership",
-                        error,
-                    });
-                    return;
-                }
-            };
-            // Metadata is not an ownership grant. Reobserve the same actual
-            // unreaped terminal owner after the read and before any effect.
-            match self.held_identity() {
-                Ok((current, true)) if current == pid => {}
-                Ok(_) => {
-                    self.observation.signal_forbidden = true;
-                    r.errors.push(ObservedCause {
-                        phase: "owner_identity",
-                        error: Error::new("terminal native owner changed during membership read"),
-                    });
-                    return;
-                }
-                Err(error) => {
-                    self.observation.signal_forbidden = true;
-                    r.errors.push(ObservedCause {
-                        phase: "owner_identity",
-                        error,
-                    });
-                    return;
-                }
-            }
-            if owner_only {
-                self.observation.terminal_group_owner_only_observed = true;
-                return;
-            }
-        }
         if signal == rustix::process::Signal::TERM {
             self.observation.term_signal_attempted = true;
         } else {
@@ -1588,29 +1494,9 @@ pub(crate) mod native_retirement_tests {
 
     #[test]
     fn native_immediate_group_signal_uses_unreaped_terminal_owner_before_wait() {
-        use std::os::unix::process::{CommandExt, ExitStatusExt};
         let fixture = Fixture::new();
-        // A group-signal control needs an actual live member, not merely its
-        // terminal leader. The kernel group and all original assertions remain.
-        let spec = fixture.script(
-            "#!/bin/sh\ni=0\nwhile [ ! -f member-ready ] && [ \"$i\" -lt 100 ]; do i=$((i+1)); /bin/sleep 0.01; done\n[ -f member-ready ] || exit 70\nexit 0\n",
-            1000,
-            1024,
-        );
+        let spec = fixture.script("#!/bin/sh\nexit 0\n", 1000, 1024);
         let mut child = OwnedChild::spawn(spec.command().unwrap()).unwrap();
-        let group = child.spawned_group.unwrap();
-        let mut command = Command::new("/bin/sh");
-        command
-            .args(["-c", "printf ready > member-ready; exec /bin/sleep 5"])
-            .current_dir(&fixture.root)
-            .env_clear()
-            .stdin(Stdio::null())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .process_group(group.as_raw_nonzero().get());
-        let mut member = command.spawn().unwrap();
-        let member_pid = rustix::process::Pid::from_raw(member.id() as i32).unwrap();
-        assert_eq!(rustix::process::getpgid(Some(member_pid)).unwrap(), group);
         let deadline = Instant::now() + Duration::from_secs(1);
         while !child.peek().unwrap() {
             if Instant::now() >= deadline {
@@ -1623,7 +1509,6 @@ pub(crate) mod native_retirement_tests {
         assert!(!child.observation.direct_child_reaped);
         let pid = rustix::process::Pid::from_raw(child.child.id() as i32).unwrap();
         let actual = child.retire();
-        fixture.record(json!(actual.observation));
         assert!(actual.clean());
         assert!(actual.observation.kill_signal_attempted);
         assert!(actual.observation.unreaped_owner_observed_before_signal);
@@ -1632,86 +1517,8 @@ pub(crate) mod native_retirement_tests {
             rustix::process::waitpid(Some(pid), rustix::process::WaitOptions::NOHANG).unwrap_err(),
             rustix::io::Errno::CHILD
         );
-        assert!(!actual.observation.terminal_group_owner_only_observed);
-        let deadline = Instant::now() + Duration::from_secs(6);
-        let member_status = loop {
-            if let Some(status) = member.try_wait().unwrap() {
-                break status;
-            }
-            assert!(
-                Instant::now() < deadline,
-                "actual member retirement deadline exhausted"
-            );
-            thread::sleep(Duration::from_millis(5));
-        };
-        assert_eq!(member_status.signal(), Some(9));
-        drop(member);
+        fixture.record(json!(actual.observation));
         drop(child);
-        // Same named native case also exercises the originally failing terminal
-        // singleton. No fake signal, fake absence or reaped numeric authority.
-        let spec = fixture.script("#!/bin/sh\nexit 0\n", 1000, 1024);
-        let mut solo = OwnedChild::spawn(spec.command().unwrap()).unwrap();
-        let deadline = Instant::now() + Duration::from_secs(1);
-        while !solo.peek().unwrap() {
-            if Instant::now() >= deadline {
-                let actual = solo.retire();
-                fixture.record(json!(actual.observation));
-                panic!("actual singleton did not reach terminal observation");
-            }
-            thread::sleep(Duration::from_millis(5));
-        }
-        let solo_pid = solo.spawned_group.unwrap();
-        #[cfg(target_os = "macos")]
-        {
-            assert_eq!(solo.held_identity().unwrap(), (solo_pid, true));
-            for slots in [1, 2, 2] {
-                let mut members = [0; 2];
-                let probe = macos_terminal_owner_only(solo_pid, &mut members[..slots]);
-                fixture.record(json!({"case":"terminal-membership-probe", "slots":slots,
-                    "probe_refused":probe.is_err(), "owner_only":probe.as_ref().ok().copied(),
-                    "actual_io":probe.as_ref().err().map(io_fact), "observation":solo.observation}));
-                if slots == 1 {
-                    let ambiguous = probe.unwrap_err();
-                    assert!(ambiguous.to_string().contains("incomplete at capacity"));
-                    assert!(
-                        actual_io(&ambiguous).is_none(),
-                        "native capacity is not invented IO"
-                    );
-                } else {
-                    assert!(probe.unwrap());
-                }
-                assert_eq!(solo.held_identity().unwrap(), (solo_pid, true));
-            }
-            assert_eq!(solo.held_identity().unwrap(), (solo_pid, true));
-            assert!(!solo.observation.direct_child_reaped);
-            assert!(!solo.observation.kill_signal_attempted);
-        }
-        let first = solo.retire();
-        fixture.record(json!(first.observation));
-        assert!(first.clean());
-        assert!(first.observation.direct_child_reaped);
-        assert_eq!(first.observation.exit_code, Some(0));
-        assert!(!first.observation.group_absent);
-        assert!(!first.observation.direct_kill_attempted);
-        #[cfg(target_os = "macos")]
-        {
-            assert!(first.observation.terminal_group_owner_only_observed);
-            assert!(!first.observation.term_signal_attempted);
-            assert!(!first.observation.kill_signal_attempted);
-        }
-        #[cfg(target_os = "linux")]
-        {
-            assert!(!first.observation.terminal_group_owner_only_observed);
-            assert!(first.observation.kill_signal_attempted);
-        }
-        assert_eq!(
-            rustix::process::waitpid(Some(solo_pid), rustix::process::WaitOptions::NOHANG)
-                .unwrap_err(),
-            rustix::io::Errno::CHILD
-        );
-        let repeated = solo.retire();
-        assert!(std::sync::Arc::ptr_eq(&first, &repeated));
-        drop(solo);
         fixture.dispose_after_known_retirement();
     }
 
@@ -1724,7 +1531,6 @@ pub(crate) mod native_retirement_tests {
         external_reap(pid);
         let first = child.retire();
         assert!(first.observation.signal_forbidden);
-        assert!(!first.observation.terminal_group_owner_only_observed);
         assert!(!first.observation.direct_child_reaped);
         assert!(!first.observation.term_signal_attempted);
         assert!(!first.observation.kill_signal_attempted);
@@ -1886,10 +1692,8 @@ pub(crate) mod native_retirement_tests {
         let mut leader = match OwnedChild::spawn(spec.command().unwrap()) {
             Ok(child) => child,
             Err(error) => {
-                fixture.record(
-                    json!({"case":"terminal-spawn-group", "phase":"leader_spawn",
-                    "actual_io":io_fact(&io(error))}),
-                );
+                fixture.record(json!({"case":"terminal-spawn-group", "phase":"leader_spawn",
+                    "actual_io":io_fact(&io(error))}));
                 panic!("actual leader spawn failed; fixture retained");
             }
         };
@@ -1931,9 +1735,7 @@ pub(crate) mod native_retirement_tests {
                     break;
                 }
                 if Instant::now() >= deadline {
-                    return Err(Error::new(
-                        "actual native group readiness deadline exhausted",
-                    ));
+                    return Err(Error::new("actual native group readiness deadline exhausted"));
                 }
                 thread::sleep(Duration::from_millis(5));
             }
@@ -2012,16 +1814,7 @@ pub(crate) mod native_retirement_tests {
         assert_eq!(member_group_matches, Some(true));
         assert!(leader_retirement.clean());
         assert!(leader_retirement.observation.kill_signal_attempted);
-        assert!(
-            !leader_retirement
-                .observation
-                .terminal_group_owner_only_observed
-        );
-        assert!(
-            leader_retirement
-                .observation
-                .unreaped_owner_observed_before_signal
-        );
+        assert!(leader_retirement.observation.unreaped_owner_observed_before_signal);
         assert!(!leader_retirement.observation.signal_forbidden);
         assert_eq!(leader_retirement.observation.exit_code, Some(0));
         assert_eq!(
@@ -2064,7 +1857,9 @@ pub(crate) mod native_retirement_tests {
                 }
             }
             if Instant::now() >= deadline {
-                prerequisite = Some(Error::new("actual terminal observation deadline exhausted"));
+                prerequisite = Some(Error::new(
+                    "actual terminal observation deadline exhausted",
+                ));
                 break;
             }
             thread::sleep(Duration::from_millis(5));
@@ -2093,30 +1888,24 @@ pub(crate) mod native_retirement_tests {
             ),
             _ => (false, None),
         };
-        fixture.record(
-            json!({"case":"terminal-external-reap", "terminal_observed":terminal,
+        fixture.record(json!({"case":"terminal-external-reap", "terminal_observed":terminal,
             "external_wait_actually_reaped_exact_child":external_reaped, "external_io":external_io,
             "prerequisite_io":prerequisite.as_ref().map(io_fact),
             "actual_retirement":first.observation,
             "actual_secondary":first.errors.iter().map(|cause|
                 json!({"phase":cause.phase,"io":io_fact(&cause.error)})).collect::<Vec<_>>(),
             "memoized_same_record":std::sync::Arc::ptr_eq(&first,&repeated),
-            "fixture_disposition":"retained-owner-unavailable"}),
-        );
+            "fixture_disposition":"retained-owner-unavailable"}));
         assert!(prerequisite.is_none());
         assert!(terminal && external_reaped);
         assert!(first.observation.signal_forbidden);
-        assert!(!first.observation.terminal_group_owner_only_observed);
         assert!(!first.observation.direct_child_reaped);
         assert!(!first.observation.term_signal_attempted);
         assert!(!first.observation.kill_signal_attempted);
         assert!(!first.observation.direct_kill_attempted);
-        assert!(first
-            .errors
-            .iter()
-            .any(|cause| actual_io(&cause.error).is_some_and(
-                |error| error.raw_os_error() == Some(rustix::io::Errno::CHILD.raw_os_error())
-            )));
+        assert!(first.errors.iter().any(|cause| actual_io(&cause.error)
+            .is_some_and(|error| error.raw_os_error()
+                == Some(rustix::io::Errno::CHILD.raw_os_error()))));
         assert!(std::sync::Arc::ptr_eq(&first, &repeated));
         drop(child); // Memoized unknown owner; never a late numeric retry.
     }
