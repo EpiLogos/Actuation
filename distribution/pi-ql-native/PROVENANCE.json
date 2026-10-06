@@ -1,0 +1,139 @@
+{
+ "schema": "actuation.distribution-source-record/v1",
+ "name": "ql-native-agent",
+ "version": "0.3.3",
+ "role": "Pi package carrying the shared native QL extension (ql_project_event, ql_decision_frame, ql_harmonic_read, ql_decide, ql_validate_determination, ql_invoke) and its Skills. The same extensions/ql-agent.ts is loaded into Prime by distribution/prime-epi.",
+ "source_of_record": "This directory, from the commit that introduced it. Before it, the extension source existed only as installed, content-addressed material.",
+ "copied_from": {
+  "path": "~/.workcell/tools/ql-agent/pi-packages/aikit/f6d2aa93fede9b9fc6fb07fc346dbcfcb299d99da0b21c307d7536fa49d462c3",
+  "machine": "workcell:mac (the owner's main machine)",
+  "copied_on": "2026-10-06",
+  "installed_by": "not recorded in any repository; the directory is the output of `aikit` package generation",
+  "referenced_by": "~/.pi/agent/settings.json packages[0]"
+ },
+ "generator": {
+  "tool": "aikit 0.1.0",
+  "format_version": "pi-package/1",
+  "members": [
+   "skill/ql-native-owner/ql-agent@bbf2b13e2ac7",
+   "skill/ql/ql-evidence-report@4bfcba68835f",
+   "skill/ql/ql-foundations@1bde16304761",
+   "skill/ql/ql-law@d3ff6e1fc73e",
+   "skill/ql/ql-operation@cb86bcdaa0ce",
+   "skill/ql/vak-coordinate-frame@e398b83b1f02"
+  ]
+ },
+ "upstream_compat": {
+  "pi": {
+   "@earendil-works/pi-coding-agent": "*"
+  },
+  "pi_installed_when_copied": "0.84.4"
+ },
+ "native_owner": {
+  "issue": "https://github.com/EpiLogos/QL-MEF/issues/291",
+  "provenance_file": "skills/ql-agent-reading/provenance.json",
+  "schema": "ql.pi-tool-source/v1",
+  "kernel_digest": "sha256:06245147c803a50e569c4adc9766664d251c4b788b9b61b5008344679a0b2a53",
+  "native_binary_sha256": "1a50b99ccf1884a4adbb3e3d6386854678de76d1ee899d89d629c7153977103d",
+  "source_sha256": {
+   "schemas/ql-agent-contracts-v1.schema.json": "3290d93bf0c2e3e2acb922b8f96750d1623b30aeb08d4711f8b6956fe9e5d957",
+   "crates/ql-mef/src/agent_event.rs": "35211df6d3a266d0378a5c8fa580eb6ef399e9a9dee1ef751da86bf9610285b3",
+   "crates/ql-mef/src/agent_event/admission.rs": "4018fc4dc2c73db78af44ac2c0615978c996a1b9a51b19f39af635eb596089de",
+   "crates/ql-mef/src/epi_agent.rs": "2938fdb9d42415acfb9c96b9181cc48c8b748c5f5d5b7ed4caf113c60c0e08cd",
+   "crates/ql-cli/src/agent_event_command.rs": "5531b361ee7d686825b9800b75af0b023f1b45c1541bbc0d2efe91e1025c5e63",
+   "crates/ql-cli/src/epi_agent_command.rs": "656456db509854b0f1f659a4727d3b567d95b5ebc47795b6e22120f64766e054",
+   "docs/integrations/epi-logos/epi-m-capability-field-m0.json": "a7d0790c7597718288919d6fdd319de78833a18360c3daf8f83631dca4fe324c",
+   "docs/integrations/epi-logos/epi-m-capability-field-m1.json": "5cb1559d5a916b164fa359a1fbecafb1d75b34d2f4e0336f6173b68384919c73",
+   "docs/integrations/epi-logos/epi-m-capability-field-m2.json": "cd2fd9b13457407580946c8924e357b993fe3d1eac00c2539925c3b7a467ef86",
+   "docs/integrations/epi-logos/epi-m-capability-field-m3.json": "86ec337c43ff1c5ee9f50e607e4482154b0ab6243452918c7f60eeb5d7ae3fdf",
+   "docs/integrations/epi-logos/epi-m-capability-field-m4.json": "94256b409293869a5c54af2b1d7cb2e53e6b43993d92055162881912a6ff4538",
+   "docs/integrations/epi-logos/epi-m-capability-field-m5.json": "a25a7f7358d49320f48694fc3c9ade3e1cad0f8418b354b5364d8ab9f51b6b9b",
+   "scripts/ql_agent_contracts.py": "0db0bb37eca6558c3d1b485e2791189041c74616dddf6d6639e40bd79acf7153",
+   "scripts/ql_agent_aikit.py": "0168bf3e6982b8f9d89d6544eb3668678e0d8b5a7af90e1d206871edee862732",
+   "scripts/ql_agent_decide.py": "d02c38c5bf116e092c5725b413b7f89078dcd2ff0f5e0039313841bea4c84f84",
+   "scripts/ql_agent_encounter.py": "183e3ee03bc4a84f20219d2232e553a1069de784fe2bf98c1da0f40d140d62c1"
+  }
+ },
+ "searched_for_other_homes": "git log --all -S registerQlEventContext in QL-MEF and Actuation, and gh code search over EpiLogos, found no repository copy of extensions/ql-agent.ts or extensions/ql-event-context.ts on 2026-10-06",
+ "same_extension_elsewhere": "sha256 3e33f6cf93386da48953c29310cbcbd15e9ebbf37f840f4a08a84ddc8b7e6ba7 also in ~/.workcell/tools/ql-agent/owner-extensions/1001060d\u2026/extensions/ql-agent.ts (the copy Prime's binding verifies)",
+ "sibling_installs_not_copied": "~/.workcell/tools/ql-agent/pi-packages/aikit/{a627c57c\u2026,aeb3aeca\u2026} are also ql-native-agent 0.3.3 (fewer skills); 32f60155\u2026, 3eb58160\u2026, 58a988a4\u2026, 810b8d8d\u2026 are 0.3.2, 0.2.2, 0.3.0, 0.3.1",
+ "files": {
+  "aikit-package.json": {
+   "sha256": "f71b77f8709657c1be1c9b859e7cc5a2c728f66d3bdcbdd1d9750bef21e9f438",
+   "bytes": 2854
+  },
+  "package.json": {
+   "sha256": "86a914c1d4530088ba2921147f969eb906a5fa7022d31683cda57ac1528b3eae",
+   "bytes": 448
+  },
+  "skills/ql-agent-reading/README.md": {
+   "sha256": "f8c8f1cd4628c3cc4c50582d31064c9b3fbaa47f56ecebd8b756a4d1b6a0e2a5",
+   "bytes": 3309
+  },
+  "skills/ql-agent-reading/SKILL.md": {
+   "sha256": "8746e1586935a7931305d22a08a67070b0d2f02de77ad18ac624149ac613d2d6",
+   "bytes": 2517
+  },
+  "skills/ql-agent-reading/aikit-set.toml": {
+   "sha256": "3330ba1296db5e24f102728f5650a3247e19a6dd95f0ee192dc5e2cd2d05e954",
+   "bytes": 1057
+  },
+  "skills/ql-agent-reading/extensions/ql-agent.ts": {
+   "sha256": "3e33f6cf93386da48953c29310cbcbd15e9ebbf37f840f4a08a84ddc8b7e6ba7",
+   "bytes": 10036
+  },
+  "skills/ql-agent-reading/extensions/ql-event-context.ts": {
+   "sha256": "1522b74650158f88206319a11c776ca1d50fc7cc02f603095e5dacf202f68e57",
+   "bytes": 8533
+  },
+  "skills/ql-agent-reading/package.json": {
+   "sha256": "e78f36997107fa0cc3333d077e2fc83074fd2611d9b5db257af078081c216c86",
+   "bytes": 394
+  },
+  "skills/ql-agent-reading/provenance.json": {
+   "sha256": "ddb96e13a48afc1e0afe23d986bd549c7d13b544c7adf10e93042fda33e701e6",
+   "bytes": 2332
+  },
+  "skills/ql-agent-reading/ql-agent-contracts-v1.schema.json": {
+   "sha256": "3290d93bf0c2e3e2acb922b8f96750d1623b30aeb08d4711f8b6956fe9e5d957",
+   "bytes": 11363
+  },
+  "skills/ql-agent-reading/tests/native-body-loop-cli.mjs": {
+   "sha256": "0c053db438aaede73ed64a85fa508a503530453241afeb591a00c31e0699e965",
+   "bytes": 6426
+  },
+  "skills/ql-agent-reading/tests/native-encounter-loop.mjs": {
+   "sha256": "23ba0ea404099c5fbbd109c7e38b1caa679f7d88b3264f8c13f9ac5fda6334d8",
+   "bytes": 6309
+  },
+  "skills/ql-agent-reading/tests/native-event-loop.mjs": {
+   "sha256": "8616967d9a90fee085770987815d17f360bcada1bbf7347ca91554459fd48c9f",
+   "bytes": 7350
+  },
+  "skills/ql-agent-reading/tests/native-tools.mjs": {
+   "sha256": "8fa8cc097346f9b15b50041384539834e64c840cdc25e443404644a8f30fd4d0",
+   "bytes": 9865
+  },
+  "skills/ql-evidence-report/SKILL.md": {
+   "sha256": "7ca090796725e469376efd193b76111a84678a8de592acaa48ced2ad9e3d91bd",
+   "bytes": 3721
+  },
+  "skills/ql-foundations/SKILL.md": {
+   "sha256": "2baa31839b186f2114e6bd55412987b4acd75cad8e421fae3d08822c81cd2a76",
+   "bytes": 9184
+  },
+  "skills/ql-law/SKILL.md": {
+   "sha256": "0f4de4af356185c4c49e8f0912ea0bbbeb3e7935aa5fd47db090dd8bafcf2432",
+   "bytes": 8595
+  },
+  "skills/ql-mef-operation/SKILL.md": {
+   "sha256": "11ed875f790d0c8fe73211870f5bf5edbb2e62eb35df6449d8c42fe9b743a93e",
+   "bytes": 5834
+  },
+  "skills/vak-coordinate-frame/SKILL.md": {
+   "sha256": "e418d355691ef6fc5be46e08e0f8036a86f4e94a629a5fba42a720fe8206eecb",
+   "bytes": 7240
+  }
+ },
+ "tree_sha256": "80b5f66c42a30d7a8e5d69a4f05541737055d2bfeac423f0a2828a7f59322fa2"
+}
