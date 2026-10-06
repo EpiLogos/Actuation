@@ -4,6 +4,8 @@
 //
 //   epi-distribution.mjs verify
 //   epi-distribution.mjs seal          (re-pin the manifest's digests after an edit)
+//   epi-distribution.mjs faculty-config --instrument ABS --source-root ABS --evidence-root ABS --out ABS
+//                                      (write the faculty configuration pinned to the revision the instrument reports)
 //   epi-distribution.mjs install --research-bin ABS --faculty-config ABS [--root DIR]
 //
 // `verify` recomputes every digest the manifest pins. `install` copies the
@@ -12,6 +14,7 @@
 // binding file `prime-epi/current.json` that the
 // extension and the `actuation-epi-prime` launcher both verify. It never writes
 // under a `.workcell` path and refuses a root that is one.
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync,
   rmSync, statSync, writeFileSync } from "node:fs";
@@ -67,6 +70,53 @@ function toolsRoot(explicit) {
   return root;
 }
 
+/** A faculty configuration is coherent with its instrument when the revision it pins is the revision the instrument reports.
+ *  The source-built owner instrument carries its revision in the binary and answers any request with it, so the pin can be checked
+ *  without trusting either side. A mismatch is not cosmetic: every native faculty receipt is refused with "owner response
+ *  correlation/revision mismatch", so every `ql_relational` Python call fails after the QL work was done. A native-CLI owner
+ *  (`owner.native_cli`) reports no revision; that is disclosed, not probed. */
+export function checkFacultyCoherence(facultyConfig) {
+  let config;
+  try { config = JSON.parse(readFileSync(facultyConfig, "utf8")); } catch (error) { throw new Error(`the faculty configuration is not readable JSON: ${error.message}`); }
+  if (config.schema !== "actuation.prime-faculty/v1") throw new Error(`the faculty configuration has schema ${JSON.stringify(config.schema)}, not actuation.prime-faculty/v1`);
+  const owner = config.owner ?? {};
+  const program = owner.process?.program;
+  if (!program || !isAbsolute(program) || !existsSync(program)) throw new Error(`the faculty configuration's owner program is missing: ${program}`);
+  if (!/^[0-9a-f]{40}$/.test(owner.revision ?? "")) throw new Error("the faculty configuration pins no 40-hex owner revision");
+  if (owner.native_cli) return { probed: false, revision: owner.revision, note: "native CLI owner: reports no revision, not probed" };
+  const probe = spawnSync(program, [], { input: "{}", encoding: "utf8", timeout: 20000, cwd: owner.process.cwd && existsSync(owner.process.cwd) ? owner.process.cwd : undefined, env: { ...process.env, ...(owner.process.environment ?? {}) } });
+  let reported;
+  try { reported = JSON.parse(probe.stdout).owner_revision; } catch { /* handled below */ }
+  if (!reported) throw new Error(`the owner instrument ${program} reported no owner_revision to a probe (exit ${probe.status}); cannot confirm the configuration's pin`);
+  if (reported !== owner.revision) {
+    throw new Error(`the faculty configuration pins owner revision ${owner.revision} but ${program} reports ${reported}; regenerate the configuration for this instrument build (every native faculty receipt would be refused)`);
+  }
+  return { probed: true, revision: reported, program };
+}
+
+/** Write the faculty configuration for a source-built owner instrument, pinned to the revision the instrument itself reports.
+ *  Generated, not hand-edited, so it cannot drift from the instrument build it describes. */
+export function writeFacultyConfig({ instrument, sourceRoot, evidenceRoot, out }) {
+  for (const [name, path] of [["--instrument", instrument], ["--source-root", sourceRoot], ["--evidence-root", evidenceRoot], ["--out", out]]) {
+    if (!path || !isAbsolute(path)) throw new Error(`${name} must be an absolute path`);
+  }
+  if (!existsSync(instrument) || !statSync(instrument).isFile()) throw new Error(`--instrument is not a file: ${instrument}`);
+  const probe = spawnSync(instrument, [], { input: "{}", encoding: "utf8", timeout: 20000 });
+  let revision;
+  try { revision = JSON.parse(probe.stdout).owner_revision; } catch { /* handled below */ }
+  if (!/^[0-9a-f]{40}$/.test(revision ?? "")) throw new Error(`the instrument reported no 40-hex owner_revision to a probe (exit ${probe.status})`);
+  const config = {
+    schema: "actuation.prime-faculty/v1",
+    owner: { process: { program: instrument, args: [], cwd: sourceRoot, environment: {}, timeout_ms: 60000, output_limit: 8388608 }, revision },
+    harmonic_enabled: false,
+    source: { root: sourceRoot, git: "/usr/bin/git" },
+    evidence_root: evidenceRoot,
+  };
+  mkdirSync(dirname(out), { recursive: true });
+  writeFileSync(out, JSON.stringify(config, null, 2) + "\n");
+  return { out, revision, coherence: checkFacultyCoherence(out) };
+}
+
 export function install({ researchBin, facultyConfig, root }) {
   const problems = verify();
   if (problems.length) throw new Error(`distribution does not verify: ${problems.join("; ")}`);
@@ -75,6 +125,7 @@ export function install({ researchBin, facultyConfig, root }) {
       throw new Error(`${name} must be an absolute path to an existing file`);
     }
   }
+  const faculty = checkFacultyCoherence(facultyConfig);
   const base = join(toolsRoot(root), "prime-epi");
   const id = sha(JSON.stringify({ manifest: manifest.files, owner: manifest.shared_owner_extension.tree_sha256 })).slice(0, 16);
   const target = join(base, id);
@@ -112,7 +163,7 @@ export function install({ researchBin, facultyConfig, root }) {
   const current = join(base, "current.json");
   writeFileSync(`${current}.tmp`, JSON.stringify(binding, null, 2) + "\n");
   renameSync(`${current}.tmp`, current);
-  return { installed: target, binding: current, extension: join(target, "extensions/ql-faculty-bindings.ts"), id };
+  return { installed: target, binding: current, extension: join(target, "extensions/ql-faculty-bindings.ts"), id, faculty };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -126,11 +177,14 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     } else if (command === "seal") {
       seal();
       process.stdout.write(JSON.stringify({ sealed: Object.keys(manifest.files).length }) + "\n");
+    } else if (command === "faculty-config") {
+      process.stdout.write(JSON.stringify(writeFacultyConfig({ instrument: option("--instrument"), sourceRoot: option("--source-root"),
+        evidenceRoot: option("--evidence-root"), out: option("--out") }), null, 2) + "\n");
     } else if (command === "install") {
       process.stdout.write(JSON.stringify(install({ researchBin: option("--research-bin"),
         facultyConfig: option("--faculty-config"), root: option("--root") }), null, 2) + "\n");
     } else {
-      process.stderr.write("usage: epi-distribution.mjs verify | seal | install --research-bin ABS --faculty-config ABS [--root DIR]\n");
+      process.stderr.write("usage: epi-distribution.mjs verify | seal | faculty-config --instrument ABS --source-root ABS --evidence-root ABS --out ABS | install --research-bin ABS --faculty-config ABS [--root DIR]\n");
       process.exit(2);
     }
   } catch (error) {

@@ -89,13 +89,13 @@
    "sha256": "862b1abe87d211ab12e5b9c3d84712535553cdc67d6dba731345d66d3426bf0a"
   },
   "tools/epi-distribution.mjs": {
-   "sha256": "77171b0b05ecdbc307cdd1f8e9c509cda19c8ba255f04fbc46ee946a579752b2"
+   "sha256": "902f43faa8104fe2d73294f3bf72bd8fdd0070a25d39ff6b250c0006526d0f45"
   },
   "tests/ql-native-bindings.mjs": {
    "sha256": "1c36113079721a8be79449bc538fc5c11fceb32e877167de89ed255ae4c3bd36"
   },
   "tests/install-and-load.mjs": {
-   "sha256": "f9c095d2eea098a0125a38a45ab6bec93bd8b765d43ba719796439befb14729d"
+   "sha256": "34ea2f4f28c1b4a95c1da03f8369818eb4b717535a27cda97123cdda1fd39e83"
   }
  },
  "not_done": [
