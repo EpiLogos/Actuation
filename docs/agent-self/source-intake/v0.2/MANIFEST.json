@@ -1,0 +1,37 @@
+{
+  "DESIGN.md": {
+    "bytes": 23085,
+    "sha256": "b30d2c57727ff2f045279e3db4445adf9fac5854a1002813d137a1db69641006",
+    "words": 3128
+  },
+  "KITE-LOCAL-TEST.md": {
+    "bytes": 7555,
+    "sha256": "6f1f6b162c74556283f0080daa8a6fc7376b6a7ddd9d8c25b4b20313a76d7be1",
+    "words": 1147
+  },
+  "README.md": {
+    "bytes": 580,
+    "sha256": "ad9016ea882d46d2f6bb4287a385e7a7e332eda0942755d42b09ec90ed3d83f3",
+    "words": 79
+  },
+  "RELATIONAL-LOGOS.md": {
+    "bytes": 4618,
+    "sha256": "454bfbd1e47a8c43de5b532958b68bdb1c49dd4146ecc31ec5cbfb961a8129c5",
+    "words": 693
+  },
+  "SELF-KITE.md": {
+    "bytes": 2548,
+    "sha256": "969d1abced6824c3618555188ff5f82a6147789cebfa571d70cc8bff2b4b5dc9",
+    "words": 399
+  },
+  "SKILL.md": {
+    "bytes": 5290,
+    "sha256": "f7b85fde48354c5060990e1f1347277f1e2fc9b9fa1ab159b2fab131c2391d27",
+    "words": 720
+  },
+  "SOURCES.md": {
+    "bytes": 4515,
+    "sha256": "1ed0b3cb6ccf2edcac53d3c1188be6d24deaa92b5bb5b081d7e5083c745e0558",
+    "words": 500
+  }
+}
