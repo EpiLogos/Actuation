@@ -1,0 +1,20 @@
+{
+  "description": "Native QL event, decision, harmonic and operation instruments.",
+  "homepage": "https://github.com/EpiLogos/QL-MEF/issues/291",
+  "keywords": [
+    "pi-package"
+  ],
+  "name": "ql-native-agent",
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "pi": {
+    "extensions": [
+      "./skills/ql-agent-reading/extensions/ql-agent.ts"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  },
+  "version": "0.3.3"
+}

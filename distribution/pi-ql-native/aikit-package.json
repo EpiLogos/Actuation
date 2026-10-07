@@ -1,0 +1,98 @@
+{
+  "environment": [],
+  "format_version": "pi-package/1",
+  "generator": "aikit 0.1.0",
+  "members": [
+    {
+      "exported": true,
+      "form": "skill",
+      "id": "skill/ql-native-owner/ql-agent",
+      "name": "ql-agent-reading",
+      "revision": "bbf2b13e2ac712a73a5227fcec7d28186c54c145126f7c1f71cf4f1bc7f4677a"
+    },
+    {
+      "exported": true,
+      "form": "skill",
+      "id": "skill/ql/ql-evidence-report",
+      "name": "ql-evidence-report",
+      "revision": "4bfcba68835fa1f0ee35827ad8bb582e8e1464bb36c260695be4cd6cf7fe94a0"
+    },
+    {
+      "exported": true,
+      "form": "skill",
+      "id": "skill/ql/ql-foundations",
+      "name": "ql-foundations",
+      "revision": "1bde16304761881383866018407ad7a86bca74082774de0c4385270bf8cfc49a"
+    },
+    {
+      "exported": true,
+      "form": "skill",
+      "id": "skill/ql/ql-law",
+      "name": "ql-law",
+      "revision": "d3ff6e1fc73e4d3217e19b5544b2149d9a40d945c5cc6ab20842b3bff828d068"
+    },
+    {
+      "exported": true,
+      "form": "method",
+      "id": "skill/ql/ql-operation",
+      "name": "ql-mef-operation",
+      "revision": "cb86bcdaa0ce211db32d9149ce42d1fb2e635cfff4ff602429adb0b32401efeb"
+    },
+    {
+      "exported": true,
+      "form": "skill",
+      "id": "skill/ql/vak-coordinate-frame",
+      "name": "vak-coordinate-frame",
+      "revision": "e398b83b1f0202dd0652f0f7026b5e221789c63aaccbbe3d21afc52ca3aaff1a"
+    }
+  ],
+  "native_tools": [
+    {
+      "member_id": "skill/ql-native-owner/ql-agent",
+      "module": "extensions/ql-agent.ts",
+      "name": "ql_decide",
+      "target": "pi"
+    },
+    {
+      "member_id": "skill/ql-native-owner/ql-agent",
+      "module": "extensions/ql-agent.ts",
+      "name": "ql_decision_frame",
+      "target": "pi"
+    },
+    {
+      "member_id": "skill/ql-native-owner/ql-agent",
+      "module": "extensions/ql-agent.ts",
+      "name": "ql_harmonic_read",
+      "target": "pi"
+    },
+    {
+      "member_id": "skill/ql-native-owner/ql-agent",
+      "module": "extensions/ql-agent.ts",
+      "name": "ql_invoke",
+      "target": "pi"
+    },
+    {
+      "member_id": "skill/ql-native-owner/ql-agent",
+      "module": "extensions/ql-agent.ts",
+      "name": "ql_project_event",
+      "target": "pi"
+    },
+    {
+      "member_id": "skill/ql-native-owner/ql-agent",
+      "module": "extensions/ql-agent.ts",
+      "name": "ql_validate_determination",
+      "target": "pi"
+    }
+  ],
+  "note": "Generated projection of an AIKit SkillSet. The SkillSet is the source; edit it there and re-export.",
+  "package": {
+    "name": "ql-native-agent",
+    "version": "0.3.3"
+  },
+  "schema": "aikit.skillset-package-provenance/v1",
+  "skillset_ref": "ql-native-agent",
+  "source_revision": "sha256:47803445d5b67cf633ce3144726d59efe7fd6498eddf9ed85a0486f0cd63db03",
+  "target": "pi",
+  "tool_dependencies": [],
+  "unresolved": []
+}

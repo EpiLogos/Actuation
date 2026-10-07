@@ -369,12 +369,20 @@ async def negotiate(operation: str) -> dict[str, Any]:
 async def wiki_refract(request: dict[str, Any]) -> dict[str, Any]:
     """Run the native ql-mef/wiki-refraction/v1 engine over a caller-owned Wiki target."""
     payload = json.dumps(request)
-    response = await _run(
-        "cargo", "run", "--quiet", "--manifest-path", str(_root() / "Cargo.toml"),
-        "-p", "ql-wiki", "--bin", "ql-wiki-refraction",
-        stdin=payload,
-        cwd=_root(),
-    )
+    binary = os.environ.get("QL_WIKI_REFRACTION_BIN", "").strip()
+    if binary:
+        # The built engine the launcher found beside `ql`: no compile of the QL checkout in the middle of a turn.
+        exe = Path(binary).expanduser().resolve()
+        if not exe.is_file():
+            raise RuntimeError(f"QL_WIKI_REFRACTION_BIN is not an installed executable file: {exe}")
+        response = await _run(str(exe), stdin=payload, cwd=_root())
+    else:
+        response = await _run(
+            "cargo", "run", "--quiet", "--manifest-path", str(_root() / "Cargo.toml"),
+            "-p", "ql-wiki", "--bin", "ql-wiki-refraction",
+            stdin=payload,
+            cwd=_root(),
+        )
     await _record("ql-wiki:refract", request, response)
     await _receipt({"operation": "wiki-refract", "request": request}, response)
     return response
