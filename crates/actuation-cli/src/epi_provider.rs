@@ -332,6 +332,16 @@ pub fn prime_command_spec(
             text(&args.installation),
         ),
     ];
+    // The QL workspace builds `ql` and `ql-wiki-refraction` side by side. When the sibling exists the skill runs it directly instead of
+    // `cargo run`-ing the QL checkout at call time (which compiles whatever state that checkout is in, mid-turn).
+    if let Some(sibling) = args
+        .ql_bin
+        .parent()
+        .map(|dir| dir.join("ql-wiki-refraction"))
+        .filter(|path| path.is_file())
+    {
+        env.push(("QL_WIKI_REFRACTION_BIN".into(), text(&sibling)));
+    }
     if let Some(root) = &args.ql_root {
         env.push(("QL_MEF_ROOT".into(), text(root)));
     }
@@ -525,6 +535,32 @@ mod tests {
             .iter()
             .any(|(k, v)| k == "ACTUATION_RESEARCH_INSTALLATION"
                 && v == &installation.canonicalize().unwrap().to_string_lossy()));
+    }
+
+    #[test]
+    fn a_built_wiki_refraction_binary_beside_ql_is_handed_to_the_skill() {
+        let dir = tempfile::tempdir().unwrap();
+        let installation = binding_dir(dir.path());
+        let bin = dir.path().join("qlbin");
+        std::fs::create_dir_all(&bin).unwrap();
+        let ql = bin.join("ql");
+        std::fs::write(&ql, "#!/bin/sh\n").unwrap();
+        let mut args = launch_args(dir.path(), Path::new("/usr/bin/true"), &installation);
+        let at = args.iter().position(|a| a == "--ql-bin").unwrap();
+        args[at + 1] = ql.display().to_string();
+        let parsed = EpiProviderArgs::parse(&args).unwrap();
+        let (_, env) = prime_command_spec(&parsed, Path::new("/work"));
+        assert!(
+            !env.iter().any(|(k, _)| k == "QL_WIKI_REFRACTION_BIN"),
+            "no sibling, nothing named"
+        );
+        let sibling = bin.join("ql-wiki-refraction");
+        std::fs::write(&sibling, "#!/bin/sh\n").unwrap();
+        let (_, env) = prime_command_spec(&parsed, Path::new("/work"));
+        let sibling = sibling.canonicalize().unwrap();
+        assert!(env
+            .iter()
+            .any(|(k, v)| k == "QL_WIKI_REFRACTION_BIN" && v == &sibling.to_string_lossy()));
     }
 
     #[test]
