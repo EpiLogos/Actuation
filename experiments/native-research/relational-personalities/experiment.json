@@ -1,0 +1,114 @@
+{
+  "schema": "actuation.relational-personality-experiment-spec/v1",
+  "standing": "planned-not-executed",
+  "experiment_id": "relational-personalities-acquaintance",
+  "purpose": "Become acquainted with the other participants through an open conversation.",
+  "participants": [
+    {
+      "seed_key": "kite",
+      "display_name": "Kite",
+      "self_source": {
+        "path": "experiments/native-research/relational-personalities/personas/kite.md",
+        "sha256": "969d1abced6824c3618555188ff5f82a6147789cebfa571d70cc8bff2b4b5dc9"
+      }
+    },
+    {
+      "seed_key": "cairn",
+      "display_name": "Cairn",
+      "self_source": {
+        "path": "experiments/native-research/relational-personalities/personas/cairn.md",
+        "sha256": "6de8f15e4c97fefd4d5ae9a0f11012b01818fc39b6bfd3064cb4bcbdb631c301"
+      }
+    },
+    {
+      "seed_key": "lilt",
+      "display_name": "Lilt",
+      "self_source": {
+        "path": "experiments/native-research/relational-personalities/personas/lilt.md",
+        "sha256": "2ca307255f275c2be3284b2d36eb588bb89bd870bcf75c38ead4ef5e286c9e02"
+      }
+    },
+    {
+      "seed_key": "flint",
+      "display_name": "Flint",
+      "self_source": {
+        "path": "experiments/native-research/relational-personalities/personas/flint.md",
+        "sha256": "fcbc61cdb0880fa54b065c61757baf02a3140bc2baf49a3107c8a0e713bae7e6"
+      }
+    }
+  ],
+  "shared_logos": {
+    "path": "skills/author-agent-self/references/RELATIONAL-LOGOS.md",
+    "sha256": "454bfbd1e47a8c43de5b532958b68bdb1c49dd4146ecc31ec5cbfb961a8129c5"
+  },
+  "room": {
+    "path": "experiments/native-research/relational-personalities/ROOM.md",
+    "sha256": "2839c5ea7fbe1ca506208432afecf69ddb178d60bbe818b996b591018c12deea"
+  },
+  "native_identity_allocation": "agent-profile.express followed by exact-source native acceptance",
+  "native_bindings": "resolved locally; never fabricated from seed_key or path",
+  "default_condition": "coupled",
+  "primary": {
+    "first_meeting_opportunities": 24,
+    "continuity_opportunities": 4,
+    "return_meeting_opportunities": 16,
+    "reflection_opportunities": 4,
+    "restart_all_four": true,
+    "seed": 70107
+  },
+  "limits": {
+    "peer_act_opportunities": 48,
+    "peer_model_calls_including_retries": 96,
+    "output_tokens_per_model_call": 512,
+    "metered_total_tokens": 250000,
+    "wall_seconds": 1800,
+    "transport_retries": 1,
+    "repeat_cycle_stop": 3,
+    "quiescence_checks": 3,
+    "cost_authority": "existing native grant and enforceable spend cap for paid endpoints; lower bound wins"
+  },
+  "required_engineering": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6",
+    "E7",
+    "E8",
+    "E9",
+    "E10"
+  ],
+  "analysis_metrics": [
+    "character_discriminability",
+    "contingent_uptake",
+    "attribution",
+    "acquaintance_grounding",
+    "correction_uptake",
+    "continuity",
+    "rubric_leakage"
+  ],
+  "comparative": {
+    "auto_run": false,
+    "conditions": [
+      "baseline",
+      "self-only",
+      "logos-only",
+      "coupled"
+    ],
+    "fresh_episodes_per_condition": 3,
+    "opportunities_per_episode": 24,
+    "counterbalanced": true,
+    "independent_contexts": true,
+    "coupling_ablation": "optional separate accepted edition and budget"
+  },
+  "artifact_ownership": {
+    "plan": "Factory RunMap",
+    "temporal": "Central NOW/DAY",
+    "identity_return": "Actuation",
+    "profile_source": "Central",
+    "context_sessions_transport": "AIKit and existing native Stream/Communique",
+    "material": "Workcell",
+    "analysis": "derived artifacts in allocated NOW destination"
+  }
+}
