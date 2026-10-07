@@ -34,7 +34,7 @@ pub struct EpiProviderArgs {
     pub ql_bin: PathBuf,
     pub ql_revision: String,
     pub skill_path: PathBuf,
-    /// The packaged binding extension (`ql-faculty-bindings.ts`), loaded with `-e`.
+    /// The packaged binding extension (`ql-faculty-bindings.ts`, from EpiLogos/Epi-Prime), loaded with `-e`.
     pub extension: PathBuf,
     /// The binding file (`actuation.prime-faculty-installation/v1`) the
     /// extension reads; verified before Prime starts.

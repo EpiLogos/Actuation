@@ -2,7 +2,7 @@
  "schema": "actuation.distribution-source-record/v1",
  "name": "ql-native-agent",
  "version": "0.3.3",
- "role": "Pi package carrying the shared native QL extension (ql_project_event, ql_decision_frame, ql_harmonic_read, ql_decide, ql_validate_determination, ql_invoke) and its Skills. The same extensions/ql-agent.ts is loaded into Prime by distribution/prime-epi.",
+ "role": "Pi package carrying the shared native QL extension (ql_project_event, ql_decision_frame, ql_harmonic_read, ql_decide, ql_validate_determination, ql_invoke) and its Skills. The same extensions/ql-agent.ts is loaded into Prime by the Epi Prime distribution (EpiLogos/Epi-Prime, which vendors a pinned copy of skills/ql-agent-reading).",
  "source_of_record": "This directory, from the commit that introduced it. Before it, the extension source existed only as installed, content-addressed material.",
  "copied_from": {
   "path": "~/.workcell/tools/ql-agent/pi-packages/aikit/f6d2aa93fede9b9fc6fb07fc346dbcfcb299d99da0b21c307d7536fa49d462c3",
