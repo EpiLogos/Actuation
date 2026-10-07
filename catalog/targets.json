@@ -1,6 +1,6 @@
 {
   "schema": "actuation.native-catalog/v1",
-  "catalog_revision": 19,
+  "catalog_revision": 20,
   "descriptors": [
     {
       "schema": "actuation.harness-detection/v1",
@@ -1758,57 +1758,69 @@
       "schema": "actuation.harness-capability-gap/v1",
       "document": "capability-gap",
       "harness_slug": "gemini-antigravity",
-      "summary": "Antigravity agent inside the gemini config tree; detected only",
-      "reason": "No capability descriptor authored at diagnosis (2026-09-14): the antigravity agent's native surface is unobserved beyond detection; AIKit's admission rides the detection record only and projects nothing into the harness.",
+      "summary": "Antigravity agent inside the gemini config tree; detected only; capability census unauthored",
+      "reason": "No capability descriptor authored (diagnosis 2026-09-14; still unauthored as of catalog r20): the antigravity agent's native event, blocking, context-injection and wake surfaces remain unobserved, so no descriptor can be invented. The 2026-09-14 phrasing that AIKit's admission 'rides the detection record only and projects nothing' is no longer true: AIKit's antigravity adapter joins the client-status roster and plans a projection seam (aikit:clients/antigravity.rs; roster join ai-kit fix/client-status-overlays, 2026-10-06). The census, not the adapter, is the missing piece.",
       "evidence_refs": [
         "aikit:clients/antigravity.rs admission (ai-kit#186, closed 2026-09-08)",
         "survey:local-machine-2026-09-05",
-        "diagnosis:harness-capability-coverage-2026-09-14"
+        "diagnosis:harness-capability-coverage-2026-09-14",
+        "aikit:aikit-cli/src/client.rs client-status roster (antigravity overlay; parity guard every_harness_client_effects_arm_resolves_detail_ground)",
+        "ai-kit:fix/client-status-overlays (2026-10-06): effects-dispatch adapters joined the roster surface"
       ],
       "provenance": {
-        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "authored_by": "zcode:harness-wiring-20261006 (gap-truth refresh: adapter existence no longer denied; census still unauthored), 2026-10-06",
         "source_refs": [
-          "diagnosis:harness-capability-coverage-2026-09-14"
+          "diagnosis:harness-capability-coverage-2026-09-14",
+          "aikit:aikit-cli/src/client.rs client-status roster (antigravity overlay; parity guard every_harness_client_effects_arm_resolves_detail_ground)",
+          "ai-kit:fix/client-status-overlays (2026-10-06): effects-dispatch adapters joined the roster surface"
         ],
-        "catalog_revision": 7
+        "catalog_revision": 20
       }
     },
     {
       "schema": "actuation.harness-capability-gap/v1",
       "document": "capability-gap",
       "harness_slug": "hermes",
-      "summary": "Hermes agent harness; no adapter, no observed dispatch surface",
-      "reason": "No capability descriptor authored and no AIKit adapter exists at diagnosis (2026-09-14); detection provenance is the 2026-09-05 machine survey only, and no event/blocking surface has been observed.",
+      "summary": "Hermes; capability census unauthored; AIKit adapter exists and joins the roster",
+      "reason": "No capability descriptor authored (diagnosis 2026-09-14; still unauthored as of catalog r20): Hermes's native event, blocking, context-injection and wake surfaces remain unobserved. The 2026-09-14 statement that no AIKit adapter exists is no longer true: AIKit carries HermesAdapter (aikit:clients/hermes.rs) and it joins the client-status roster (roster join ai-kit fix/client-status-overlays, 2026-10-06). The declared gap is the unauthored census, nothing else.",
       "evidence_refs": [
         "survey:local-machine-2026-09-05",
         "aikit:clients/ contains no hermes adapter at diagnosis 2026-09-14",
-        "diagnosis:harness-capability-coverage-2026-09-14"
+        "diagnosis:harness-capability-coverage-2026-09-14",
+        "aikit:clients/hermes.rs HermesAdapter (admission + projection seam)",
+        "ai-kit:fix/client-status-overlays (2026-10-06): roster join and effects-dispatch parity guard"
       ],
       "provenance": {
-        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "authored_by": "zcode:harness-wiring-20261006 (gap-truth refresh: adapter existence no longer denied; census still unauthored), 2026-10-06",
         "source_refs": [
-          "diagnosis:harness-capability-coverage-2026-09-14"
+          "diagnosis:harness-capability-coverage-2026-09-14",
+          "aikit:clients/hermes.rs HermesAdapter (admission + projection seam)",
+          "ai-kit:fix/client-status-overlays (2026-10-06): roster join and effects-dispatch parity guard"
         ],
-        "catalog_revision": 7
+        "catalog_revision": 20
       }
     },
     {
       "schema": "actuation.harness-capability-gap/v1",
       "document": "capability-gap",
       "harness_slug": "hermes-acp",
-      "summary": "Hermes ACP bridge; no adapter, no observed dispatch surface",
-      "reason": "No capability descriptor authored and no AIKit adapter exists at diagnosis (2026-09-14); the acp-bridge edition shares the hermes config tree, so whatever is true of hermes detection is true here, and no event/blocking surface has been observed for either.",
+      "summary": "Hermes acp-bridge edition; capability census unauthored; AIKit ACP adapter exists and joins the roster",
+      "reason": "No capability descriptor authored (diagnosis 2026-09-14; still unauthored as of catalog r20): the acp-bridge edition shares the hermes config tree, and its native event, blocking, context-injection and wake surfaces remain unobserved. The 2026-09-14 statement that no AIKit adapter exists is no longer true: AIKit carries the ACP face of HermesAdapter (HermesAdapter::acp, aikit:clients/hermes.rs) and it joins the client-status roster (roster join ai-kit fix/client-status-overlays, 2026-10-06). The declared gap is the unauthored census, nothing else.",
       "evidence_refs": [
         "survey:local-machine-2026-09-05",
         "aikit:clients/ contains no hermes-acp adapter at diagnosis 2026-09-14",
-        "diagnosis:harness-capability-coverage-2026-09-14"
+        "diagnosis:harness-capability-coverage-2026-09-14",
+        "aikit:clients/hermes.rs HermesAdapter::acp (ACP face)",
+        "ai-kit:fix/client-status-overlays (2026-10-06): roster join and effects-dispatch parity guard"
       ],
       "provenance": {
-        "authored_by": "O:I capability-coverage closure (catalog r7), 2026-09-15",
+        "authored_by": "zcode:harness-wiring-20261006 (gap-truth refresh: adapter existence no longer denied; census still unauthored), 2026-10-06",
         "source_refs": [
-          "diagnosis:harness-capability-coverage-2026-09-14"
+          "diagnosis:harness-capability-coverage-2026-09-14",
+          "aikit:clients/hermes.rs HermesAdapter::acp (ACP face)",
+          "ai-kit:fix/client-status-overlays (2026-10-06): roster join and effects-dispatch parity guard"
         ],
-        "catalog_revision": 7
+        "catalog_revision": 20
       }
     },
     {
