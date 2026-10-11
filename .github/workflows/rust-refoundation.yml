@@ -37,7 +37,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
-      - name: Native constitutional domain, executable parity and CLI cutover
+      - name: Native constitutional domain, executable parity, process custody and CLI cutover
+        env:
+          ACTUATION_NATIVE_REQUESTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
         shell: bash
         run: |
           bash scripts/migration/verify-native.sh native-evidence
@@ -48,3 +50,6 @@ jobs:
           path: native-evidence/
           if-no-files-found: error
           retention-days: 30
+          # Only controlled ordinary evidence and actual image copies. Original
+          # retained fixtures/private captures are outside this upload root.
+          include-hidden-files: true

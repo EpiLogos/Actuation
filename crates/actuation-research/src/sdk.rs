@@ -163,8 +163,8 @@ impl NativeSdkBody {
             .ok_or_else(|| Error::new("SDK has not started"))?;
         let reply = client.exchange(command, time)?;
         if reply["command"] != expected {
-            client.stop();
-            return Err(Error::new("SDK reply requires exact operation correlation"));
+            return Err(client
+                .finish_after_error(Error::new("SDK reply requires exact operation correlation")));
         }
         if reply["success"] != true {
             return Err(Error::new("SDK refused operation; response retained"));
@@ -240,13 +240,27 @@ impl ModelBody for NativeSdkBody {
                 }
             }
         };
-        let records = if let Some(client) = &mut self.client {
-            client.stop();
-            json!(client.records())
+        let (records, retirement, retirement_error) = if let Some(client) = &mut self.client {
+            let finish = client.finish();
+            let error = finish.err();
+            let facts = error.as_ref().and_then(crate::process::failure_details);
+            let retirement = match facts {
+                Some(facts) => facts,
+                None => json!({"observation":client.retirement_observation()}),
+            };
+            (json!(client.records()), retirement, error)
         } else {
-            json!([])
+            (json!([]), Value::Null, None)
         };
-        let receipt = json!({"schema":"actuation.sdk-session/v1","status":status,
+        if let Some(error) = &retirement_error {
+            self.failures
+                .push(json!({"operation":"native_finish","error":error.to_string()}));
+        }
+        // A completed semantic reply remains data even when physical retirement
+        // fails. The top-level status must not acknowledge clean completion.
+        let receipt = json!({"schema":"actuation.sdk-session/v1",
+            "status":if retirement_error.is_some(){"failed"}else{status},
+            "finalization_status":status,"process_retirement":retirement,
             "preflight":self.preflight,"responses":records,"failures":self.failures,
             "finalization":finalization,"provider_evidence":"not-assessed","human_acceptance":false});
         self.finished = Some(receipt.clone());
@@ -375,5 +389,101 @@ mod tests {
         relative.program = "true".into();
         assert!(NativeSdkBody::new(relative, cfg.clone(), json!({}), true, 1_000).is_err());
         assert!(NativeSdkBody::new(spec, cfg, json!({}), true, 1_000).is_ok());
+    }
+}
+
+#[cfg(all(test, any(target_os = "linux", target_os = "macos")))]
+mod native_finish_tests {
+    use super::*;
+    use crate::process::{
+        native_retirement_tests::{external_reap, Fixture},
+        retirement_checkpoint,
+    };
+
+    fn body(fixture: &Fixture) -> NativeSdkBody {
+        let spec = fixture.script(
+            r#"#!/bin/sh
+read -r request
+printf '%s\n' '{"type":"response","id":"actuation-prime-1","command":"preflight","success":true,"data":{"ready":true,"provider":"actual-test-specimen","model":"actual-test-specimen"}}'
+read -r request
+printf '%s\n' '{"type":"response","id":"actuation-prime-2","command":"complete","success":true,"data":{"output":"{\"content\":\"actual-native-completion\",\"capabilityCalls\":[]}"}}'
+read -r request
+printf '%s\n' '{"type":"response","id":"actuation-prime-3","command":"finalize","success":true,"data":{"retained_semantic_data":"PRIVATE-FINALIZATION-CANARY"}}'
+exit 0
+"#,
+            1000, 4096,
+        );
+        let mut body = NativeSdkBody::new(
+            spec,
+            json!({"provider":"actual-test-specimen","model":"actual-test-specimen"}),
+            json!({"source":"owned-native-fixture"}),
+            true,
+            2000,
+        )
+        .unwrap();
+        let completion = body.complete(&json!({
+            "request":{"input":"actual controlled native completion","successConditions":["reply observed"]},
+            "payload":{},"capabilities":["read_file"]
+        })).unwrap();
+        assert_eq!(completion["content"], "actual-native-completion");
+        assert_eq!(body.preflight["ready"], true);
+        body
+    }
+
+    #[test]
+    fn sdk_completed_native_finalize_keeps_data_and_known_retirement() {
+        let fixture = Fixture::new();
+        let mut body = body(&fixture);
+        let receipt = body.finish(&json!({"observed":"actual-owned-fixture"}));
+        assert_eq!(receipt["status"], "completed");
+        assert_eq!(receipt["finalization_status"], "completed");
+        assert_eq!(
+            receipt["finalization"]["retained_semantic_data"],
+            "PRIVATE-FINALIZATION-CANARY"
+        );
+        assert_eq!(
+            receipt["process_retirement"]["observation"]["direct_child_reaped"],
+            true
+        );
+        assert_eq!(
+            receipt["process_retirement"]["observation"]["reply_observed"],
+            true
+        );
+        assert_eq!(body.finish(&json!({"different":"not-replayed"})), receipt);
+        assert_eq!(receipt["responses"].as_array().unwrap().len(), 3);
+        fixture.record(json!({"status":receipt["status"],
+            "observation":receipt["process_retirement"]["observation"]}));
+        drop(body);
+        fixture.dispose_after_known_retirement();
+    }
+
+    #[test]
+    fn sdk_completed_native_finalize_does_not_acknowledge_lost_retirement() {
+        let fixture = Fixture::new();
+        let mut body = body(&fixture);
+        retirement_checkpoint(external_reap);
+        let receipt = body.finish(&json!({"observed":"actual-owned-fixture"}));
+        assert_eq!(receipt["status"], "failed");
+        assert_eq!(receipt["finalization_status"], "completed");
+        assert_eq!(
+            receipt["finalization"]["retained_semantic_data"],
+            "PRIVATE-FINALIZATION-CANARY"
+        );
+        let facts = &receipt["process_retirement"];
+        assert_eq!(facts["observation"]["reply_observed"], true);
+        assert_eq!(facts["observation"]["signal_forbidden"], true);
+        assert_eq!(facts["observation"]["direct_child_reaped"], false);
+        assert_eq!(facts["observation"]["kill_signal_attempted"], false);
+        assert!(facts["secondary"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|cause| cause["io"]["raw_os_error"] == rustix::io::Errno::CHILD.raw_os_error()));
+        assert!(!facts.to_string().contains("PRIVATE"));
+        assert_eq!(receipt["responses"].as_array().unwrap().len(), 3);
+        assert_eq!(body.finish(&json!({"different":"no-replay"})), receipt);
+        fixture.record(facts.clone());
+        drop(body);
+        // Unknown native owner retirement retains the already-created fixture.
     }
 }
