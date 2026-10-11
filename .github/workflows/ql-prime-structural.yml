@@ -128,7 +128,7 @@ jobs:
               rows.append({'role':label,'source_revision':revision,'tree':tree,'source_archive_sha256':sha(archive),'cargo_lock_sha256':sha(lock),'source_root':str(repo)})
           sdk=w/'actuation-source/experiments/ql-runtime/prime/skills/ql-relational/src/ql_relational/__init__.py'
           driver=w/'actuation-source/experiments/ql-runtime/prime/tests/central_now_handoff_native.py'
-          if sha(sdk)!='01d2df70d8e0cf8718be213f0ef0bd35fc793a85e4423183bc9af6252e7f1e75' or sha(driver)!='48c86f8bc9a778911266615fd6ed0e09e11a3bc347b5fe27abf394c4086276e7':raise SystemExit('Actual frozen consumer source required')
+          if sha(sdk)!='e59d0c20c511dff4aad42685ea65a6a530524f30024906be0ee22391b2848ce6' or sha(driver)!='48c86f8bc9a778911266615fd6ed0e09e11a3bc347b5fe27abf394c4086276e7':raise SystemExit('Actual frozen consumer source required')
           helper=w/'actuation-source/experiments/ql-runtime/prime/tests/central_now_handoff_capture.rs'
           overlay=w/'aikit-capture/crates/aikit-adapters/examples/central_now_handoff_capture.rs'
           if os.path.lexists(overlay):raise SystemExit('Test overlay must not replace native source')
