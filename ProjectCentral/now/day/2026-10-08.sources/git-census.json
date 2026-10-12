@@ -1,0 +1,323 @@
+{
+  "attention": [
+    {
+      "kind": "detached_head",
+      "path": "/Users/admin/Central/worktrees/env-1/actuation",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": null,
+      "kind": "unattributed_worktree",
+      "path": "/Users/admin/Central/worktrees/env-1/actuation",
+      "repo": "Work/Actuation"
+    },
+    {
+      "kind": "detached_head",
+      "path": "/Users/admin/Central/worktrees/env-2/actuation",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": null,
+      "kind": "unattributed_worktree",
+      "path": "/Users/admin/Central/worktrees/env-2/actuation",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "feat/agent-self-acquaintance-20261007",
+      "kind": "unattributed_worktree",
+      "path": "/Users/admin/Central/worktrees/env-3/actuation",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "cleanup/retire-node-oracle-2026-09-22",
+      "checked_out": false,
+      "kind": "local_only_branch",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "cleanup/retire-node-oracle-2026-09-22",
+      "days_idle": 15,
+      "kind": "stale_branch",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "cutover/epi-prime-channel-20260923",
+      "checked_out": false,
+      "kind": "local_only_branch",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "cutover/epi-prime-channel-20260923",
+      "days_idle": 14,
+      "kind": "stale_branch",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "epi-prime-ql/spec-complete-20260923",
+      "checked_out": false,
+      "kind": "local_only_branch",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "epi-prime-ql/spec-complete-20260923",
+      "days_idle": 15,
+      "kind": "stale_branch",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "feat/agent-self-acquaintance-20261007",
+      "checked_out": true,
+      "kind": "local_only_branch",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "feat/central-field-actuation",
+      "checked_out": false,
+      "kind": "local_only_branch",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "feat/command-inventory-20260929",
+      "checked_out": false,
+      "kind": "local_only_branch",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "feat/epi-world-native-body-20261001",
+      "checked_out": false,
+      "kind": "local_only_branch",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "feat/harness-capability-descriptors",
+      "checked_out": false,
+      "kind": "local_only_branch",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "fix/oi65-adapter-acceptance-20260922",
+      "checked_out": false,
+      "kind": "local_only_branch",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "fix/oi65-adapter-acceptance-20260922",
+      "days_idle": 15,
+      "kind": "stale_branch",
+      "repo": "Work/Actuation"
+    },
+    {
+      "branch": "record-state/fold-20261008",
+      "checked_out": false,
+      "kind": "local_only_branch",
+      "repo": "Work/Actuation"
+    }
+  ],
+  "generated_at": "2026-10-08T23:00:40.601118+00:00",
+  "repos": [
+    {
+      "bare": false,
+      "branches": [
+        {
+          "ahead": null,
+          "behind": null,
+          "checked_out_in": [],
+          "last_commit_at": "2026-09-23T10:02:49+01:00",
+          "local_only": true,
+          "name": "cleanup/retire-node-oracle-2026-09-22",
+          "upstream": "origin/cleanup/retire-node-oracle-2026-09-22"
+        },
+        {
+          "ahead": null,
+          "behind": null,
+          "checked_out_in": [],
+          "last_commit_at": "2026-09-24T23:09:28+01:00",
+          "local_only": true,
+          "name": "cutover/epi-prime-channel-20260923",
+          "upstream": "origin/cutover/epi-prime-channel-20260923"
+        },
+        {
+          "ahead": null,
+          "behind": null,
+          "checked_out_in": [],
+          "last_commit_at": "2026-09-23T10:02:49+01:00",
+          "local_only": true,
+          "name": "epi-prime-ql/spec-complete-20260923",
+          "upstream": "origin/epi-prime-ql/spec-complete-20260923"
+        },
+        {
+          "ahead": 4,
+          "behind": 2,
+          "checked_out_in": [
+            "/Users/admin/Central/worktrees/env-3/actuation"
+          ],
+          "last_commit_at": "2026-10-07T15:39:36+01:00",
+          "local_only": true,
+          "name": "feat/agent-self-acquaintance-20261007",
+          "upstream": "origin/main"
+        },
+        {
+          "ahead": null,
+          "behind": null,
+          "checked_out_in": [],
+          "last_commit_at": "2026-10-07T10:14:40+01:00",
+          "local_only": true,
+          "name": "feat/central-field-actuation",
+          "upstream": "origin/feat/central-field-actuation"
+        },
+        {
+          "ahead": 2,
+          "behind": 13,
+          "checked_out_in": [],
+          "last_commit_at": "2026-10-05T09:50:18+01:00",
+          "local_only": true,
+          "name": "feat/command-inventory-20260929",
+          "upstream": "origin/main"
+        },
+        {
+          "ahead": null,
+          "behind": null,
+          "checked_out_in": [],
+          "last_commit_at": "2026-10-02T14:31:06+01:00",
+          "local_only": true,
+          "name": "feat/epi-world-native-body-20261001",
+          "upstream": "origin/feat/epi-world-native-body-20261001"
+        },
+        {
+          "ahead": null,
+          "behind": null,
+          "checked_out_in": [],
+          "last_commit_at": "2026-10-06T22:44:42+01:00",
+          "local_only": true,
+          "name": "feat/harness-capability-descriptors",
+          "upstream": "origin/feat/harness-capability-descriptors"
+        },
+        {
+          "ahead": null,
+          "behind": null,
+          "checked_out_in": [],
+          "last_commit_at": "2026-10-05T09:50:43+01:00",
+          "local_only": false,
+          "name": "feat/nara-native-speech-actor-20260927",
+          "upstream": "origin/feat/nara-native-speech-actor-20260927"
+        },
+        {
+          "ahead": null,
+          "behind": null,
+          "checked_out_in": [],
+          "last_commit_at": "2026-09-23T00:45:45+01:00",
+          "local_only": true,
+          "name": "fix/oi65-adapter-acceptance-20260922",
+          "upstream": "origin/fix/oi65-adapter-acceptance-20260922"
+        },
+        {
+          "ahead": null,
+          "behind": null,
+          "checked_out_in": [
+            "/Users/admin/Central/Work/Actuation"
+          ],
+          "last_commit_at": "2026-10-08T13:08:36+01:00",
+          "local_only": false,
+          "name": "main",
+          "upstream": "origin/main"
+        },
+        {
+          "ahead": null,
+          "behind": null,
+          "checked_out_in": [],
+          "last_commit_at": "2026-10-08T10:21:08+01:00",
+          "local_only": true,
+          "name": "record-state/fold-20261008",
+          "upstream": null
+        }
+      ],
+      "default_branch": "main",
+      "dirty_paths": null,
+      "head_branch": "main",
+      "head_sha": "e3ab00dcdcd6ce9061f8612f3f223090e8aab910",
+      "remote": "https://github.com/EpiLogos/Actuation.git",
+      "repo": "Work/Actuation",
+      "repo_root": "/Users/admin/Central/Work/Actuation",
+      "unborn": false,
+      "unmerged_tips": [
+        "cleanup/retire-node-oracle-2026-09-22",
+        "cutover/epi-prime-channel-20260923",
+        "epi-prime-ql/spec-complete-20260923",
+        "feat/agent-self-acquaintance-20261007",
+        "feat/central-field-actuation",
+        "feat/command-inventory-20260929",
+        "feat/epi-world-native-body-20261001",
+        "feat/harness-capability-descriptors",
+        "fix/oi65-adapter-acceptance-20260922",
+        "record-state/fold-20261008"
+      ],
+      "worktrees": [
+        {
+          "ahead": null,
+          "bare": false,
+          "behind": null,
+          "branch": "main",
+          "detached": false,
+          "dirty_files": 1,
+          "lane": "unattributed",
+          "last_commit_at": "2026-10-08T13:08:36+01:00",
+          "locked": false,
+          "path": "/Users/admin/Central/Work/Actuation",
+          "prunable": false
+        },
+        {
+          "ahead": null,
+          "bare": false,
+          "behind": null,
+          "branch": null,
+          "detached": true,
+          "dirty_files": 1,
+          "lane": "unattributed",
+          "last_commit_at": "2026-10-07T12:07:28+01:00",
+          "locked": false,
+          "path": "/Users/admin/Central/worktrees/env-1/actuation",
+          "prunable": false
+        },
+        {
+          "ahead": null,
+          "bare": false,
+          "behind": null,
+          "branch": null,
+          "detached": true,
+          "dirty_files": null,
+          "lane": "unattributed",
+          "last_commit_at": "2026-10-05T00:12:16+01:00",
+          "locked": false,
+          "path": "/Users/admin/Central/worktrees/env-2/actuation",
+          "prunable": false
+        },
+        {
+          "ahead": 4,
+          "bare": false,
+          "behind": 2,
+          "branch": "feat/agent-self-acquaintance-20261007",
+          "detached": false,
+          "dirty_files": 1,
+          "lane": "unattributed",
+          "last_commit_at": "2026-10-07T15:39:36+01:00",
+          "locked": false,
+          "path": "/Users/admin/Central/worktrees/env-3/actuation",
+          "prunable": false
+        }
+      ]
+    }
+  ],
+  "schema": "central.git-census/v1",
+  "scope": [
+    "Work/Actuation"
+  ],
+  "summary": {
+    "attention_items": 19,
+    "branches": 12,
+    "local_only_branches": 10,
+    "repos_censused": 1,
+    "repos_errored": 0,
+    "unattributed_worktrees": 3,
+    "worktrees": 4
+  }
+}
