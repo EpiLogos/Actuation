@@ -192,7 +192,7 @@ fn the_actuation_now_horizon_represents_every_reconciled_live_owner_carrier() {
     // day close (projectcentral.now.rollover); the next Actuation day close
     // carries these records with their day lineage, and this list is
     // reconciled again at that boundary. Reconciled 2026-10-12, when the
-    // 2026-10-08..11 day closes' carry-forward landed in git (the fold PR).
+    // 2026-10-08..12 day closes' carry-forward landed in git (the fold PRs).
     assert_eq!(
         live,
         [
