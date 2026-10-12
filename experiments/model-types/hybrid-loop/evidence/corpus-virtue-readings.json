@@ -1,0 +1,530 @@
+{
+  "schema": "actuation.model-types-corpus-virtue-readings/v1",
+  "created": "2026-10-08T23:53:03.689926+00:00",
+  "provenance": {
+    "promotion": "none",
+    "reading_class": "semantic-stochastic",
+    "instrument": "jev virtue-presence-balance (choice over nine virtues)",
+    "model_ref": "jev-latest",
+    "harness_run": "syntax/runs/jev-run-2026-10-08T23-53-03-682Z.json",
+    "corpus": "ql-form/concrescence/states.jsonl",
+    "corpus_filter": "record_id startswith determination-warranted| AND variant==intact; deduped by circuit_id",
+    "field_store": "/Users/admin/.local/state/epi-logos/field",
+    "state_composition": "verified pipeline: account[:2000] + nearest 3 relation texts[:220] + full mark table[:14000] + ninefold note"
+  },
+  "honest_limits": [
+    "no ground truth: these are instrument readings of real loop determinations, run against an empty truth file (correct=null, brier uninformative)",
+    "ninefold determinations are offset by the instrument: run records carry determination pending-human-review (readings, never the determination)",
+    "n<=13: capped sample of unique circuits, semantic-stochastic so single readings are not stable estimates"
+  ],
+  "circuits": [
+    {
+      "circuit_id": "run_938fde3eb7a9107e:c0",
+      "task_id": "S1-RESTRAINT-001",
+      "argmax_virtue": "Truth",
+      "probabilities": {
+        "Love/Peace": 0,
+        "Truth": 0.61,
+        "Openness/Creativity": 0.15,
+        "Joy/Play": 0.01,
+        "Goodness": 0.01,
+        "Beauty": 0.01,
+        "Life/Nature": 0.01,
+        "Wisdom": 0.11,
+        "Reality": 0.09
+      },
+      "top3": [
+        {
+          "virtue": "Truth",
+          "p": 0.61
+        },
+        {
+          "virtue": "Openness/Creativity",
+          "p": 0.15
+        },
+        {
+          "virtue": "Wisdom",
+          "p": 0.11
+        }
+      ],
+      "mass_gap": 0.46,
+      "confidence": 0.56,
+      "latency_ms": 281,
+      "nearest_relation_eids": [
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1534",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1502",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1530"
+      ]
+    },
+    {
+      "circuit_id": "run_8a29d9492cf5eb04:c0",
+      "task_id": "S1-SKILL-001",
+      "argmax_virtue": "Truth",
+      "probabilities": {
+        "Love/Peace": 0,
+        "Truth": 0.54,
+        "Openness/Creativity": 0.04,
+        "Joy/Play": 0,
+        "Goodness": 0.04,
+        "Beauty": 0,
+        "Life/Nature": 0,
+        "Wisdom": 0.17,
+        "Reality": 0.21
+      },
+      "top3": [
+        {
+          "virtue": "Truth",
+          "p": 0.54
+        },
+        {
+          "virtue": "Reality",
+          "p": 0.21
+        },
+        {
+          "virtue": "Wisdom",
+          "p": 0.17
+        }
+      ],
+      "mass_gap": 0.33,
+      "confidence": 0.48,
+      "latency_ms": 293,
+      "nearest_relation_eids": [
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1537",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1182",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1191"
+      ]
+    },
+    {
+      "circuit_id": "run_058005d0294e1c59:c0",
+      "task_id": "S1-AGENCY-001",
+      "argmax_virtue": "Truth",
+      "probabilities": {
+        "Love/Peace": 0,
+        "Truth": 0.71,
+        "Openness/Creativity": 0,
+        "Joy/Play": 0,
+        "Goodness": 0,
+        "Beauty": 0,
+        "Life/Nature": 0,
+        "Wisdom": 0.01,
+        "Reality": 0.28
+      },
+      "top3": [
+        {
+          "virtue": "Truth",
+          "p": 0.71
+        },
+        {
+          "virtue": "Reality",
+          "p": 0.28
+        },
+        {
+          "virtue": "Wisdom",
+          "p": 0.01
+        }
+      ],
+      "mass_gap": 0.43,
+      "confidence": 0.67,
+      "latency_ms": 257,
+      "nearest_relation_eids": [
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1080",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1141",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1358"
+      ]
+    },
+    {
+      "circuit_id": "run_89d89a2dde22926c:c0",
+      "task_id": "S1-AGENCY-001",
+      "argmax_virtue": "Goodness",
+      "probabilities": {
+        "Love/Peace": 0,
+        "Truth": 0.37,
+        "Openness/Creativity": 0,
+        "Joy/Play": 0,
+        "Goodness": 0.52,
+        "Beauty": 0,
+        "Life/Nature": 0,
+        "Wisdom": 0.01,
+        "Reality": 0.1
+      },
+      "top3": [
+        {
+          "virtue": "Goodness",
+          "p": 0.52
+        },
+        {
+          "virtue": "Truth",
+          "p": 0.37
+        },
+        {
+          "virtue": "Reality",
+          "p": 0.1
+        }
+      ],
+      "mass_gap": 0.15,
+      "confidence": 0.46,
+      "latency_ms": 246,
+      "nearest_relation_eids": [
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:931",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1141",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:808"
+      ]
+    },
+    {
+      "circuit_id": "run_0f5a5af1800e9e81:c0",
+      "task_id": "S1-CODE-001",
+      "argmax_virtue": "Truth",
+      "probabilities": {
+        "Love/Peace": 0,
+        "Truth": 0.71,
+        "Openness/Creativity": 0.02,
+        "Joy/Play": 0,
+        "Goodness": 0.02,
+        "Beauty": 0,
+        "Life/Nature": 0,
+        "Wisdom": 0.04,
+        "Reality": 0.21000000000000002
+      },
+      "top3": [
+        {
+          "virtue": "Truth",
+          "p": 0.71
+        },
+        {
+          "virtue": "Reality",
+          "p": 0.21000000000000002
+        },
+        {
+          "virtue": "Wisdom",
+          "p": 0.04
+        }
+      ],
+      "mass_gap": 0.5,
+      "confidence": 0.67,
+      "latency_ms": 234,
+      "nearest_relation_eids": [
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:900",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1183",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1425"
+      ]
+    },
+    {
+      "circuit_id": "run_06c7a3f7c6a48460:c0",
+      "task_id": "S1-CODE-001",
+      "argmax_virtue": "Truth",
+      "probabilities": {
+        "Love/Peace": 0,
+        "Truth": 0.74,
+        "Openness/Creativity": 0.01,
+        "Joy/Play": 0,
+        "Goodness": 0.01,
+        "Beauty": 0.01,
+        "Life/Nature": 0,
+        "Wisdom": 0.1,
+        "Reality": 0.13
+      },
+      "top3": [
+        {
+          "virtue": "Truth",
+          "p": 0.74
+        },
+        {
+          "virtue": "Reality",
+          "p": 0.13
+        },
+        {
+          "virtue": "Wisdom",
+          "p": 0.1
+        }
+      ],
+      "mass_gap": 0.61,
+      "confidence": 0.71,
+      "latency_ms": 237,
+      "nearest_relation_eids": [
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1425",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1514",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1537"
+      ]
+    },
+    {
+      "circuit_id": "run_f1ab8503fdfacde8:c0",
+      "task_id": "S1-EPISTEMIC-001",
+      "argmax_virtue": "Truth",
+      "probabilities": {
+        "Love/Peace": 0,
+        "Truth": 0.68,
+        "Openness/Creativity": 0.03,
+        "Joy/Play": 0,
+        "Goodness": 0,
+        "Beauty": 0,
+        "Life/Nature": 0,
+        "Wisdom": 0.12,
+        "Reality": 0.17
+      },
+      "top3": [
+        {
+          "virtue": "Truth",
+          "p": 0.68
+        },
+        {
+          "virtue": "Reality",
+          "p": 0.17
+        },
+        {
+          "virtue": "Wisdom",
+          "p": 0.12
+        }
+      ],
+      "mass_gap": 0.51,
+      "confidence": 0.64,
+      "latency_ms": 336,
+      "nearest_relation_eids": [
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1514",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1537",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1183"
+      ]
+    },
+    {
+      "circuit_id": "run_94ef14fa59f359fe:c0",
+      "task_id": "S1-RESEARCH-001",
+      "argmax_virtue": "Truth",
+      "probabilities": {
+        "Love/Peace": 0,
+        "Truth": 0.8,
+        "Openness/Creativity": 0.03,
+        "Joy/Play": 0.01,
+        "Goodness": 0.01,
+        "Beauty": 0,
+        "Life/Nature": 0,
+        "Wisdom": 0.02,
+        "Reality": 0.13
+      },
+      "top3": [
+        {
+          "virtue": "Truth",
+          "p": 0.8
+        },
+        {
+          "virtue": "Reality",
+          "p": 0.13
+        },
+        {
+          "virtue": "Openness/Creativity",
+          "p": 0.03
+        }
+      ],
+      "mass_gap": 0.67,
+      "confidence": 0.78,
+      "latency_ms": 215,
+      "nearest_relation_eids": [
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1183",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1192",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1186"
+      ]
+    },
+    {
+      "circuit_id": "run_545822e8fa8e8f1f:c0",
+      "task_id": "S1-RESEARCH-001",
+      "argmax_virtue": "Truth",
+      "probabilities": {
+        "Love/Peace": 0,
+        "Truth": 0.83,
+        "Openness/Creativity": 0.05,
+        "Joy/Play": 0.01,
+        "Goodness": 0,
+        "Beauty": 0,
+        "Life/Nature": 0,
+        "Wisdom": 0.02,
+        "Reality": 0.09
+      },
+      "top3": [
+        {
+          "virtue": "Truth",
+          "p": 0.83
+        },
+        {
+          "virtue": "Reality",
+          "p": 0.09
+        },
+        {
+          "virtue": "Openness/Creativity",
+          "p": 0.05
+        }
+      ],
+      "mass_gap": 0.74,
+      "confidence": 0.81,
+      "latency_ms": 225,
+      "nearest_relation_eids": [
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1183",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1537",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1160"
+      ]
+    },
+    {
+      "circuit_id": "run_95493d00f8b6bedd:c0",
+      "task_id": "S1-RESTRAINT-001",
+      "argmax_virtue": "Reality",
+      "probabilities": {
+        "Love/Peace": 0,
+        "Truth": 0.05,
+        "Openness/Creativity": 0,
+        "Joy/Play": 0,
+        "Goodness": 0,
+        "Beauty": 0,
+        "Life/Nature": 0,
+        "Wisdom": 0,
+        "Reality": 0.95
+      },
+      "top3": [
+        {
+          "virtue": "Reality",
+          "p": 0.95
+        },
+        {
+          "virtue": "Truth",
+          "p": 0.05
+        },
+        {
+          "virtue": "Love/Peace",
+          "p": 0
+        }
+      ],
+      "mass_gap": 0.9,
+      "confidence": 0.94,
+      "latency_ms": 230,
+      "nearest_relation_eids": [
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:939",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1508",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1136"
+      ]
+    },
+    {
+      "circuit_id": "run_124b3c4f21820642:c0",
+      "task_id": "S1-SKILL-001",
+      "argmax_virtue": "Truth",
+      "probabilities": {
+        "Love/Peace": 0,
+        "Truth": 0.62,
+        "Openness/Creativity": 0.07,
+        "Joy/Play": 0.01,
+        "Goodness": 0.02,
+        "Beauty": 0,
+        "Life/Nature": 0,
+        "Wisdom": 0.05,
+        "Reality": 0.23
+      },
+      "top3": [
+        {
+          "virtue": "Truth",
+          "p": 0.62
+        },
+        {
+          "virtue": "Reality",
+          "p": 0.23
+        },
+        {
+          "virtue": "Openness/Creativity",
+          "p": 0.07
+        }
+      ],
+      "mass_gap": 0.39,
+      "confidence": 0.57,
+      "latency_ms": 219,
+      "nearest_relation_eids": [
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1080",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1537",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1182"
+      ]
+    },
+    {
+      "circuit_id": "run_ef8c4ab3ac19b94d:c0",
+      "task_id": "S1-EPISTEMIC-001",
+      "argmax_virtue": "Truth",
+      "probabilities": {
+        "Love/Peace": 0,
+        "Truth": 0.54,
+        "Openness/Creativity": 0.01,
+        "Joy/Play": 0,
+        "Goodness": 0,
+        "Beauty": 0,
+        "Life/Nature": 0,
+        "Wisdom": 0.21,
+        "Reality": 0.24000000000000002
+      },
+      "top3": [
+        {
+          "virtue": "Truth",
+          "p": 0.54
+        },
+        {
+          "virtue": "Reality",
+          "p": 0.24000000000000002
+        },
+        {
+          "virtue": "Wisdom",
+          "p": 0.21
+        }
+      ],
+      "mass_gap": 0.3,
+      "confidence": 0.48,
+      "latency_ms": 226,
+      "nearest_relation_eids": [
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1146",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1190",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1537"
+      ]
+    },
+    {
+      "circuit_id": "run_890455f573790c96:c0",
+      "task_id": "S1-RESTRAINT-001",
+      "argmax_virtue": "Truth",
+      "probabilities": {
+        "Love/Peace": 0,
+        "Truth": 0.6,
+        "Openness/Creativity": 0.16,
+        "Joy/Play": 0.01,
+        "Goodness": 0.01,
+        "Beauty": 0.01,
+        "Life/Nature": 0.01,
+        "Wisdom": 0.11,
+        "Reality": 0.09
+      },
+      "top3": [
+        {
+          "virtue": "Truth",
+          "p": 0.6
+        },
+        {
+          "virtue": "Openness/Creativity",
+          "p": 0.16
+        },
+        {
+          "virtue": "Wisdom",
+          "p": 0.11
+        }
+      ],
+      "mass_gap": 0.44,
+      "confidence": 0.55,
+      "latency_ms": 215,
+      "nearest_relation_eids": [
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1534",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1502",
+        "5:99ac6339-9e82-4fbf-9cc6-f680133584fc:1530"
+      ]
+    }
+  ],
+  "corpus_summary": {
+    "n_circuits": 13,
+    "argmax_tally": {
+      "Truth": 11,
+      "Goodness": 1,
+      "Reality": 1
+    },
+    "mean_top_mass": 0.680769,
+    "mean_mass_gap": 0.494615
+  },
+  "usage": {
+    "input_tokens": 45957,
+    "output_tokens": 1315
+  }
+}

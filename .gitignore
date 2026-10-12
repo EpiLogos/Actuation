@@ -23,3 +23,5 @@ node_modules/
 .central/
 # Native gate evidence receipts (regenerated per run)
 native-evidence/
+
+/target

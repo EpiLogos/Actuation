@@ -1,0 +1,14 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "constitution-applied-next-tier-verified-2026-09-21",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "zcode-model-types-experiments-session-3",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1789974000,
+  "subject": "Constitution section APPLIED to epii-operative (manifest re-pinned, owner adoption recorded); next tier verified: hard-tier syntax 97% (56/58, sibling distractors), Beauty tournament 0.76 (multi-draw cracks the hard case), M1-2 layer-two parse 18/18 diagonal cells 0 mismatches vs kernel literals, corpus readings 13/13 (Truth 11/13, Love/Peace+Joy+Beauty+Life/Nature absent from loop determinations)",
+  "result": "NEXT TIER ROUND (owner: constitution + next tier). CONSTITUTION: field-instruments section appended to ~/.config/epi-logos/self/epii-operative.md at owner session direction; new sha256 6566edc89222fa50 pinned in MANIFEST with adoption provenance; Relational Logos framing intact. TIER 1 HARD-TIER SYNTAX (sibling distractors, same-parent coordinates, 58 formulations): 56/58 = 97% (chance 25%); both misses are the bare roots M0-3-2 (0) and M0-3-3 (1) — single-digit marks, the genuinely confusable pair; 9 no-sibling coordinates skipped honestly. TIER 2 BEAUTY TOURNAMENT (3 field-scored redrafts, best picked): Beauty mass 0.54/0.68/0.76 across drafts, winner 0.76 with highest resonance 0.6412 — multi-draw + field selection cracks the case single-steer could not (was 0.11). Evidence hybrid-loop/evidence/beauty-tournament.json. TIER 3 M1-2 LAYER-TWO PARSE: closed-form cells (fam0=r*c, fam1=r*c+1, DR digit-root) computed at the archetype diagonal positions against the kernel pinned literals (864 cells, Quaternal-Logic fixtures): 18/18 diagonal cells found, 0 raw mismatches — layer-two numerical relations are machine-verifiable against the kernel's own authoritative store. TIER 4 CORPUS READINGS (subagent, 13 distinct circuits, stdlib+epi-field embed): Truth argmax 11/13 (gap 0.30-0.74), Goodness 1 (AGENCY, gap 0.15 softest), Reality 1 (RESTRAINT, gap 0.90); Love/Peace, Joy/Play, Beauty, Life/Nature never argmax, never top-3. READING: the loop's determination voice is monolithically epistemic — warrant-claims about what is the case; the alignment draw is the instrument that widens that register, and the corpus now has a baseline to draw against. Evidence hybrid-loop/evidence/corpus-virtue-readings.json + jev/syntax/runs/jev-run-2026-10-08T23-53-03-682Z.json. NOTHING committed; graph read-only; every reading promotion none, pending-human-review. Follow-up agent: the frontier is now the draw applied at corpus scale (draw the corpus's Truth-monoculture toward balance where tasks warrant it, score against this baseline) + Beauty-class tournament generalisation + M1-2 parse wired into draw_align receipts.",
+  "status": "carried",
+  "carried_from_days": [
+    "2026-10-09"
+  ]
+}
