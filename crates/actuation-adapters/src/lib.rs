@@ -11,6 +11,7 @@ mod contribution;
 pub mod effects;
 mod instantiation;
 mod observation;
+pub mod probe_cache;
 pub mod secrets;
 mod speech;
 pub mod usage;

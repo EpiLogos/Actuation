@@ -411,11 +411,13 @@ fn run_detection(selected: &[String], probe_versions: bool) -> Result<Value> {
         ))
     })?;
     let mut effects = NativeEffects::from_environment()
-        .map_err(|e| Error::new(format!("harness probes unavailable: {e}")))?;
+        .map_err(|e| Error::new(format!("harness probes unavailable: {e}")))?
+        .with_default_probe_cache();
     let mut options = DetectionOptions::now(&catalog)?;
     options.probe_versions = probe_versions;
-    let record = actuation_adapters::run_detection(&descriptors, &mut effects, &options)?;
-    Ok(record.as_value().clone())
+    let record = actuation_adapters::run_detection(&descriptors, &mut effects, &options);
+    effects.save_probe_cache();
+    Ok(record?.as_value().clone())
 }
 
 pub fn harness_catalog(command: &Command) -> Result<Output> {
@@ -442,10 +444,13 @@ pub fn harness_detect(command: &Command) -> Result<Output> {
 pub fn harness_self(command: &Command) -> Result<Output> {
     let catalog = catalog()?;
     let mut effects = NativeEffects::from_environment()
-        .map_err(|e| Error::new(format!("harness probes unavailable: {e}")))?;
+        .map_err(|e| Error::new(format!("harness probes unavailable: {e}")))?
+        .with_default_probe_cache();
     let options = DetectionOptions::now(&catalog)?;
     let self_value =
-        actuation_adapters::resolve_self(catalog.descriptors(), &mut effects, None, &options)?;
+        actuation_adapters::resolve_self(catalog.descriptors(), &mut effects, None, &options);
+    effects.save_probe_cache();
+    let self_value = self_value?;
     output(
         self_value.as_value().clone(),
         command.json,
@@ -616,12 +621,16 @@ pub fn config_contribution_capability(command: &Command) -> Result<Output> {
 pub fn system_read(command: &Command) -> Result<Output> {
     let catalog = catalog()?;
     let mut effects = NativeEffects::from_environment()
-        .map_err(|e| Error::new(format!("harness probes unavailable: {e}")))?;
+        .map_err(|e| Error::new(format!("harness probes unavailable: {e}")))?
+        .with_default_probe_cache();
     let options = DetectionOptions::now(&catalog)?;
-    let detection =
-        actuation_adapters::run_detection(catalog.descriptors(), &mut effects, &options)?;
-    let self_value =
-        actuation_adapters::resolve_self(catalog.descriptors(), &mut effects, None, &options)?;
+    let observed = actuation_adapters::run_detection(catalog.descriptors(), &mut effects, &options)
+        .and_then(|detection| {
+            actuation_adapters::resolve_self(catalog.descriptors(), &mut effects, None, &options)
+                .map(|self_value| (detection, self_value))
+        });
+    effects.save_probe_cache();
+    let (detection, self_value) = observed?;
     let disclosure =
         build_system_disclosure(detection.as_value(), self_value.as_value(), now_unix_ms());
     output(disclosure, command.json, render::system)

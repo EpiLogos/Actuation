@@ -88,6 +88,9 @@ pub struct NativeEffects {
     pub(crate) timeout: Duration,
     pub(crate) http_timeout: Duration,
     http: ureq::Agent,
+    /// The basis-keyed memo of fingerprints and version answers
+    /// (probe_cache.rs), when the caller enabled one.
+    probe_cache: Option<crate::probe_cache::ProbeCache>,
 }
 impl NativeEffects {
     pub fn from_environment() -> ProbeResult<Self> {
@@ -122,6 +125,40 @@ impl NativeEffects {
             timeout: DEFAULT_PROBE_BOUND,
             http_timeout,
             http,
+            probe_cache: None,
+        }
+    }
+    /// Answer fingerprints and version probes from the memo at `path` while
+    /// each executable's basis holds (probe_cache.rs); `save_probe_cache`
+    /// writes it back.
+    pub fn with_probe_cache(mut self, path: PathBuf) -> Self {
+        self.probe_cache = Some(crate::probe_cache::ProbeCache::load(path));
+        self
+    }
+    /// Actuation's own memo, `~/.actuation/probe-cache.json`, unless
+    /// `ACTUATION_PROBE_CACHE` is `off` (or names another file).
+    pub fn with_default_probe_cache(self) -> Self {
+        let path = match self
+            .environment
+            .get("ACTUATION_PROBE_CACHE")
+            .map(String::as_str)
+        {
+            Some("off") => return self,
+            Some(path) if !path.is_empty() => Some(PathBuf::from(path)),
+            _ => self
+                .home
+                .as_ref()
+                .map(|home| home.join(".actuation/probe-cache.json")),
+        };
+        match path {
+            Some(path) => self.with_probe_cache(path),
+            None => self,
+        }
+    }
+    /// Write the memo back if this run changed it. Never fails the caller.
+    pub fn save_probe_cache(&mut self) {
+        if let Some(cache) = self.probe_cache.as_mut() {
+            cache.save();
         }
     }
     pub fn with_process_timeout(mut self, timeout: Duration) -> Self {
@@ -227,49 +264,14 @@ impl ProbeEffects for NativeEffects {
         }
     }
     fn hash(&mut self, path: &str) -> ProbeResult<String> {
-        // O_NONBLOCK prevents a substituted FIFO from hanging a metadata
-        // probe. Executable symlinks remain valid; inspect the opened target.
-        let mut options = fs::OpenOptions::new();
-        options.read(true);
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::OpenOptionsExt;
-            options.custom_flags(libc::O_NONBLOCK);
-        }
-        let mut f = options.open(path).map_err(|e| e.to_string())?;
-        let metadata = f.metadata().map_err(|e| e.to_string())?;
-        if !metadata.is_file() {
-            return Err("fingerprint requires a regular file".into());
-        }
-        const LIMIT: u64 = 1024 * 1024 * 1024;
-        if metadata.len() > LIMIT {
-            return Err("executable exceeds fingerprint budget".into());
-        }
-        let start = Instant::now();
-        let mut h = Sha256::new();
-        let mut b = [0_u8; 65536];
-        let mut bytes = 0_u64;
-        loop {
-            let n = f.read(&mut b).map_err(|e| e.to_string())?;
-            if n == 0 {
-                break;
+        match self.probe_cache.take() {
+            Some(mut cache) => {
+                let answer = cache.fingerprint(path, || self.hash_uncached(path));
+                self.probe_cache = Some(cache);
+                answer
             }
-            bytes += n as u64;
-            if bytes > LIMIT {
-                return Err("executable fingerprint budget exhausted".into());
-            }
-            if start.elapsed() > self.timeout {
-                return Err(format!(
-                    "executable fingerprint timed out after {}",
-                    bound_text(self.timeout)
-                ));
-            }
-            h.update(&b[..n]);
+            None => self.hash_uncached(path),
         }
-        if bytes != metadata.len() {
-            return Err("executable changed during fingerprint observation".into());
-        }
-        Ok(format!("{:x}", h.finalize()))
     }
     fn directory_count(&mut self, path: &str) -> ProbeResult<Option<usize>> {
         let entries = match fs::read_dir(path) {
@@ -347,24 +349,14 @@ impl ProbeEffects for NativeEffects {
         }
     }
     fn version(&mut self, path: &str, args: &[String]) -> ProbeResult<String> {
-        let run = self.process(path, args, 64 * 1024)?;
-        if run.code != Some(0) {
-            // The target ran and refused the probe; the detection read model
-            // names this outcome `refused`.
-            let code = run
-                .code
-                .map(|c| c.to_string())
-                .unwrap_or_else(|| "signal".into());
-            return Err(format!("exit {code}"));
+        match self.probe_cache.take() {
+            Some(mut cache) => {
+                let answer = cache.version(path, args, || self.version_uncached(path, args));
+                self.probe_cache = Some(cache);
+                answer
+            }
+            None => self.version_uncached(path, args),
         }
-        let stdout = String::from_utf8_lossy(&run.stdout);
-        let line = stdout
-            .trim()
-            .lines()
-            .next()
-            .filter(|s| !s.is_empty())
-            .unwrap_or("(no output)");
-        Ok(line.chars().take(120).collect())
     }
     fn http_json(&mut self, url: &str) -> ProbeResult<Value> {
         let mut response = self.request(url)?;
@@ -389,6 +381,77 @@ impl ProbeEffects for NativeEffects {
             return Err("file inventory exceeds read budget".into());
         }
         fs::read_to_string(path).map_err(|e| format!("file read failed: {e}"))
+    }
+}
+
+impl NativeEffects {
+    /// The fingerprint as observed: the opened target's bytes, bounded.
+    fn hash_uncached(&self, path: &str) -> ProbeResult<String> {
+        // O_NONBLOCK prevents a substituted FIFO from hanging a metadata
+        // probe. Executable symlinks remain valid; inspect the opened target.
+        let mut options = fs::OpenOptions::new();
+        options.read(true);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            options.custom_flags(libc::O_NONBLOCK);
+        }
+        let mut f = options.open(path).map_err(|e| e.to_string())?;
+        let metadata = f.metadata().map_err(|e| e.to_string())?;
+        if !metadata.is_file() {
+            return Err("fingerprint requires a regular file".into());
+        }
+        const LIMIT: u64 = 1024 * 1024 * 1024;
+        if metadata.len() > LIMIT {
+            return Err("executable exceeds fingerprint budget".into());
+        }
+        let start = Instant::now();
+        let mut h = Sha256::new();
+        let mut b = [0_u8; 65536];
+        let mut bytes = 0_u64;
+        loop {
+            let n = f.read(&mut b).map_err(|e| e.to_string())?;
+            if n == 0 {
+                break;
+            }
+            bytes += n as u64;
+            if bytes > LIMIT {
+                return Err("executable fingerprint budget exhausted".into());
+            }
+            if start.elapsed() > self.timeout {
+                return Err(format!(
+                    "executable fingerprint timed out after {}",
+                    bound_text(self.timeout)
+                ));
+            }
+            h.update(&b[..n]);
+        }
+        if bytes != metadata.len() {
+            return Err("executable changed during fingerprint observation".into());
+        }
+        Ok(format!("{:x}", h.finalize()))
+    }
+
+    /// The version probe as observed: one bounded run of the target.
+    fn version_uncached(&self, path: &str, args: &[String]) -> ProbeResult<String> {
+        let run = self.process(path, args, 64 * 1024)?;
+        if run.code != Some(0) {
+            // The target ran and refused the probe; the detection read model
+            // names this outcome `refused`.
+            let code = run
+                .code
+                .map(|c| c.to_string())
+                .unwrap_or_else(|| "signal".into());
+            return Err(format!("exit {code}"));
+        }
+        let stdout = String::from_utf8_lossy(&run.stdout);
+        let line = stdout
+            .trim()
+            .lines()
+            .next()
+            .filter(|s| !s.is_empty())
+            .unwrap_or("(no output)");
+        Ok(line.chars().take(120).collect())
     }
 }
 
