@@ -25,6 +25,7 @@ fn io<T>(result: std::io::Result<T>) -> Result<T> {
 }
 
 pub const AUTHORITY_EVENT_VERSION: &str = "actuation.authority-event/v1";
+pub const AUTHORITY_LISTING_VERSION: &str = "actuation.local-authority-listing/v1";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "op", rename_all = "kebab-case")]
@@ -54,6 +55,35 @@ pub struct AuthorityState {
 pub struct AuthorityRevocation {
     pub at_unix_seconds: u64,
     pub reason: String,
+}
+
+/// One issued source in a listing: the source ref its own record names, and
+/// the folded state exactly as `read` gives it.
+#[derive(Debug, Clone, Serialize)]
+pub struct ListedAuthority {
+    pub authority_source_ref: String,
+    #[serde(flatten)]
+    pub state: AuthorityState,
+}
+
+/// A source file that cannot be folded, or whose record does not name the
+/// source its file holds. Listed with the reason, never dropped.
+#[derive(Debug, Clone, Serialize)]
+pub struct InvalidAuthoritySource {
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub authority_source_ref: Option<String>,
+    pub error: String,
+}
+
+/// `actuation.local-authority-listing/v1`: every source in the store,
+/// uncapped, revoked ones included (a revocation is part of the record).
+#[derive(Debug, Clone, Serialize)]
+pub struct AuthorityListing {
+    pub schema: &'static str,
+    pub store: String,
+    pub authorities: Vec<ListedAuthority>,
+    pub invalid: Vec<InvalidAuthoritySource>,
 }
 
 pub struct AuthorityStore {
@@ -138,8 +168,16 @@ impl AuthorityStore {
 
     /// Read a source's raw events. The caller holds the appropriate lock.
     fn read_events_unlocked(&self, authority_source_ref: &str) -> Result<Vec<AuthorityEvent>> {
-        let path = self.path(authority_source_ref);
-        let mut file = match Self::file_options().read(true).open(&path) {
+        Self::read_events_at(&self.path(authority_source_ref), authority_source_ref)
+    }
+
+    /// Read one source file's raw events; `authority_source_ref` names it in
+    /// errors. The caller holds the appropriate lock.
+    fn read_events_at(
+        path: &std::path::Path,
+        authority_source_ref: &str,
+    ) -> Result<Vec<AuthorityEvent>> {
+        let mut file = match Self::file_options().read(true).open(path) {
             Ok(file) => file,
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
             Err(e) => {
@@ -279,10 +317,92 @@ impl AuthorityStore {
 
     /// The fold itself, under a lock the caller already holds.
     fn read_unlocked(&self, authority_source_ref: &str) -> Result<Option<AuthorityState>> {
+        Ok(Self::fold(self.read_events_unlocked(authority_source_ref)?))
+    }
+
+    /// Every source in the store, uncapped, in source-ref order. Each file
+    /// folds exactly as `read` folds it; a file that cannot be folded, holds
+    /// no issue, or whose record names a source that is not the one its file
+    /// holds is listed under `invalid` with its reason. An absent store lists
+    /// nothing.
+    pub fn list(&self) -> Result<AuthorityListing> {
+        let mut listing = AuthorityListing {
+            schema: AUTHORITY_LISTING_VERSION,
+            store: self.root.display().to_string(),
+            authorities: Vec::new(),
+            invalid: Vec::new(),
+        };
+        let Some(_lock) = self.lock(false)? else {
+            return Ok(listing);
+        };
+        let mut paths = Vec::new();
+        for entry in io(fs::read_dir(&self.root))? {
+            let path = io(entry)?.path();
+            if path.extension().is_some_and(|ext| ext == "jsonl") {
+                paths.push(path);
+            }
+        }
+        paths.sort();
+        for path in paths {
+            let shown = path.display().to_string();
+            let stem = path
+                .file_stem()
+                .map(|stem| stem.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            let state = match Self::read_events_at(&path, &stem).map(Self::fold) {
+                Ok(Some(state)) => state,
+                Ok(None) => {
+                    listing.invalid.push(InvalidAuthoritySource {
+                        path: shown,
+                        authority_source_ref: None,
+                        error: "the source file holds no issue, so it names no authority".into(),
+                    });
+                    continue;
+                }
+                Err(error) => {
+                    listing.invalid.push(InvalidAuthoritySource {
+                        path: shown,
+                        authority_source_ref: None,
+                        error: error.to_string(),
+                    });
+                    continue;
+                }
+            };
+            let named = state
+                .record
+                .get("authority_source_ref")
+                .and_then(Value::as_str)
+                .map(str::to_owned);
+            match named {
+                Some(source) if sanitize_source_ref(&source) == stem => {
+                    listing.authorities.push(ListedAuthority {
+                        authority_source_ref: source,
+                        state,
+                    })
+                }
+                named => listing.invalid.push(InvalidAuthoritySource {
+                    path: shown,
+                    error: match &named {
+                        Some(_) => "the record names a source that is not the one its file holds",
+                        None => "the record names no authority_source_ref",
+                    }
+                    .into(),
+                    authority_source_ref: named,
+                }),
+            }
+        }
+        listing
+            .authorities
+            .sort_by(|left, right| left.authority_source_ref.cmp(&right.authority_source_ref));
+        Ok(listing)
+    }
+
+    /// The fold of one source's events into its current state.
+    fn fold(events: Vec<AuthorityEvent>) -> Option<AuthorityState> {
         let mut record = None;
         let mut issued_at = None;
         let mut revoked = None;
-        for event in self.read_events_unlocked(authority_source_ref)? {
+        for event in events {
             match event {
                 AuthorityEvent::Issue {
                     at_unix_seconds,
@@ -304,14 +424,14 @@ impl AuthorityStore {
                 }
             }
         }
-        Ok(match (record, issued_at) {
+        match (record, issued_at) {
             (Some(record), Some(issued_at_unix_seconds)) => Some(AuthorityState {
                 record,
                 issued_at_unix_seconds,
                 revoked,
             }),
             _ => None,
-        })
+        }
     }
 }
 
@@ -529,6 +649,86 @@ mod tests {
         assert!(state.revoked.is_none());
         let lines = intact_lines(&store, "authority-source:contended");
         assert_eq!(lines.len(), 1, "only the winning issue is on disk");
+    }
+
+    #[test]
+    fn list_folds_every_source_revoked_ones_included() {
+        let (_dir, store) = temp_store("list");
+        assert!(
+            store.list().unwrap().authorities.is_empty(),
+            "an absent store lists nothing"
+        );
+        store
+            .issue(
+                "authority-source:b",
+                1726300001,
+                serde_json::json!({"authority_source_ref": "authority-source:b", "holder": "human:owner"}),
+            )
+            .unwrap();
+        store
+            .issue(
+                "authority-source:a",
+                1726300000,
+                serde_json::json!({"authority_source_ref": "authority-source:a", "holder": "human:owner"}),
+            )
+            .unwrap();
+        store
+            .revoke("authority-source:b", 1726300009, "owner withdrawal".into())
+            .unwrap();
+        let listing = store.list().unwrap();
+        assert_eq!(listing.schema, AUTHORITY_LISTING_VERSION);
+        assert!(listing.invalid.is_empty(), "{:?}", listing.invalid);
+        let refs: Vec<&str> = listing
+            .authorities
+            .iter()
+            .map(|listed| listed.authority_source_ref.as_str())
+            .collect();
+        assert_eq!(refs, ["authority-source:a", "authority-source:b"]);
+        assert!(listing.authorities[0].state.revoked.is_none());
+        let revoked = listing.authorities[1].state.revoked.as_ref().unwrap();
+        assert_eq!(revoked.reason, "owner withdrawal");
+        // Each listed state is exactly what `read` folds.
+        let read = store.read("authority-source:b").unwrap().unwrap();
+        assert_eq!(
+            serde_json::to_value(&listing.authorities[1].state).unwrap(),
+            serde_json::to_value(&read).unwrap()
+        );
+    }
+
+    #[test]
+    fn list_names_a_source_it_cannot_fold_instead_of_dropping_it() {
+        let (_dir, store) = temp_store("list-invalid");
+        store
+            .issue(
+                "authority-source:good",
+                1726300000,
+                serde_json::json!({"authority_source_ref": "authority-source:good"}),
+            )
+            .unwrap();
+        std::fs::write(store.root.join("torn.jsonl"), "{not json\n").unwrap();
+        // A record whose own ref is not the source its file holds.
+        store
+            .issue(
+                "authority-source:here",
+                1726300000,
+                serde_json::json!({"authority_source_ref": "authority-source:elsewhere"}),
+            )
+            .unwrap();
+        std::fs::write(store.root.join("notes.txt"), "not a source").unwrap();
+        let listing = store.list().unwrap();
+        assert_eq!(listing.authorities.len(), 1);
+        assert_eq!(
+            listing.authorities[0].authority_source_ref,
+            "authority-source:good"
+        );
+        assert_eq!(listing.invalid.len(), 2, "{:?}", listing.invalid);
+        let named: Vec<Option<&str>> = listing
+            .invalid
+            .iter()
+            .map(|invalid| invalid.authority_source_ref.as_deref())
+            .collect();
+        assert!(named.contains(&Some("authority-source:elsewhere")));
+        assert!(named.contains(&None));
     }
 
     /// O_NOFOLLOW must refuse to open a source file that is a symlink, so a

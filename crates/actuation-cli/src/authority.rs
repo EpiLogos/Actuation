@@ -445,6 +445,59 @@ pub fn authority_revoke(command: &Command) -> Result<Output, actuation_core::Err
     )
 }
 
+/// Every governing authority in the store, revoked ones included: the
+/// listing that `read` of one source ref cannot give a caller who does not
+/// already know the ref. Reads only; it never resolves or admits.
+pub fn authority_list(command: &Command) -> Result<Output, actuation_core::Error> {
+    let mut args = command.args.clone();
+    let store_flag = flag_value(&mut args, "--store")?;
+    if let Some(extra) = args.first() {
+        return Err(actuation_core::Error::new(format!(
+            "authority list takes only --store; {extra} is not one of its arguments"
+        )));
+    }
+    let listing = store_from_flag(store_flag)?.list()?;
+    output(
+        serde_json::to_value(&listing).map_err(|e| {
+            actuation_core::Error::new(format!("listing could not be encoded: {e}"))
+        })?,
+        command.json,
+        render_local_authority_list,
+    )
+}
+
+fn render_local_authority_list(value: &Value) -> String {
+    let mut lines = Vec::new();
+    for listed in value["authorities"].as_array().into_iter().flatten() {
+        let standing = if listed["revoked"].is_object() {
+            "revoked"
+        } else {
+            "standing"
+        };
+        lines.push(format!(
+            "{} — holder {}, issued {} ({standing})",
+            listed["authority_source_ref"].as_str().unwrap_or("?"),
+            listed["record"]["holder"].as_str().unwrap_or("?"),
+            listed["issued_at_unix_seconds"]
+        ));
+    }
+    for invalid in value["invalid"].as_array().into_iter().flatten() {
+        lines.push(format!(
+            "invalid {}: {}",
+            invalid["path"].as_str().unwrap_or("?"),
+            invalid["error"].as_str().unwrap_or("?")
+        ));
+    }
+    if lines.is_empty() {
+        format!(
+            "no governing authority in {}",
+            value["store"].as_str().unwrap_or("?")
+        )
+    } else {
+        lines.join("\n")
+    }
+}
+
 fn render_local_authority_issue(value: &Value) -> String {
     format!(
         "issued governing authority {} (holder {})",

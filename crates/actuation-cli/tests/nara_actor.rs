@@ -8,7 +8,7 @@ use std::sync::mpsc::{self, Receiver};
 use std::time::Duration;
 
 #[test]
-fn actual_capabilities_preserve_the_frozen_surface_and_add_only_nara_serve() {
+fn actual_capabilities_preserve_the_frozen_surface_and_add_only_nara_serve_and_authority_list() {
     let output = Command::new(env!("CARGO_BIN_EXE_actuation"))
         .args(["capabilities", "--json"])
         .output()
@@ -20,10 +20,14 @@ fn actual_capabilities_preserve_the_frozen_surface_and_add_only_nara_serve() {
     let frozen: Value =
         serde_json::from_str(include_str!("fixtures/capabilities-frozen.json")).unwrap();
     let mut expected = frozen["stdout"].clone();
-    expected["commands"]
-        .as_array_mut()
-        .unwrap()
-        .insert(0, json!("nara.serve"));
+    let commands = expected["commands"].as_array_mut().unwrap();
+    commands.insert(0, json!("nara.serve"));
+    // The governing-authority listing, after the revoke it lists.
+    let revoke = commands
+        .iter()
+        .position(|command| command == "authority.revoke")
+        .unwrap();
+    commands.insert(revoke + 1, json!("authority.list"));
     actual["revision"] = json!("$REVISION");
     assert_eq!(
         actual, expected,
