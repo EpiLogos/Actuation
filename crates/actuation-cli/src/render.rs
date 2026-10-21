@@ -100,6 +100,32 @@ pub fn realised(value: &Value) -> String {
     )
 }
 
+pub fn stream_list(value: &Value) -> String {
+    let mut lines = Vec::new();
+    for stream in value["streams"].as_array().into_iter().flatten() {
+        lines.push(format!(
+            "{} — session {}, {} ({} events, {} usage)",
+            stream["stream_ref"].as_str().unwrap_or("?"),
+            stream["agent_session_ref"].as_str().unwrap_or("?"),
+            stream["lifecycle"]["state"].as_str().unwrap_or("?"),
+            stream["event_count"],
+            stream["model_usage_count"]
+        ));
+    }
+    for invalid in value["invalid"].as_array().into_iter().flatten() {
+        lines.push(format!(
+            "invalid {}: {}",
+            invalid["path"].as_str().unwrap_or("?"),
+            invalid["error"].as_str().unwrap_or("?")
+        ));
+    }
+    if lines.is_empty() {
+        format!("no streams in {}", value["store"].as_str().unwrap_or("?"))
+    } else {
+        lines.join("\n")
+    }
+}
+
 pub fn stream(value: &Value) -> String {
     format!(
         "ActuationStream {}\nActuation: {}\nAgency: {}\nState: {}\nEvents: {}",

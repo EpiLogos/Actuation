@@ -95,6 +95,7 @@ static COMMANDS: &[CommandDescriptor] = &[
     command!("stream.record", &["stream", "record"], "actuation stream record [--store <dir>] [file|-] [--json]", "Append an event to a stream (telemetry, not a substitute for the action)", true, commands::stream_record),
     command!("stream.replay", &["stream", "replay"], "actuation stream replay <stream_ref> [--after <n>] [--limit <n>] [--store <dir>] [--json]", "Replay a trajectory after a point", false, commands::stream_replay),
     command!("stream.close", &["stream", "close"], "actuation stream close <stream_ref> [--state closed|interrupted|cancelled] [--ended-at <ts>] [--store <dir>] [--json]", "Close a stream with its true terminal state", false, commands::stream_close),
+    command!("stream.list", &["stream", "list"], "actuation stream list [--session <agent_session_ref>] [--store <dir>] [--json]", "List the durable streams, or one Agent session's: identity, lifecycle and counts", false, commands::stream_list),
     command!("activity.read", &["activity"], "actuation activity [file|-] [--json]", "Read aggregated activity evidence", true, commands::activity_read),
     command!("usage.read", &["usage"], "actuation usage [file|-] [--json]", "Read usage evidence", true, commands::usage_read),
     command!("stream.usage", &["stream", "usage"], "actuation stream usage [--store <dir>] [file|-] [--json] [adapter: claude-code-transcript|codex-exec-jsonl|observation]", "Ingest an adapter transcript into the usage read model", true, commands::stream_usage),
