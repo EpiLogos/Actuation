@@ -14,7 +14,7 @@ Three words carry the design, and Actuation keeps them apart:
 
 **Works now** (installed `actuation` 0.2.1; `actuation verify` passes its 15 compiled-in checks):
 
-- **Authority.** `actuation authority issue | resolve | revoke` keeps an append-only local record of who holds an explicit grant, who issued it, and which worlds it covers. Grants are never implied by saving, preparing or starting something.
+- **Authority.** `actuation authority issue | resolve | revoke` keeps an append-only local record of who holds an explicit grant, who issued it, and which worlds it covers; `actuation authority list` reads every grant in the store, revoked ones included. Grants are never implied by saving, preparing or starting something.
 - **Agency admission.** `actuation agency actualise` takes one complete request and refuses it unless the grant matches the exact governing Agency and world binding and covers the requested bounds. The receipt keeps identity, lineage, authority and the return path. It states plainly that it performed no materialisation, no Factory recognition and no source change. Workcell calls this before admitting a run.
 - **Who holds a position.** `actuation occupancy claim | release | verify | presence | read | list` keeps a ledger of who occupies a stable World Position defined by Central, for example `central:position:project:Factory:factory-sensing-guardian`. Every claim gets a new generation that is never reused. To replace an occupant you must name its current generation, and ambiguous or corrupt ledgers are refused, never resolved by "newest wins". AIKit's launcher, Factory and O:I all use this today.
 - **Activity records.** `actuation stream open | record | replay | close` keeps an append-only JSONL record of attributed events: messages, tool calls, refusals, delegations, evidence and returned results. The stream records what was reported. It does not perform the action. `actuation stream usage` reads Claude Code transcripts and Codex `exec --json` output into token and usage observations, and never stores prompt or response content.
@@ -90,6 +90,7 @@ actuation agency actualise <file|-> [--schema] [--json]
 actuation authority issue [--store <dir>] [--now <ts>] [file|-] [--json]
 actuation authority resolve [--store <dir>] [--now <ts>] [file|-] [--json]
 actuation authority revoke <authority_source_ref> [--reason <text>] [--store <dir>] [--now <ts>] [--json]
+actuation authority list [--store <dir>] [--json]
 actuation realised [file|-] [--json]
 actuation occupancy claim --position <ref> --agent <ref> --agency <ref> [--agent-session <ref>] [--session-space <ref>] [--harness-composition <ref>] [--model <ref>] [--workcell <ref>] [--gateway-address <addr>] --reason <text> [--expect-vacant | --expect-generation <generation>] [--kind initial|handover|fresh|adopt] [--store <dir>] [--json]
 actuation occupancy release --position <ref> --generation <generation> --reason <text> [--store <dir>] [--json]

@@ -83,6 +83,7 @@ static COMMANDS: &[CommandDescriptor] = &[
     command!("authority.issue", &["authority", "issue"], "actuation authority issue [--store <dir>] [--now <ts>] [file|-] [--json]", "Issue an explicit authority grant; never implicit in save, project, prepare or start", true, authority::authority_issue),
     command!("authority.resolve", &["authority", "resolve"], "actuation authority resolve [--store <dir>] [--now <ts>] [file|-] [--json]", "Resolve an authority question against its source", true, authority::authority_resolve),
     command!("authority.revoke", &["authority", "revoke"], "actuation authority revoke <authority_source_ref> [--reason <text>] [--store <dir>] [--now <ts>] [--json]", "Revoke an authority explicitly", false, authority::authority_revoke),
+    command!("authority.list", &["authority", "list"], "actuation authority list [--store <dir>] [--json]", "List every governing authority in the store, revoked ones included", false, authority::authority_list),
     command!("occupancy.claim", &["occupancy", "claim"], "actuation occupancy claim --position <ref> --agent <ref> --agency <ref> [--agent-session <ref>] [--session-space <ref>] [--harness-composition <ref>] [--model <ref>] [--workcell <ref>] [--gateway-address <addr>] --reason <text> [--expect-vacant | --expect-generation <generation>] [--kind initial|handover|fresh|adopt] [--store <dir>] [--json]", "Claim a Position tenure (initial, handover, fresh or adopt) through the owning launcher", false, occupancy::claim),
     command!("occupancy.release", &["occupancy", "release"], "actuation occupancy release --position <ref> --generation <generation> --reason <text> [--store <dir>] [--json]", "Release a Position tenure explicitly", false, occupancy::release),
     command!("occupancy.verify", &["occupancy", "verify"], "actuation occupancy verify --position <ref> --generation <generation> [--store <dir>] [--json]", "Verify a tenure against its expected generation", false, occupancy::verify),
@@ -203,7 +204,7 @@ pub fn command_needs_stdin(argv: &[String]) -> bool {
         return false;
     };
     if entry.input {
-        let value_flags = ["--store", "--out"];
+        let value_flags = ["--store", "--out", "--now"];
         let mut positional = Vec::new();
         let mut index = 0;
         while index < rest.len() {
@@ -425,6 +426,33 @@ mod tests {
             "stream", "replay", "s:1", "--store", "/tmp/x"
         ])));
         assert!(!command_needs_stdin(&argv(&["capabilities", "--json"])));
+        // `--now` carries a value: its timestamp is not the document, so the
+        // marker after it still reads stdin (it once did not, and `authority
+        // issue --now T -` answered "no JSON input supplied").
+        assert!(command_needs_stdin(&argv(&[
+            "authority",
+            "issue",
+            "--now",
+            "1726300000",
+            "-",
+            "--json"
+        ])));
+        assert!(command_needs_stdin(&argv(&[
+            "authority",
+            "resolve",
+            "--store",
+            "/tmp/x",
+            "--now",
+            "1726300000",
+            "-"
+        ])));
+        assert!(!command_needs_stdin(&argv(&[
+            "authority",
+            "issue",
+            "--now",
+            "1726300000",
+            "/tmp/record.json"
+        ])));
         // The config verbs read stdin exactly when their file flag carries
         // the stdin marker; an inline --value never touches stdin.
         assert!(command_needs_stdin(&argv(&[

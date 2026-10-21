@@ -274,6 +274,132 @@ fn revocation_persists_and_a_revoked_source_never_resolves() {
 }
 
 #[test]
+fn list_names_every_issued_authority_and_its_revocation() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = dir.path().join("authority");
+    let empty = run(&store, &["authority", "list", "--store", "{STORE}"], "");
+    assert_eq!(
+        empty["schema"],
+        json!("actuation.local-authority-listing/v1")
+    );
+    assert_eq!(empty["authorities"], json!([]));
+    let mut second = record_value();
+    second["authority_source_ref"] = json!("authority-source:governing-second");
+    for (record, now) in [(record_value(), "1726300000"), (second, "1726300010")] {
+        run(
+            &store,
+            &[
+                "authority",
+                "issue",
+                "--store",
+                "{STORE}",
+                "--now",
+                now,
+                "-",
+            ],
+            &record.to_string(),
+        );
+    }
+    run(
+        &store,
+        &[
+            "authority",
+            "revoke",
+            "authority-source:governing-second",
+            "--store",
+            "{STORE}",
+            "--now",
+            "1726300050",
+            "--reason",
+            "owner withdrawal",
+        ],
+        "",
+    );
+    let listed = run(&store, &["authority", "list", "--store", "{STORE}"], "");
+    assert_eq!(listed["invalid"], json!([]));
+    let authorities = listed["authorities"].as_array().unwrap();
+    assert_eq!(authorities.len(), 2);
+    assert_eq!(
+        authorities[0]["authority_source_ref"],
+        json!("authority-source:governing-main")
+    );
+    // The stored record, as issue encoded it.
+    let record = &authorities[0]["record"];
+    assert_eq!(record["holder"], json!("human:owner"));
+    assert_eq!(record["issued_by"], json!("human:owner"));
+    assert_eq!(
+        record["allowed_world_refs"],
+        json!(["central:project:Example"])
+    );
+    assert_eq!(record["metagency_grant"], record_value()["metagency_grant"]);
+    assert_eq!(authorities[0]["issued_at_unix_seconds"], json!(1726300000));
+    assert!(authorities[0].get("revoked").is_none());
+    assert_eq!(
+        authorities[1]["revoked"],
+        json!({"at_unix_seconds": 1726300050, "reason": "owner withdrawal"})
+    );
+    // A source ref is not an argument of the listing.
+    let refused = execute(
+        &[
+            "authority".into(),
+            "list".into(),
+            "authority-source:governing-main".into(),
+            "--json".into(),
+        ],
+        "",
+    );
+    assert!(refused
+        .err()
+        .map(|error| error.to_string())
+        .unwrap_or_default()
+        .contains("authority list takes only --store"));
+}
+
+/// Through the real binary: `--now T -` reads the record from stdin (the
+/// stdin decision once mistook the timestamp for the document).
+#[test]
+fn the_real_binary_reads_the_record_after_now() {
+    use std::io::Write;
+    let dir = tempfile::tempdir().unwrap();
+    let store = dir.path().join("authority");
+    let mut child = std::process::Command::new(env!("CARGO_BIN_EXE_actuation"))
+        .args(["authority", "issue", "--store"])
+        .arg(&store)
+        .args(["--now", "1726300000", "-", "--json"])
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(record_value().to_string().as_bytes())
+        .unwrap();
+    let output = child.wait_with_output().unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let issued: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(issued["issued_at_unix_seconds"], json!(1726300000));
+    let listed = std::process::Command::new(env!("CARGO_BIN_EXE_actuation"))
+        .args(["authority", "list", "--store"])
+        .arg(&store)
+        .arg("--json")
+        .output()
+        .unwrap();
+    assert!(listed.status.success());
+    let listed: Value = serde_json::from_slice(&listed.stdout).unwrap();
+    assert_eq!(
+        listed["authorities"][0]["authority_source_ref"],
+        json!("authority-source:governing-main")
+    );
+}
+
+#[test]
 fn actualise_refusal_names_the_malformed_record() {
     // The shape a session plausibly invents when nothing discloses the
     // envelope: compact string shorthands where the contract has records.
