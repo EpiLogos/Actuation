@@ -8,7 +8,7 @@ use std::sync::mpsc::{self, Receiver};
 use std::time::Duration;
 
 #[test]
-fn actual_capabilities_preserve_the_frozen_surface_and_add_only_nara_serve_and_authority_list() {
+fn actual_capabilities_preserve_the_frozen_surface_and_add_only_nara_serve_and_the_listings() {
     let output = Command::new(env!("CARGO_BIN_EXE_actuation"))
         .args(["capabilities", "--json"])
         .output()
@@ -28,6 +28,12 @@ fn actual_capabilities_preserve_the_frozen_surface_and_add_only_nara_serve_and_a
         .position(|command| command == "authority.revoke")
         .unwrap();
     commands.insert(revoke + 1, json!("authority.list"));
+    // A session's streams, after the close of one.
+    let close = commands
+        .iter()
+        .position(|command| command == "stream.close")
+        .unwrap();
+    commands.insert(close + 1, json!("stream.list"));
     actual["revision"] = json!("$REVISION");
     assert_eq!(
         actual, expected,

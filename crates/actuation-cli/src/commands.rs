@@ -15,7 +15,7 @@ use actuation_adapters::{
     validate_capability_document, DetectionOptions, HarnessCapability, InstantiationReceipt,
     NativeCatalog, HARNESS_CAPABILITY_VERSION,
 };
-use actuation_core::{agency_reading, Error, Result, StreamRef};
+use actuation_core::{agency_reading, AgentSessionRef, Error, Result, StreamRef};
 use actuation_runtime::{ActualisationRequest, RealisedActuation};
 use actuation_stream::{
     Activity, ActuationStream, BoundaryOccurrence, Count, JsonlStreamStore, ModelUsageObservation,
@@ -223,6 +223,29 @@ pub fn stream_replay(command: &Command) -> Result<Output> {
         serde_json::to_value(page).map_err(|e| Error::new(e.to_string()))?,
         command.json,
         render::stream_replay,
+    )
+}
+
+pub fn stream_list(command: &Command) -> Result<Output> {
+    let mut args = command.args.clone();
+    let root = flag_value(&mut args, "--store")?;
+    let session = flag_value(&mut args, "--session")?;
+    if let Some(extra) = args.first() {
+        return Err(Error::new(format!(
+            "stream list takes only --session and --store; {extra} is not one of its arguments"
+        )));
+    }
+    let session = session
+        .map(|raw| {
+            AgentSessionRef::new(&raw)
+                .map_err(|e| Error::new(format!("invalid agent_session_ref: {e}")))
+        })
+        .transpose()?;
+    let listing = store(root)?.list(session.as_ref())?;
+    output(
+        serde_json::to_value(listing).map_err(|e| Error::new(e.to_string()))?,
+        command.json,
+        render::stream_list,
     )
 }
 

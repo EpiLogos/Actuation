@@ -267,6 +267,44 @@ fn event_identity() -> Result<EventRef> {
     EventRef::new(format!("actuation:event:{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",b[0],b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15]))
 }
 
+pub const STREAM_LISTING_VERSION: &str = "actuation.stream-listing/v1";
+
+/// One durable stream in a listing: its identity, lifecycle and how much it
+/// holds, never its events. `actuation stream replay <stream_ref>` reads the
+/// events; each `model-usage` event there carries one usage record.
+#[derive(Clone, Debug, Serialize)]
+pub struct ListedStream {
+    pub stream_ref: StreamRef,
+    pub actuation_ref: ActuationRef,
+    pub agency_ref: AgencyRef,
+    pub agent_session_ref: AgentSessionRef,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub world_binding_ref: Option<WorldBindingRef>,
+    pub lifecycle: StreamLifecycle,
+    pub event_count: usize,
+    pub model_usage_count: usize,
+}
+
+/// A stream file that does not fold, or whose name is not its stream_ref's.
+/// Listed with the reason, never dropped.
+#[derive(Clone, Debug, Serialize)]
+pub struct InvalidStreamFile {
+    pub path: String,
+    pub error: String,
+}
+
+/// `actuation.stream-listing/v1`: every durable stream in the store, or one
+/// Agent session's, uncapped, in stream_ref order.
+#[derive(Clone, Debug, Serialize)]
+pub struct StreamListing {
+    pub schema: &'static str,
+    pub store: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub agent_session_ref: Option<AgentSessionRef>,
+    pub streams: Vec<ListedStream>,
+    pub invalid: Vec<InvalidStreamFile>,
+}
+
 #[derive(Clone, Debug)]
 pub struct JsonlStreamStore {
     root: PathBuf,
@@ -428,6 +466,86 @@ impl JsonlStreamStore {
     }
     pub fn replay(&self, stream_ref: &StreamRef, request: PageRequest) -> Result<StreamPage> {
         Ok(self.load(stream_ref)?.read(request))
+    }
+    /// Every durable stream under the store's shared lock, folded exactly as
+    /// `load` folds it, or only the streams of one Agent session. A file that
+    /// does not fold, or whose name is not its stream_ref's, is listed under
+    /// `invalid`. An absent store lists nothing.
+    pub fn list(&self, session: Option<&AgentSessionRef>) -> Result<StreamListing> {
+        let mut listing = StreamListing {
+            schema: STREAM_LISTING_VERSION,
+            store: self.root.display().to_string(),
+            agent_session_ref: session.cloned(),
+            streams: Vec::new(),
+            invalid: Vec::new(),
+        };
+        if !self.root.exists() {
+            return Ok(listing);
+        }
+        let _directory = self.lock(false, false)?;
+        let mut paths = Vec::new();
+        for entry in io(fs::read_dir(&self.root))? {
+            let path = io(entry)?.path();
+            if path.extension().is_some_and(|ext| ext == "jsonl") {
+                paths.push(path);
+            }
+        }
+        paths.sort();
+        for path in paths {
+            let shown = path.display().to_string();
+            let folded = self
+                .file_options()
+                .read(true)
+                .open(&path)
+                .map_err(|e| Error::new(format!("cannot read stream {shown}: {e}")))
+                .and_then(|mut file| {
+                    let mut raw = String::new();
+                    io(file.read_to_string(&mut raw))?;
+                    fold_stream_file(&raw)
+                });
+            let stream = match folded {
+                Ok(stream) => stream,
+                Err(error) => {
+                    listing.invalid.push(InvalidStreamFile {
+                        path: shown,
+                        error: error.to_string(),
+                    });
+                    continue;
+                }
+            };
+            let s = stream.fields();
+            let named = path
+                .file_name()
+                .map(|name| name.to_string_lossy().into_owned());
+            if named.as_deref() != Some(stream_file_name(&s.stream_ref).as_str()) {
+                listing.invalid.push(InvalidStreamFile {
+                    path: shown,
+                    error: "durable filename and stream_ref disagree".into(),
+                });
+                continue;
+            }
+            if session.is_some_and(|session| session != &s.agent_session_ref) {
+                continue;
+            }
+            listing.streams.push(ListedStream {
+                stream_ref: s.stream_ref.clone(),
+                actuation_ref: s.actuation_ref.clone(),
+                agency_ref: s.agency_ref.clone(),
+                agent_session_ref: s.agent_session_ref.clone(),
+                world_binding_ref: s.world_binding_ref.value().cloned(),
+                lifecycle: s.lifecycle.clone(),
+                event_count: s.events.len(),
+                model_usage_count: s
+                    .events
+                    .iter()
+                    .filter(|event| event.fields().model_usage.value().is_some())
+                    .count(),
+            });
+        }
+        listing
+            .streams
+            .sort_by(|left, right| left.stream_ref.as_str().cmp(right.stream_ref.as_str()));
+        Ok(listing)
     }
     pub fn record_boundary(
         &self,
