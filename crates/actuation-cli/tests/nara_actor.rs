@@ -8,7 +8,8 @@ use std::sync::mpsc::{self, Receiver};
 use std::time::Duration;
 
 #[test]
-fn actual_capabilities_preserve_the_frozen_surface_and_add_only_nara_serve_and_the_listings() {
+fn actual_capabilities_preserve_the_frozen_surface_and_add_only_nara_serve_the_listings_and_continuity(
+) {
     let output = Command::new(env!("CARGO_BIN_EXE_actuation"))
         .args(["capabilities", "--json"])
         .output()
@@ -34,6 +35,18 @@ fn actual_capabilities_preserve_the_frozen_surface_and_add_only_nara_serve_and_t
         .position(|command| command == "stream.close")
         .unwrap();
     commands.insert(close + 1, json!("stream.list"));
+    // Two realised receipts compared, after the read of one.
+    let realised = commands
+        .iter()
+        .position(|command| command == "realised.read")
+        .unwrap();
+    commands.insert(realised + 1, json!("realised.continuity"));
+    // The usage records the streams keep, after the read of one.
+    let usage = commands
+        .iter()
+        .position(|command| command == "usage.read")
+        .unwrap();
+    commands.insert(usage + 1, json!("usage.list"));
     actual["revision"] = json!("$REVISION");
     assert_eq!(
         actual, expected,

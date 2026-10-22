@@ -321,6 +321,29 @@ impl RealisedActuation {
         }
     }
 }
+pub const REALISED_CONTINUITY_VERSION: &str = "actuation.realised-continuity/v1";
+
+/// Two realised receipts of one acting condition, earlier and later: the
+/// input `actuation realised continuity` reads.
+#[derive(Clone, Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RealisedPair {
+    pub previous: RealisedActuation,
+    pub next: RealisedActuation,
+}
+impl RealisedPair {
+    /// `actuation.realised-continuity/v1`: which identity roles stayed the
+    /// same and which parts of the body changed between the two receipts.
+    pub fn continuity(&self) -> Value {
+        json!({
+            "schema": REALISED_CONTINUITY_VERSION,
+            "previous_realised_ref": self.previous.fields().realised_ref,
+            "next_realised_ref": self.next.fields().realised_ref,
+            "delta": self.previous.continuity_to(&self.next),
+        })
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ContinuityDelta {
     pub same_agent: bool,

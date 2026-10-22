@@ -100,6 +100,100 @@ pub fn realised(value: &Value) -> String {
     )
 }
 
+pub fn realised_continuity(value: &Value) -> String {
+    let delta = &value["delta"];
+    let named = |keys: &[&'static str], when: bool| -> Vec<&'static str> {
+        keys.iter()
+            .filter(|key| delta[**key].as_bool() == Some(when))
+            .copied()
+            .collect::<Vec<_>>()
+    };
+    let identity = [
+        "same_agent",
+        "same_agency",
+        "same_world_binding",
+        "same_actuation",
+    ];
+    let body = [
+        "harness_changed",
+        "session_changed",
+        "process_changed",
+        "model_condition_changed",
+        "material_binding_changed",
+        "recurrence_changed",
+    ];
+    let differs = named(&identity, false);
+    let changed = named(&body, true);
+    format!(
+        "{} -> {}\nIdentity: {}\nBody: {}",
+        value["previous_realised_ref"].as_str().unwrap_or("?"),
+        value["next_realised_ref"].as_str().unwrap_or("?"),
+        if differs.is_empty() {
+            "the same Agent, Agency, WorldBinding and Actuation".to_owned()
+        } else {
+            format!("differs ({})", differs.join(", "))
+        },
+        if changed.is_empty() {
+            "unchanged".to_owned()
+        } else {
+            changed.join(", ")
+        }
+    )
+}
+
+pub fn usage_list(value: &Value) -> String {
+    let mut lines = Vec::new();
+    for record in value["records"].as_array().into_iter().flatten() {
+        let usage = &record["usage"];
+        lines.push(format!(
+            "{} #{} — {} in {} out {}",
+            record["stream_ref"].as_str().unwrap_or("?"),
+            record["sequence"],
+            usage["model"]["name"]
+                .as_str()
+                .unwrap_or("model not reported"),
+            usage["tokens"]["input"],
+            usage["tokens"]["output"]
+        ));
+    }
+    for invalid in value["invalid"].as_array().into_iter().flatten() {
+        lines.push(format!(
+            "invalid {}: {}",
+            invalid["path"].as_str().unwrap_or("?"),
+            invalid["error"].as_str().unwrap_or("?")
+        ));
+    }
+    let totals = &value["totals"];
+    let costs = totals["cost"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .map(|cost| {
+            format!(
+                "{} {}",
+                cost["amount"],
+                cost["currency"].as_str().unwrap_or("?")
+            )
+        })
+        .collect::<Vec<_>>();
+    lines.push(format!(
+        "{} records: {} tokens in ({} records), {} out ({} records), {} not reported; cost {}, {} not reported",
+        totals["records"],
+        totals["tokens_input"]["sum"],
+        totals["tokens_input"]["records"],
+        totals["tokens_output"]["sum"],
+        totals["tokens_output"]["records"],
+        totals["tokens_not_reported"],
+        if costs.is_empty() {
+            "none reported".to_owned()
+        } else {
+            costs.join(", ")
+        },
+        totals["cost_not_reported"]
+    ));
+    lines.join("\n")
+}
+
 pub fn stream_list(value: &Value) -> String {
     let mut lines = Vec::new();
     for stream in value["streams"].as_array().into_iter().flatten() {
