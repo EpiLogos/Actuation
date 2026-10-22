@@ -16,7 +16,7 @@ use actuation_adapters::{
     NativeCatalog, HARNESS_CAPABILITY_VERSION,
 };
 use actuation_core::{agency_reading, AgentSessionRef, Error, Result, StreamRef};
-use actuation_runtime::{ActualisationRequest, RealisedActuation};
+use actuation_runtime::{ActualisationRequest, RealisedActuation, RealisedPair};
 use actuation_stream::{
     Activity, ActuationStream, BoundaryOccurrence, Count, JsonlStreamStore, ModelUsageObservation,
     OpenStream, PageRequest, StreamStore, TerminalState, Timestamp, UsageOccurrence,
@@ -140,6 +140,16 @@ pub fn realised_read(command: &Command) -> Result<Output> {
     let realised: RealisedActuation = serde_json::from_value(input)
         .map_err(|e| Error::new(format!("invalid realised actuation: {e}")))?;
     output(realised.reading(), command.json, render::realised)
+}
+
+pub fn realised_continuity(command: &Command) -> Result<Output> {
+    let input = read_json_input(command.args.first().map(String::as_str), &command.stdin)?;
+    let pair: RealisedPair = serde_json::from_value(input).map_err(|e| {
+        Error::new(format!(
+            "invalid realised continuity input: {e}; it takes {{\"previous\": <actuation.realised/v1>, \"next\": <actuation.realised/v1>}}"
+        ))
+    })?;
+    output(pair.continuity(), command.json, render::realised_continuity)
 }
 
 pub fn stream_read(command: &Command) -> Result<Output> {
@@ -295,6 +305,29 @@ pub fn usage_read(command: &Command) -> Result<Output> {
             .map_err(|e| Error::new(e.to_string()))?,
         command.json,
         render::usage,
+    )
+}
+
+pub fn usage_list(command: &Command) -> Result<Output> {
+    let mut args = command.args.clone();
+    let root = flag_value(&mut args, "--store")?;
+    let session = flag_value(&mut args, "--session")?;
+    if let Some(extra) = args.first() {
+        return Err(Error::new(format!(
+            "usage list takes only --session and --store; {extra} is not one of its arguments"
+        )));
+    }
+    let session = session
+        .map(|raw| {
+            AgentSessionRef::new(&raw)
+                .map_err(|e| Error::new(format!("invalid agent_session_ref: {e}")))
+        })
+        .transpose()?;
+    let listing = store(root)?.list_usage(session.as_ref())?;
+    output(
+        serde_json::to_value(listing).map_err(|e| Error::new(e.to_string()))?,
+        command.json,
+        render::usage_list,
     )
 }
 

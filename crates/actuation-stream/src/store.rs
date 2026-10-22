@@ -305,6 +305,121 @@ pub struct StreamListing {
     pub invalid: Vec<InvalidStreamFile>,
 }
 
+pub const USAGE_LISTING_VERSION: &str = "actuation.usage-listing/v1";
+
+/// One model-usage record where the durable store keeps it: the stream, the
+/// event and its sequence, and the record itself (`actuation.model-usage/v1`,
+/// which `actuation usage` reads as it is).
+#[derive(Clone, Debug, Serialize)]
+pub struct ListedUsage {
+    pub stream_ref: StreamRef,
+    pub agent_session_ref: AgentSessionRef,
+    pub event_ref: EventRef,
+    pub sequence: Count,
+    pub usage: ModelUsageObservation,
+}
+
+/// A sum over the records that carry the count; a record that does not carry
+/// it is not counted, never read as zero.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize)]
+pub struct CountTotal {
+    pub sum: u64,
+    pub records: usize,
+}
+impl CountTotal {
+    fn add(&mut self, count: Option<&Count>) {
+        if let Some(count) = count {
+            self.sum = self.sum.saturating_add(count.get());
+            self.records += 1;
+        }
+    }
+}
+
+/// The reported cost in one currency: its sum, how many records reported it,
+/// and the evidence standings those records gave (provider-reported, derived
+/// with a pricing basis, or another available standing).
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct CurrencyTotal {
+    pub currency: ExternalRef,
+    pub amount: f64,
+    pub records: usize,
+    pub standings: Vec<EvidenceStanding>,
+}
+
+/// What a set of model-usage records adds up to. Only an available standing
+/// is summed: tokens or cost a record gives as unavailable or not-reported
+/// stay out of every sum and are counted as such. Costs are summed per
+/// currency and never converted.
+#[derive(Clone, Debug, Default, PartialEq, Serialize)]
+pub struct UsageTotals {
+    pub records: usize,
+    pub tokens_input: CountTotal,
+    pub tokens_output: CountTotal,
+    pub tokens_not_reported: usize,
+    pub cost: Vec<CurrencyTotal>,
+    pub cost_not_reported: usize,
+}
+impl UsageTotals {
+    pub fn of<'a>(records: impl IntoIterator<Item = &'a ModelUsageObservation>) -> Self {
+        let mut totals = Self::default();
+        for record in records {
+            let u = record.fields();
+            totals.records += 1;
+            let tokens = u.tokens.fields();
+            if tokens.standing.is_available() {
+                totals.tokens_input.add(tokens.input.value());
+                totals.tokens_output.add(tokens.output.value());
+            } else {
+                totals.tokens_not_reported += 1;
+            }
+            let cost = u.cost.fields();
+            match (cost.amount.value(), cost.currency.value()) {
+                (Some(amount), Some(currency)) if cost.standing.is_available() => {
+                    let amount = amount.as_f64().unwrap_or(0.0);
+                    match totals
+                        .cost
+                        .iter_mut()
+                        .find(|total| &total.currency == currency)
+                    {
+                        Some(total) => {
+                            total.amount += amount;
+                            total.records += 1;
+                            if !total.standings.contains(&cost.standing) {
+                                total.standings.push(cost.standing);
+                            }
+                        }
+                        None => totals.cost.push(CurrencyTotal {
+                            currency: currency.clone(),
+                            amount,
+                            records: 1,
+                            standings: vec![cost.standing],
+                        }),
+                    }
+                }
+                _ => totals.cost_not_reported += 1,
+            }
+        }
+        totals
+            .cost
+            .sort_by(|left, right| left.currency.as_str().cmp(right.currency.as_str()));
+        totals
+    }
+}
+
+/// `actuation.usage-listing/v1`: every model-usage record the durable streams
+/// keep, or one Agent session's, in stream_ref then sequence order, with what
+/// they add up to and the stream files that do not fold.
+#[derive(Clone, Debug, Serialize)]
+pub struct UsageListing {
+    pub schema: &'static str,
+    pub store: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub agent_session_ref: Option<AgentSessionRef>,
+    pub records: Vec<ListedUsage>,
+    pub totals: UsageTotals,
+    pub invalid: Vec<InvalidStreamFile>,
+}
+
 #[derive(Clone, Debug)]
 pub struct JsonlStreamStore {
     root: PathBuf,
@@ -468,19 +583,17 @@ impl JsonlStreamStore {
         Ok(self.load(stream_ref)?.read(request))
     }
     /// Every durable stream under the store's shared lock, folded exactly as
-    /// `load` folds it, or only the streams of one Agent session. A file that
-    /// does not fold, or whose name is not its stream_ref's, is listed under
-    /// `invalid`. An absent store lists nothing.
-    pub fn list(&self, session: Option<&AgentSessionRef>) -> Result<StreamListing> {
-        let mut listing = StreamListing {
-            schema: STREAM_LISTING_VERSION,
-            store: self.root.display().to_string(),
-            agent_session_ref: session.cloned(),
-            streams: Vec::new(),
-            invalid: Vec::new(),
-        };
+    /// `load` folds it, or only the streams of one Agent session, in
+    /// stream_ref order. A file that does not fold, or whose name is not its
+    /// stream_ref's, is named with its reason. An absent store holds nothing.
+    fn fold_all(
+        &self,
+        session: Option<&AgentSessionRef>,
+    ) -> Result<(Vec<ActuationStream>, Vec<InvalidStreamFile>)> {
+        let mut streams = Vec::new();
+        let mut invalid = Vec::new();
         if !self.root.exists() {
-            return Ok(listing);
+            return Ok((streams, invalid));
         }
         let _directory = self.lock(false, false)?;
         let mut paths = Vec::new();
@@ -506,7 +619,7 @@ impl JsonlStreamStore {
             let stream = match folded {
                 Ok(stream) => stream,
                 Err(error) => {
-                    listing.invalid.push(InvalidStreamFile {
+                    invalid.push(InvalidStreamFile {
                         path: shown,
                         error: error.to_string(),
                     });
@@ -518,7 +631,7 @@ impl JsonlStreamStore {
                 .file_name()
                 .map(|name| name.to_string_lossy().into_owned());
             if named.as_deref() != Some(stream_file_name(&s.stream_ref).as_str()) {
-                listing.invalid.push(InvalidStreamFile {
+                invalid.push(InvalidStreamFile {
                     path: shown,
                     error: "durable filename and stream_ref disagree".into(),
                 });
@@ -527,6 +640,31 @@ impl JsonlStreamStore {
             if session.is_some_and(|session| session != &s.agent_session_ref) {
                 continue;
             }
+            streams.push(stream);
+        }
+        streams.sort_by(|left, right| {
+            left.fields()
+                .stream_ref
+                .as_str()
+                .cmp(right.fields().stream_ref.as_str())
+        });
+        Ok((streams, invalid))
+    }
+    /// Every durable stream under the store's shared lock, folded exactly as
+    /// `load` folds it, or only the streams of one Agent session. A file that
+    /// does not fold, or whose name is not its stream_ref's, is listed under
+    /// `invalid`. An absent store lists nothing.
+    pub fn list(&self, session: Option<&AgentSessionRef>) -> Result<StreamListing> {
+        let (streams, invalid) = self.fold_all(session)?;
+        let mut listing = StreamListing {
+            schema: STREAM_LISTING_VERSION,
+            store: self.root.display().to_string(),
+            agent_session_ref: session.cloned(),
+            streams: Vec::new(),
+            invalid,
+        };
+        for stream in &streams {
+            let s = stream.fields();
             listing.streams.push(ListedStream {
                 stream_ref: s.stream_ref.clone(),
                 actuation_ref: s.actuation_ref.clone(),
@@ -542,10 +680,38 @@ impl JsonlStreamStore {
                     .count(),
             });
         }
-        listing
-            .streams
-            .sort_by(|left, right| left.stream_ref.as_str().cmp(right.stream_ref.as_str()));
         Ok(listing)
+    }
+    /// Every model-usage record the durable streams keep, or one Agent
+    /// session's, each with the stream event that holds it, and what they add
+    /// up to. Folded and named exactly as `list` folds and names them; an
+    /// absent store holds no records.
+    pub fn list_usage(&self, session: Option<&AgentSessionRef>) -> Result<UsageListing> {
+        let (streams, invalid) = self.fold_all(session)?;
+        let mut records = Vec::new();
+        for stream in &streams {
+            let s = stream.fields();
+            for event in &s.events {
+                let e = event.fields();
+                if let Some(usage) = e.model_usage.value() {
+                    records.push(ListedUsage {
+                        stream_ref: s.stream_ref.clone(),
+                        agent_session_ref: s.agent_session_ref.clone(),
+                        event_ref: e.event_ref.clone(),
+                        sequence: e.sequence,
+                        usage: usage.clone(),
+                    });
+                }
+            }
+        }
+        Ok(UsageListing {
+            schema: USAGE_LISTING_VERSION,
+            store: self.root.display().to_string(),
+            agent_session_ref: session.cloned(),
+            totals: UsageTotals::of(records.iter().map(|record| &record.usage)),
+            records,
+            invalid,
+        })
     }
     pub fn record_boundary(
         &self,

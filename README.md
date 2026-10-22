@@ -17,7 +17,8 @@ Three words carry the design, and Actuation keeps them apart:
 - **Authority.** `actuation authority issue | resolve | revoke` keeps an append-only local record of who holds an explicit grant, who issued it, and which worlds it covers; `actuation authority list` reads every grant in the store, revoked ones included. Grants are never implied by saving, preparing or starting something.
 - **Agency admission.** `actuation agency actualise` takes one complete request and refuses it unless the grant matches the exact governing Agency and world binding and covers the requested bounds. The receipt keeps identity, lineage, authority and the return path. It states plainly that it performed no materialisation, no Factory recognition and no source change. Workcell calls this before admitting a run.
 - **Who holds a position.** `actuation occupancy claim | release | verify | presence | read | list` keeps a ledger of who occupies a stable World Position defined by Central, for example `central:position:project:Factory:factory-sensing-guardian`. Every claim gets a new generation that is never reused. To replace an occupant you must name its current generation, and ambiguous or corrupt ledgers are refused, never resolved by "newest wins". AIKit's launcher, Factory and O:I all use this today.
-- **Activity records.** `actuation stream open | record | replay | close` keeps an append-only JSONL record of attributed events: messages, tool calls, refusals, delegations, evidence and returned results. The stream records what was reported. It does not perform the action. `actuation stream list [--session <ref>]` names the streams in the store, or one Agent session's, with each stream's lifecycle and event and usage counts. `actuation stream usage` reads Claude Code transcripts and Codex `exec --json` output into token and usage observations, and never stores prompt or response content.
+- **Activity records.** `actuation stream open | record | replay | close` keeps an append-only JSONL record of attributed events: messages, tool calls, refusals, delegations, evidence and returned results. The stream records what was reported. It does not perform the action. `actuation stream list [--session <ref>]` names the streams in the store, or one Agent session's, with each stream's lifecycle and event and usage counts. `actuation stream usage` reads Claude Code transcripts and Codex `exec --json` output into token and usage observations, and never stores prompt or response content. `actuation usage list [--session <ref>]` hands over the usage records the streams keep, or one Agent session's, each with its stream and event, and adds up their tokens and their reported cost per currency; a record that does not report tokens or cost is counted as not reported, never as zero.
+- **Body and identity.** `actuation realised continuity` takes two realised receipts of one acting condition, `{"previous", "next"}`, and answers which identity roles stayed the same (Agent, Agency, WorldBinding, Actuation) and which parts of the body changed (harness, session, process, model condition, material binding, recurrence).
 - **Harness detection.** `actuation harness catalog | detect | capability` declares 24 known harnesses, proves which are installed on this machine, and says which hook events each accepts. AIKit and Central both use this as their harness census.
 - **Agency Gateway** (`actuation-gateway`, a separate binary). A Unix-socket protocol through which surfaces attach to agent sessions and one agent may invoke another under policy. Refusals become stream events. Factory uses it to deliver attempts.
 - **Disclosure to O:I.** `actuation system` and `actuation config-contribution`.
@@ -92,6 +93,7 @@ actuation authority resolve [--store <dir>] [--now <ts>] [file|-] [--json]
 actuation authority revoke <authority_source_ref> [--reason <text>] [--store <dir>] [--now <ts>] [--json]
 actuation authority list [--store <dir>] [--json]
 actuation realised [file|-] [--json]
+actuation realised continuity [file|-] [--json]
 actuation occupancy claim --position <ref> --agent <ref> --agency <ref> [--agent-session <ref>] [--session-space <ref>] [--harness-composition <ref>] [--model <ref>] [--workcell <ref>] [--gateway-address <addr>] --reason <text> [--expect-vacant | --expect-generation <generation>] [--kind initial|handover|fresh|adopt] [--store <dir>] [--json]
 actuation occupancy release --position <ref> --generation <generation> --reason <text> [--store <dir>] [--json]
 actuation occupancy verify --position <ref> --generation <generation> [--store <dir>] [--json]
@@ -107,6 +109,7 @@ actuation stream replay <stream_ref> [--after <n>] [--limit <n>] [--store <dir>]
 actuation stream close <stream_ref> [--state closed|interrupted|cancelled] [--ended-at <ts>] [--store <dir>] [--json]
 actuation activity [file|-] [--json]
 actuation usage [file|-] [--json]
+actuation usage list [--session <agent_session_ref>] [--store <dir>] [--json]
 actuation instantiation [file|-] [--json]
 actuation instantiation record [--allow-unattributed] [--out <file>] [file|-] [--json]
 actuation harness catalog [--json]
