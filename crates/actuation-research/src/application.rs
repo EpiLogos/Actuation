@@ -88,7 +88,7 @@ fn secrets(spec: &ProcessSpec) -> Vec<String> {
         .collect()
 }
 pub fn capabilities() -> Value {
-    json!({"schema":"actuation.research-capabilities/v1","version":env!("CARGO_PKG_VERSION"),"operations":OPERATIONS,"tasks":Task::ids(),"prime_conditions":prime::conditions(),"formal_owner":"EpiLogos/QL-MEF","ql_owner_required_for_generic_research":false,"node_required_for_generic_research":false,"javascript_layer_retired":true,"experiment_definition_source":{"prime_conditions":"experiments/ql-runtime/prime/conditions.json (frozen JSON twin, compile-bound)","task_corpus":"experiments/native-research/tasks.json (frozen JSON twin, compile-bound)"},"model_body_protocols":["one-shot-json","sdk-jsonl"],"specimen_runtime_requirements":{"model_bodies":"explicit supplied processes (one-shot JSON or sdk-jsonl RPC hosts)","prime":"explicit admitted native Prime executable","python_fixture":"tests only"},"acceptance_pending":["human acceptance — the owner walk over the served product and research surfaces (machine receipts complete: R10 physical return and the 2026-09-12 owner-machine finish-up; see docs/rust-refoundation/R10-OWNER-MACHINE.md and O-I#213 S7)","live-provider QL research evidence — the Rust harness expresses and runs the prime, deep-runtime and series1 families (offline parity against the recorded 2026-09-13 live runs: crates/actuation-research/tests/live_evidence_parity.rs); the first live-provider validation run collected by the Rust harness is an explicit owner-gated step"],"evidence_claims":{"provider":"not-assessed","owner_machine":true,"human_acceptance":false}})
+    json!({"schema":"actuation.research-capabilities/v1","version":env!("CARGO_PKG_VERSION"),"operations":OPERATIONS,"tasks":Task::ids(),"prime_conditions":prime::conditions(),"formal_owner":"EpiLogos/QL-MEF","ql_owner_required_for_generic_research":false,"node_required_for_generic_research":false,"javascript_layer_retired":true,"experiment_definition_source":{"prime_conditions":"experiments/ql-runtime/prime/conditions.json (frozen JSON twin, compile-bound)","task_corpus":"experiments/native-research/tasks.json (frozen JSON twin, compile-bound)"},"model_body_protocols":["one-shot-json","sdk-jsonl","agent-jsonl"],"comparison":{"variables":execution::VARIABLES,"stop_when":execution::StopWhen::WORDS,"provided_tasks":true,"levels":"1..3 per comparison; a level other than a condition is the body's to apply and read back"},"specimen_runtime_requirements":{"model_bodies":"explicit supplied processes (one-shot JSON or sdk-jsonl RPC hosts)","prime":"explicit admitted native Prime executable","python_fixture":"tests only"},"acceptance_pending":["human acceptance — the owner walk over the served product and research surfaces (machine receipts complete: R10 physical return and the 2026-09-12 owner-machine finish-up; see docs/rust-refoundation/R10-OWNER-MACHINE.md and O-I#213 S7)","live-provider QL research evidence — the Rust harness expresses and runs the prime, deep-runtime and series1 families (offline parity against the recorded 2026-09-13 live runs: crates/actuation-research/tests/live_evidence_parity.rs); the first live-provider validation run collected by the Rust harness is an explicit owner-gated step"],"evidence_claims":{"provider":"not-assessed","owner_machine":true,"human_acceptance":false}})
 }
 pub fn invoke(v: &Value) -> Result<Value> {
     let op = text(v, "operation")?;
@@ -104,9 +104,9 @@ pub fn invoke(v: &Value) -> Result<Value> {
             .read(&text(v, "record_ref")?)?
             .into_value()),
         "record.list" => Ok(json!(EpistemicStore::open(text(v, "root")?)?.list()?)),
-        "task.get" => Ok(Task::get(&text(v, "task_id")?)?.candidate()),
+        "task.get" => Ok(Task::of_request(v)?.candidate()),
         "task.setup" => {
-            let task = Task::get(&text(v, "task_id")?)?;
+            let task = Task::of_request(v)?;
             let world = world(v)?;
             task.setup(&world)?;
             Ok(
@@ -114,12 +114,12 @@ pub fn invoke(v: &Value) -> Result<Value> {
             )
         }
         "task.verify" => {
-            let task = Task::get(&text(v, "task_id")?)?;
+            let task = Task::of_request(v)?;
             let world = world(v)?;
             let node = v["node"].as_str().map(PathBuf::from);
             task.verify(&world, &v["before"], &world.snapshot()?, node.as_deref())
         }
-        "task.freeze" => Ok(comparison::freeze_task(&Task::get(&text(v, "task_id")?)?)),
+        "task.freeze" => Ok(comparison::freeze_task(&Task::of_request(v)?)),
         "owner.invoke" => owner(&v["owner"])?.invoke(v["request"].clone()),
         "readiness.run" => {
             let o = owner(&v["owner"])?;
@@ -187,10 +187,11 @@ pub fn run(v: &Value) -> Result<Value> {
         Some("deep.run") => RunMode::Deep,
         _ => RunMode::parse(&text(v, "condition")?)?,
     };
-    let task = Task::get(&text(v, "task_id")?)?;
+    // A catalogue task by its id, or a provided task (a session's own).
+    let task = Task::of_request(v)?;
     let trace = ExternalRef::new(text(v, "trace_ref")?)?;
     let world = world(v)?;
-    let spec: ProcessSpec = decode(&v["body"]["process"])?;
+    let mut spec: ProcessSpec = decode(&v["body"]["process"])?;
     spec.validate()?;
     let secret_values = secrets(&spec);
     let fixture = v["body"]["fixture_provider"]
@@ -199,8 +200,21 @@ pub fn run(v: &Value) -> Result<Value> {
     if v["body"].get("protocol").is_some_and(|p| !p.is_string()) {
         return Err(Error::new("model body protocol must be text"));
     }
+    let persistent = matches!(
+        v["body"]["protocol"].as_str(),
+        Some(crate::sdk::SDK_PROTOCOL | crate::sdk::AGENT_PROTOCOL)
+    );
+    if !persistent && v["body"]["configuration"].get("level").is_some() {
+        return Err(Error::new(
+            "a one-shot body has no configuration to carry a level; vary a setting through an sdk-jsonl or agent-jsonl body",
+        ));
+    }
+    if v["body"]["protocol"] == crate::sdk::AGENT_PROTOCOL {
+        // An agent acts in its World: that is where its process stands.
+        spec.cwd = world.root().to_owned();
+    }
     let mut configuration = v["body"]["configuration"].clone();
-    if v["body"]["protocol"] == "sdk-jsonl" {
+    if persistent {
         if !configuration.is_object() {
             return Err(Error::new("SDK configuration requires an object"));
         }
@@ -231,7 +245,7 @@ pub fn run(v: &Value) -> Result<Value> {
                 fixture,
             }))
         }
-        Some("sdk-jsonl") => Box::new(execution::RepairingBody::new(
+        Some(crate::sdk::SDK_PROTOCOL) => Box::new(execution::RepairingBody::new(
             crate::sdk::NativeSdkBody::new(
                 spec,
                 configuration,
@@ -242,12 +256,36 @@ pub fn run(v: &Value) -> Result<Value> {
                     .ok_or_else(|| Error::new("SDK session timeout required"))?,
             )?,
         )),
+        // The classic condition is the agent's own loop; a QL condition
+        // recurs over its answers.
+        Some(crate::sdk::AGENT_PROTOCOL) => Box::new(execution::RepairingBody::new(
+            crate::sdk::NativeSdkBody::agent(
+                spec,
+                configuration,
+                v["body"]["source_basis"].clone(),
+                fixture,
+                v["body"]["session_timeout_ms"]
+                    .as_u64()
+                    .ok_or_else(|| Error::new("agent session timeout required"))?,
+                mode == RunMode::Classic,
+            )?,
+        )),
         _ => return Err(Error::new("unsupported model body protocol")),
     };
     let steps = v["max_steps"]
         .as_u64()
         .filter(|n| (1..=10000).contains(n))
         .ok_or_else(|| Error::new("max_steps requires 1..10000"))?;
+    let stop = execution::StopWhen::resolve(
+        &v["stop"],
+        Some(steps),
+        v["body"]["session_timeout_ms"].as_u64(),
+    )?;
+    if stop == Some(execution::StopWhen::Pass) && !task.has_objective_check() {
+        return Err(Error::new(
+            "Test pass needs the task's objective check: a provided task brings its own test",
+        ));
+    }
     let limits = if v["limits"].is_null() {
         crate::relational::Limits {
             max_steps: steps,
@@ -278,6 +316,9 @@ pub fn run(v: &Value) -> Result<Value> {
         calls,
         secret_values,
     )?;
+    if let Some(stop) = stop {
+        host.set_stop(stop);
+    }
     let mut observation = observer(&v["stream"])?;
     let result = execution::run_task(
         &task,

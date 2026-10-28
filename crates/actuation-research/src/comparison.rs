@@ -2,6 +2,7 @@
 //! set is not a result, and a human review packet is not human Recognition.
 use crate::{
     evidence::{bytes_digest, sanitize, stable_digest},
+    execution::{StopWhen, VARIABLES},
     tasks::Task,
     world::World,
     Error, Result,
@@ -54,13 +55,61 @@ fn selected<'a>(r: &'a Value, field: &str) -> &'a Value {
             .unwrap_or(&r["host"]["revision"]),
         "host_composition" => &r["host_composition_fingerprint"],
         "network_policy" => &r["network_policy_digest"],
+        "body_configuration" => &r["body_configuration_digest"],
         _ => &r[field],
     }
+}
+/// The variable a set of records varies: the one they all name, `condition`
+/// for records that name none (every comparison before variables), and None
+/// when they disagree.
+fn varied(records: &[Value]) -> Option<&str> {
+    let mut names = records
+        .iter()
+        .map(|r| r["variable"].as_str().unwrap_or("condition"))
+        .collect::<BTreeSet<_>>();
+    match names.len() {
+        0 => Some("condition"),
+        1 => names.pop_first(),
+        _ => None,
+    }
+}
+/// What a record's take is grouped by: the level of the variable it varies,
+/// its condition where it varies the condition.
+fn arm(r: &Value) -> &str {
+    match r["variable"].as_str() {
+        Some(v) if v != "condition" => r["level"].as_str().unwrap_or(""),
+        _ => r["condition"].as_str().unwrap_or(""),
+    }
+}
+/// The constants a set of records holds: every one of HELD_CONSTANTS but the
+/// varied one; and, where the records name their variable, the body's own
+/// configuration (all but the level), and the condition unless it is what
+/// varies.
+fn held_fields(records: &[Value]) -> Vec<&'static str> {
+    let variable = varied(records);
+    let mut fields = HELD_CONSTANTS
+        .iter()
+        .copied()
+        .filter(|f| !(variable == Some("model") && *f == "model"))
+        .collect::<Vec<_>>();
+    if records.iter().any(|r| r["variable"].is_string()) {
+        fields.push("body_configuration");
+        if variable != Some("condition") {
+            fields.push("condition");
+        }
+    }
+    fields
 }
 pub fn compare_held_constant(records: &[Value]) -> Value {
     let mut result = json!({});
     let mut mismatches = vec![];
-    for field in HELD_CONSTANTS {
+    if varied(records).is_none() {
+        mismatches.push(json!({"field":"variable","distinct_values":records.iter()
+            .map(|r| r["variable"].as_str().unwrap_or("condition")).collect::<BTreeSet<_>>().len(),
+            "missing_evidence":false}));
+    }
+    let fields = held_fields(records);
+    for field in &fields {
         let distinct = records
             .iter()
             .map(|r| stable_digest(selected(r, field)))
@@ -81,6 +130,11 @@ pub fn compare_held_constant(records: &[Value]) -> Value {
     }
     result["valid"] = json!(mismatches.is_empty());
     result["mismatches"] = json!(mismatches);
+    // Records that name their variable say which constants they held; the
+    // answer for records before variables keeps its accepted shape.
+    if records.iter().any(|r| r["variable"].is_string()) {
+        result["held"] = json!(fields);
+    }
     result
 }
 /// Deterministic labels are evidence-local, not a claim to cryptographic
@@ -97,6 +151,9 @@ pub fn mask_mapping(manifest: &Value) -> Result<Value> {
         if !CONDITIONS.contains(&r["condition"].as_str().unwrap_or("")) {
             return Err(Error::new("unrecognised comparison condition"));
         }
+        if arm(r).is_empty() {
+            return Err(Error::new("a varied record requires its level"));
+        }
         groups.entry(n).or_default().push(r);
     }
     let mut mapping = json!({});
@@ -110,19 +167,14 @@ pub fn mask_mapping(manifest: &Value) -> Result<Value> {
             manifest["host"]["id"].as_str().unwrap_or("unknown"),
             manifest["task"]["id"].as_str().unwrap_or("unknown")
         );
-        group.sort_by_key(|r| {
-            stable_digest(&json!(format!(
-                "{seed}:{}",
-                r["condition"].as_str().unwrap()
-            )))
-        });
+        group.sort_by_key(|r| stable_digest(&json!(format!("{seed}:{}", arm(r)))));
         let mut row = json!({});
         for (i, r) in group.into_iter().enumerate() {
-            let condition = r["condition"].as_str().unwrap();
-            if row.get(condition).is_some() {
-                return Err(Error::new("duplicate condition in one repetition"));
+            let label = arm(r);
+            if row.get(label).is_some() {
+                return Err(Error::new("duplicate condition or level in one repetition"));
             }
-            row[condition] = json!(format!("Candidate {}", char::from(b'A' + i as u8)));
+            row[label] = json!(format!("Candidate {}", char::from(b'A' + i as u8)));
         }
         mapping[repetition.to_string()] = row;
     }
@@ -142,17 +194,25 @@ pub fn assess(manifest: &Value) -> Value {
     if manifest["determination"] != "pending-human-review" {
         reasons.push("research does not supply human determination".into());
     }
-    for field in HELD_CONSTANTS {
-        if held[field] != true {
-            reasons.push(format!("held constant missing/mismatch: {field}"));
+    if held["valid"] != true {
+        for field in held_fields(records) {
+            if held[field] != true {
+                reasons.push(format!("held constant missing/mismatch: {field}"));
+            }
+        }
+        if varied(records).is_none() {
+            reasons.push("records vary more than one variable".into());
         }
     }
     if records.is_empty() {
         reasons.push("no executed comparison records".into());
     }
     let mut completeness = vec![];
-    let named_conditions = manifest["conditions"]
+    // A matched set is one take per level the plan named: its levels, else
+    // (a manifest before variables) its conditions.
+    let named_conditions = manifest["levels"]
         .as_array()
+        .or(manifest["conditions"].as_array())
         .map(|a| a.len())
         .unwrap_or(0);
     let mut repeats: BTreeMap<u64, BTreeSet<String>> = BTreeMap::new();
@@ -195,7 +255,8 @@ pub fn assess(manifest: &Value) -> Value {
         let condition = record["condition"].as_str().unwrap_or("unknown");
         if let Some(n) = record["repetition"].as_u64() {
             let g = repeats.entry(n).or_default();
-            if !CONDITIONS.contains(&condition) || !g.insert(condition.into()) {
+            let level = arm(record);
+            if !CONDITIONS.contains(&condition) || level.is_empty() || !g.insert(level.into()) {
                 missing.push("unique admitted condition for repetition".into());
             }
         } else {
@@ -230,7 +291,10 @@ pub fn assess(manifest: &Value) -> Value {
         for m in &missing {
             reasons.push(format!("{condition} r{} missing {m}", record["repetition"]));
         }
-        completeness.push(json!({"condition":condition,"repetition":record["repetition"],"complete":missing.is_empty(),"missing":missing}));
+        completeness.push(
+            json!({"condition":condition,"variable":record["variable"],"level":record["level"],
+            "repetition":record["repetition"],"complete":missing.is_empty(),"missing":missing}),
+        );
     }
     for (n, conditions) in repeats {
         if conditions.len() != named_conditions {
@@ -319,12 +383,16 @@ pub fn render_review(manifest: &Value, masked: bool, secrets: &[String]) -> Resu
         let condition = r["condition"]
             .as_str()
             .ok_or_else(|| Error::new("condition required"))?;
+        let unmasked = match r["variable"].as_str() {
+            Some(v) if v != "condition" => format!("{condition}, {v} {}", arm(r)),
+            _ => condition.to_owned(),
+        };
         let label = if masked {
-            mapping["mapping"][&rep][condition]
+            mapping["mapping"][&rep][arm(r)]
                 .as_str()
                 .unwrap_or("Candidate ?")
         } else {
-            condition
+            unmasked.as_str()
         };
         out.push_str(&format!("## {label} — repetition {rep}\n\n### Final outcome\n\n{}\n### Objective verification\n\n{}\n### Complete starting workspace\n\n{}\n### Complete final workspace\n\n{}\n",fence(&r["outcome"]),fence(&r["verification"]),fence(&r["starting_workspace"]),fence(&r["final_workspace"])));
         if masked {
@@ -368,42 +436,30 @@ where
         .as_u64()
         .filter(|n| (1..=32).contains(n))
         .ok_or_else(|| Error::new("comparison repetitions requires 1..32"))?;
-    let condition_values = request
-        .get("conditions")
-        .cloned()
-        .unwrap_or(json!(DEFAULT_CONDITIONS));
-    let conditions = condition_values
-        .as_array()
-        .filter(|a| !a.is_empty() && a.len() <= 3)
-        .ok_or_else(|| {
-            Error::new("comparison conditions requires 1..3 distinct native conditions")
-        })?;
-    let mut selected = BTreeSet::new();
-    for c in conditions {
-        let name = c
-            .as_str()
-            .filter(|s| CONDITIONS.contains(s))
-            .ok_or_else(|| Error::new("comparison condition is not admitted"))?;
-        if !selected.insert(name) {
-            return Err(Error::new("duplicate comparison condition"));
-        }
-    }
     let common = &request["run"];
     if !common.is_object() || common.get("world").is_some() || common.get("stream").is_some() {
         return Err(Error::new(
             "comparison run requires common parameters, not a shared World or Stream",
         ));
     }
+    let plan = Plan::read(request, common)?;
     let trace = request["trace_ref"]
         .as_str()
         .filter(|s| !s.trim().is_empty())
         .ok_or_else(|| Error::new("comparison trace_ref required"))?;
     actuation_core::ExternalRef::new(trace)?;
-    let task = Task::get(
-        common["task_id"]
-            .as_str()
-            .ok_or_else(|| Error::new("comparison task_id required"))?,
+    // A catalogue task, or a provided one: a session's own task.
+    let task = Task::of_request(common)?;
+    let stop = StopWhen::resolve(
+        &request["stop"],
+        common["max_steps"].as_u64(),
+        common["body"]["session_timeout_ms"].as_u64(),
     )?;
+    if stop == Some(StopWhen::Pass) && !task.has_objective_check() {
+        return Err(Error::new(
+            "Test pass needs the task's objective check: a provided task brings its own test",
+        ));
+    }
     let root = World::open(
         request["root"]
             .as_str()
@@ -412,19 +468,22 @@ where
     if !root.list(".")?.is_empty() {
         return Err(Error::new("comparison requires an empty dedicated root"));
     }
-    let count = repetitions as usize * conditions.len();
+    let count = repetitions as usize * plan.levels.len();
     let streams = request.get("streams").and_then(Value::as_array);
     if request.get("streams").is_some() && streams.is_none_or(|s| s.len() != count) {
         return Err(Error::new(
             "explicit trial streams must match the complete trial count",
         ));
     }
+    let stop_value = stop.map(|s| s.value()).unwrap_or(Value::Null);
+    let conditions = plan.conditions();
     // The exclusive plan is also the concurrency admission record. A second
     // caller cannot race the empty check and adopt this comparison's directories.
-    let plan = json!({"schema":"actuation.comparison-plan/v1","trace_ref":trace,
+    let plan_record = json!({"schema":"actuation.comparison-plan/v1","trace_ref":trace,
         "task_id":task.id(),"task_revision":task.revision(),"conditions":conditions,
+        "variable":plan.variable,"levels":plan.levels,"stop":stop_value,
         "repetitions":repetitions,"standing":"execution plan, not evidence"});
-    if !root.write("plan.json", plan.to_string().as_bytes(), true)? {
+    if !root.write("plan.json", plan_record.to_string().as_bytes(), true)? {
         return Err(Error::new("comparison root was concurrently reserved"));
     }
     let candidate = task.candidate();
@@ -441,18 +500,29 @@ where
         .unwrap_or_default();
     let mut records = vec![];
     for repetition in 0..repetitions {
-        for condition in conditions {
-            let name = condition.as_str().expect("admitted condition");
+        for level in &plan.levels {
+            let condition = plan.condition_of(level);
             let ordinal = records.len();
-            let trial_name = format!("trial-{ordinal:03}-{name}");
+            let trial_name = format!("trial-{ordinal:03}-{}", trial_label(level));
             let trial = root.create_child(&trial_name)?;
             let world = trial.create_child("world")?;
             let trial_ref = format!("{trace}:trial:{ordinal}");
             let mut input = common.clone();
             input["operation"] = json!("run");
-            input["condition"] = condition.clone();
+            input["condition"] = json!(condition);
             input["trace_ref"] = json!(trial_ref);
             input["world"] = json!(world.root());
+            if plan.variable != "condition" {
+                // The body applies the level and reads it back (sdk.rs).
+                let configuration = &mut input["body"]["configuration"];
+                configuration["level"] = json!({"variable":plan.variable,"value":level});
+                if plan.variable == "model" {
+                    configuration["model"] = json!(level);
+                }
+            }
+            if !stop_value.is_null() {
+                input["stop"] = stop_value.clone();
+            }
             if let Some(streams) = streams {
                 input["stream"] = streams[ordinal].clone();
             }
@@ -469,15 +539,22 @@ where
             let (total_tokens, usage_partial) = observed_token_usage(r);
             // Outcomes may fail or remain unknown; common parameters come from
             // the supplied plan, never inferred from a neighbouring successful run.
+            let configuration = &input["body"]["configuration"];
             let model = match (
-                common["body"]["configuration"]["provider"].as_str(),
-                common["body"]["configuration"]["model"].as_str(),
+                configuration["provider"].as_str(),
+                configuration["model"].as_str(),
             ) {
                 (Some(p), Some(m)) if !p.trim().is_empty() && !m.trim().is_empty() => {
                     json!({"provider":p,"model":m})
                 }
                 _ => Value::Null,
             };
+            let mut budget = json!({"max_steps":common["max_steps"],
+                "max_calls":common["max_calls"],"limits":common["limits"],
+                "session_timeout_ms":common["body"]["session_timeout_ms"]});
+            if !stop_value.is_null() {
+                budget["stop"] = stop_value.clone();
+            }
             let mut record = json!({"condition":condition,"repetition":repetition,"ordinal":ordinal,
                 "trace_ref":trial_ref,"status":r["status"],"error":r["error"],
                 "prompt":candidate["prompt"],"success_conditions":candidate["successConditions"],
@@ -486,7 +563,7 @@ where
                 "model":model,"fixture_provider":common["body"]["fixture_provider"],
                 "provider_mode":if common["body"]["fixture_provider"]==true{"fixture"}else{"supplied-body"},
                 "host":{"id":source["host_id"],"revision":source["host_revision"]},
-                "host_revision":source["host_revision"],"host_composition_fingerprint":common["body"]["configuration"]["composition_fingerprint"],
+                "host_revision":source["host_revision"],"host_composition_fingerprint":configuration["composition_fingerprint"],
                 "benchmark_revision":source["benchmark_revision"],"task_revision":task.revision(),
                 "runner_revision":source["runner_revision"],"review_contract_revision":source["review_contract_revision"],
                 "prompt_digest":stable_digest(&candidate["prompt"]),
@@ -494,15 +571,23 @@ where
                 "start_state_digest":stable_digest(task.start()),
                 "capability_contract_digest":stable_digest(&json!(crate::execution::CAPABILITIES)),
                 "verification_protocol_digest":stable_digest(&candidate["verificationProtocol"]),
-                "execution_budget_digest":stable_digest(&json!({"max_steps":common["max_steps"],
-                    "max_calls":common["max_calls"],"limits":common["limits"],
-                    "session_timeout_ms":common["body"]["session_timeout_ms"]})),
+                "execution_budget_digest":stable_digest(&budget),
                 "network_policy_digest":source["network_policy_digest"],
                 "elapsed_ms":begun.elapsed().as_millis(),"model_calls":r["model_calls"],
                 "capability_calls":r["capability_calls"],
                 "total_tokens":total_tokens,"usage_partial":usage_partial,
                 "receipt_path":format!("{trial_name}/receipt.json"),"record":output,
                 "human_acceptance":false,"provider_evidence":"not-assessed"});
+            // What the take varied, what it held, and how its stop condition ended it.
+            let take = record.as_object_mut().expect("record object");
+            take.insert("variable".into(), json!(plan.variable));
+            take.insert("level".into(), json!(level));
+            take.insert("agent".into(), configuration["agent"].clone());
+            take.insert("stop".into(), r["stop"].clone());
+            take.insert(
+                "body_configuration_digest".into(),
+                json!(stable_digest(&plan.held_configuration(configuration))),
+            );
             record = sanitize(&record, &secret_values);
             trial.write("receipt.json", record.to_string().as_bytes(), true)?;
             records.push(record);
@@ -510,11 +595,174 @@ where
     }
     let manifest = json!({"schema":"ql-series1-run/0.3","trace_ref":trace,"task":candidate,
         "benchmark_revision":source["benchmark_revision"],"host":{"id":source["host_id"],"revision":source["host_revision"]},
+        "variable":plan.variable,"levels":plan.levels,"conditions":conditions,"stop":stop_value,
         "determination":"pending-human-review","provider_mode":if common["body"]["fixture_provider"]==true{"fixture"}else{"supplied-body"},
         "fixture_provider":common["body"]["fixture_provider"],"records":records,
         "held_constants":compare_held_constant(&records),"provider_evidence":"not-assessed","human_acceptance":false});
     root.write("manifest.json", manifest.to_string().as_bytes(), true)?;
     Ok(manifest)
+}
+
+/// What a comparison varies and over which levels (O-I manual §19.1, Repeat's
+/// Variable and Levels). Varying the condition, the levels are conditions
+/// (`levels`, or the older `conditions`; absent, the native trio). Varying
+/// anything else, the levels are values the supplied body applies — so its
+/// body must carry a configuration it reads back (sdk-jsonl or agent-jsonl) —
+/// and the condition is held: the run's own, else classic.
+struct Plan {
+    variable: &'static str,
+    levels: Vec<String>,
+    held_condition: &'static str,
+}
+impl Plan {
+    fn read(request: &Value, common: &Value) -> Result<Self> {
+        let variable = match request.get("variable") {
+            None | Some(Value::Null) => "condition",
+            Some(v) => v
+                .as_str()
+                .and_then(|v| VARIABLES.iter().copied().find(|known| *known == v))
+                .ok_or_else(|| {
+                    Error::new(format!(
+                        "comparison variable is one of {}",
+                        VARIABLES.join(", ")
+                    ))
+                })?,
+        };
+        let given = |key: &str| request.get(key).filter(|v| !v.is_null());
+        let distinct = |values: &Value, what: &str| -> Result<Vec<String>> {
+            let rows = values
+                .as_array()
+                .filter(|a| !a.is_empty() && a.len() <= 3)
+                .ok_or_else(|| {
+                    Error::new(format!("comparison {what} requires 1..3 distinct values"))
+                })?;
+            let mut seen = BTreeSet::new();
+            rows.iter()
+                .map(|v| {
+                    let text = v
+                        .as_str()
+                        .filter(|t| !t.trim().is_empty() && t.chars().count() <= 64)
+                        .ok_or_else(|| {
+                            Error::new(format!(
+                                "each of the comparison's {what} is text of 1..64 characters"
+                            ))
+                        })?;
+                    if !seen.insert(text) {
+                        return Err(Error::new(format!("duplicate comparison {what}")));
+                    }
+                    Ok(text.to_owned())
+                })
+                .collect()
+        };
+        if variable == "condition" {
+            let levels = match (given("levels"), given("conditions")) {
+                (Some(_), Some(_)) => {
+                    return Err(Error::new(
+                        "a comparison names its conditions once: levels or conditions",
+                    ))
+                }
+                (Some(v), None) | (None, Some(v)) => distinct(v, "conditions")?,
+                (None, None) => DEFAULT_CONDITIONS.iter().map(|c| (*c).to_owned()).collect(),
+            };
+            if let Some(level) = levels.iter().find(|c| !CONDITIONS.contains(&c.as_str())) {
+                return Err(Error::new(format!(
+                    "comparison condition is not admitted: {level}"
+                )));
+            }
+            return Ok(Self {
+                variable,
+                levels,
+                held_condition: "classic",
+            });
+        }
+        if given("conditions").is_some() {
+            return Err(Error::new(format!(
+                "conditions are the condition's levels; this comparison varies {variable} over its levels"
+            )));
+        }
+        let levels = distinct(
+            given("levels").ok_or_else(|| {
+                Error::new(format!(
+                    "a comparison that varies {variable} names its levels: 1..3 values"
+                ))
+            })?,
+            "levels",
+        )?;
+        let held_condition = match common.get("condition") {
+            None | Some(Value::Null) => "classic",
+            Some(c) => c
+                .as_str()
+                .and_then(|c| CONDITIONS.iter().copied().find(|known| *known == c))
+                .ok_or_else(|| Error::new("the comparison's held condition is not admitted"))?,
+        };
+        let protocol = common["body"]["protocol"].as_str();
+        if !matches!(
+            protocol,
+            Some(crate::sdk::SDK_PROTOCOL | crate::sdk::AGENT_PROTOCOL)
+        ) {
+            return Err(Error::new(format!(
+                "varying {variable} needs a body that applies it and reads it back: an sdk-jsonl or agent-jsonl body"
+            )));
+        }
+        let configuration = &common["body"]["configuration"];
+        if !configuration.is_object() {
+            return Err(Error::new(
+                "the varied body requires its configuration object",
+            ));
+        }
+        if configuration.get("level").is_some() {
+            return Err(Error::new(
+                "the comparison gives each take its level; the common body names none",
+            ));
+        }
+        Ok(Self {
+            variable,
+            levels,
+            held_condition,
+        })
+    }
+    fn condition_of<'a>(&'a self, level: &'a str) -> &'a str {
+        if self.variable == "condition" {
+            level
+        } else {
+            self.held_condition
+        }
+    }
+    /// The conditions the takes run under.
+    fn conditions(&self) -> Vec<&str> {
+        if self.variable == "condition" {
+            self.levels.iter().map(String::as_str).collect()
+        } else {
+            vec![self.held_condition]
+        }
+    }
+    /// The body's configuration as every take must share it: all but the
+    /// level, and the model where the model is what varies.
+    fn held_configuration(&self, configuration: &Value) -> Value {
+        let mut held = configuration.clone();
+        if let Some(fields) = held.as_object_mut() {
+            fields.remove("level");
+            if self.variable == "model" {
+                fields.remove("model");
+            }
+        }
+        held
+    }
+}
+/// A trial directory's name keeps to what a directory name can carry.
+fn trial_label(level: &str) -> String {
+    let label: String = level
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '-' || c == '.' {
+                c
+            } else {
+                '-'
+            }
+        })
+        .take(48)
+        .collect();
+    label.trim_matches('.').to_owned()
 }
 /// Token usage is summed from whatever per-call usage the specimen disclosed.
 /// A call without usage never nulls the record: the partial sum travels with
@@ -594,6 +842,52 @@ mod tests {
         assert_eq!(held["mismatches"].as_array().unwrap().len(), 1);
         // Empty records hold nothing.
         assert_eq!(compare_held_constant(&[])["valid"], json!(false));
+    }
+
+    #[test]
+    fn a_varied_comparison_holds_everything_but_its_variable() {
+        let take = |level: &str, config: &str| {
+            let mut r = record("classic", 0, "m");
+            r["variable"] = json!("effort");
+            r["level"] = json!(level);
+            r["body_configuration_digest"] = json!(config);
+            r
+        };
+        let held = compare_held_constant(&[take("low", "cfg"), take("high", "cfg")]);
+        assert_eq!(held["valid"], json!(true), "{held}");
+        assert_eq!(held["condition"], json!(true));
+        assert_eq!(held["body_configuration"], json!(true));
+        // A body set up otherwise than by its level is not a matched set.
+        let held = compare_held_constant(&[take("low", "cfg"), take("high", "other")]);
+        assert_eq!(held["valid"], json!(false));
+        assert_eq!(held["body_configuration"], json!(false));
+        // Nor is a condition that moved while the effort varied.
+        let mut moved = take("high", "cfg");
+        moved["condition"] = json!("ql-direct");
+        let held = compare_held_constant(&[take("low", "cfg"), moved]);
+        assert_eq!(held["condition"], json!(false));
+        assert_eq!(held["valid"], json!(false));
+        // Records that vary two different variables hold nothing together.
+        let mut model = take("m-b", "cfg");
+        model["variable"] = json!("model");
+        let held = compare_held_constant(&[take("low", "cfg"), model]);
+        assert_eq!(held["valid"], json!(false));
+        assert_eq!(held["mismatches"][0]["field"], json!("variable"));
+        // Varying the model releases only the model.
+        let by_model = |level: &str| {
+            let mut r = record("classic", 0, level);
+            r["variable"] = json!("model");
+            r["level"] = json!(level);
+            r["body_configuration_digest"] = json!("cfg");
+            r
+        };
+        let held = compare_held_constant(&[by_model("m-a"), by_model("m-b")]);
+        assert_eq!(held["valid"], json!(true), "{held}");
+        assert!(held.get("model").is_none());
+        // Records before variables keep their constants exactly.
+        let plain =
+            compare_held_constant(&[record("classic", 0, "m"), record("ql-direct", 0, "m")]);
+        assert!(plain.get("held").is_none(), "the accepted shape: {plain}");
     }
 
     #[test]

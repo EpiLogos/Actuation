@@ -51,9 +51,193 @@ fn apply_workspace_overlay(value: &mut Value, overlay: &Value, id: &str) {
     }
 }
 
+/// The category a provided task carries: it is no catalogue specimen, so no
+/// catalogue verifier or allowance schedule applies to it.
+pub const PROVIDED_CATEGORY: &str = "provided";
+/// A provided task's bounds: its prompt, its success conditions, and the
+/// starting workspace it brings into its own World.
+const PROVIDED_PROMPT_BYTES: usize = 64 * 1024;
+const PROVIDED_CONDITIONS: usize = 32;
+const PROVIDED_CONDITION_BYTES: usize = 4 * 1024;
+const PROVIDED_FILES: usize = 1024;
+const PROVIDED_WORKSPACE_BYTES: usize = 16 * 1024 * 1024;
+
+/// A provided task's own objective check: a process run in the task's World
+/// (its cwd is always that World). Exit 0 is a pass. It is supplied
+/// explicitly, as every specimen process is; Actuation never infers one.
+#[derive(Clone, Debug, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ProvidedTest {
+    program: std::path::PathBuf,
+    #[serde(default)]
+    args: Vec<String>,
+    #[serde(default)]
+    environment: BTreeMap<String, String>,
+    timeout_ms: u64,
+    output_limit: usize,
+}
+impl ProvidedTest {
+    fn read(value: &Value) -> Result<Self> {
+        let test: Self = serde_json::from_value(value.clone())
+            .map_err(|e| Error::new(format!("a provided task's test: {e}")))?;
+        // The same bounds every supplied process keeps; the cwd is the World's.
+        test.spec(Path::new("/")).validate()?;
+        Ok(test)
+    }
+    fn spec(&self, cwd: &Path) -> ProcessSpec {
+        ProcessSpec {
+            program: self.program.clone(),
+            args: self.args.clone(),
+            cwd: cwd.to_owned(),
+            environment: self.environment.clone(),
+            timeout_ms: self.timeout_ms,
+            output_limit: self.output_limit,
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Task(Value);
 impl Task {
+    /// A task the caller provides — a session's own task — rather than one of
+    /// the frozen research catalogue: its id (the caller's reference), the
+    /// prompt the body is asked, its success conditions, an optional starting
+    /// workspace (empty by default) and an optional `test` process that is its
+    /// objective check. Without a test its success conditions stay open for
+    /// review; no verdict is inferred from the words.
+    pub fn provided(value: &Value) -> Result<Self> {
+        let fields = value
+            .as_object()
+            .ok_or_else(|| Error::new("a provided task requires an object"))?;
+        for key in fields.keys() {
+            if ![
+                "id",
+                "prompt",
+                "successConditions",
+                "starting_workspace",
+                "test",
+            ]
+            .contains(&key.as_str())
+            {
+                return Err(Error::new(format!(
+                    "a provided task has no field {key}; it takes id, prompt, successConditions, starting_workspace and test"
+                )));
+            }
+        }
+        let id = value["id"]
+            .as_str()
+            .filter(|s| !s.trim().is_empty() && s.len() <= 512)
+            .ok_or_else(|| Error::new("a provided task requires an id of 1..512 bytes"))?;
+        actuation_core::ExternalRef::new(id)?;
+        if Self::ids().iter().any(|catalogued| catalogued == id) {
+            return Err(Error::new(
+                "a provided task cannot take a catalogue task's id",
+            ));
+        }
+        let prompt = value["prompt"]
+            .as_str()
+            .filter(|s| !s.trim().is_empty() && s.len() <= PROVIDED_PROMPT_BYTES)
+            .ok_or_else(|| Error::new("a provided task requires a prompt of 1..65536 bytes"))?;
+        let conditions = match value.get("successConditions") {
+            None | Some(Value::Null) => vec![],
+            Some(Value::Array(rows)) if rows.len() <= PROVIDED_CONDITIONS => rows
+                .iter()
+                .map(|row| {
+                    row.as_str()
+                        .filter(|s| !s.trim().is_empty() && s.len() <= PROVIDED_CONDITION_BYTES)
+                        .map(|s| json!(s))
+                        .ok_or_else(|| {
+                            Error::new("each success condition is text of 1..4096 bytes")
+                        })
+                })
+                .collect::<Result<Vec<_>>>()?,
+            Some(_) => {
+                return Err(Error::new(
+                    "a provided task's successConditions are at most 32 texts",
+                ))
+            }
+        };
+        let workspace = match value.get("starting_workspace") {
+            None | Some(Value::Null) => json!({}),
+            Some(Value::Object(files)) => {
+                if files.len() > PROVIDED_FILES {
+                    return Err(Error::new(
+                        "a provided task's starting workspace holds at most 1024 files",
+                    ));
+                }
+                let mut total = 0usize;
+                for (path, content) in files {
+                    let text = content.as_str().ok_or_else(|| {
+                        Error::new("a provided task's starting files are UTF-8 text")
+                    })?;
+                    if path.trim().is_empty() || path.starts_with('/') {
+                        return Err(Error::new(
+                            "a provided task's starting files are named by relative paths",
+                        ));
+                    }
+                    total = total.saturating_add(text.len());
+                }
+                if total > PROVIDED_WORKSPACE_BYTES {
+                    return Err(Error::new(
+                        "a provided task's starting workspace exceeds 16 MiB",
+                    ));
+                }
+                Value::Object(files.clone())
+            }
+            Some(_) => {
+                return Err(Error::new(
+                    "a provided task's starting workspace maps relative paths to text",
+                ))
+            }
+        };
+        let test = match value.get("test") {
+            None | Some(Value::Null) => Value::Null,
+            Some(test) => {
+                ProvidedTest::read(test)?;
+                test.clone()
+            }
+        };
+        let protocol = if test.is_null() {
+            json!(["No objective check was provided: the success conditions stay open for review."])
+        } else {
+            json!(["Run the task's own test in its World after the run; exit 0 passes."])
+        };
+        let mut task = json!({"id":id,"category":PROVIDED_CATEGORY,"prompt":prompt,
+            "successConditions":conditions,"verificationProtocol":protocol,
+            "starting_workspace":workspace});
+        if !test.is_null() {
+            task["test"] = test;
+        }
+        candidate_boundary(&task)?;
+        Ok(Self(task))
+    }
+    /// Whether this task was provided by the caller rather than catalogued.
+    pub fn is_provided(&self) -> bool {
+        self.category() == PROVIDED_CATEGORY
+    }
+    /// Whether the task carries an objective check a Test pass can read: every
+    /// catalogue task has its native verifier; a provided task only its test.
+    pub fn has_objective_check(&self) -> bool {
+        !self.is_provided() || self.0.get("test").is_some_and(|t| !t.is_null())
+    }
+    /// The task the request names: a catalogue `task_id`, or a provided
+    /// `task`. Exactly one.
+    pub fn of_request(request: &Value) -> Result<Self> {
+        match (request.get("task_id"), request.get("task")) {
+            (Some(id), None) => Self::get(
+                id.as_str()
+                    .filter(|s| !s.trim().is_empty())
+                    .ok_or_else(|| Error::new("task_id requires text"))?,
+            ),
+            (None, Some(task)) => Self::provided(task),
+            (Some(_), Some(_)) => Err(Error::new(
+                "a run names a catalogue task_id or a provided task, not both",
+            )),
+            (None, None) => Err(Error::new(
+                "a run requires a catalogue task_id or a provided task",
+            )),
+        }
+    }
     pub fn get(id: &str) -> Result<Self> {
         let catalogue: Value = serde_json::from_str(TASKS).expect("checked task catalogue");
         let mut value = catalogue["tasks"]
@@ -163,6 +347,9 @@ impl Task {
                 .expect("constant verification expression")
                 .is_match(s)
         };
+        if self.is_provided() {
+            return self.verify_provided(world, before, after);
+        }
         match self.id() {
             "S1-CODE-001" => {
                 let tests = run_tests(world, node, &["index.test.js".into()])?;
@@ -236,6 +423,27 @@ impl Task {
             }
             _ => Err(Error::new("task has no native verification protocol")),
         }
+    }
+    /// A provided task's verification: its own test, run in its World, is the
+    /// objective check; without one, its success conditions are open — no
+    /// verdict is inferred, and `objective_checks_pass` is never true.
+    fn verify_provided(&self, world: &World, before: &Value, after: &Value) -> Result<Value> {
+        let changed = before != after;
+        let Some(test) = self.0.get("test").filter(|t| !t.is_null()) else {
+            return Ok(json!({"protocol":"provided-task-review",
+                "observations":{"workspaceChanged":changed},
+                "objective_check":"none","answer":"open","objective_checks_pass":false}));
+        };
+        let test = ProvidedTest::read(test)?;
+        world.verify_root()?;
+        let ran = test.spec(world.root()).run(b"")?;
+        world.verify_root()?;
+        let ok = ran.code == Some(0);
+        Ok(json!({"protocol":"provided-task-test",
+            "observations":{"test":{"ok":ok,"code":ran.code,"stdout":ran.stdout,"stderr":ran.stderr},
+                "workspaceChanged":changed},
+            "objective_check":"test","answer":if ok {"met"} else {"not met"},
+            "objective_checks_pass":ok}))
     }
 }
 pub fn run_tests(world: &World, node: Option<&Path>, files: &[String]) -> Result<Value> {

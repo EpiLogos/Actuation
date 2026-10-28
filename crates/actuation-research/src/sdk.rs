@@ -120,7 +120,18 @@ pub struct NativeSdkBody {
     preflight: Value,
     failures: Vec<Value>,
     finished: Option<Value>,
+    protocol: &'static str,
+    /// An agent body acting in its own loop (`turn`), rather than answering
+    /// Actuation's turns with capability calls (`complete`).
+    acting: bool,
 }
+/// The protocol of an agent body: an agent — a session's own, as its owner
+/// supplies it — speaking the SDK JSONL protocol plus `turn`. Under the
+/// classic condition it acts in its World in its own loop, one `turn` at a
+/// time; under a QL condition it answers Actuation's turns (`complete`), as
+/// every SDK body does, so the condition is how its loop recurs.
+pub const AGENT_PROTOCOL: &str = "agent-jsonl";
+pub const SDK_PROTOCOL: &str = "sdk-jsonl";
 impl NativeSdkBody {
     pub fn new(
         spec: ProcessSpec,
@@ -135,6 +146,9 @@ impl NativeSdkBody {
         if !(1..=3_600_000).contains(&session_timeout_ms) {
             return Err(Error::new("SDK session_timeout_ms requires 1..3600000"));
         }
+        if let Some(level) = configuration.get("level") {
+            read_level(level)?;
+        }
         Ok(Self {
             spec,
             configuration,
@@ -146,7 +160,32 @@ impl NativeSdkBody {
             preflight: Value::Null,
             failures: vec![],
             finished: None,
+            protocol: SDK_PROTOCOL,
+            acting: false,
         })
+    }
+    /// An agent body: the configuration names the agent (`agent`), and the
+    /// body must read it back at preflight, with its provider, model and any
+    /// level it was given. `acting` is the classic condition's own loop.
+    pub fn agent(
+        spec: ProcessSpec,
+        configuration: Value,
+        source_basis: Value,
+        fixture: bool,
+        session_timeout_ms: u64,
+        acting: bool,
+    ) -> Result<Self> {
+        text(&configuration, "agent")?;
+        let mut body = Self::new(
+            spec,
+            configuration,
+            source_basis,
+            fixture,
+            session_timeout_ms,
+        )?;
+        body.protocol = AGENT_PROTOCOL;
+        body.acting = acting;
+        Ok(body)
     }
     fn remaining(&self) -> Result<Duration> {
         self.budget
@@ -198,20 +237,129 @@ impl NativeSdkBody {
                 ));
             }
         }
+        // The agent, and a level a comparison varies, are the body's to apply:
+        // it reads them back, or the run does not claim them.
+        for field in ["agent", "level"] {
+            let required = field == "level" || self.protocol == AGENT_PROTOCOL;
+            if required
+                && self.configuration.get(field).is_some()
+                && self.preflight[field] != self.configuration[field]
+            {
+                self.preflight["ready"] = json!(false);
+                return Err(Error::new(format!(
+                    "the body did not read back the {field} it was given: {}",
+                    self.configuration[field]
+                )));
+            }
+        }
         Ok(())
     }
+    /// One turn of an acting agent: the task the first time, then what the
+    /// run tells it when it finished a turn before its stop condition held.
+    fn turn(&mut self, request: &Value) -> Result<Value> {
+        candidate_boundary(request)?;
+        let iteration = request["payload"]["iteration"].as_u64().unwrap_or(1);
+        let prompt = if iteration <= 1 {
+            let task = &request["request"];
+            let mut text = task["input"]
+                .as_str()
+                .map(str::to_owned)
+                .unwrap_or_else(|| task["input"].to_string());
+            let conditions = task["successConditions"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(Value::as_str)
+                .collect::<Vec<_>>();
+            if !conditions.is_empty() {
+                text.push_str("\n\nSuccess conditions:");
+                for c in conditions {
+                    text.push_str("\n- ");
+                    text.push_str(c);
+                }
+            }
+            text
+        } else {
+            request["payload"]["history"]
+                .as_array()
+                .and_then(|h| h.iter().rev().find(|m| m["role"] == "user"))
+                .map(|m| {
+                    m["content"]
+                        .as_str()
+                        .map(str::to_owned)
+                        .unwrap_or_else(|| m["content"].to_string())
+                })
+                .unwrap_or_else(|| "Continue the task.".to_owned())
+        };
+        self.prepare()?;
+        let data =
+            self.exchange(json!({"type":"turn","turn":{"iteration":iteration,"prompt":prompt}}))?;
+        let status = data["status"].as_str().unwrap_or("unknown");
+        if status != "completed" {
+            return Err(Error::new(format!(
+                "the agent's turn ended {status}, not completed"
+            )));
+        }
+        let output = data["output"]
+            .as_str()
+            .ok_or_else(|| Error::new("the agent's turn output requires text"))?;
+        // The agent acted itself; there is nothing for the run to execute.
+        Ok(
+            json!({"content":output,"capabilityCalls":[],"usage":data["usage"],
+            "raw":{"agent":data["raw"],"output":output,"decoding":"agent-turn"}}),
+        )
+    }
+}
+
+/// A comparison's level, as a body is given it: `{variable, value}`, the
+/// variable one Actuation names and the value text of 1..64 characters.
+pub fn read_level(level: &Value) -> Result<(&str, &str)> {
+    let variable = level["variable"]
+        .as_str()
+        .filter(|v| crate::execution::VARIABLES.contains(v))
+        .ok_or_else(|| Error::new("a level names one of the comparison variables"))?;
+    let value = level["value"]
+        .as_str()
+        .filter(|v| !v.trim().is_empty() && v.chars().count() <= 64)
+        .ok_or_else(|| Error::new("a level's value is text of 1..64 characters"))?;
+    if level.as_object().is_some_and(|m| m.len() != 2) {
+        return Err(Error::new("a level is exactly {variable, value}"));
+    }
+    Ok((variable, value))
 }
 impl ModelBody for NativeSdkBody {
     fn basis(&self) -> Value {
         // Configuration may contain additional native options; this record
         // exposes selection, not credentials or an assertion of provider use.
-        json!({"protocol":"sdk-jsonl","source":self.source_basis,"fixture_provider":self.fixture,
+        let mut basis = json!({"protocol":self.protocol,"source":self.source_basis,"fixture_provider":self.fixture,
             "provider":self.configuration["provider"],"model":self.configuration["model"],
-            "provider_mode":if self.fixture{"fixture"}else{"supplied-body"},"preflight":self.preflight})
+            "provider_mode":if self.fixture{"fixture"}else{"supplied-body"},"preflight":self.preflight});
+        for field in ["agent", "level"] {
+            if let Some(v) = self.configuration.get(field) {
+                basis[field] = v.clone();
+            }
+        }
+        if self.protocol == AGENT_PROTOCOL {
+            basis["acting"] = json!(self.acting);
+        }
+        basis
     }
     fn complete(&mut self, request: &Value) -> Result<Value> {
         if self.finished.is_some() {
             return Err(Error::new("SDK session already finalized"));
+        }
+        let payload = &request["payload"];
+        if self.acting
+            && payload.get("series1Control").is_none()
+            && payload.get("qlAct").is_none()
+            && payload.get("ql_act").is_none()
+        {
+            let result = self.turn(request);
+            if let Err(e) = &result {
+                self.failures
+                    .push(json!({"operation":"turn","error":e.to_string()}));
+            }
+            return result;
         }
         let result = (|| {
             let projected = project(request)?;

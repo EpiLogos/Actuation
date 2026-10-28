@@ -107,6 +107,140 @@ impl<T: ModelBody + ?Sized> ModelBody for Box<T> {
         (**self).finish(inspection)
     }
 }
+
+/// What a comparison can vary from one take to the next (O-I manual §19.1,
+/// The Launch panel, Repeat's Variable). `condition` is Actuation's own: how
+/// the run's loop recurs. Every other variable is a setting of the supplied
+/// body, carried to it as its configuration's `level` and confirmed by it.
+pub const VARIABLES: &[&str] = &[
+    "condition",
+    "model",
+    "effort",
+    "skillset",
+    "budget",
+    "autonomy",
+];
+
+/// The condition that ends each run (O-I manual §19.1, Repeat's Stop when).
+/// It is read at each turn's boundary, after the run's first turn: before the
+/// body is asked again, and when the body finishes a turn with nothing more
+/// to do (then, until it holds, the body is told to continue). A turn in
+/// flight finishes within the body's own bound; no turn starts once the
+/// condition holds. Absent, a run ends as it always has: at its runtime's
+/// own end.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum StopWhen {
+    /// Task done: the run ends when the body finishes the task.
+    Done,
+    /// Turn cap: the run goes on until the body has taken this many turns.
+    Turns(u64),
+    /// Time cap: the run goes on until this many milliseconds have passed.
+    Time(u64),
+    /// Test pass: the run goes on until the task's objective check passes.
+    Pass,
+}
+impl StopWhen {
+    pub const WORDS: &'static [&'static str] = &["done", "turns", "time", "pass"];
+    /// Read `{"when": done|turns|time|pass, "turns"?, "time_ms"?}`; null is
+    /// no stop condition. A Turn cap without its number is the run's
+    /// `max_steps`; a Time cap without its number is the body's session time
+    /// (`time_default`), else it is refused.
+    pub fn resolve(
+        value: &Value,
+        max_steps: Option<u64>,
+        time_default: Option<u64>,
+    ) -> Result<Option<Self>> {
+        if value.is_null() {
+            return Ok(None);
+        }
+        let fields = value
+            .as_object()
+            .ok_or_else(|| Error::new("stop requires an object {when, turns?, time_ms?}"))?;
+        if let Some(other) = fields
+            .keys()
+            .find(|k| !["when", "turns", "time_ms"].contains(&k.as_str()))
+        {
+            return Err(Error::new(format!(
+                "stop has no field {other}; it takes when, turns and time_ms"
+            )));
+        }
+        let when = value["when"].as_str().unwrap_or_default();
+        let number =
+            |key: &str| -> Result<Option<u64>> {
+                match value.get(key) {
+                    None | Some(Value::Null) => Ok(None),
+                    Some(v) => v.as_u64().filter(|n| *n > 0).map(Some).ok_or_else(|| {
+                        Error::new(format!("stop {key} requires a positive integer"))
+                    }),
+                }
+            };
+        let (turns, time) = (number("turns")?, number("time_ms")?);
+        let stray = |key: &str| Error::new(format!("stop {key} belongs to another stop condition"));
+        let stop = match when {
+            "done" | "pass" => {
+                if turns.is_some() {
+                    return Err(stray("turns"));
+                }
+                if time.is_some() {
+                    return Err(stray("time_ms"));
+                }
+                if when == "done" {
+                    Self::Done
+                } else {
+                    Self::Pass
+                }
+            }
+            "turns" => {
+                if time.is_some() {
+                    return Err(stray("time_ms"));
+                }
+                let cap = turns.or(max_steps).ok_or_else(|| {
+                    Error::new("a Turn cap needs its number of turns or the run's max_steps")
+                })?;
+                if max_steps.is_some_and(|steps| cap > steps) {
+                    return Err(Error::new("a Turn cap cannot exceed the run's max_steps"));
+                }
+                Self::Turns(cap)
+            }
+            "time" => {
+                if turns.is_some() {
+                    return Err(stray("turns"));
+                }
+                let cap = time.or(time_default).ok_or_else(|| {
+                    Error::new("a Time cap needs its time_ms or the body's session time")
+                })?;
+                if cap > 3_600_000 {
+                    return Err(Error::new("a Time cap is at most 3600000 ms"));
+                }
+                Self::Time(cap)
+            }
+            _ => return Err(Error::new("stop when is one of done, turns, time and pass")),
+        };
+        Ok(Some(stop))
+    }
+    pub fn value(&self) -> Value {
+        match self {
+            Self::Done => json!({"when":"done"}),
+            Self::Turns(n) => json!({"when":"turns","turns":n}),
+            Self::Time(ms) => json!({"when":"time","time_ms":ms}),
+            Self::Pass => json!({"when":"pass"}),
+        }
+    }
+}
+
+/// A run's stop condition, armed once its task is set up in its World.
+struct Stopping {
+    when: StopWhen,
+    task: tasks::Task,
+    before: Value,
+    started: std::time::Instant,
+    /// The host's call count at the last Test pass reading, and that reading:
+    /// nothing has acted since, so it is not run again.
+    checked: Option<(u64, Value)>,
+    /// Why the run was ended by its stop condition, once it was.
+    met: Option<Value>,
+}
+const CONTINUE: &str = "Continue the task.";
 /// A malformed turn is a host-protocol event, not a model verdict: re-ask
 /// with the failure made explicit rather than failing the run, and re-ask an
 /// empty model-carried act once before accepting the empty return as the
@@ -252,11 +386,166 @@ pub struct ResearchHost<B: ModelBody> {
     capability_supply: Option<Value>,
     max_calls: u64,
     secrets: Vec<String>,
+    stop: Option<StopWhen>,
+    stopping: Option<Stopping>,
 }
 impl<B: ModelBody> ResearchHost<B> {
     /// Replace the capability supply the model sees on every model call.
     pub fn set_capability_supply(&mut self, supply: Value) {
         self.capability_supply = Some(supply);
+    }
+    /// The condition that ends the run (Repeat's Stop when). It is armed when
+    /// the run sets its task up, and read at each turn's boundary.
+    pub fn set_stop(&mut self, stop: StopWhen) {
+        self.stop = Some(stop);
+    }
+    fn arm_stop(&mut self, task: &tasks::Task, before: &Value) -> Result<()> {
+        let Some(when) = self.stop else {
+            return Ok(());
+        };
+        if when == StopWhen::Pass && !task.has_objective_check() {
+            return Err(Error::new(
+                "Test pass needs the task's objective check, and this task has none",
+            ));
+        }
+        let started = std::time::Instant::now();
+        self.stopping = Some(Stopping {
+            when,
+            task: task.clone(),
+            before: before.clone(),
+            started,
+            checked: None,
+            met: None,
+        });
+        Ok(())
+    }
+    /// The task's objective check as the World stands, read again only when
+    /// something has acted since the last reading.
+    fn test_reading(&mut self) -> Result<Value> {
+        let calls = self.model_calls + self.capability_calls;
+        let stopping = self.stopping.as_mut().expect("armed");
+        if let Some((at, reading)) = &stopping.checked {
+            if *at == calls {
+                return Ok(reading.clone());
+            }
+        }
+        self.world.verify_root()?;
+        let after = self.world.snapshot()?;
+        let reading = stopping
+            .task
+            .verify(&self.world, &stopping.before, &after, self.node.as_deref())
+            .unwrap_or_else(
+                |e| json!({"status":"failed","error":e.to_string(),"objective_checks_pass":false}),
+            );
+        stopping.checked = Some((calls, reading.clone()));
+        Ok(reading)
+    }
+    /// Whether the run's stop condition holds now; `finished` is the body's
+    /// own finish (a turn with nothing more to do). Records why, once.
+    fn stop_reached(&mut self, finished: bool) -> Result<Option<String>> {
+        let Some((when, started, met)) = self
+            .stopping
+            .as_ref()
+            .map(|s| (s.when, s.started, s.met.clone()))
+        else {
+            return Ok(None);
+        };
+        if let Some(met) = met {
+            return Ok(met["reason"].as_str().map(str::to_owned));
+        }
+        // A run always takes its first turn.
+        if self.model_calls == 0 {
+            return Ok(None);
+        }
+        let reason = match when {
+            StopWhen::Done => finished.then(|| "the body finished the task".to_owned()),
+            StopWhen::Turns(cap) => {
+                (self.model_calls >= cap).then(|| format!("its turn cap of {cap} turns"))
+            }
+            StopWhen::Time(ms) => (started.elapsed().as_millis() >= u128::from(ms))
+                .then(|| format!("its time cap of {ms} ms")),
+            StopWhen::Pass => (self.test_reading()?["objective_checks_pass"] == true)
+                .then(|| "its test passes".to_owned()),
+        };
+        if let Some(reason) = &reason {
+            let stopping = self.stopping.as_mut().expect("armed");
+            stopping.met = Some(json!({"reason":reason,"at_turn":self.model_calls,
+                "elapsed_ms":stopping.started.elapsed().as_millis()}));
+        }
+        Ok(reason)
+    }
+    /// What the body is told when it finishes a turn before its stop
+    /// condition holds.
+    fn continuation(&mut self) -> Result<String> {
+        let pass = self
+            .stopping
+            .as_ref()
+            .is_some_and(|s| s.when == StopWhen::Pass);
+        if !pass {
+            return Ok(CONTINUE.to_owned());
+        }
+        let reading = self.test_reading()?;
+        let test = &reading["observations"]["test"];
+        let output = [test["stdout"].as_str(), test["stderr"].as_str()]
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>()
+            .join("\n");
+        let head = output.trim().chars().take(2000).collect::<String>();
+        let mut text =
+            "The task's own check does not pass yet. Continue the task until it does.".to_owned();
+        if !head.is_empty() {
+            text.push_str("\n\nThe check said:\n");
+            text.push_str(&head);
+        }
+        Ok(sanitize(&json!(text), &self.secrets)
+            .as_str()
+            .unwrap_or(CONTINUE)
+            .to_owned())
+    }
+    /// The run's stop condition as it ended: whether it was met, and why. Read
+    /// from the facts after the run where the run ended on its own.
+    fn stop_outcome(&self, execution_status: &Value, verification: &Value) -> Option<Value> {
+        let stopping = self.stopping.as_ref()?;
+        let mut outcome = stopping.when.value();
+        let met = if let Some(met) = &stopping.met {
+            outcome["reason"] = met["reason"].clone();
+            outcome["at_turn"] = met["at_turn"].clone();
+            outcome["elapsed_ms"] = met["elapsed_ms"].clone();
+            true
+        } else {
+            // A run that failed or was cut off did not reach its condition,
+            // whatever its turns or time came to.
+            let ended = execution_status == "completed" || execution_status == "exhausted";
+            let elapsed = stopping.started.elapsed().as_millis();
+            let (met, reason) = match stopping.when {
+                StopWhen::Done => (
+                    execution_status == "completed",
+                    "the body finished the task".to_owned(),
+                ),
+                StopWhen::Turns(cap) => (
+                    self.model_calls >= cap,
+                    format!("its turn cap of {cap} turns"),
+                ),
+                StopWhen::Time(ms) => (
+                    elapsed >= u128::from(ms),
+                    format!("its time cap of {ms} ms"),
+                ),
+                StopWhen::Pass => (
+                    verification["objective_checks_pass"] == true,
+                    "its test passes".to_owned(),
+                ),
+            };
+            let met = met && ended;
+            if met {
+                outcome["reason"] = json!(reason);
+                outcome["at_turn"] = json!(self.model_calls);
+                outcome["elapsed_ms"] = json!(elapsed);
+            }
+            met
+        };
+        outcome["met"] = json!(met);
+        Some(outcome)
     }
     pub fn new(
         body: B,
@@ -278,6 +567,8 @@ impl<B: ModelBody> ResearchHost<B> {
             capability_supply: None,
             max_calls,
             secrets,
+            stop: None,
+            stopping: None,
         })
     }
     fn budget(&self, cancel: &CancellationToken) -> Result<()> {
@@ -371,13 +662,32 @@ impl<B: ModelBody> ResearchHost<B> {
 }
 impl<B: ModelBody> RuntimeHost for ResearchHost<B> {
     fn call_model<'a>(&'a mut self, call: HostCall) -> HostFuture<'a> {
-        Box::pin(async move { self.model(call).map_err(Into::into) })
+        Box::pin(async move {
+            // The stop condition is read before the body is asked again: a
+            // run whose condition holds takes no further turn.
+            if let Some(reason) = self.stop_reached(false)? {
+                call.cancellation.request();
+                return Err(HostError::Aborted(format!("stop when met: {reason}")));
+            }
+            self.model(call).map_err(Into::into)
+        })
     }
     fn execute_capability<'a>(&'a mut self, call: HostCall) -> HostFuture<'a> {
         Box::pin(async move { self.capability(call).map_err(Into::into) })
     }
-    fn receive_external_input<'a>(&'a mut self, _call: HostCall) -> HostFuture<'a> {
-        Box::pin(async { Ok(Value::Null) })
+    fn receive_external_input<'a>(&'a mut self, call: HostCall) -> HostFuture<'a> {
+        Box::pin(async move {
+            // The body finished a turn with nothing more to do. Without a stop
+            // condition, or once it holds, the run ends there; otherwise the
+            // body is told to continue.
+            if self.stopping.is_none() || call.payload.get("kind") != Some(&json!("follow_up")) {
+                return Ok(Value::Null);
+            }
+            if self.stop_reached(true)?.is_some() {
+                return Ok(Value::Null);
+            }
+            Ok(json!(self.continuation()?))
+        })
     }
     fn read_context<'a>(&'a mut self, call: HostCall) -> HostFuture<'a> {
         Box::pin(async move {
@@ -552,6 +862,7 @@ pub fn run_task_with_control<B: ModelBody>(
     )?;
     task.setup(&host.world)?;
     let before = host.world.snapshot()?;
+    host.arm_stop(task, &before)?;
     let secrets = host.secrets.clone();
     let started = std::time::Instant::now();
     let mut checked = CheckedObserver {
@@ -700,8 +1011,13 @@ pub fn run_task_with_control<B: ModelBody>(
             "research event persistence failed; run is not acknowledged",
         ));
     }
+    // A run its stop condition ended stands completed: it ran to the
+    // condition its plan named. The runtime's own word stays in `execution`.
+    let stop = host.stop_outcome(&execution["report"]["status"], &verification);
     let status = if after.is_null() || body_evidence["status"] == "failed" {
         json!("failed")
+    } else if stop.as_ref().is_some_and(|s| s["met"] == true) {
+        json!("completed")
     } else {
         execution["report"]["status"].clone()
     };
@@ -715,6 +1031,9 @@ pub fn run_task_with_control<B: ModelBody>(
         "human_acceptance":false,"factory_ancestry":"not-supplied"});
     if let (Some(m), Some(d)) = (record.as_object_mut(), disclosure) {
         m.insert("control".into(), d);
+    }
+    if let (Some(m), Some(stop)) = (record.as_object_mut(), stop) {
+        m.insert("stop".into(), stop);
     }
     Ok(sanitize(&record, &secrets))
 }
@@ -838,6 +1157,58 @@ mod tests {
         }
         fn basis(&self) -> Value {
             json!({"repository":"scripted","revision":"0".repeat(40)})
+        }
+    }
+
+    #[test]
+    fn stop_when_reads_its_condition_and_fills_only_the_caps_it_may() {
+        assert_eq!(
+            StopWhen::resolve(&Value::Null, Some(4), None).unwrap(),
+            None
+        );
+        let read = |v: Value| StopWhen::resolve(&v, Some(4), Some(9000));
+        assert_eq!(read(json!({"when":"done"})).unwrap(), Some(StopWhen::Done));
+        assert_eq!(read(json!({"when":"pass"})).unwrap(), Some(StopWhen::Pass));
+        assert_eq!(
+            read(json!({"when":"turns"})).unwrap(),
+            Some(StopWhen::Turns(4))
+        );
+        assert_eq!(
+            read(json!({"when":"turns","turns":2})).unwrap(),
+            Some(StopWhen::Turns(2))
+        );
+        assert_eq!(
+            read(json!({"when":"time"})).unwrap(),
+            Some(StopWhen::Time(9000))
+        );
+        assert_eq!(
+            read(json!({"when":"time","time_ms":5})).unwrap(),
+            Some(StopWhen::Time(5))
+        );
+        for bad in [
+            json!({"when":"turns","turns":5}),
+            json!({"when":"turns","turns":0}),
+            json!({"when":"done","turns":2}),
+            json!({"when":"pass","time_ms":2}),
+            json!({"when":"time","time_ms":3_600_001}),
+            json!({"when":"later"}),
+            json!({"when":"done","until":"later"}),
+            json!("done"),
+        ] {
+            assert!(read(bad.clone()).is_err(), "{bad}");
+        }
+        assert!(StopWhen::resolve(&json!({"when":"time"}), Some(4), None).is_err());
+        for stop in [
+            StopWhen::Done,
+            StopWhen::Turns(3),
+            StopWhen::Time(7),
+            StopWhen::Pass,
+        ] {
+            assert_eq!(
+                read(stop.value()).unwrap(),
+                Some(stop),
+                "{stop:?} round-trips"
+            );
         }
     }
 
