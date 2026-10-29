@@ -18,10 +18,13 @@ fn source_git(manifest: &Path, args: &[&str]) -> Option<String> {
 }
 
 fn full_revision(value: &str) -> bool {
-    value.len() == 40
-        && value
-            .bytes()
-            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+    value.len() == 40 && lowercase_hex(value)
+}
+
+fn lowercase_hex(value: &str) -> bool {
+    value
+        .bytes()
+        .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
 }
 
 fn watch_git_path(manifest: &Path, name: &str) {
@@ -38,6 +41,7 @@ fn watch_git_path(manifest: &Path, name: &str) {
 
 fn main() {
     println!("cargo:rerun-if-env-changed=ACTUATION_BUILD_SOURCE_REVISION");
+    println!("cargo:rerun-if-env-changed=SUITE_BUILD_REVISION");
     println!("cargo:rerun-if-changed=build.rs");
     let manifest =
         PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").expect("Cargo declares its source"));
@@ -56,8 +60,15 @@ fn main() {
         Err(std::env::VarError::NotUnicode(_)) => {
             panic!("ACTUATION_BUILD_SOURCE_REVISION is not UTF-8")
         }
-        Err(std::env::VarError::NotPresent) => source_git(&manifest, &["rev-parse", "HEAD"])
-            .filter(|revision| full_revision(revision))
+        // `oi update` builds a `git archive` export with no `.git`, and names
+        // the cut it exported in SUITE_BUILD_REVISION (its short form).
+        Err(std::env::VarError::NotPresent) => std::env::var("SUITE_BUILD_REVISION")
+            .ok()
+            .filter(|revision| (7..=40).contains(&revision.len()) && lowercase_hex(revision))
+            .or_else(|| {
+                source_git(&manifest, &["rev-parse", "HEAD"])
+                    .filter(|revision| full_revision(revision))
+            })
             .unwrap_or_else(|| "unknown".into()),
     };
     println!("cargo:rustc-env=ACTUATION_SOURCE_REVISION={revision}");
