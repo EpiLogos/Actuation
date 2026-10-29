@@ -1611,14 +1611,14 @@
         "notes": "Unobserved, not unsupported. Root help advertises system events, heartbeat and presence; system --help timed out at 10 seconds with no output. No listener was launched or verified."
       },
       "install_seam": {
-        "config_path": "/Users/admin/.openclaw/openclaw.json",
+        "config_path": "~/.openclaw/openclaw.json",
         "format": "json",
         "entry_shape": "Observed structure: hooks.internal.enabled is boolean; hooks.internal.entries maps a hook name to an object containing enabled:boolean. session-memory is an existing entry. This accounts for the named configuration seam only, not an unobserved executable-handler installation contract.",
         "ownership_marker": "Contributor policy, not a native marker: only a newly created, collision-checked hooks.internal.entries key prefixed actuation-owned- is owned. Existing keys, including session-memory, are foreign. No entry was created during this census.",
         "preserves_foreign_entries": true
       },
       "uninstall_seam": {
-        "config_path": "/Users/admin/.openclaw/openclaw.json",
+        "config_path": "~/.openclaw/openclaw.json",
         "format": "json",
         "entry_shape": "Reverse the proposed named-entry contribution by removing only its newly created, recorded hooks.internal.entries key. Preserve every other key and value, including hooks.internal.enabled. Do not remove the whole hooks or entries object. Reversibility is a contribution policy; no install or uninstall was executed.",
         "ownership_marker": "Contributor policy: exact recorded actuation-owned- key created by the contributor after a collision check; a matching prefix alone does not establish ownership.",
