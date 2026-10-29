@@ -244,20 +244,13 @@ pub fn read_stdin() -> String {
     buffer
 }
 
-/// Truthful revision claim: resolved from git at read time, never transcribed.
-/// A binary outside a checkout reports "unknown" rather than a stale sha.
+/// Revision of the declared source compiled into this binary. Caller cwd,
+/// runtime PATH and environment cannot change build provenance.
+/// Unavailable build source stays explicitly unknown.
 pub fn git_revision() -> String {
-    let run = std::process::Command::new("git")
-        .args(["rev-parse", "HEAD"])
-        .output();
-    let sha = match run {
-        Ok(output) if output.status.success() => {
-            String::from_utf8_lossy(&output.stdout).trim().to_owned()
-        }
-        _ => String::new(),
-    };
-    if is_sha(&sha) {
-        sha
+    let revision = env!("ACTUATION_SOURCE_REVISION");
+    if is_sha(revision) {
+        revision.to_owned()
     } else {
         "unknown".to_owned()
     }
