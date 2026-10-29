@@ -1,0 +1,29 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "actuation-wayfinder-programme-2026-09-09",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "codex-actuation-now-reconciliation",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1788914157,
+  "subject": "Actuation Wayfinder programme remains live",
+  "result": "Live issue #1 remains the owning whole-programme carrier. Accepted main has landed the root Agency, native Skills, ActuationStream, realised loop, Activity, native CLI, and model-usage slices through closed issues #4, #9, #15, #16, #19, #21, and #39. Still live are the Prime research child #26, the public determination/actualisation operation, provider and material empirical research, epistemic cultivation, suite integration, and physical conformance. Next condition: reconcile the Wayfinder checklist against accepted main and retain bounded children for each genuinely open front.",
+  "status": "carried",
+  "evidence_refs": [
+    "https://github.com/EpiLogos/Actuation/issues/1",
+    "https://github.com/EpiLogos/Actuation/commit/1e57f24fce09892e79ce50873395e7385cdef425"
+  ],
+  "carried_from_days": [
+    "2026-09-11",
+    "2026-09-12",
+    "2026-09-23",
+    "2026-09-24",
+    "2026-09-26",
+    "2026-09-27",
+    "2026-09-28",
+    "2026-09-29",
+    "2026-09-30",
+    "2026-10-01",
+    "2026-10-02",
+    "2026-10-03"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "epii-self-relational-logos-composed-into-2026-10-07",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "zcode-session-2026-10-07-epii-self",
+  "kind": "note",
+  "recorded_at_unix_seconds": 1791383135,
+  "subject": "Epii self + Relational Logos composed into local epi-chat surface",
+  "result": "Owner asked for the ql-prime chat agent to run the Relational Logos framework as Epii. Extracted the shared Logos byte-exact from branch feat/agent-self-acquaintance-20261007 (head efb1546f), authored an Epii self-source per author-agent-self steps 2-3 (generated authorship, owner adoption pending), composed the operative text like the v0.2 KITE-LOCAL-TEST specimen, and delivered it via prime-agent --append-system-prompt in ~/.local/bin/epi-chat. Live-verified: identity answers as Epii; ql_relational.capabilities() ran under the persona; model remains zai/glm-5.3-flash. Pins and digests in ~/.config/epi-logos/self/MANIFEST.json. Not done here: the native integration (Central self_definition binding, AIKit compositor, O:I creator, I0-I7 experiment) remains the open commission on #135.",
+  "status": "resolved",
+  "source_refs": [
+    "EpiLogos/Actuation#135"
+  ],
+  "evidence_refs": [
+    "/Users/admin/.config/epi-logos/self/MANIFEST.json"
+  ]
+}

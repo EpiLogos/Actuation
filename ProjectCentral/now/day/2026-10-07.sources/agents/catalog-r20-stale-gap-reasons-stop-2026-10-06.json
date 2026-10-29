@@ -1,0 +1,20 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "catalog-r20-stale-gap-reasons-stop-2026-10-06",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "zcode:harness-wiring-20261006",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1791322793,
+  "subject": "Catalog r20: stale gap reasons stop denying the adapters",
+  "result": "feat/harness-capability-descriptors (#134): antigravity/hermes/hermes-acp gap truths refreshed, revision 20, refusal text verified. Capability censuses for the adapter-backed harnesses remain unauthored by design — per-harness bounded observation work, next lane. Remaining: merge after CI, seat release env-3 actuation.",
+  "status": "carried",
+  "source_refs": [
+    "central:source:control:root:Work/Actuation/catalog"
+  ],
+  "evidence_refs": [
+    "https://github.com/EpiLogos/Actuation/pull/134"
+  ],
+  "carried_from_days": [
+    "2026-10-06"
+  ]
+}

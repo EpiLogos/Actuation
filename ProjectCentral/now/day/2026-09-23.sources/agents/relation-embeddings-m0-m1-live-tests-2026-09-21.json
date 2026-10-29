@@ -1,0 +1,14 @@
+{
+ "schema": "central.project-now.handoff/v1",
+ "id": "relation-embeddings-m0-m1-live-tests-2026-09-21",
+ "provenance": "agent-authored-bounded-return",
+ "actor": "zcode-model-types-experiments-session-3",
+ "kind": "handoff",
+ "recorded_at_unix_seconds": 1789958400,
+ "subject": "Relation embeddings for M0 (566 edges) and M1 (159 edges) written to graph as additive r.embedding only (canon untouched, zero before / 725 after); live tests: relation-placement AUC 0.905 M0 / 0.840 M1 (coin flip 0.5) — the field knows which relation belongs between which nodes; virtue act-chain ordinality flat on node content (0.878 vs 0.875, honest negative)",
+ "result": "ROUND (owner: relation embeddings M0+M1 only, graph touch = additive embeddings OK, forget standing, test): (1) EDGE CORPORA: M0 566 edges/151 types (443 with descriptive text), M1 159 edges/84 types (96 with text); composed edge text = endpoints + type + family + declared rich keys (c_1_relation_description, c_5_correspondence, l_5_realization_level, p_3_pattern_name/structure, t_5_insight, s_4_function_role); embedded via bimba_embed WITHOUT store_for (read-only fetch), 725/725 vectors zero failures; WRITTEN to graph as r.embedding JSON strings via elementId match — strictly additive, no canon/theory properties touched, no deletions, mark table untouched. (2) RELATION-PLACEMENT TEST (map-native, no sibling swaps): energy = 1 - mean(cos(edge_vec, source_node_vec), cos(edge_vec, target_node_vec)); corrupted = same endpoints with a foreign edge's relation vector; AUC P(real < corrupted): M0 0.905 (n=566), M1 0.840 (n=159) — translated: shown a node pair and one true + one foreign relation, the field ranks the true relation as the one that belongs there 90/100 (M0) and 84/100 (M1) times. (3) VIRTUE-FIELD ORDINALITY (honest negative): declared DIVINE_ACT_PROGRESSION chain -3->-4->-5->-6->-7->-8 on M0-2-9 node embeddings: chain-adjacent mean cos 0.878 vs distant 0.875 — formally monotone but flat; node-content similarity is nearly blind to the declared ordinality; the ordinal now lives in the 5 chain-edge embeddings themselves (n too small to test this round). NEXT: hard-tier placement (foreign relations of the SAME type), Jev tiers over the relation-embedding knowledge base, EBM virtue-field scoring of candidate acts. Evidence: /tmp/rel-embed-scope.json, /tmp/rel-embeddings.json (regenerable), graph r.embedding x725. NOTHING committed; only additive embedding properties written. Next condition: hard-tier placement runs over foreign same-type relations, Jev tiers run over the relation knowledge base, and EBM virtue-field scoring runs over candidate acts.",
+ "evidence_refs": [
+  "experiments/model-types/ARCHITECTURE.md"
+ ],
+ "status": "active"
+}
