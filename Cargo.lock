@@ -90,6 +90,7 @@ dependencies = [
  "actuation-core",
  "getrandom 0.4.3",
  "libc",
+ "rustix",
  "serde",
  "serde_json",
  "sha2",

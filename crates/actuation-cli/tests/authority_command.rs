@@ -494,3 +494,178 @@ fn schema_flag_prints_an_envelope_that_admits() {
         "actualisation returns its receipt: {receipt}"
     );
 }
+
+/// One history line exactly as the pre-V2 binary writes it.
+fn event_line(event: Value) -> String {
+    format!("{event}\n")
+}
+
+fn issue_line(record: &Value) -> String {
+    event_line(json!({
+        "op": "issue",
+        "schema": "actuation.authority-event/v1",
+        "at_unix_seconds": 1726300000u64,
+        "record": record,
+    }))
+}
+
+/// The V2 file of a literal source: lowercase hex of its UTF-8 bytes in
+/// components of at most 180 characters, under `sources-v2/`.
+fn v2_file(store: &std::path::Path, source: &str) -> std::path::PathBuf {
+    let hex: String = source.bytes().map(|byte| format!("{byte:02x}")).collect();
+    let mut path = store.join("sources-v2");
+    for chunk in hex.as_bytes().chunks(180) {
+        path.push(std::str::from_utf8(chunk).unwrap());
+    }
+    path.join("events.jsonl")
+}
+
+fn resolve(store: &std::path::Path, source: &str) -> Value {
+    run(
+        store,
+        &[
+            "authority",
+            "resolve",
+            "--store",
+            "{STORE}",
+            "--now",
+            "1726300100",
+            "-",
+        ],
+        &resolution_value(source, "human:owner", "central:project:Example").to_string(),
+    )
+}
+
+/// A ref that shares the original's pre-V2 file key is another source: it
+/// never resolves or revokes the original, and it issues as itself.
+#[test]
+fn an_alias_never_resolves_or_revokes_another_source_and_issues_as_its_own() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = dir.path().join("authority");
+    let original = "authority-source:governing-main";
+    let alias = "authority-source/governing-main";
+    run(
+        &store,
+        &["authority", "issue", "--store", "{STORE}", "-"],
+        &record_value().to_string(),
+    );
+    let reading = resolve(&store, alias);
+    assert_eq!(reading["standing"], "unavailable", "{reading}");
+    assert_eq!(reading["refusal"]["code"], "authority.unknown_source");
+    let revoke = execute(
+        &[
+            "authority".into(),
+            "revoke".into(),
+            alias.into(),
+            "--store".into(),
+            store.display().to_string(),
+            "--json".into(),
+        ],
+        "",
+    );
+    assert!(revoke.is_err(), "an alias has nothing to revoke");
+    assert_eq!(resolve(&store, original)["standing"], "admitted");
+    let mut distinct = record_value();
+    distinct["authority_source_ref"] = json!(alias);
+    let issued = run(
+        &store,
+        &["authority", "issue", "--store", "{STORE}", "-"],
+        &distinct.to_string(),
+    );
+    assert_eq!(issued["issued"], true);
+    assert_eq!(resolve(&store, alias)["standing"], "admitted");
+    assert_eq!(resolve(&store, original)["standing"], "admitted");
+}
+
+/// A store the pre-V2 binary wrote keeps working in place: it resolves, lists
+/// and revokes where it lies, and a ref sharing its file key issues beside it
+/// into the V2 layout. The listing shows both layouts.
+#[test]
+fn a_store_written_before_v2_resolves_lists_and_revokes_in_place() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = dir.path().join("authority");
+    std::fs::create_dir(&store).unwrap();
+    let original = "authority-source:governing-main";
+    let alias = "authority-source/governing-main";
+    let legacy = store.join("authority-source_governing-main.jsonl");
+    let bytes = issue_line(&record_value());
+    std::fs::write(&legacy, &bytes).unwrap();
+
+    assert_eq!(resolve(&store, original)["standing"], "admitted");
+    let mut distinct = record_value();
+    distinct["authority_source_ref"] = json!(alias);
+    run(
+        &store,
+        &["authority", "issue", "--store", "{STORE}", "-"],
+        &distinct.to_string(),
+    );
+    let listed = run(&store, &["authority", "list", "--store", "{STORE}"], "");
+    assert_eq!(listed["invalid"], json!([]), "{listed}");
+    let refs: Vec<&str> = listed["authorities"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|listed| listed["authority_source_ref"].as_str().unwrap())
+        .collect();
+    assert_eq!(refs, [alias, original]);
+
+    run(
+        &store,
+        &[
+            "authority",
+            "revoke",
+            original,
+            "--store",
+            "{STORE}",
+            "--now",
+            "1726300050",
+        ],
+        "",
+    );
+    let revoked = std::fs::read_to_string(&legacy).unwrap();
+    assert!(revoked.starts_with(&bytes) && revoked.lines().count() == 2);
+    assert!(
+        !v2_file(&store, original).exists(),
+        "the legacy file stays put"
+    );
+    assert_eq!(
+        resolve(&store, original)["refusal"]["code"],
+        "authority.revoked"
+    );
+    assert_eq!(resolve(&store, alias)["standing"], "admitted");
+}
+
+/// A stored history that names another source never admits under the
+/// requested ref, wherever it was found.
+#[test]
+fn a_history_naming_another_source_refuses_as_an_identity_mismatch() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = dir.path().join("authority");
+    std::fs::create_dir(&store).unwrap();
+    let mut elsewhere = record_value();
+    elsewhere["authority_source_ref"] = json!("authority-source:elsewhere");
+
+    // A pre-V2 file under the main key whose record names another source.
+    std::fs::write(
+        store.join("authority-source_governing-main.jsonl"),
+        issue_line(&elsewhere),
+    )
+    .unwrap();
+    // A V2 file whose bytes name another source.
+    let second = v2_file(&store, "authority-source:governing-second");
+    std::fs::create_dir_all(second.parent().unwrap()).unwrap();
+    std::fs::write(&second, issue_line(&elsewhere)).unwrap();
+
+    for source in [
+        "authority-source:governing-main",
+        "authority-source:governing-second",
+    ] {
+        let reading = resolve(&store, source);
+        assert_eq!(reading["standing"], "unavailable", "{source}: {reading}");
+        assert_eq!(
+            reading["refusal"]["code"], "authority.source_identity_mismatch",
+            "{source}: {reading}"
+        );
+        assert!(reading.get("actualisation_request").is_none());
+    }
+}

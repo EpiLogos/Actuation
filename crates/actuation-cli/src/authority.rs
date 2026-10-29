@@ -13,7 +13,7 @@ use actuation_core::{
     BoundsRef, Determination, ExternalRef, MetagencyGrant, WorldBinding, WorldRef,
 };
 use actuation_runtime::{ActualisationProvenance, ActualisationRequest, IdentityEvidence};
-use actuation_stream::AuthorityStore;
+use actuation_stream::{AuthorityStore, SourceIdentityMismatch};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
@@ -164,7 +164,16 @@ pub fn resolve_local_authority(
                 ),
             )
         }
-        Err(error) => return unavailable(request, "authority.source_unavailable", error),
+        Err(error) => {
+            let code = if std::error::Error::source(&error)
+                .is_some_and(|cause| cause.is::<SourceIdentityMismatch>())
+            {
+                "authority.source_identity_mismatch"
+            } else {
+                "authority.source_unavailable"
+            };
+            return unavailable(request, code, error);
+        }
     };
     let record: GoverningAuthorityRecord = match serde_json::from_value(state.record.clone()) {
         Ok(record) => record,
@@ -176,6 +185,18 @@ pub fn resolve_local_authority(
             )
         }
     };
+    // The store refuses a history that names another source; this keeps the
+    // same refusal at the point where a record becomes authority.
+    if record.authority_source_ref != request.authority_source_ref {
+        return unavailable(
+            request,
+            "authority.source_identity_mismatch",
+            format!(
+                "the stored governing authority names {}, not the requested {}",
+                record.authority_source_ref, request.authority_source_ref
+            ),
+        );
+    }
     if let Some(revocation) = &state.revoked {
         return refused(
             request,
@@ -730,6 +751,7 @@ mod tests {
 
         let (dir2, store2) = store_with_record();
         let mut narrowed = valid_record_value();
+        narrowed["authority_source_ref"] = json!("authority-source:no-actualise");
         narrowed["metagency_grant"]["operations"] = serde_json::json!(["determine-agency"]);
         store2
             .issue("authority-source:no-actualise", 1726300000, narrowed)
