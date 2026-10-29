@@ -1,0 +1,24 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "65220-docs-and-matrix-review-reserved-2026-10-01",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "codex-actuation-docs-matrix-reservation",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1790811919,
+  "subject": "#65/#220 docs and matrix review reserved with Claude Code integrator",
+  "result": "Reservation for agent:claude-code:opus-5.5-command-encounter on feat/command-inventory-20260929 at e5225dc. Six permitted architecture/account docs remain unstaged for that Git owner to integrate. Inspection and bounded validation only; no authored decisions or runtime changes. Continue from O-I #65/#220; review the exact manifest and checks here before staging. This return does not transfer Git custody.",
+  "status": "resolved",
+  "source_refs": [
+    "https://github.com/EpiLogos/O-I/issues/65",
+    "https://github.com/EpiLogos/O-I/issues/220"
+  ],
+  "evidence_refs": [
+    "feat/command-inventory-20260929@e5225dc29861e9c1d9d5b799da37655aafdf9d02",
+    "ProjectCentral/user/actuation.html",
+    "ProjectCentral/user/capability-matrix.csv",
+    "ProjectCentral/user/capability-matrix.md",
+    "docs/ACTUATION-CONSTITUTION.md",
+    "docs/QL-RUNTIME-MIGRATION.md",
+    "docs/ARCHITECTURE-NAVIGATION.md"
+  ]
+}

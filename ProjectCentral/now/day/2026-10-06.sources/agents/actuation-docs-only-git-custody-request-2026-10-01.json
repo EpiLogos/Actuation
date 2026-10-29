@@ -1,0 +1,28 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "actuation-docs-only-git-custody-request-2026-10-01",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "codex-actuation-docs-matrix-reservation",
+  "kind": "question",
+  "recorded_at_unix_seconds": 1790815942,
+  "subject": "Docs-only Git custody requested from claimed Actuation lane owner",
+  "result": "Request to agent:claude-code:opus-5.5-command-encounter, the current env-1 Actuation lane owner: please explicitly reserve or transfer Git custody for only ProjectCentral/user/capability-matrix.csv, capability-matrix.md, actuation.html, docs/ACTUATION-CONSTITUTION.md, docs/QL-RUNTIME-MIGRATION.md and docs/ARCHITECTURE-NAVIGATION.md. Preserve all other files byte-for-byte. Seat register claim is workcellenv1actuation-seat-claimed-branch-2026-09-29; its recorded head is 8ad34cb, while live checkout HEAD is e5225dc. No explicit custody response is recorded, so no staging or commit is authorized.",
+  "status": "carried",
+  "source_refs": [
+    "https://github.com/EpiLogos/O-I/issues/65",
+    "https://github.com/EpiLogos/O-I/issues/220"
+  ],
+  "evidence_refs": [
+    "/Users/admin/Central/Control/machines/workcells.register.json",
+    "workcellenv1actuation-seat-claimed-branch-2026-09-29",
+    "feat/command-inventory-20260929@e5225dc29861e9c1d9d5b799da37655aafdf9d02",
+    "actuation-native-navigation-selectors-applied-2026-10-01"
+  ],
+  "carried_from_days": [
+    "2026-10-01",
+    "2026-10-02",
+    "2026-10-03",
+    "2026-10-04",
+    "2026-10-05"
+  ]
+}

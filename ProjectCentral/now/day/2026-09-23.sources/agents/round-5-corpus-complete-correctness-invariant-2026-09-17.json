@@ -1,0 +1,14 @@
+{
+ "schema": "central.project-now.handoff/v1",
+ "id": "round-5-corpus-complete-correctness-invariant-2026-09-17",
+ "provenance": "agent-authored-bounded-return",
+ "actor": "zcode-session-round5-results-reading",
+ "kind": "note",
+ "recorded_at_unix_seconds": 1789661554,
+ "subject": "Round 5 corpus complete: correctness invariant across conditions, ql-direct costs x3.5 calls / x14.8 tokens, ql-deep fails on unbounded conjugate re-entry; reading written, human review pass now unblocked",
+ "result": "Queue item 1 done BEFORE any new launch, per the session handoff. Read the finished round5 corpus (five task families; classic + ql-direct on all five, ql-deep on RESTRAINT). All held constants machine-verified valid; all ten completed trials pass every objective check (correctness invariant across loop conditions). ql-direct totals 73 calls / 392,873 tokens / 4,346s vs classic 21 / 26,579 / 355s — x3.5 calls, x14.8 tokens, x12.3 wall; token multiple >> call multiple because each QL call carries circuit context. Closure quality good: every ql-direct trial closes c0 at position 5 with determination+evidence refs, inspection checks pass, reentry delta has zero unresolved refs; success_state honestly reports operation/circuit true, task/harmonic unknown (exactly what human review owes). ql-deep on RESTRAINT failed STRUCTURALLY: budget exhausted at 63/64 calls / 474,824 tokens on a task ql-direct closes in 7 calls; 13 conjugate-face circuits spawned as depth-0 siblings, none closed. Two named defects: (1) conjugate re-entry consumes no allowance — nothing forces the deep loop toward determination; (2) gate composition re-wraps frame intent (circuits 8-10 carry initiating_intent nested inside initiating_intent). Restraint held even in failure (workspace byte-identical through 63 calls). EVIDENCE: runs/2026-09-17-glm-round5/ in the Actuation repo (five round5-S1-*.json + acceptance-run.mjs + READING.md, written but uncommitted per register law); raw trial trees at ~/.cache/actuation/round5-experiments/. NEXT per handoff queue: (2) typed conjugate allowance then ql-deep across corpus; (3) compressed arm; (4) vak-control branch assessment; and the first human-review pass over this corpus, which is the actual deliverable (Factory #110/#137/#138) and stays with the owner. Next condition: the typed conjugate allowance lands, then ql-deep runs across the corpus, the compressed arm and vak assessment follow, and the first human-review pass over this corpus stays with the owner.",
+ "evidence_refs": [
+  "experiments/ql-runtime/comparison/series1/runs/2026-09-17-glm-round5/READING.md"
+ ],
+ "status": "active"
+}

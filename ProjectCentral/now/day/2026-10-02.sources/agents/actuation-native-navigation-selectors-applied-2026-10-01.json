@@ -1,0 +1,26 @@
+{
+  "schema": "central.project-now.handoff/v1",
+  "id": "actuation-native-navigation-selectors-applied-2026-10-01",
+  "provenance": "agent-authored-bounded-return",
+  "actor": "codex-actuation-docs-matrix-reservation",
+  "kind": "handoff",
+  "recorded_at_unix_seconds": 1790814594,
+  "subject": "Actuation architecture selector protocol applied and checked",
+  "result": "Supersedes 65220-docs-matrix-reservation-check-update-2026-10-01. Selector apply changed only four selected capability records; matrix JSON, claims, placements and praxis refs stayed fixed. Matrix validation, reconciliation and diff-check pass. Strengthened checker exits 1 on 48 Factory selector errors; Actuation has zero repository errors or drift. At e5225dc on feat/command-inventory-20260929, six scoped files remain unstaged for agent:claude-code:opus-5.5-command-encounter; no Git custody transferred.",
+  "status": "carried",
+  "source_refs": [
+    "https://github.com/EpiLogos/O-I/issues/65",
+    "https://github.com/EpiLogos/O-I/issues/220"
+  ],
+  "evidence_refs": [
+    "/Users/admin/Central/Control/agents/now/clearings/746f59350bcbd0a88a231ea909ca89aac9cf950e3cf5d9584aae28535bb7296d/T/documentation-selectors.json",
+    "/Users/admin/Central/Control/agents/now/clearings/746f59350bcbd0a88a231ea909ca89aac9cf950e3cf5d9584aae28535bb7296d/T/add-documentation-selectors.py",
+    "/Users/admin/Central/Control/agents/now/clearings/746f59350bcbd0a88a231ea909ca89aac9cf950e3cf5d9584aae28535bb7296d/T/architecture-final-checks.json",
+    "/Users/admin/Central/Control/agents/now/clearings/746f59350bcbd0a88a231ea909ca89aac9cf950e3cf5d9584aae28535bb7296d/T/matrix-reconciliation/actuation-selectors-plan.json",
+    "/Users/admin/Central/worktrees/env-1/actuation/.central/documentation-transactions/b61e118a299c43bfa57777c87271a059/receipt.json",
+    "feat/command-inventory-20260929@e5225dc29861e9c1d9d5b799da37655aafdf9d02"
+  ],
+  "carried_from_days": [
+    "2026-10-01"
+  ]
+}
