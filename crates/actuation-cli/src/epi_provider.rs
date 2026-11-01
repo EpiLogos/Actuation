@@ -353,6 +353,31 @@ pub fn verify_ql_agent(installation: &Path, ql_bin: &Path, ql_revision: &str) ->
     Ok(dir)
 }
 
+/// The body runs its own Prime: the TypeScript copy its installation carries
+/// (Prime 0.10+ is a Rust rewrite with no extension API, and a Prime on PATH or
+/// in the npm prefix changes under every update). Refuse a launch whose
+/// `--prime-bin` is not that copy.
+pub fn verify_prime(installation: &Path, prime_bin: &Path) -> Result<()> {
+    let refuse = |why: &str| {
+        Error::new(format!(
+            "Prime refused: {why} ({}); reinstall with epi-distribution.mjs install --prime-package and register its prime.cli",
+            installation.display()
+        ))
+    };
+    let bytes = std::fs::read(installation).map_err(|_| refuse("unreadable"))?;
+    let binding: Value = serde_json::from_slice(&bytes).map_err(|_| refuse("not JSON"))?;
+    let owned = binding["prime"]["cli"]
+        .as_str()
+        .filter(|p| Path::new(p).is_absolute())
+        .ok_or_else(|| refuse("the installation carries no Prime of its own"))?;
+    let owned =
+        std::fs::canonicalize(owned).map_err(|_| refuse("the body's own Prime is missing"))?;
+    if std::fs::canonicalize(prime_bin).ok().as_ref() != Some(&owned) {
+        return Err(refuse("--prime-bin is not the body's own Prime"));
+    }
+    Ok(())
+}
+
 /// The exact Prime command line and the environment added to it. Separate from
 /// `run` so the flags that matter are testable without starting Prime.
 pub fn prime_command_spec(
@@ -473,6 +498,7 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
     }
     // Fail closed: no verified QL binding, no Prime-QL body.
     verify_binding(&args.installation)?;
+    verify_prime(&args.installation, &args.prime_bin)?;
     let ql_agent = verify_ql_agent(&args.installation, &args.ql_bin, &args.ql_revision)?;
     let (argv, env) = prime_command_spec(&args, &cwd, &ql_agent);
     let mut command = Command::new(&args.prime_bin);
@@ -583,7 +609,8 @@ mod tests {
             },
             "ql_agent": {
                 "dir": tools, "engine": "/usr/bin/true", "revision": REVISION, "files": files
-            }
+            },
+            "prime": { "cli": dir.join("prime"), "version": "0.9.8" }
         });
         let path = dir.join("current.json");
         std::fs::write(&path, serde_json::to_vec(&binding).unwrap()).unwrap();
@@ -817,5 +844,26 @@ mod tests {
         )
         .unwrap();
         assert!(refused(&keep, "/usr/bin/true", REVISION).contains("differs"));
+    }
+
+    #[test]
+    fn only_the_bodys_own_prime_is_started() {
+        let dir = tempfile::tempdir().unwrap();
+        let installation = binding_dir(dir.path());
+        let own = dir.path().join("prime");
+        std::fs::write(&own, "#!/bin/sh\n").unwrap();
+        verify_prime(&installation, &own).unwrap();
+        let error = verify_prime(&installation, Path::new("/usr/bin/true"))
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains("not the body's own Prime"), "{error}");
+        let mut binding: Value =
+            serde_json::from_slice(&std::fs::read(&installation).unwrap()).unwrap();
+        binding.as_object_mut().unwrap().remove("prime");
+        std::fs::write(&installation, serde_json::to_vec(&binding).unwrap()).unwrap();
+        assert!(verify_prime(&installation, &own)
+            .unwrap_err()
+            .to_string()
+            .contains("no Prime of its own"));
     }
 }
