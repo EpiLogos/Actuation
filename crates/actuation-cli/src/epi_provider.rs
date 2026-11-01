@@ -281,11 +281,84 @@ pub fn verify_binding(installation: &Path) -> Result<()> {
     Ok(())
 }
 
+/// The body's own QL agent tools, as the owner extension names them. Left to
+/// `PATH`, `ql-agent` and its helpers are whatever another body installed
+/// (another engine, another kernel digest: every QL receipt refused). The
+/// installation binds them to one engine; the launcher hands exactly these to
+/// Prime and puts their directory first on its `PATH`.
+const QL_AGENT_TOOLS: [(&str, &str); 3] = [
+    ("QL_AGENT_BIN", "ql-agent"),
+    ("QL_AGENT_DECIDE_BIN", "ql-agent-decide"),
+    ("QL_AGENT_ENCOUNTER_BIN", "ql-agent-encounter"),
+];
+
+/// Verify that the installation binds the body's QL agent tools to the engine
+/// and revision this launch names, every tool and script at its recorded
+/// digest, and return their directory. Fails closed like the binding itself.
+pub fn verify_ql_agent(installation: &Path, ql_bin: &Path, ql_revision: &str) -> Result<PathBuf> {
+    let refuse = |why: &str| {
+        Error::new(format!(
+            "QL tools refused: {why} ({}); reinstall with epi-distribution.mjs install --ql-bin --ql-root --ql-revision",
+            installation.display()
+        ))
+    };
+    let bytes = std::fs::read(installation).map_err(|_| refuse("unreadable"))?;
+    let binding: Value = serde_json::from_slice(&bytes).map_err(|_| refuse("not JSON"))?;
+    let agent = binding["ql_agent"]
+        .as_object()
+        .ok_or_else(|| refuse("the installation binds no QL tools for this body"))?;
+    let dir = agent["dir"]
+        .as_str()
+        .filter(|p| Path::new(p).is_absolute())
+        .ok_or_else(|| refuse("the QL tools directory is not an absolute path"))?;
+    let dir =
+        std::fs::canonicalize(dir).map_err(|_| refuse("the QL tools directory is missing"))?;
+    let engine = agent["engine"]
+        .as_str()
+        .and_then(|p| std::fs::canonicalize(p).ok());
+    if engine.is_none() || engine != std::fs::canonicalize(ql_bin).ok() {
+        return Err(refuse(
+            "the QL tools are bound to another engine than --ql-bin",
+        ));
+    }
+    if agent["revision"].as_str() != Some(ql_revision) {
+        return Err(refuse(
+            "the QL tools are bound to another revision than --ql-revision",
+        ));
+    }
+    let files = agent["files"]
+        .as_object()
+        .filter(|m| !m.is_empty() && m.len() <= 16)
+        .ok_or_else(|| refuse("the QL tools record no files"))?;
+    for (_, tool) in QL_AGENT_TOOLS {
+        if !files.contains_key(tool) {
+            return Err(refuse(&format!("the QL tools lack {tool}")));
+        }
+    }
+    for (name, expected) in files {
+        let relative = Path::new(name);
+        if relative.components().count() != 1
+            || !matches!(relative.components().next(), Some(Component::Normal(_)))
+        {
+            return Err(refuse(&format!("QL tool {name} is not a file name")));
+        }
+        let path = std::fs::canonicalize(dir.join(relative))
+            .map_err(|_| refuse(&format!("QL tool {name} is missing")))?;
+        if !path.starts_with(&dir) || expected.as_str() != Some(sha256_hex(&path)?.as_str()) {
+            return Err(refuse(&format!(
+                "QL tool {name} differs from its installed digest"
+            )));
+        }
+    }
+    Ok(dir)
+}
+
 /// The exact Prime command line and the environment added to it. Separate from
 /// `run` so the flags that matter are testable without starting Prime.
 pub fn prime_command_spec(
     args: &EpiProviderArgs,
     cwd: &Path,
+    ql_agent: &Path,
 ) -> (Vec<String>, Vec<(String, String)>) {
     let text = |p: &Path| p.to_string_lossy().into_owned();
     let mut argv: Vec<String> = [
@@ -332,6 +405,16 @@ pub fn prime_command_spec(
             text(&args.installation),
         ),
     ];
+    for (variable, tool) in QL_AGENT_TOOLS {
+        env.push((variable.into(), text(&ql_agent.join(tool))));
+    }
+    let inherited = std::env::var_os("PATH").unwrap_or_default();
+    let path = std::env::join_paths(
+        std::iter::once(ql_agent.to_path_buf()).chain(std::env::split_paths(&inherited)),
+    )
+    .map(|p| p.to_string_lossy().into_owned())
+    .unwrap_or_else(|_| text(ql_agent));
+    env.push(("PATH".into(), path));
     // The QL workspace builds `ql` and `ql-wiki-refraction` side by side. When the sibling exists the skill runs it directly instead of
     // `cargo run`-ing the QL checkout at call time (which compiles whatever state that checkout is in, mid-turn).
     if let Some(sibling) = args
@@ -390,7 +473,8 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
     }
     // Fail closed: no verified QL binding, no Prime-QL body.
     verify_binding(&args.installation)?;
-    let (argv, env) = prime_command_spec(&args, &cwd);
+    let ql_agent = verify_ql_agent(&args.installation, &args.ql_bin, &args.ql_revision)?;
+    let (argv, env) = prime_command_spec(&args, &cwd, &ql_agent);
     let mut command = Command::new(&args.prime_bin);
     command
         .args(&argv)
@@ -469,6 +553,8 @@ mod tests {
         format!("{:x}", Sha256::digest(bytes))
     }
 
+    const REVISION: &str = "0123456789abcdef0123456789abcdef01234567";
+
     /// A real binding over a real owner closure on disk.
     fn binding_dir(dir: &Path) -> PathBuf {
         let root = dir.join("owner");
@@ -480,12 +566,23 @@ mod tests {
             std::fs::write(&path, &body).unwrap();
             sources.insert(name.into(), Value::String(digest(body.as_bytes())));
         }
+        let tools = dir.join("ql-agent");
+        std::fs::create_dir_all(&tools).unwrap();
+        let mut files = serde_json::Map::new();
+        for (_, tool) in QL_AGENT_TOOLS {
+            let body = format!("#!/bin/sh\nexec /usr/bin/true # {tool}\n");
+            std::fs::write(tools.join(tool), &body).unwrap();
+            files.insert(tool.into(), Value::String(digest(body.as_bytes())));
+        }
         let binding = serde_json::json!({
             "schema": BINDING_SCHEMA,
             "binary": "/usr/bin/true", "configuration": "/usr/bin/true",
             "owner_extension": {
                 "root": root, "module": root.join("extensions/ql-agent.ts"),
                 "sha256": sources["extensions/ql-agent.ts"], "source_files": sources
+            },
+            "ql_agent": {
+                "dir": tools, "engine": "/usr/bin/true", "revision": REVISION, "files": files
             }
         });
         let path = dir.join("current.json");
@@ -501,10 +598,7 @@ mod tests {
         [
             ("--prime-bin", prime.display().to_string()),
             ("--ql-bin", "/usr/bin/true".into()),
-            (
-                "--ql-revision",
-                "0123456789abcdef0123456789abcdef01234567".into(),
-            ),
+            ("--ql-revision", REVISION.into()),
             ("--skill-path", skill.display().to_string()),
             ("--extension", extension.display().to_string()),
             ("--installation", installation.display().to_string()),
@@ -526,7 +620,7 @@ mod tests {
             &installation,
         ))
         .unwrap();
-        let (argv, env) = prime_command_spec(&args, Path::new("/work"));
+        let (argv, env) = prime_command_spec(&args, Path::new("/work"), Path::new("/tools"));
         let discovery_off = argv.iter().position(|a| a == "--no-extensions").unwrap();
         let explicit = argv.iter().position(|a| a == "-e").expect("an explicit -e");
         assert!(explicit > discovery_off, "-e follows --no-extensions");
@@ -549,14 +643,14 @@ mod tests {
         let at = args.iter().position(|a| a == "--ql-bin").unwrap();
         args[at + 1] = ql.display().to_string();
         let parsed = EpiProviderArgs::parse(&args).unwrap();
-        let (_, env) = prime_command_spec(&parsed, Path::new("/work"));
+        let (_, env) = prime_command_spec(&parsed, Path::new("/work"), Path::new("/tools"));
         assert!(
             !env.iter().any(|(k, _)| k == "QL_WIKI_REFRACTION_BIN"),
             "no sibling, nothing named"
         );
         let sibling = bin.join("ql-wiki-refraction");
         std::fs::write(&sibling, "#!/bin/sh\n").unwrap();
-        let (_, env) = prime_command_spec(&parsed, Path::new("/work"));
+        let (_, env) = prime_command_spec(&parsed, Path::new("/work"), Path::new("/tools"));
         let sibling = sibling.canonicalize().unwrap();
         assert!(env
             .iter()
@@ -659,5 +753,69 @@ mod tests {
             marker.exists(),
             "Prime did not start with a verified binding"
         );
+    }
+
+    #[test]
+    fn the_bodys_ql_tools_are_the_bound_ones_and_come_first() {
+        let dir = tempfile::tempdir().unwrap();
+        let installation = binding_dir(dir.path());
+        let args = EpiProviderArgs::parse(&launch_args(
+            dir.path(),
+            Path::new("/usr/bin/true"),
+            &installation,
+        ))
+        .unwrap();
+        let tools = verify_ql_agent(&installation, &args.ql_bin, &args.ql_revision).unwrap();
+        let (_, env) = prime_command_spec(&args, Path::new("/work"), &tools);
+        let get = |k: &str| env.iter().find(|(key, _)| key == k).map(|(_, v)| v.clone());
+        for (variable, tool) in QL_AGENT_TOOLS {
+            assert_eq!(get(variable).unwrap(), tools.join(tool).to_string_lossy());
+        }
+        let path = get("PATH").unwrap();
+        assert!(path.starts_with(&*tools.to_string_lossy()), "{path}");
+    }
+
+    #[test]
+    fn ql_tools_bound_elsewhere_or_drifted_are_refused() {
+        let dir = tempfile::tempdir().unwrap();
+        let installation = binding_dir(dir.path());
+        let good: Value = serde_json::from_slice(&std::fs::read(&installation).unwrap()).unwrap();
+        let refused = |f: &dyn Fn(&mut Value), engine: &str, revision: &str| {
+            let mut value = good.clone();
+            f(&mut value);
+            let path = dir.path().join("mutated.json");
+            std::fs::write(&path, serde_json::to_vec(&value).unwrap()).unwrap();
+            verify_ql_agent(&path, Path::new(engine), revision)
+                .unwrap_err()
+                .to_string()
+        };
+        let keep = |_: &mut Value| {};
+        assert!(refused(&keep, "/bin/sh", REVISION).contains("another engine"));
+        assert!(refused(&keep, "/usr/bin/true", &"f".repeat(40)).contains("another revision"));
+        assert!(refused(
+            &|v| {
+                v.as_object_mut().unwrap().remove("ql_agent");
+            },
+            "/usr/bin/true",
+            REVISION
+        )
+        .contains("binds no QL tools"));
+        assert!(refused(
+            &|v| {
+                v["ql_agent"]["files"]
+                    .as_object_mut()
+                    .unwrap()
+                    .remove("ql-agent-encounter");
+            },
+            "/usr/bin/true",
+            REVISION
+        )
+        .contains("lack ql-agent-encounter"));
+        std::fs::write(
+            dir.path().join("ql-agent/ql-agent"),
+            "#!/bin/sh\nexec /old/ql\n",
+        )
+        .unwrap();
+        assert!(refused(&keep, "/usr/bin/true", REVISION).contains("differs"));
     }
 }
