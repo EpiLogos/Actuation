@@ -67,9 +67,17 @@ async function reflect(request: Record<string, unknown>, cwd: string, signal?: A
   return result;
 }
 
+// A reading is numbered in the order taken, so a whole can name it as a
+// member. The count is the session's own (readings already in it), and this
+// body's last number keeps parallel readings apart.
+const readingsSoFar = (ctx: any) => ctx.sessionManager.getBranch().filter((entry: any) =>
+  entry.type === "message" && entry.message?.role === "toolResult" && !entry.message.isError
+  && entry.message.details?.night_reading?.schema === "actuation.night-reading/v1").length;
+
 export default function (pi: ExtensionAPI) {
   // Registration launches nothing; a reading runs only when the model calls.
   const covered = new Set<string>();
+  let numbered = 0;
   for (const tool of supply.tools) {
     pi.registerTool({
       name: tool.name, label: tool.label, description: tool.description,
@@ -79,9 +87,10 @@ export default function (pi: ExtensionAPI) {
         const reading = await reflect({ operation: supply.operation, tool: tool.name, subject: args.subject,
           own_disclosure: args.own_disclosure, coverage: [...covered] }, ctx.cwd, signal);
         for (const lens of reading.covers ?? []) covered.add(lens);
+        numbered = Math.max(numbered, readingsSoFar(ctx)) + 1;
         return {
-          content: [{ type: "text" as const, text: reading.giving }],
-          details: { night_reading: reading },
+          content: [{ type: "text" as const, text: `Reading ${numbered}. ${reading.giving}` }],
+          details: { night_reading: reading, reading_number: numbered },
         };
       },
     });

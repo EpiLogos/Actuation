@@ -140,7 +140,204 @@ async function nativeReceipt(operation: Operation, request: unknown, cwd: string
   };
 }
 
-export default function (pi: ExtensionAPI, body: "pi" | "prime" = "pi") {
+// Composition. A body whose QL constitution holds `vak.compose` has it as a
+// tool of its own, named for the operation the constitution names. A member
+// of a whole is a thought the body has read, standing at a T level that
+// reading holds: the T levels are the L4′ sub-slots, and the reading's own
+// holds are the only coordinates admitted. The kernel evaluates each request
+// in memory, so the session's earlier composition is replayed before the new
+// steps; grain, recognition, relation and frame are all the kernel's.
+const COMPOSE = "vak_compose";
+const NIGHT_READING = "actuation.night-reading/v1";
+const FRAME = { basis: "chromatic", face: "direct", id: "CF2", lens: "L4'", positions: "local" };
+type Agent = { name?: string; position?: string; operations?: string[] };
+type ComposeStep = {
+  op: "whole" | "recognise" | "reopen" | "read"; name: string; route?: string;
+  members?: { reading: number; t: number }[];
+  against?: { thought: number; against: number; why: string }[];
+};
+type Held = { number: number; id: string; subject: string; t: Map<number, string> };
+type Named = { whole: string; current: string; recognised: boolean; members: { t: number; label: string; reading: number; subject: string }[]; evidence: string[] };
+
+const composeParameters = Type.Object({
+  steps: Type.Array(Type.Object({
+    op: Type.Unsafe<ComposeStep["op"]>({ type: "string", enum: ["whole", "recognise", "reopen", "read"],
+      description: "whole: gather read thoughts into a whole. recognise: carry a closed whole as its 0/1. reopen: open a recognised whole to its exact basis. read: its frame pitch and intervals." }),
+    name: Type.String({ pattern: "^[A-Za-z0-9_-]{1,48}$", description: "The whole's name, given when it is made and used to recognise, reopen or read it." }),
+    members: Type.Optional(Type.Array(Type.Object({
+      reading: Type.Integer({ minimum: 1, description: "Which reading the thought was read in, by its number." }),
+      t: Type.Integer({ minimum: 0, maximum: 5, description: "The T level it stands at: an L4′ sub-slot that reading holds (L4.n′ is Tn)." }),
+    }, { additionalProperties: false }), { minItems: 1, maxItems: 6, description: "For a whole: each thought once, each T level once." })),
+    against: Type.Optional(Type.Array(Type.Object({
+      thought: Type.Integer({ minimum: 0, maximum: 5, description: "The T level of the thought that is set against another." }),
+      against: Type.Integer({ minimum: 0, maximum: 5, description: "The T level of the thought it is set against." }),
+      why: Type.String({ minLength: 1, maxLength: 400 }),
+    }, { additionalProperties: false }), { maxItems: 15, description: "For a whole: which member is set against which, and why. The kernel reads each pair." })),
+    route: Type.Optional(Type.Unsafe<string>({ type: "string", enum: ["4+2", "3+3", "pairs-A", "pairs-B", "pairs-C"],
+      description: "For recognising a sixfold: the reading of six (4+2 when left out)." })),
+  }, { additionalProperties: false }), { minItems: 1, maxItems: 8 }),
+}, { additionalProperties: false });
+
+const toolResults = (ctx: any) => ctx.sessionManager.getBranch()
+  .filter((entry: any) => entry.type === "message" && entry.message?.role === "toolResult" && !entry.message.isError)
+  .map((entry: any) => entry.message);
+
+// The readings this conversation holds, by number, with the T levels each
+// holds and the words it read.
+function heldReadings(ctx: any): Held[] {
+  const asked = new Map<string, string>();
+  for (const entry of ctx.sessionManager.getBranch()) {
+    if (entry.type !== "message" || entry.message?.role !== "assistant") continue;
+    for (const part of entry.message.content ?? []) {
+      if (part?.type === "toolCall" && typeof part.arguments?.subject === "string") asked.set(part.id, part.arguments.subject);
+    }
+  }
+  const held: Held[] = [];
+  for (const message of toolResults(ctx)) {
+    const night = message.details?.night_reading;
+    if (night?.schema !== NIGHT_READING) continue;
+    held.push({ number: message.details.reading_number ?? held.length + 1, id: message.toolCallId, subject: asked.get(message.toolCallId) ?? "", t: standing(night) ?? new Map() });
+  }
+  return held;
+}
+
+// Where a read thought can stand in a whole: the L4′ sub-slots its reading
+// holds (L4.n′ is Tn), by label; none when the reading did not read L4′.
+function standing(night: any): Map<number, string> | undefined {
+  const reading = night.reading ?? {};
+  const profiles = [...(reading.lenses ?? []), ...(reading.positions ?? []).flatMap((p: any) => p.lenses ?? [])];
+  const l4 = profiles.find((p: any) => p.lens === "L4'");
+  if (!l4) return undefined;
+  const t = new Map<number, string>();
+  for (const ref of l4?.holds ?? []) {
+    const slot = l4.slots.find((s: any) => s.ref === ref);
+    const level = /^L4\.([0-5])'$/.exec(slot?.slot ?? "");
+    if (level) t.set(Number(level[1]), slot.label);
+  }
+  return t;
+}
+
+const excerpt = (text: string) => (text.length > 90 ? `${text.slice(0, 87)}…` : text);
+const levels = (t: Map<number, string>) => (t.size ? [...t].sort(([a], [b]) => a - b).map(([n, label]) => `T${n} ${label}`).join(", ") : "no T level (it did not hold at L4′)");
+
+function registerComposition(pi: ExtensionAPI, agent: Agent) {
+  const caller = `agent/${String(agent.name).toLowerCase()}`;
+  pi.registerTool({
+    name: COMPOSE, label: "Compose read thoughts into wholes",
+    description: "Whether thoughts you have read hold together, and as what whole. The members are your readings, each at a T level it holds (each reading says where its thought can stand); QL names the whole they make — two, 123, 450, 1234, 4+1, the sixfold — or says they make none, and reads each pair you set against each other. Recognise a whole to carry it as one 0/1 that keeps its basis; reopen it when the talk returns to it; read it for its frame pitch and intervals.",
+    promptGuidelines: ["vak_compose answers whether thoughts you have read hold together and how each pair stands; compose when that would change what you say. A recognised whole travels as its 0/1 and reopens to its exact basis."],
+    parameters: composeParameters,
+    async execute(_id, args, signal, _update, ctx) {
+      const readings = heldReadings(ctx);
+      const earlier = toolResults(ctx).filter((m: any) => m.toolName === COMPOSE && m.details?.request).at(-1)?.details;
+      const prior: unknown[] = earlier?.request?.input?.steps ?? [];
+      const named: Record<string, Named> = structuredClone(earlier?.composition ?? {});
+      const taken = new Set(prior.map((s: any) => s.into ?? s.useRef));
+      const fresh = (base: string) => { let ref = base; for (let k = 2; taken.has(ref); k += 1) ref = `${base}~${k}`; taken.add(ref); return ref; };
+      const ground = `prime-session:${ctx.sessionManager.getSessionId()}`;
+      const basis = (evidence: string[]) => ({ caller, evidence, revision: ctx.sessionManager.getLeafId() ?? "root", source: ground, standing: "PROPOSED" });
+      const steps: any[] = [];
+      for (const step of args.steps as ComposeStep[]) {
+        const whole = named[step.name];
+        if (step.op === "whole") {
+          if (whole) throw new Error(`there is already a whole named ${step.name}; recognise, reopen or read it, or name the new one otherwise`);
+          const members = step.members ?? [];
+          if (!members.length) throw new Error(`whole ${step.name} needs its members: each a reading by number and a T level it holds`);
+          const seen = new Set<number>();
+          const placed = members.map(({ reading, t }) => {
+            const held = readings.find((r) => r.number === reading);
+            if (!held) throw new Error(`there is no reading ${reading}; the readings so far are ${readings.map((r) => r.number).join(", ") || "none"}`);
+            if (!held.t.has(t)) throw new Error(`reading ${reading} does not hold T${t}; it holds ${levels(held.t)}`);
+            if (seen.has(reading)) throw new Error(`reading ${reading} is already in ${step.name}: a thought stands at one T level in a whole`);
+            seen.add(reading);
+            return { t, label: held.t.get(t)!, reading, subject: held.subject, ref: `reading:${held.id}` };
+          });
+          const at = new Set(placed.map((m) => m.t));
+          for (const pair of step.against ?? []) {
+            if (!at.has(pair.thought) || !at.has(pair.against)) throw new Error(`in ${step.name}, T${pair.thought} set against T${pair.against} names a level no member stands at`);
+          }
+          const evidence = placed.map((m) => m.ref);
+          const useRef = fresh(step.name);
+          steps.push({
+            op: "whole", basis: basis(evidence), category: "T", frame: FRAME, groundFace: "direct", groundRef: ground,
+            members: placed.map((m) => ({ face: "direct", position: m.t, subjectRef: m.ref })),
+            ...(step.against?.length ? { relations: step.against.map((pair) => ({
+              row: { face: "direct", position: pair.thought }, column: { face: "direct", position: pair.against },
+              relationRef: "epii:set-against", evidence: [pair.why] })) } : {}),
+            subjectRef: `${ground}#${step.name}`, useRef, wholeRef: `anchor:${useRef}`,
+          });
+          named[step.name] = { whole: useRef, current: useRef, recognised: false, evidence,
+            members: placed.map(({ t, label, reading, subject }) => ({ t, label, reading, subject })) };
+          continue;
+        }
+        if (!whole) throw new Error(`there is no whole named ${step.name}; the wholes so far are ${Object.keys(named).join(", ") || "none"}`);
+        if (step.op === "recognise") {
+          if (whole.recognised) throw new Error(`${step.name} is already recognised as its 0/1; reopen it first`);
+          const into = fresh(`${whole.whole}.0/1`);
+          steps.push({ op: "recognise", basis: basis(whole.evidence), from: whole.current, into, ...(step.route ? { route: step.route } : {}) });
+          Object.assign(whole, { current: into, recognised: true });
+        } else if (step.op === "reopen") {
+          if (!whole.recognised) throw new Error(`${step.name} is open already; only a recognised whole is reopened`);
+          const into = fresh(`${whole.whole}.open`);
+          steps.push({ op: "reopen", basis: basis(whole.evidence), from: whole.current, into });
+          Object.assign(whole, { current: into, recognised: false });
+        } else {
+          steps.push({ op: "read", lens: "L4'", useRef: whole.current });
+        }
+      }
+      const request = { schema: "ql.epi-logos-agent-invocation/v1", position: agent.position,
+        operation: "vak.compose", input: { contract: "ql.vak-composition/v1", steps: [...prior, ...steps] } };
+      let receipt;
+      try {
+        receipt = await nativeReceipt("invoke", request, ctx.cwd, signal);
+      } catch (error) {
+        // The kernel counts the replayed steps too; name the step as the caller sent it.
+        throw new Error(String((error as Error).message).replace(/step (\d+)/g, (_, n) =>
+          Number(n) < prior.length ? "an earlier step" : `step ${Number(n) - prior.length + 1}`));
+      }
+      const results = receipt.details.native_receipt.result.results.slice(prior.length);
+      return {
+        content: [{ type: "text" as const, text: results.map((r: any, i: number) => giving(args.steps[i], r, named)).join("\n") }],
+        details: { ...receipt.details, request, replayed: prior.length, composition: named },
+      };
+    },
+  });
+  // A reading says where its thought can stand in a whole, so a whole can be
+  // made from it without decoding the L4′ block.
+  pi.on("tool_result", (event: any) => {
+    const night = event.details?.night_reading;
+    if (event.isError || night?.schema !== NIGHT_READING) return;
+    const t = standing(night);
+    const number = event.details.reading_number;
+    const line = !t ? `Reading ${number} did not read L4′, so it gives its thought no place in a whole.`
+      : t.size ? `In a whole, reading ${number} can stand at ${levels(t)}.` : `Reading ${number} holds no T level, so it cannot stand in a whole.`;
+    return { content: [...event.content, { type: "text" as const, text: line }] };
+  });
+}
+
+// What the kernel returned for one step, as the model reads it.
+function giving(step: ComposeStep, { op, result }: any, named: Record<string, Named>): string {
+  const whole = named[step.name];
+  const member = (m: Named["members"][number]) => `T${m.t} ${m.label}: reading ${m.reading}${m.subject ? ` (“${excerpt(m.subject)}”)` : ""}`;
+  const operator = (ref: string) => String(ref).replace(/^ql:shape:[0-9.]+:/, "").replace(/^compression:/, "").replace(/^recognition:/, "the reading of ");
+  if (op === "whole") {
+    const grain = result.body?.grain;
+    const lines = [`Whole ${step.name}: ${grain === "other" ? "not one of QL's wholes (grain other); its recognisable parts can be made wholes of their own" : grain}.`,
+      ...whole.members.map((m) => `  ${member(m)}`)];
+    for (const relation of result.binding?.relations ?? []) {
+      const fields = (relation.kernel?.fields ?? []).map((f: any) => `${f.family} pair ${f.pairIndex}${f.reversed ? ", reversed" : ""}`);
+      const kinds = (relation.kernel?.relations ?? []).map((k: string) => k.replace(/^ql\.kernel\./, "").replace(/\/v1$/, ""));
+      lines.push(`  T${relation.row.position} set against T${relation.column.position}: the kernel reads ${[...fields, ...kinds.filter((k: string) => !k.startsWith("pair."))].join("; ") || "no relation it names"}.`);
+    }
+    return lines.join("\n");
+  }
+  if (op === "recognise") return `Recognised ${step.name} as its 0/1 by ${operator(result.binding?.operatorRef)}; it keeps its basis and reopens to it exactly.`;
+  if (op === "reopen") return [`Reopened ${step.name} to its basis:`, ...whole.members.map((m) => `  ${member(m)}`)].join("\n");
+  const intervals = (result.childIntervals ?? []).length ? `; the members' intervals ${result.childIntervals.join(", ")}` : "";
+  return `Read ${step.name}: frame pitch ${result.framePitch}, phase ${result.geometry?.framePhaseDegrees}°${intervals}.`;
+}
+
+export default function (pi: ExtensionAPI, body: "pi" | "prime" = "pi", agent?: Agent) {
   registerQlEventContext(pi, body, (request, cwd, signal) => nativeReceipt("encounter", request, cwd, signal));
   // Registration performs no CLI, provider or model call. These are explicit
   // native tools, so ordinary body entry and tool execution do not wait for ML.
@@ -178,4 +375,5 @@ export default function (pi: ExtensionAPI, body: "pi" | "prime" = "pi") {
       return nativeReceipt("invoke", request, ctx.cwd, signal);
     },
   });
+  if (agent?.operations?.includes("vak.compose") && typeof agent.position === "string" && agent.name) registerComposition(pi, agent);
 }
