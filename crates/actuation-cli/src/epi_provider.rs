@@ -1,15 +1,15 @@
-//! Product launcher for the Epi-Logos Prime-QL acting body.
+//! Product launcher for the Epi-Logos acting body.
 //!
 //! The launcher owns no model selection: AIKit appends the resolved native
-//! provider/model to this command. It materialises the Actuation-owned Prime
-//! constitution around that resolved model, pins the QL owner revision, and
-//! then runs Prime's native JSONL RPC as the encounter process.
+//! provider/model to this command. It runs the body's own pi around that
+//! resolved model with the body's core prompt, pins the QL owner revision, and
+//! runs pi's native JSONL RPC as the encounter process.
 //!
 //! The shared Epi/QL extension is loaded explicitly (`-e`), because discovery is
-//! disabled and Prime then loads only explicit extensions. Prime swallows
-//! extension load errors in RPC mode, so a missing or drifted QL binding cannot
-//! be left to the extension: the launcher verifies the binding first and refuses
-//! to start Prime without it.
+//! disabled and pi then loads only explicit extensions. An extension that fails
+//! to load in RPC mode leaves a body without its tools, so a missing or drifted
+//! QL binding cannot be left to the extension: the launcher verifies the
+//! binding first and refuses to start pi without it.
 
 use actuation_core::{Error, Result};
 use serde_json::Value;
@@ -32,10 +32,9 @@ const NIGHT_REQUIRED: [&str; 2] = ["extensions/ql-night.ts", "night-tools.json"]
 
 #[derive(Debug, Clone)]
 pub struct EpiProviderArgs {
-    pub prime_bin: PathBuf,
+    pub pi_bin: PathBuf,
     pub ql_bin: PathBuf,
     pub ql_revision: String,
-    pub skill_path: PathBuf,
     /// The packaged binding extension (`ql-faculty-bindings.ts`, from EpiLogos/Epi-Prime), loaded with `-e`.
     pub extension: PathBuf,
     /// The binding file (`actuation.prime-faculty-installation/v1`) the
@@ -131,13 +130,9 @@ impl EpiProviderArgs {
             .map(|path| directory(path, "QL source root"))
             .transpose()?;
         Ok(Self {
-            prime_bin: file(PathBuf::from(value(args, "--prime-bin")?), "Prime binary")?,
+            pi_bin: file(PathBuf::from(value(args, "--pi-bin")?), "pi binary")?,
             ql_bin: file(PathBuf::from(value(args, "--ql-bin")?), "QL binary")?,
             ql_revision,
-            skill_path: directory(
-                PathBuf::from(value(args, "--skill-path")?),
-                "QL relational skill",
-            )?,
             extension: file(
                 PathBuf::from(value(args, "--extension")?),
                 "Epi/QL binding extension",
@@ -310,7 +305,7 @@ fn verify_closure(
 /// `PATH`, `ql-agent` and its helpers are whatever another body installed
 /// (another engine, another kernel digest: every QL receipt refused). The
 /// installation binds them to one engine; the launcher hands exactly these to
-/// Prime and puts their directory first on its `PATH`.
+/// pi and puts their directory first on its `PATH`.
 const QL_AGENT_TOOLS: [(&str, &str); 3] = [
     ("QL_AGENT_BIN", "ql-agent"),
     ("QL_AGENT_DECIDE_BIN", "ql-agent-decide"),
@@ -378,44 +373,63 @@ pub fn verify_ql_agent(installation: &Path, ql_bin: &Path, ql_revision: &str) ->
     Ok(dir)
 }
 
-/// The body runs its own Prime: the TypeScript copy its installation carries
-/// (Prime 0.10+ is a Rust rewrite with no extension API, and a Prime on PATH or
-/// in the npm prefix changes under every update). Refuse a launch whose
-/// `--prime-bin` is not that copy.
-pub fn verify_prime(installation: &Path, prime_bin: &Path) -> Result<()> {
+/// The body runs its own pi: the pinned copy its installation carries (a pi on
+/// PATH or in the npm prefix changes under every update). Refuse a launch whose
+/// `--pi-bin` is not that copy.
+pub fn verify_pi(installation: &Path, pi_bin: &Path) -> Result<()> {
     let refuse = |why: &str| {
         Error::new(format!(
-            "Prime refused: {why} ({}); reinstall with epi-distribution.mjs install --prime-package and register its prime.cli",
+            "pi refused: {why} ({}); reinstall with epi-distribution.mjs install --pi-package and register its pi.cli",
             installation.display()
         ))
     };
     let bytes = std::fs::read(installation).map_err(|_| refuse("unreadable"))?;
     let binding: Value = serde_json::from_slice(&bytes).map_err(|_| refuse("not JSON"))?;
-    let owned = binding["prime"]["cli"]
+    let owned = binding["pi"]["cli"]
         .as_str()
         .filter(|p| Path::new(p).is_absolute())
-        .ok_or_else(|| refuse("the installation carries no Prime of its own"))?;
-    let owned =
-        std::fs::canonicalize(owned).map_err(|_| refuse("the body's own Prime is missing"))?;
-    if std::fs::canonicalize(prime_bin).ok().as_ref() != Some(&owned) {
-        return Err(refuse("--prime-bin is not the body's own Prime"));
+        .ok_or_else(|| refuse("the installation carries no pi of its own"))?;
+    let owned = std::fs::canonicalize(owned).map_err(|_| refuse("the body's own pi is missing"))?;
+    if std::fs::canonicalize(pi_bin).ok().as_ref() != Some(&owned) {
+        return Err(refuse("--pi-bin is not the body's own pi"));
     }
     Ok(())
 }
 
-/// The exact Prime command line and the environment added to it. Separate from
-/// `run` so the flags that matter are testable without starting Prime.
-pub fn prime_command_spec(
+/// The body's core prompt: the file the installation composed (Relational
+/// Logos, then who the body is), at its recorded digest. pi takes it as the
+/// whole of its own preamble, in place of its coding-assistant prompt.
+pub fn verify_prompt(installation: &Path) -> Result<PathBuf> {
+    let refuse = |why: &str| {
+        Error::new(format!(
+            "core prompt refused: {why} ({}); reinstall with epi-distribution.mjs install --relational-logos",
+            installation.display()
+        ))
+    };
+    let bytes = std::fs::read(installation).map_err(|_| refuse("unreadable"))?;
+    let binding: Value = serde_json::from_slice(&bytes).map_err(|_| refuse("not JSON"))?;
+    let file = binding["prompt"]["file"]
+        .as_str()
+        .filter(|p| Path::new(p).is_absolute())
+        .ok_or_else(|| refuse("the installation carries no core prompt"))?;
+    let file = std::fs::canonicalize(file).map_err(|_| refuse("the core prompt is missing"))?;
+    if binding["prompt"]["sha256"].as_str() != Some(sha256_hex(&file)?.as_str()) {
+        return Err(refuse("the core prompt differs from its installed digest"));
+    }
+    Ok(file)
+}
+
+/// The exact pi command line and the environment added to it. Separate from
+/// `run` so the flags that matter are testable without starting pi.
+pub fn pi_command_spec(
     args: &EpiProviderArgs,
-    cwd: &Path,
+    prompt: &Path,
     ql_agent: &Path,
 ) -> (Vec<String>, Vec<(String, String)>) {
     let text = |p: &Path| p.to_string_lossy().into_owned();
     let mut argv: Vec<String> = [
         "--mode",
         "rpc",
-        "--cwd",
-        &text(cwd),
         // Discovery is off; the shared QL extension is the explicit exception.
         "--no-extensions",
         "-e",
@@ -423,8 +437,8 @@ pub fn prime_command_spec(
         "--no-prompt-templates",
         "--no-context-files",
         "--no-skills",
-        "--skill",
-        &text(&args.skill_path),
+        "--system-prompt",
+        &text(prompt),
     ]
     .iter()
     .map(|s| (*s).to_owned())
@@ -438,7 +452,6 @@ pub fn prime_command_spec(
         ]);
     }
     let mut env = vec![
-        ("RLM_MAX_DEPTH".to_owned(), "2".to_owned()),
         ("DO_NOT_TRACK".to_owned(), "1".to_owned()),
         ("QL_BIN".to_owned(), text(&args.ql_bin)),
         ("QL_OWNER_REVISION".to_owned(), args.ql_revision.clone()),
@@ -465,16 +478,6 @@ pub fn prime_command_spec(
     .map(|p| p.to_string_lossy().into_owned())
     .unwrap_or_else(|_| text(ql_agent));
     env.push(("PATH".into(), path));
-    // The QL workspace builds `ql` and `ql-wiki-refraction` side by side. When the sibling exists the skill runs it directly instead of
-    // `cargo run`-ing the QL checkout at call time (which compiles whatever state that checkout is in, mid-turn).
-    if let Some(sibling) = args
-        .ql_bin
-        .parent()
-        .map(|dir| dir.join("ql-wiki-refraction"))
-        .filter(|path| path.is_file())
-    {
-        env.push(("QL_WIKI_REFRACTION_BIN".into(), text(&sibling)));
-    }
     if let Some(root) = &args.ql_root {
         env.push(("QL_MEF_ROOT".into(), text(root)));
     }
@@ -501,10 +504,10 @@ pub fn prime_command_spec(
 }
 
 pub fn run(args: EpiProviderArgs) -> Result<i32> {
-    let cwd = std::env::current_dir()
-        .map_err(|_| Error::new("Prime-QL provider has no working directory"))?;
+    let cwd =
+        std::env::current_dir().map_err(|_| Error::new("Epi provider has no working directory"))?;
     let cwd = std::fs::canonicalize(cwd)
-        .map_err(|_| Error::new("Prime-QL provider working directory is unavailable"))?;
+        .map_err(|_| Error::new("Epi provider working directory is unavailable"))?;
     if args.central_ctrl_bin.is_some() != args.central_root.is_some() {
         return Err(Error::new(
             "--central-ctrl-bin and --central-root must be supplied together or both omitted",
@@ -521,27 +524,29 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
             return Err(Error::new("--agent-session is invalid"));
         }
     }
-    // Fail closed: no verified QL binding, no Prime-QL body.
+    // Fail closed: no verified QL binding and core prompt, no Epi body.
     verify_binding(&args.installation)?;
-    verify_prime(&args.installation, &args.prime_bin)?;
+    verify_pi(&args.installation, &args.pi_bin)?;
+    let prompt = verify_prompt(&args.installation)?;
     let ql_agent = verify_ql_agent(&args.installation, &args.ql_bin, &args.ql_revision)?;
-    let (argv, env) = prime_command_spec(&args, &cwd, &ql_agent);
-    let mut command = Command::new(&args.prime_bin);
+    let (argv, env) = pi_command_spec(&args, &prompt, &ql_agent);
+    let mut command = Command::new(&args.pi_bin);
     command
         .args(&argv)
         .envs(env)
+        .current_dir(&cwd)
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit());
     let status = command
         .status()
-        .map_err(|_| Error::new("Prime-QL provider process could not start"))?;
+        .map_err(|_| Error::new("Epi provider process could not start"))?;
     Ok(status.code().unwrap_or(1))
 }
 
 pub fn usage() -> &'static str {
-    "actuation-epi-prime --prime-bin <abs> --ql-bin <abs> --ql-revision <sha> \
---skill-path <abs> --extension <abs> --installation <abs> \
+    "actuation-epi-prime --pi-bin <abs> --ql-bin <abs> --ql-revision <sha> \
+--extension <abs> --installation <abs> \
 --research-bin <abs> --faculty-config <abs> \
 [--ql-root <abs>] [--aikit-bin <abs>] [--agent-session <ref>] \
 [--central-ctrl-bin <abs> --central-root <abs> [--central-project <key>]] \
@@ -555,14 +560,12 @@ mod tests {
     #[test]
     fn provider_and_model_are_one_explicit_override() {
         let args = vec![
-            "--prime-bin".into(),
+            "--pi-bin".into(),
             "/usr/bin/true".into(),
             "--ql-bin".into(),
             "/usr/bin/true".into(),
             "--ql-revision".into(),
             "0123456789abcdef0123456789abcdef01234567".into(),
-            "--skill-path".into(),
-            "/tmp".into(),
             "--research-bin".into(),
             "/usr/bin/true".into(),
             "--faculty-config".into(),
@@ -577,14 +580,12 @@ mod tests {
     #[test]
     fn ql_revision_is_exact_not_a_label() {
         let args = vec![
-            "--prime-bin".into(),
+            "--pi-bin".into(),
             "/usr/bin/true".into(),
             "--ql-bin".into(),
             "/usr/bin/true".into(),
             "--ql-revision".into(),
             "short".into(),
-            "--skill-path".into(),
-            "/tmp".into(),
             "--research-bin".into(),
             "/usr/bin/true".into(),
             "--faculty-config".into(),
@@ -605,6 +606,7 @@ mod tests {
     }
 
     const REVISION: &str = "0123456789abcdef0123456789abcdef01234567";
+    const PROMPT: &str = "# Relational Logos\n\nYou act from within a relation.\n";
 
     /// A real binding over a real owner closure on disk.
     fn binding_dir(dir: &Path) -> PathBuf {
@@ -626,6 +628,8 @@ mod tests {
             std::fs::write(&path, &body).unwrap();
             night.insert(name.into(), Value::String(digest(body.as_bytes())));
         }
+        let prompt = dir.join("prompt.md");
+        std::fs::write(&prompt, PROMPT).unwrap();
         let tools = dir.join("ql-agent");
         std::fs::create_dir_all(&tools).unwrap();
         let mut files = serde_json::Map::new();
@@ -648,23 +652,21 @@ mod tests {
             "ql_agent": {
                 "dir": tools, "engine": "/usr/bin/true", "revision": REVISION, "files": files
             },
-            "prime": { "cli": dir.join("prime"), "version": "0.9.8" }
+            "pi": { "cli": dir.join("pi"), "version": "1.5.0" },
+            "prompt": { "file": prompt, "sha256": digest(PROMPT.as_bytes()) }
         });
         let path = dir.join("current.json");
         std::fs::write(&path, serde_json::to_vec(&binding).unwrap()).unwrap();
         path
     }
 
-    fn launch_args(dir: &Path, prime: &Path, installation: &Path) -> Vec<String> {
+    fn launch_args(dir: &Path, pi: &Path, installation: &Path) -> Vec<String> {
         let extension = dir.join("ql-faculty-bindings.ts");
         std::fs::write(&extension, "export default () => {}").unwrap();
-        let skill = dir.join("skill");
-        std::fs::create_dir_all(&skill).unwrap();
         [
-            ("--prime-bin", prime.display().to_string()),
+            ("--pi-bin", pi.display().to_string()),
             ("--ql-bin", "/usr/bin/true".into()),
             ("--ql-revision", REVISION.into()),
-            ("--skill-path", skill.display().to_string()),
             ("--extension", extension.display().to_string()),
             ("--installation", installation.display().to_string()),
             ("--research-bin", "/usr/bin/true".into()),
@@ -685,11 +687,19 @@ mod tests {
             &installation,
         ))
         .unwrap();
-        let (argv, env) = prime_command_spec(&args, Path::new("/work"), Path::new("/tools"));
+        let prompt = verify_prompt(&installation).unwrap();
+        let (argv, env) = pi_command_spec(&args, &prompt, Path::new("/tools"));
         let discovery_off = argv.iter().position(|a| a == "--no-extensions").unwrap();
         let explicit = argv.iter().position(|a| a == "-e").expect("an explicit -e");
         assert!(explicit > discovery_off, "-e follows --no-extensions");
         assert_eq!(argv[explicit + 1], args.extension.to_string_lossy());
+        // The core prompt is the whole preamble; pi has no --cwd (the child runs in it).
+        let system = argv.iter().position(|a| a == "--system-prompt").unwrap();
+        assert_eq!(argv[system + 1], prompt.to_string_lossy());
+        assert!(
+            !argv.iter().any(|a| a == "--cwd" || a == "--skill"),
+            "{argv:?}"
+        );
         assert!(env
             .iter()
             .any(|(k, v)| k == "ACTUATION_RESEARCH_INSTALLATION"
@@ -697,29 +707,26 @@ mod tests {
     }
 
     #[test]
-    fn a_built_wiki_refraction_binary_beside_ql_is_handed_to_the_skill() {
+    fn the_core_prompt_is_the_installed_one_at_its_digest() {
         let dir = tempfile::tempdir().unwrap();
         let installation = binding_dir(dir.path());
-        let bin = dir.path().join("qlbin");
-        std::fs::create_dir_all(&bin).unwrap();
-        let ql = bin.join("ql");
-        std::fs::write(&ql, "#!/bin/sh\n").unwrap();
-        let mut args = launch_args(dir.path(), Path::new("/usr/bin/true"), &installation);
-        let at = args.iter().position(|a| a == "--ql-bin").unwrap();
-        args[at + 1] = ql.display().to_string();
-        let parsed = EpiProviderArgs::parse(&args).unwrap();
-        let (_, env) = prime_command_spec(&parsed, Path::new("/work"), Path::new("/tools"));
-        assert!(
-            !env.iter().any(|(k, _)| k == "QL_WIKI_REFRACTION_BIN"),
-            "no sibling, nothing named"
+        assert_eq!(
+            std::fs::read_to_string(verify_prompt(&installation).unwrap()).unwrap(),
+            PROMPT
         );
-        let sibling = bin.join("ql-wiki-refraction");
-        std::fs::write(&sibling, "#!/bin/sh\n").unwrap();
-        let (_, env) = prime_command_spec(&parsed, Path::new("/work"), Path::new("/tools"));
-        let sibling = sibling.canonicalize().unwrap();
-        assert!(env
-            .iter()
-            .any(|(k, v)| k == "QL_WIKI_REFRACTION_BIN" && v == &sibling.to_string_lossy()));
+        std::fs::write(dir.path().join("prompt.md"), "You are a coding assistant.").unwrap();
+        assert!(verify_prompt(&installation)
+            .unwrap_err()
+            .to_string()
+            .contains("differs"));
+        let mut binding: Value =
+            serde_json::from_slice(&std::fs::read(&installation).unwrap()).unwrap();
+        binding.as_object_mut().unwrap().remove("prompt");
+        std::fs::write(&installation, serde_json::to_vec(&binding).unwrap()).unwrap();
+        assert!(verify_prompt(&installation)
+            .unwrap_err()
+            .to_string()
+            .contains("no core prompt"));
     }
 
     #[test]
@@ -800,36 +807,36 @@ mod tests {
     }
 
     #[test]
-    fn the_launcher_never_starts_prime_without_a_verified_binding() {
+    fn the_launcher_never_starts_pi_without_a_verified_binding() {
         let dir = tempfile::tempdir().unwrap();
-        let marker = dir.path().join("PRIME-STARTED");
-        let prime = dir.path().join("prime");
-        std::fs::write(
-            &prime,
-            format!("#!/bin/sh\ntouch \"{}\"\n", marker.display()),
-        )
-        .unwrap();
-        std::fs::set_permissions(&prime, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let marker = dir.path().join("PI-STARTED");
+        let pi = dir.path().join("pi");
+        std::fs::write(&pi, format!("#!/bin/sh\ntouch \"{}\"\n", marker.display())).unwrap();
+        std::fs::set_permissions(&pi, std::fs::Permissions::from_mode(0o755)).unwrap();
         let installation = binding_dir(dir.path());
-        let args = launch_args(dir.path(), &prime, &installation);
+        let args = launch_args(dir.path(), &pi, &installation);
 
-        // Drift: Prime must not start.
+        // Drift: pi must not start.
         std::fs::write(dir.path().join("owner/extensions/ql-agent.ts"), "tampered").unwrap();
         let error = run(EpiProviderArgs::parse(&args).unwrap()).unwrap_err();
         assert!(error.to_string().contains("QL binding refused"), "{error}");
-        assert!(!marker.exists(), "Prime started despite a drifted binding");
-
-        // A verified binding starts it.
+        assert!(!marker.exists(), "pi started despite a drifted binding");
         std::fs::write(
             dir.path().join("owner/extensions/ql-agent.ts"),
             "member extensions/ql-agent.ts",
         )
         .unwrap();
+
+        // A drifted core prompt: pi must not start either.
+        std::fs::write(dir.path().join("prompt.md"), "You are a coding assistant.").unwrap();
+        let error = run(EpiProviderArgs::parse(&args).unwrap()).unwrap_err();
+        assert!(error.to_string().contains("core prompt refused"), "{error}");
+        assert!(!marker.exists(), "pi started despite a drifted core prompt");
+
+        // A verified binding and prompt start it.
+        std::fs::write(dir.path().join("prompt.md"), PROMPT).unwrap();
         assert_eq!(run(EpiProviderArgs::parse(&args).unwrap()).unwrap(), 0);
-        assert!(
-            marker.exists(),
-            "Prime did not start with a verified binding"
-        );
+        assert!(marker.exists(), "pi did not start with a verified binding");
     }
 
     #[test]
@@ -843,7 +850,7 @@ mod tests {
         ))
         .unwrap();
         let tools = verify_ql_agent(&installation, &args.ql_bin, &args.ql_revision).unwrap();
-        let (_, env) = prime_command_spec(&args, Path::new("/work"), &tools);
+        let (_, env) = pi_command_spec(&args, Path::new("/prompt.md"), &tools);
         let get = |k: &str| env.iter().find(|(key, _)| key == k).map(|(_, v)| v.clone());
         for (variable, tool) in QL_AGENT_TOOLS {
             assert_eq!(get(variable).unwrap(), tools.join(tool).to_string_lossy());
@@ -897,23 +904,23 @@ mod tests {
     }
 
     #[test]
-    fn only_the_bodys_own_prime_is_started() {
+    fn only_the_bodys_own_pi_is_started() {
         let dir = tempfile::tempdir().unwrap();
         let installation = binding_dir(dir.path());
-        let own = dir.path().join("prime");
+        let own = dir.path().join("pi");
         std::fs::write(&own, "#!/bin/sh\n").unwrap();
-        verify_prime(&installation, &own).unwrap();
-        let error = verify_prime(&installation, Path::new("/usr/bin/true"))
+        verify_pi(&installation, &own).unwrap();
+        let error = verify_pi(&installation, Path::new("/usr/bin/true"))
             .unwrap_err()
             .to_string();
-        assert!(error.contains("not the body's own Prime"), "{error}");
+        assert!(error.contains("not the body's own pi"), "{error}");
         let mut binding: Value =
             serde_json::from_slice(&std::fs::read(&installation).unwrap()).unwrap();
-        binding.as_object_mut().unwrap().remove("prime");
+        binding.as_object_mut().unwrap().remove("pi");
         std::fs::write(&installation, serde_json::to_vec(&binding).unwrap()).unwrap();
-        assert!(verify_prime(&installation, &own)
+        assert!(verify_pi(&installation, &own)
             .unwrap_err()
             .to_string()
-            .contains("no Prime of its own"));
+            .contains("no pi of its own"));
     }
 }
