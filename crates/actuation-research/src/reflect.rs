@@ -2,10 +2,13 @@
 //! register's machinery — each lens with its defined sub-slots and their
 //! meanings — to the decision provider AIKit holds elected (`aikit decide`),
 //! the worker's own disclosure riding the call, and returns the full giving
-//! keyed to QL's lens and sublens references. The subject is pre-lens data;
-//! a reading is taken now, never an identity assigned. Nothing here invents a
-//! reading: an unelected, unavailable or refusing provider is an error the
-//! caller returns to the model as an ordinary tool result.
+//! keyed to QL's lens and sublens references. A lens is read across the
+//! whole of its machinery: every sub-slot is weighed on its own, and a
+//! reading is the profile, never one winning cell. A square reads each of its
+//! positions through that position's L-link pair. The subject is pre-lens
+//! data; a reading is taken now, never an identity assigned. Nothing here
+//! invents a reading: an unelected, unavailable or refusing provider is an
+//! error the caller returns to the model as an ordinary tool result.
 use crate::{process::ProcessSpec, toolset::NIGHT_TOOLS, Error, Result};
 use serde_json::{json, Map, Value};
 use std::collections::BTreeMap;
@@ -26,6 +29,21 @@ pub const COVERAGE_BECOMING: [&str; 4] = ["L1", "L1'", "L4", "L4'"];
 pub const COVERAGE_KNOWING: [&str; 4] = ["L2", "L2'", "L3", "L3'"];
 /// A frame is selected only after adequate coverage: half the registry.
 pub const COVERAGE_REQUIRED: usize = 6;
+
+/// A sub-slot holds when its weight is above one half — strictly, as AIKit
+/// reads a Noul: exactly one half is a coin flip, not a standing.
+pub const HOLDS: f64 = 0.5;
+
+/// The relational contract the readings are taken under (Series 1 round 12,
+/// `relational-contract.min.txt`). With it the model read the cells as
+/// relations to its own text rather than as content.
+pub const RELATIONAL_CONTRACT: &str = "Relational contract: the P positions P0–P5 and their conjugates P0′–P5′ are purely relational responsibilities in the recurrence of work; they hold no inherent manifest content. The twelve MEF lenses are the refraction media of these positions: whatever content a position carries is read through a lens, and a lens reading is always of a position's responsibility — never of the thing itself. Readings inform; the work remains yours.";
+
+/// What reaches the body's system prompt with the Night tools.
+pub const PROMPT_GUIDELINES: [&str; 2] = [
+    RELATIONAL_CONTRACT,
+    "The Night reflect tools read any thought — the person's words, your own answer, a summary — through the MEF lenses. Take a reading when seeing what a thought carries would change what you say; the reading is yours to think and answer through.",
+];
 
 const MODES: [&str; 6] = [
     "full_text",
@@ -115,8 +133,9 @@ fn label(tool: &str) -> &'static str {
 }
 
 /// The Night tool supply as a body registers it: Actuation's six reflect
-/// tools, their descriptions as the toolset gives them, each executed by
-/// the `reflect.read` operation.
+/// tools, their descriptions as the toolset gives them, the relational
+/// contract as their prompt guideline, each executed by the `reflect.read`
+/// operation.
 pub fn tools() -> Value {
     let parameters = json!({
         "type": "object", "additionalProperties": false, "required": ["subject"],
@@ -131,7 +150,7 @@ pub fn tools() -> Value {
         "coverage_required": COVERAGE_REQUIRED,
         "tools": NIGHT_TOOLS.iter().map(|(name, description)| json!({
             "name": name, "label": label(name), "description": description,
-            "parameters": parameters,
+            "parameters": parameters, "prompt_guidelines": PROMPT_GUIDELINES,
         })).collect::<Vec<_>>(),
     })
 }
@@ -145,10 +164,6 @@ fn slot_line(s: &Value) -> String {
     )
 }
 
-fn criterion(s: &Value) -> String {
-    format!("{} {}", str_of(s, "slot"), str_of(s, "label"))
-}
-
 fn machinery(l: &Value) -> String {
     sublenses(l)
         .iter()
@@ -157,30 +172,22 @@ fn machinery(l: &Value) -> String {
         .join("; ")
 }
 
+fn lens_line(l: &Value) -> String {
+    let labels: Vec<&str> = sublenses(l).iter().map(|s| str_of(s, "label")).collect();
+    format!(
+        "{} {} ({}): {}",
+        str_of(l, "id"),
+        str_of(l, "name"),
+        str_of(l, "ground"),
+        labels.join(" · ")
+    )
+}
+
 fn lens_criteria() -> Value {
     Value::Object(
         lenses()
             .iter()
-            .map(|l| {
-                let labels: Vec<&str> = sublenses(l).iter().map(|s| str_of(s, "label")).collect();
-                let line = format!(
-                    "{} {} ({}): {}",
-                    str_of(l, "id"),
-                    str_of(l, "name"),
-                    str_of(l, "ground"),
-                    labels.join(" · ")
-                );
-                (str_of(l, "id").to_owned(), Value::String(line))
-            })
-            .collect(),
-    )
-}
-
-fn slot_criteria(l: &Value) -> Value {
-    Value::Object(
-        sublenses(l)
-            .iter()
-            .map(|s| (criterion(s), Value::String(slot_line(s))))
+            .map(|l| (str_of(l, "id").to_owned(), Value::String(lens_line(l))))
             .collect(),
     )
 }
@@ -193,31 +200,69 @@ fn square_key(mode: &str) -> &'static str {
     }
 }
 
-/// A square's day lenses (register order) and day positions: register rule
-/// 4, lens-pairs over position-pairs.
-fn square_cells(key: &str) -> (Vec<&'static Value>, Vec<&'static str>) {
-    let square = &register()["squares"][key];
-    let pair_ids: Vec<&str> = square["lens_pairs"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter_map(Value::as_array)
-        .flatten()
-        .filter_map(Value::as_str)
-        .filter(|id| !id.contains('\''))
-        .collect();
-    let day = lenses()
-        .iter()
-        .filter(|l| pair_ids.contains(&str_of(l, "id")))
-        .collect();
-    let positions = square["positions"]
+/// A square's positions, each with its L-link pair (register §2): Square A
+/// reads P0 through L0↔L5′ and P5 through L5↔L0′, and so on for B and C.
+/// Every lens of the square is read once, at the position it links.
+fn square_links(key: &str) -> Vec<(&'static str, Vec<&'static Value>)> {
+    register()["squares"][key]["positions"]
         .as_array()
         .into_iter()
         .flatten()
         .filter_map(Value::as_str)
         .filter(|p| !p.contains('\''))
+        .map(|p| {
+            let link = register()["p_links"][p]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|id| id.as_str().and_then(lens))
+                .collect();
+            (p, link)
+        })
+        .collect()
+}
+
+/// One sub-slot judged on its own: a lens is read across all six of its
+/// sub-slots, and several can hold at once, so each is a Noul, never a
+/// choice among them.
+fn slot_question(l: &Value, s: &Value, reading: &str) -> Value {
+    json!({
+        "type": "noul",
+        "instructions": format!("{reading} through {} {} ({}). Its machinery, six sub-slots: {}. Does it stand at {}? Several sub-slots can hold at once; judge this one alone.", str_of(l, "id"), str_of(l, "name"), str_of(l, "ground"), machinery(l), slot_line(s)),
+    })
+}
+
+fn slot_key(l: &Value, at: Option<&str>, s: &Value) -> String {
+    match at {
+        Some(p) => format!("{}@{p}|{}", str_of(l, "id"), str_of(s, "slot")),
+        None => format!("{}|{}", str_of(l, "id"), str_of(s, "slot")),
+    }
+}
+
+fn square_shape(key: &str) -> String {
+    let square = &register()["squares"][key];
+    let titles: Vec<&str> = square["titles"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
         .collect();
-    (day, positions)
+    let links: Vec<String> = square_links(key)
+        .iter()
+        .map(|(p, link)| {
+            let ids: Vec<&str> = link.iter().map(|l| str_of(l, "id")).collect();
+            format!(
+                "{p} {} through {}",
+                str_of(&register()["positions"], p),
+                ids.join("↔")
+            )
+        })
+        .collect();
+    format!(
+        "square {key} ({}): {}",
+        titles.join(" / "),
+        links.join("; ")
+    )
 }
 
 /// The typed questions a mode puts to the provider, and the reading's shape.
@@ -228,13 +273,15 @@ pub fn questions(mode: &str, with_disclosure: bool) -> Result<(String, Map<Strin
     let shape = match mode {
         "full_text" => {
             for l in lenses() {
-                questions.insert(str_of(l, "id").to_owned(), json!({
-                    "type": "choice",
-                    "instructions": format!("Apply {} ({}) to the subject as a presented whole. Its machinery: {}. Apply it as it is defined: state where the subject stands at each sub-slot — the distribution is the statement, covering all of them.", str_of(l, "name"), str_of(l, "ground"), machinery(l)),
-                    "criteria": slot_criteria(l),
-                }));
+                for s in sublenses(l) {
+                    questions.insert(
+                        slot_key(l, None, s),
+                        slot_question(l, s, "Read the subject as a presented whole"),
+                    );
+                }
             }
-            "machinery applied as given: each lens run across its defined sub-slots, the distribution stating where the subject stands at each".to_owned()
+            "each lens run across all six of its sub-slots, each sub-slot weighed on its own"
+                .to_owned()
         }
         "right_frame" => {
             let weigh = if with_disclosure {
@@ -255,89 +302,52 @@ pub fn questions(mode: &str, with_disclosure: bool) -> Result<(String, Map<Strin
             } else {
                 ""
             };
-            questions.insert("resonant_frames".into(), json!({
-                "type": "choice",
-                "instructions": format!("Which lens is most strongly resonant with this subject as a whole — the first among the frames in relation? The full ranking is taken from the returned distribution.{weigh}"),
-                "criteria": lens_criteria(),
-            }));
-            "ranked frame relation (full ordering, topk=12)".to_owned()
+            for l in lenses() {
+                questions.insert(str_of(l, "id").to_owned(), json!({
+                    "type": "noul",
+                    "instructions": format!("Is {} a frame in play for this subject as a whole — a lens whose reading bears on it now? Judge this lens alone; any number of lenses can be in play.{weigh}", lens_line(l)),
+                }));
+            }
+            "every lens weighed on its own as a frame in play, ranked".to_owned()
         }
         "being" | "becoming" | "knowing" => {
             let key = square_key(mode);
-            let square = &register()["squares"][key];
-            let (day, positions) = square_cells(key);
-            for l in &day {
-                for p in &positions {
-                    let office = str_of(&register()["positions"], p);
-                    questions.insert(format!("{}@{p}", str_of(l, "id")), json!({
-                        "type": "choice",
-                        "instructions": format!("Reading the subject's {office} through {} {} ({}). Its machinery: {}. At which sub-slot does it refract the subject's {office}?", str_of(l, "id"), str_of(l, "name"), str_of(l, "ground"), machinery(l)),
-                        "criteria": slot_criteria(l),
-                    }));
+            for (p, link) in square_links(key) {
+                let office = str_of(&register()["positions"], p);
+                let reading = format!("Read the subject's {office} ({p})");
+                for l in link {
+                    for s in sublenses(l) {
+                        questions.insert(slot_key(l, Some(p), s), slot_question(l, s, &reading));
+                    }
                 }
             }
-            let titles: Vec<&str> = square["titles"]
-                .as_array()
-                .into_iter()
-                .flatten()
-                .filter_map(Value::as_str)
-                .collect();
-            let pairs: Vec<String> = square["lens_pairs"]
-                .as_array()
-                .into_iter()
-                .flatten()
-                .map(|p| {
-                    format!(
-                        "{}↔{}",
-                        p[0].as_str().unwrap_or_default(),
-                        p[1].as_str().unwrap_or_default()
-                    )
-                })
-                .collect();
-            let all_positions: Vec<&str> = square["positions"]
-                .as_array()
-                .into_iter()
-                .flatten()
-                .filter_map(Value::as_str)
-                .collect();
-            format!(
-                "square {key} ({}): {} over {}",
-                titles.join(" / "),
-                pairs.join(", "),
-                all_positions.join("/")
-            )
+            square_shape(key)
         }
         other => return Err(Error::new(format!("no reflect reading for mode {other}"))),
     };
     Ok((shape, questions))
 }
 
-/// The strongest answer: the provider's choice, else the distribution's peak.
-fn strongest(answer: &Value) -> Option<String> {
-    answer["choice"].as_str().map(str::to_owned).or_else(|| {
-        answer["probabilities"]
-            .as_object()?
-            .iter()
-            .filter_map(|(k, v)| v.as_f64().map(|m| (k, m)))
-            .max_by(|a, b| a.1.total_cmp(&b.1))
-            .map(|(k, _)| k.clone())
-    })
-}
-
-/// The QL sublens reference of a criterion the provider chose.
-fn sublens_ref(l: &Value, chosen: Option<&str>) -> Value {
-    chosen
-        .and_then(|c| sublenses(l).iter().find(|s| criterion(s) == c))
+/// A lens read across its six sub-slots: each sub-slot's weight (the Noul,
+/// null when the provider left it unanswered) and the sub-slots that hold.
+fn profile(l: &Value, at: Option<&str>, answers: &Value) -> Value {
+    let slots: Vec<Value> = sublenses(l)
+        .iter()
+        .map(|s| {
+            json!({
+                "slot": s["slot"], "ref": s["ref"], "label": s["label"], "meaning": s["meaning"],
+                "weight": answers[slot_key(l, at, s)]["noul"].as_f64(),
+            })
+        })
+        .collect();
+    let holds: Vec<Value> = slots
+        .iter()
+        .filter(|s| s["weight"].as_f64().is_some_and(|w| w > HOLDS))
         .map(|s| s["ref"].clone())
-        .unwrap_or(Value::Null)
-}
-
-fn cell(l: &Value, answer: &Value) -> Value {
-    let chosen = strongest(answer);
+        .collect();
     json!({
         "lens": l["id"], "ref": l["ref"], "name": l["name"], "ground": l["ground"],
-        "strongest": chosen, "strongest_ref": sublens_ref(l, chosen.as_deref()),
-        "distribution": answer["probabilities"], "machinery": l["sublens"],
+        "slots": slots, "holds": holds,
     })
 }
 
@@ -346,14 +356,10 @@ pub fn shape_reading(mode: &str, shape: String, answers: &Value) -> Value {
     match mode {
         "full_text" => json!({
             "shape": shape,
-            "cells": lenses().iter().map(|l| cell(l, &answers[str_of(l, "id")])).collect::<Vec<_>>(),
+            "lenses": lenses().iter().map(|l| profile(l, None, answers)).collect::<Vec<_>>(),
         }),
-        "right_frame" | "resonant" => {
-            let answer = &answers[if mode == "right_frame" {
-                "right_frame"
-            } else {
-                "resonant_frames"
-            }];
+        "right_frame" => {
+            let answer = &answers["right_frame"];
             let mut ranked: Vec<(&String, f64)> = answer["probabilities"]
                 .as_object()
                 .into_iter()
@@ -361,11 +367,13 @@ pub fn shape_reading(mode: &str, shape: String, answers: &Value) -> Value {
                 .filter_map(|(k, v)| v.as_f64().map(|m| (k, m)))
                 .collect();
             ranked.sort_by(|a, b| b.1.total_cmp(&a.1));
-            let selected = strongest(answer);
+            let selected = answer["choice"]
+                .as_str()
+                .or(ranked.first().map(|(id, _)| id.as_str()));
             json!({
                 "shape": shape,
                 "selected": selected,
-                "selected_ref": selected.as_deref().and_then(lens).map(|l| l["ref"].clone()),
+                "selected_ref": selected.and_then(lens).map(|l| l["ref"].clone()),
                 "ranking": ranked.iter().map(|(id, mass)| {
                     let l = lens(id);
                     json!({"lens": id, "ref": l.map(|l| &l["ref"]), "name": l.map(|l| &l["name"]), "mass": mass})
@@ -373,23 +381,132 @@ pub fn shape_reading(mode: &str, shape: String, answers: &Value) -> Value {
                 "rationale": answer["rationale"],
             })
         }
+        "resonant" => {
+            let mut frames: Vec<Value> = lenses()
+                .iter()
+                .map(|l| json!({"lens": l["id"], "ref": l["ref"], "name": l["name"], "weight": answers[str_of(l, "id")]["noul"].as_f64()}))
+                .collect();
+            frames.sort_by(|a, b| {
+                let w = |v: &Value| v["weight"].as_f64().unwrap_or(-1.0);
+                w(b).total_cmp(&w(a))
+            });
+            let in_play: Vec<Value> = frames
+                .iter()
+                .filter(|f| f["weight"].as_f64().is_some_and(|w| w > HOLDS))
+                .map(|f| f["lens"].clone())
+                .collect();
+            json!({"shape": shape, "frames": frames, "in_play": in_play})
+        }
         _ => {
             let key = square_key(mode);
             let square = &register()["squares"][key];
-            let (day, positions) = square_cells(key);
-            let mut readings = Vec::new();
-            for l in &day {
-                for p in &positions {
-                    let mut reading = cell(l, &answers[format!("{}@{p}", str_of(l, "id"))]);
-                    reading["at"] = json!(p);
-                    readings.push(reading);
-                }
-            }
+            let positions: Vec<Value> = square_links(key)
+                .into_iter()
+                .map(|(p, link)| json!({
+                    "at": p,
+                    "office": register()["positions"][p],
+                    "link": link.iter().map(|l| &l["id"]).collect::<Vec<_>>(),
+                    "lenses": link.iter().map(|l| profile(l, Some(p), answers)).collect::<Vec<_>>(),
+                }))
+                .collect();
             json!({
                 "shape": shape,
                 "square": {"key": key, "titles": square["titles"], "lens_pairs": square["lens_pairs"], "positions": square["positions"]},
-                "readings": readings,
+                "positions": positions,
             })
+        }
+    }
+}
+
+fn weight_text(w: &Value) -> String {
+    w.as_f64()
+        .map_or_else(|| "unread".to_owned(), |w| format!("{w:.2}"))
+}
+
+/// One lens's profile as a line the reader takes in at once: every sub-slot
+/// with its weight, then the ones that hold.
+fn profile_line(p: &Value) -> String {
+    let slots: Vec<&Value> = p["slots"].as_array().into_iter().flatten().collect();
+    let all: Vec<String> = slots
+        .iter()
+        .map(|s| {
+            format!(
+                "{} {} {}",
+                str_of(s, "slot"),
+                str_of(s, "label"),
+                weight_text(&s["weight"])
+            )
+        })
+        .collect();
+    let holding: Vec<&str> = slots
+        .iter()
+        .filter(|s| s["weight"].as_f64().is_some_and(|w| w > HOLDS))
+        .map(|s| str_of(s, "label"))
+        .collect();
+    format!(
+        "{} {} — {} — holds: {}",
+        str_of(p, "lens"),
+        str_of(p, "name"),
+        all.join(" · "),
+        if holding.is_empty() {
+            "none above one half".to_owned()
+        } else {
+            holding.join(", ")
+        }
+    )
+}
+
+/// The reading as the model reads it: the profiles in plain lines, every
+/// weight shown. The receipt keeps the same reading as data.
+pub fn giving(mode: &str, reading: &Value) -> String {
+    let lines = |v: &Value| -> Vec<String> {
+        v.as_array()
+            .into_iter()
+            .flatten()
+            .map(profile_line)
+            .collect()
+    };
+    match mode {
+        "full_text" => format!(
+            "The subject read through the twelve lenses, each across its six sub-slots; a sub-slot holds above 0.50, and several can hold at once.\n{}",
+            lines(&reading["lenses"]).join("\n")
+        ),
+        "right_frame" => {
+            let ranking: Vec<String> = reading["ranking"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .map(|r| format!("{} {} {}", str_of(r, "lens"), str_of(r, "name"), weight_text(&r["mass"])))
+                .collect();
+            format!(
+                "The right frame now: {}. The ranking: {}.",
+                reading["selected"].as_str().unwrap_or("none"),
+                ranking.join(" · ")
+            )
+        }
+        "resonant" => {
+            let frames: Vec<String> = reading["frames"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .map(|f| format!("{} {} {}", str_of(f, "lens"), str_of(f, "name"), weight_text(&f["weight"])))
+                .collect();
+            format!(
+                "The twelve lenses, each weighed on its own as a frame in play (in play above 0.50): {}.",
+                frames.join(" · ")
+            )
+        }
+        _ => {
+            let mut out = vec![format!(
+                "{}; a sub-slot holds above 0.50, and several can hold at once.",
+                str_of(reading, "shape")
+            )];
+            for p in reading["positions"].as_array().into_iter().flatten() {
+                for line in lines(&p["lenses"]) {
+                    out.push(format!("At {} — {line}", str_of(p, "at")));
+                }
+            }
+            out.join("\n")
         }
     }
 }
@@ -555,12 +672,14 @@ fn read_with(
     }
     let started = Instant::now();
     let data = decide.invoke(&json!({"model": model, "state": state, "questions": questions}))?;
+    let reading = shape_reading(mode, shape, &data["answer"]["answers"]);
     Ok(json!({
         "schema": READING_SCHEMA,
         "tool": tool,
         "mode": mode,
         "subject_chars": subject.chars().count(),
-        "reading": shape_reading(mode, shape, &data["answer"]["answers"]),
+        "reading": reading,
+        "giving": giving(mode, &reading),
         "own_disclosure": own,
         "covers": covers(mode),
         "latency_ms": started.elapsed().as_millis() as u64,
@@ -629,41 +748,61 @@ mod tests {
     #[test]
     fn each_mode_runs_its_machinery() {
         let (_, full) = questions("full_text", false).unwrap();
-        assert_eq!(full.len(), 12, "every lens, as its machinery defines");
-        for (id, q) in &full {
-            let criteria = q["criteria"].as_object().unwrap();
-            assert_eq!(criteria.len(), 6, "{id}: all six sub-slots");
+        assert_eq!(full.len(), 72, "every lens across all six sub-slots");
+        for (key, q) in &full {
+            assert_eq!(q["type"], "noul", "{key}: each sub-slot weighed on its own");
+            let (id, slot) = key.split_once('|').unwrap();
+            let l = lens(id).unwrap();
+            let s = sublenses(l)
+                .iter()
+                .find(|s| str_of(s, "slot") == slot)
+                .unwrap();
+            let text = q["instructions"].as_str().unwrap();
+            assert!(text.contains(&machinery(l)), "{key}: the lens's machinery");
             assert!(
-                criteria
-                    .values()
-                    .all(|c| c.as_str().unwrap().contains(" — ")),
-                "{id}: meanings carried"
+                text.contains(&format!("Does it stand at {}?", slot_line(s))),
+                "{key}: this sub-slot, with its meaning"
             );
         }
+        assert!(full.contains_key("L4'|L4.5'"));
+        // A square reads each of its positions through that position's
+        // L-link pair (register §2): every lens it covers is read, the night
+        // lenses included, and nothing outside the links.
         for (mode, cells) in [
-            ("being", ["L0@P0", "L0@P5", "L5@P0", "L5@P5"]),
-            ("becoming", ["L1@P1", "L1@P4", "L4@P1", "L4@P4"]),
-            ("knowing", ["L2@P2", "L2@P3", "L3@P2", "L3@P3"]),
+            ("being", ["L0@P0", "L5'@P0", "L5@P5", "L0'@P5"]),
+            ("becoming", ["L1@P1", "L4'@P1", "L4@P4", "L1'@P4"]),
+            ("knowing", ["L2@P2", "L3'@P2", "L3@P3", "L2'@P3"]),
         ] {
             let (shape, q) = questions(mode, false).unwrap();
+            assert_eq!(q.len(), 24, "{mode}: four lenses across six sub-slots");
+            let read: std::collections::BTreeSet<&str> =
+                q.keys().map(|k| k.split('|').next().unwrap()).collect();
+            assert_eq!(read, cells.into_iter().collect(), "{mode}: the L-links");
+            let lenses_read: std::collections::BTreeSet<&str> =
+                cells.iter().map(|c| c.split('@').next().unwrap()).collect();
             assert_eq!(
-                q.keys().map(String::as_str).collect::<Vec<_>>(),
-                cells,
-                "{mode}: lens-pairs over position-pairs"
+                lenses_read,
+                covers(mode).iter().copied().collect(),
+                "{mode}: a square covers exactly the lenses it reads"
             );
             assert!(shape.starts_with(&format!("square {}", square_key(mode))));
         }
-        for (mode, key) in [
-            ("right_frame", "right_frame"),
-            ("resonant", "resonant_frames"),
-        ] {
-            let (_, q) = questions(mode, true).unwrap();
-            assert_eq!(q[key]["criteria"].as_object().unwrap().len(), 12);
-            assert!(q[key]["instructions"]
+        let (_, resonant) = questions("resonant", true).unwrap();
+        assert_eq!(resonant.len(), 12);
+        assert!(resonant.values().all(|q| q["type"] == "noul"
+            && q["instructions"]
                 .as_str()
                 .unwrap()
-                .contains("decide independently"));
-        }
+                .contains("decide independently")));
+        let (_, right) = questions("right_frame", true).unwrap();
+        assert_eq!(
+            right["right_frame"]["type"], "choice",
+            "the right frame is one lens"
+        );
+        assert_eq!(
+            right["right_frame"]["criteria"].as_object().unwrap().len(),
+            12
+        );
         assert!(questions("tarot", false).is_err());
     }
 
@@ -729,10 +868,11 @@ mod tests {
     }
 
     #[test]
-    fn a_full_text_reading_returns_each_cell_at_its_ql_reference() {
-        let (_dir, decide) = fake_decide(
-            json!({"L4'": {"choice": "L4.5' Insight", "probabilities": {"L4.5' Insight": 0.4, "L4.0' Questions": 0.1}}, "L1": {"probabilities": {"L1-2 Efficient Cause": 0.5, "L1-1 Material Cause": 0.2}}}),
-        );
+    fn a_full_text_reading_is_each_lens_profile() {
+        let (_dir, decide) = fake_decide(json!({
+            "L4'|L4.5'": {"noul": 0.81}, "L4'|L4.0'": {"noul": 0.62}, "L4'|L4.3'": {"noul": 0.5},
+            "L1|L1-2": {"noul": 0.2}
+        }));
         let r = read_with(
             &decide,
             "full_text",
@@ -744,33 +884,73 @@ mod tests {
         assert_eq!(r["schema"], READING_SCHEMA);
         assert_eq!(r["covers"].as_array().unwrap().len(), 12);
         assert_eq!(r["provider"]["model"], "kev-latest");
-        let cells = r["reading"]["cells"].as_array().unwrap();
-        let t = cells.iter().find(|c| c["lens"] == "L4'").unwrap();
-        assert_eq!(t["strongest_ref"], "mef:sublens:L4'.5@1");
-        let causal = cells.iter().find(|c| c["lens"] == "L1").unwrap();
+        let lenses = r["reading"]["lenses"].as_array().unwrap();
+        let t = lenses.iter().find(|c| c["lens"] == "L4'").unwrap();
+        assert_eq!(t["slots"].as_array().unwrap().len(), 6);
         assert_eq!(
-            causal["strongest"], "L1-2 Efficient Cause",
-            "no choice: the distribution's peak"
+            t["holds"],
+            json!(["mef:sublens:L4'.0@1", "mef:sublens:L4'.5@1"]),
+            "two sub-slots hold at once; exactly one half does not"
         );
-        assert_eq!(causal["strongest_ref"], "mef:sublens:L1.2@1");
-        let unread = cells.iter().find(|c| c["lens"] == "L0").unwrap();
+        let causal = lenses.iter().find(|c| c["lens"] == "L1").unwrap();
+        assert_eq!(causal["slots"][2]["weight"], 0.2);
+        assert_eq!(causal["holds"], json!([]));
+        let unread = lenses.iter().find(|c| c["lens"] == "L0").unwrap();
         assert!(
-            unread["strongest"].is_null(),
+            unread["slots"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|s| s["weight"].is_null()),
             "an unanswered lens stays unread, never filled"
         );
+        let giving = r["giving"].as_str().unwrap();
+        assert!(giving.contains("L4.5' Insight 0.81"), "{giving}");
+        assert!(giving.contains("holds: Questions, Insight"), "{giving}");
+        assert!(giving.contains("L0.0 Why (./?) unread"), "{giving}");
     }
 
     #[test]
-    fn a_square_reading_names_each_crossing() {
-        let (_dir, decide) = fake_decide(json!({"L4@P1": {"choice": "L4.1 Geworfenheit"}}));
+    fn a_square_reading_reads_each_position_through_its_link() {
+        let (_dir, decide) =
+            fake_decide(json!({"L4'@P1|L4.1'": {"noul": 0.7}, "L4@P4|L4.1": {"noul": 0.9}}));
         let r = read_with(&decide, "becoming", "s", None, None).unwrap();
-        let readings = r["reading"]["readings"].as_array().unwrap();
-        assert_eq!(readings.len(), 4);
-        let hit = readings
-            .iter()
-            .find(|x| x["lens"] == "L4" && x["at"] == "P1")
-            .unwrap();
-        assert_eq!(hit["strongest_ref"], "mef:sublens:L4.1@1");
+        let positions = r["reading"]["positions"].as_array().unwrap();
+        assert_eq!(positions.len(), 2);
+        assert_eq!(positions[0]["at"], "P1");
+        assert_eq!(positions[0]["link"], json!(["L1", "L4'"]));
+        let night = &positions[0]["lenses"][1];
+        assert_eq!(night["lens"], "L4'", "the night lens of the pair is read");
+        assert_eq!(night["holds"], json!(["mef:sublens:L4'.1@1"]));
+        assert_eq!(positions[1]["link"], json!(["L4", "L1'"]));
         assert_eq!(r["covers"], json!(COVERAGE_BECOMING));
+        let giving = r["giving"].as_str().unwrap();
+        assert!(giving.contains("At P1 — L4' "), "{giving}");
+        assert!(giving.contains("At P4 — L1' "), "{giving}");
+    }
+
+    #[test]
+    fn resonant_frames_weigh_every_lens_and_rank_them() {
+        let (_dir, decide) =
+            fake_decide(json!({"L3": {"noul": 0.4}, "L1'": {"noul": 0.8}, "L0": {"noul": 0.6}}));
+        let r = read_with(&decide, "resonant", "s", None, None).unwrap();
+        let frames = r["reading"]["frames"].as_array().unwrap();
+        assert_eq!(frames.len(), 12);
+        let order: Vec<&str> = frames[..3]
+            .iter()
+            .map(|f| f["lens"].as_str().unwrap())
+            .collect();
+        assert_eq!(order, ["L1'", "L0", "L3"]);
+        assert_eq!(r["reading"]["in_play"], json!(["L1'", "L0"]));
+        assert!(frames[11]["weight"].is_null());
+    }
+
+    #[test]
+    fn the_supply_carries_the_relational_contract_to_the_body() {
+        for tool in tools()["tools"].as_array().unwrap() {
+            assert_eq!(tool["prompt_guidelines"][0], RELATIONAL_CONTRACT);
+            let description = tool["description"].as_str().unwrap();
+            assert!(!description.contains("Args:"), "{description}");
+        }
     }
 }

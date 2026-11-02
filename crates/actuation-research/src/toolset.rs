@@ -106,27 +106,27 @@ impl Route {
 pub const NIGHT_TOOLS: [(&str, &str); 6] = [
     (
         "reflect_full_text",
-        "The Night reading of a presented whole: how the whole text stands across all twelve lenses at their six articulations — the complete giving returned in full. Pass your own reading of the text as your disclosure; the instrument decides alongside it. Args: {\"subject\": text, \"own_disclosure\": optional string}.",
+        "Read a presented whole — a claim, an answer, a passage, your own composition — through all twelve MEF lenses, each run across its six sub-slots. Returns, for every lens, how strongly the subject stands at each sub-slot; several can hold at once, so each lens comes back as a profile, not a single cell. It shows what a thought is doing across the whole lens field: where it questions, what causes it names, how it moves, what it is in time. Use it to see a thought before answering from it, or to check your own composition against what it carries. Put your own reading in own_disclosure; the instrument weighs it but reads independently.",
     ),
     (
         "reflect_right_frame",
-        "The one lens most useful for reading this subject now — the frame that, taken up, does the most work. Returns the selected lens in its full giving with the complete distribution. Your candidate frame may ride the call as disclosure. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+        "Choose the one lens that, taken up now, does the most work on a subject. It needs the lens field read first: a reflect_full_text reading, or square readings covering at least half the lenses. Returns the chosen lens with the full ranking of the twelve. Your candidate frame may ride in own_disclosure.",
     ),
     (
         "reflect_being",
-        "The subject read through Square A (its titles: Being, Becoming, Knowing) — three paired crossings of the base alignment, each read through all twelve lenses, returned in full. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+        "Read a subject through Square A: its initiating intent and operative frame (P0) through the L0 ↔ L5′ pair, and its determination and synthesis (P5) through the L5 ↔ L0′ pair, every lens across its six sub-slots. It shows how what the subject starts from stands to what it settles.",
     ),
     (
         "reflect_becoming",
-        "The subject read through Square B (its titles: Articulation, Encounter, Becoming) — three paired crossings of the offset alignment, each read through all twelve lenses, returned in full. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+        "Read a subject through Square B: its material, evidence and givens (P1) through the L1 ↔ L4′ pair, and its whole-relative evaluation (P4) through the L4 ↔ L1′ pair, every lens across its six sub-slots. It shows how what is given stands to how it is weighed.",
     ),
     (
         "reflect_knowing",
-        "The subject read through Square C (its titles: Text/Texture, and two held open) — three paired crossings of the mirror alignment, each read through all twelve lenses, returned in full. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+        "Read a subject through Square C: its effect, operation and transformation (P2) through the L2 ↔ L3′ pair, and its form, pattern and implementation (P3) through the L3 ↔ L2′ pair, every lens across its six sub-slots. It shows how what the subject does stands to the form it takes.",
     ),
     (
         "reflect_resonant_frames",
-        "The ranked relation among frames for this subject — the full ordering of which frames resonate and how strongly, to name the ones worth taking deeper. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+        "Weigh each of the twelve lenses on its own as a frame in play for a subject, and rank them: which frames bear on it now and how strongly, to see which to take deeper. Your candidate frames may ride in own_disclosure.",
     ),
 ];
 

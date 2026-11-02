@@ -5,11 +5,14 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 // The Night (P′) reflect tools as Actuation's toolset defines them:
 // night-tools.json is `actuation-research` reflect.tools, pinned (a Rust test
-// holds the two equal). Each reading is native — reflect.read puts the MEF
-// register's machinery to the decision provider AIKit holds elected. This
-// extension carries no lens, register or reading law; it keeps only which
-// lenses this session has read, so the frame selector's gate holds across
-// calls, and the gate itself is the native operation's.
+// holds the two equal), with the relational contract the readings are taken
+// under as each tool's prompt guideline. Each reading is native — reflect.read
+// puts the MEF register's machinery to the decision provider AIKit holds
+// elected — and the model reads the operation's own giving: every lens as its
+// profile across its sub-slots. This extension carries no lens, register or
+// reading law; it keeps only which lenses this session has read, so the frame
+// selector's gate holds across calls, and the gate itself is the native
+// operation's.
 const supply = JSON.parse(readFileSync(new URL("../night-tools.json", import.meta.url), "utf8"));
 if (supply.schema !== "actuation.night-tools/v1" || supply.operation !== "reflect.read"
     || !Array.isArray(supply.tools) || supply.tools.length !== 6) {
@@ -58,7 +61,9 @@ async function reflect(request: Record<string, unknown>, cwd: string, signal?: A
   // A refusal (the coverage gate, an unelected or unavailable provider) is
   // the native operation's own words, returned to the model as a tool error.
   if (result?.schema === "actuation.research-error/v1") throw new Error(result.error);
-  if (result?.schema !== "actuation.night-reading/v1") throw new Error("reflect.read returned an unexpected receipt");
+  if (result?.schema !== "actuation.night-reading/v1" || typeof result.giving !== "string") {
+    throw new Error("reflect.read returned an unexpected receipt");
+  }
   return result;
 }
 
@@ -68,13 +73,14 @@ export default function (pi: ExtensionAPI) {
   for (const tool of supply.tools) {
     pi.registerTool({
       name: tool.name, label: tool.label, description: tool.description,
+      promptGuidelines: tool.prompt_guidelines,
       parameters: Type.Unsafe<{ subject: string; own_disclosure?: string }>(tool.parameters),
       async execute(_id, args, signal, _update, ctx) {
         const reading = await reflect({ operation: supply.operation, tool: tool.name, subject: args.subject,
           own_disclosure: args.own_disclosure, coverage: [...covered] }, ctx.cwd, signal);
         for (const lens of reading.covers ?? []) covered.add(lens);
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(reading) }],
+          content: [{ type: "text" as const, text: reading.giving }],
           details: { night_reading: reading },
         };
       },
