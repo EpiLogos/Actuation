@@ -152,9 +152,16 @@ async function nativeReceipt(operation: Operation, request: unknown, cwd: string
 // steps; grain, recognition, relation and frame are all the kernel's.
 //
 // Return. A body whose constitution holds `logos.return` with `vak.compose`
-// closes each turn through it: QL's T/C/T′/C′ envelope, where C′ is the
-// answer's parts composed into its whole. The return condition is the toolset
-// loop's `close` carried into conversation: bare content cannot end a turn.
+// closes each turn through it: QL's T/C/T′/C′ envelope, where C′ is the turn's
+// whole: the person's own words with the answer's parts. The return condition
+// is the toolset loop's `close` carried into conversation: bare content cannot
+// end a turn.
+//
+// Ground. A body that binds its conversation to a NOW offers that ground on the
+// same bus: the ref its wholes stand on, the ref a thought given in words is
+// kept under, and the keeping, once the kernel has taken the whole. Without
+// the offer the wholes stand on the pi session and a thought's ref is the
+// digest of its words.
 const COMPOSE = "vak_compose";
 const RETURN = "logos_return";
 const NUDGES = 2;
@@ -166,15 +173,25 @@ type Placement = {
   levels: { t: number; label: string; meaning: string }[];
   place: (subject: string, cwd: string, signal?: AbortSignal) => Promise<any>;
 };
+const GROUND = "actuation.body/ground";
+const GROUND_ASKED = "actuation.body/ground-asked";
+type Kept = { words: string; t: number; label: string; ref: string; reading: unknown };
+type Ground = {
+  ref: (ctx: any) => string | undefined;
+  thought: (words: string, t: number) => string | Promise<string>;
+  keep: (thoughts: Kept[], ctx: any, signal?: AbortSignal) => Promise<void>;
+};
 const FRAME = { basis: "chromatic", face: "direct", id: "CF2", lens: "L4'", positions: "local" };
 type Agent = { name?: string; position?: string; operations?: string[] };
+// `said` is a participation in someone's own words, kept by its own ref: the
+// person's turn in a return. It is placed like a thought and never kept as one.
 type ComposeStep = {
   op: "whole" | "recognise" | "reopen" | "read"; name: string; route?: string;
-  members?: { reading?: number; thought?: string; t: number }[];
+  members?: { reading?: number; thought?: string; said?: { words: string; ref: string }; t: number }[];
   against?: { thought: number; against: number; why: string }[];
 };
 type Held = { number: number; id: string; subject: string; t: Map<number, string> };
-type Named = { whole: string; current: string; recognised: boolean; members: { t: number; label: string; reading?: number; subject: string }[]; evidence: string[] };
+type Named = { whole: string; current: string; recognised: boolean; members: { t: number; label: string; reading?: number; subject: string; by?: "person" }[]; evidence: string[] };
 
 const composeParameters = Type.Object({
   steps: Type.Array(Type.Object({
@@ -247,7 +264,7 @@ const lastComposition = (ctx: any) => toolResults(ctx).filter((m: any) => m.deta
 // The body's composer, shared by the tools that compose. The session's earlier
 // steps are replayed before the new ones (or those of `after`, a composition
 // this call follows that the session does not hold yet).
-function composer(agent: Agent, offer: Placement, body: string): Compose {
+function composer(agent: Agent, offer: Placement, body: string, grounded: () => Ground | undefined): Compose {
   const caller = `agent/${String(agent.name).toLowerCase()}`;
   // One placement per thought per session: the same words read again give the same profile.
   const placings = new Map<string, Promise<any>>();
@@ -269,7 +286,11 @@ function composer(agent: Agent, offer: Placement, body: string): Compose {
     const named: Record<string, Named> = structuredClone(earlier?.composition ?? {});
     const taken = new Set(prior.map((s: any) => s.into ?? s.useRef));
     const fresh = (base: string) => { let ref = base; for (let k = 2; taken.has(ref); k += 1) ref = `${base}~${k}`; taken.add(ref); return ref; };
-    const ground = `${body}-session:${ctx.sessionManager.getSessionId()}`;
+    // A ground that has not bound its NOW (yet) keeps nothing: the session stands as the ground.
+    const bound = grounded()?.ref(ctx);
+    const keeper = bound ? grounded() : undefined;
+    const ground = bound ?? `${body}-session:${ctx.sessionManager.getSessionId()}`;
+    const keeping = new Map<string, Kept>();
     const basis = (evidence: string[]) => ({ caller, evidence, revision: ctx.sessionManager.getLeafId() ?? "root", source: ground, standing: "PROPOSED" });
     const steps: any[] = [];
     for (const step of asked) {
@@ -282,8 +303,8 @@ function composer(agent: Agent, offer: Placement, body: string): Compose {
         const twice = [...new Set(members.map((m) => m.t).filter((t, i, all) => all.indexOf(t) !== i))];
         if (twice.length) throw new Error(`whole ${step.name} gives ${twice.map((t) => `T${t}`).join(" and ")} to more than one thought: a whole holds one thought per T level, so keep the one that stands there`);
         // Every member is placed before any refusal, so one answer names every misplaced thought.
-        const settled = await Promise.allSettled(members.map(async ({ reading, thought, t }, i) => {
-          if ((thought === undefined) === (reading === undefined)) {
+        const settled = await Promise.allSettled(members.map(async ({ reading, thought, said, t }, i) => {
+          if ([thought, reading, said].filter((given) => given !== undefined).length !== 1) {
             throw new Error(`member ${i + 1} of ${step.name}: give the thought in words or a reading's number, one of the two`);
           }
           if (reading !== undefined) {
@@ -292,17 +313,21 @@ function composer(agent: Agent, offer: Placement, body: string): Compose {
             if (!held.t.has(t)) throw new Error(`reading ${reading} does not hold T${t}; it holds ${levels(held.t)}`);
             return { t, label: held.t.get(t)!, reading, subject: held.subject, ref: `reading:${held.id}` };
           }
-          const words = thought!.trim();
+          const words = (said?.words ?? thought!).trim();
           const night = await place(words);
           const at = standing(night) ?? new Map<number, string>();
-          if (!at.size) throw new Error(`“${excerpt(words)}” holds no T level, so it cannot stand in a whole`);
-          if (!at.has(t)) throw new Error(`“${excerpt(words)}” does not hold T${t}; it can stand at ${levels(at)}`);
+          const whose = said ? `what the person brought (“${excerpt(words)}”)` : `“${excerpt(words)}”`;
+          if (!at.size) throw new Error(`${whose} holds no T level, so it cannot stand in a whole`);
+          if (!at.has(t)) throw new Error(`${whose} does not hold T${t}; it can stand at ${levels(at)}`);
           placements.push({ thought: words, reading: night.reading });
-          return { t, label: at.get(t)!, subject: words, ref: `thought:${createHash("sha256").update(words).digest("hex").slice(0, 16)}` };
+          if (said) return { t, label: at.get(t)!, subject: words, ref: said.ref, by: "person" as const };
+          const ref = keeper ? await keeper.thought(words, t) : `thought:${createHash("sha256").update(words).digest("hex").slice(0, 16)}`;
+          keeping.set(ref, { words, t, label: at.get(t)!, ref, reading: night.reading });
+          return { t, label: at.get(t)!, subject: words, ref };
         }));
         const refused = settled.filter((r): r is PromiseRejectedResult => r.status === "rejected");
         if (refused.length) throw new Error(refused.map((r) => String(r.reason?.message ?? r.reason)).join("; "));
-        const placed = settled.map((r) => (r as PromiseFulfilledResult<{ t: number; label: string; reading?: number; subject: string; ref: string }>).value);
+        const placed = settled.map((r) => (r as PromiseFulfilledResult<{ t: number; label: string; reading?: number; subject: string; ref: string; by?: "person" }>).value);
         const seen = new Set<string>();
         for (const m of placed) {
           if (seen.has(m.ref)) throw new Error(`${m.reading ? `reading ${m.reading}` : `“${excerpt(m.subject)}”`} is already in ${step.name}: a thought stands at one T level in a whole`);
@@ -323,7 +348,7 @@ function composer(agent: Agent, offer: Placement, body: string): Compose {
           subjectRef: `${ground}#${step.name}`, useRef, wholeRef: `anchor:${useRef}`,
         });
         named[step.name] = { whole: useRef, current: useRef, recognised: false, evidence,
-          members: placed.map(({ t, label, reading, subject }) => ({ t, label, reading, subject })) };
+          members: placed.map(({ t, label, reading, subject, by }) => ({ t, label, reading, subject, by })) };
         continue;
       }
       if (!whole) throw new Error(`there is no whole named ${step.name}; the wholes so far are ${Object.keys(named).join(", ") || "none"}`);
@@ -352,12 +377,15 @@ function composer(agent: Agent, offer: Placement, body: string): Compose {
         Number(n) < prior.length ? "an earlier step" : `step ${Number(n) - prior.length + 1}`));
     }
     const results = receipt.details.native_receipt.result.results.slice(prior.length);
-    return { results, named, details: { ...receipt.details, request, replayed: prior.length, composition: named, placements } };
+    // The kernel has taken the wholes, so the thoughts in them are kept where the ground keeps them.
+    const kept = [...keeping.values()];
+    if (keeper && kept.length) await keeper.keep(kept, ctx, signal);
+    return { results, named, details: { ...receipt.details, request, replayed: prior.length, composition: named, placements, ground, kept: kept.map(({ ref, t }) => ({ ref, t })) } };
   };
 }
 
-function registerComposition(pi: ExtensionAPI, agent: Agent, offer: Placement, body: string) {
-  const compose = composer(agent, offer, body);
+function registerComposition(pi: ExtensionAPI, agent: Agent, offer: Placement, body: string, grounded: () => Ground | undefined) {
+  const compose = composer(agent, offer, body, grounded);
   const tLevels = offer.levels.map((l) => `T${l.t} ${l.label} (${l.meaning})`).join(", ");
   pi.registerTool({
     name: COMPOSE, label: "Compose thoughts into wholes",
@@ -372,7 +400,7 @@ function registerComposition(pi: ExtensionAPI, agent: Agent, offer: Placement, b
       };
     },
   });
-  if (agent.operations?.includes("logos.return")) registerReturn(pi, agent, compose, tLevels, body);
+  if (agent.operations?.includes("logos.return")) registerReturn(pi, agent, compose, tLevels, body, grounded);
   // A reading says where its thought can stand in a whole, so a whole can be
   // made from it without decoding the L4′ block.
   pi.on("tool_result", (event: any) => {
@@ -388,11 +416,12 @@ function registerComposition(pi: ExtensionAPI, agent: Agent, offer: Placement, b
 
 const returnParameters = Type.Object({
   met: Type.String({ minLength: 1, maxLength: 600, description: "What the person brought, as you met it: one thought in words (T)." }),
+  met_at: Type.Integer({ minimum: 0, maximum: 5, description: "The T level what the person brought stands at. Their own words stand there in the turn's whole; your parts take the other levels." }),
   returned: Type.String({ minLength: 1, maxLength: 600, description: "What you return to them: the thought your answer gives, in words (T′)." }),
   parts: Type.Array(Type.Object({
     thought: Type.String({ minLength: 1, maxLength: 600, description: "One part of your answer, in words." }),
     t: Type.Integer({ minimum: 0, maximum: 5, description: "The T level it stands at." }),
-  }, { additionalProperties: false }), { minItems: 1, maxItems: 6, description: "Your answer's parts, each at its own T level. QL composes them into the answer's whole (C′)." }),
+  }, { additionalProperties: false }), { minItems: 1, maxItems: 5, description: "Your answer's parts, each at its own T level, none at the level what the person brought stands at. QL composes them with the person's words into the turn's whole (C′)." }),
 }, { additionalProperties: false });
 
 const asks = (entry: any) => entry.type === "message" && entry.message?.role === "user";
@@ -429,23 +458,38 @@ function instruments(entries: any[]): { refs: string[]; words: string } {
   return { refs, words: used.length ? `Composed through ${used.join(", ")}.` : "Composed from the conversation alone, with no reading or whole." };
 }
 
-// The Logos Return. The model gives T, T′ and its answer's parts; the body
-// gives C, the refs, and C′: the parts composed into the answer's whole,
-// recognised as its 0/1 when it is one of QL's wholes. QL performs the return.
-function registerReturn(pi: ExtensionAPI, agent: Agent, compose: Compose, tLevels: string, body: string) {
+// The person's words in a turn, as they wrote them.
+const wordsOf = (entry: any): string => {
+  const content = entry?.message?.content;
+  return typeof content === "string" ? content
+    : Array.isArray(content) ? content.filter((part: any) => part?.type === "text").map((part: any) => part.text).join("\n") : "";
+};
+
+// The Logos Return. The model gives T, the level the person's words stand at,
+// T′ and its answer's parts; the body gives C, the refs, and C′: the turn's
+// whole, whose members are its participations (the person's own words, by
+// their turn's ref, and the answer's parts), recognised as its 0/1 when it is
+// one of QL's wholes. QL performs the return.
+function registerReturn(pi: ExtensionAPI, agent: Agent, compose: Compose, tLevels: string, body: string, grounded: () => Ground | undefined) {
   pi.registerTool({
     name: RETURN, label: "Return the turn",
-    description: `Return the turn: every turn closes here, once you have answered in words. Give what the person brought as you met it (T), what you return (T′), and your answer's parts in words, each at the T level it stands at, one part per level — ${tLevels}. QL places each part through L4′, refusing a level it does not hold and saying where it can stand; composes the parts into your answer's whole (C′), recognised as its 0/1 when it is one of QL's wholes; and records the Logos Return with the readings and wholes this turn used (C). The turn ends when it is returned; say nothing more after it.`,
+    description: `Return the turn: every turn closes here, once you have answered in words. Give what the person brought as you met it (T) and the T level their words stand at, what you return (T′), and your answer's parts in words, each at the T level it stands at, one per level and none at the person's — ${tLevels}. QL places the person's own words and each part through L4′, refusing a level one does not hold and saying where it can stand; composes them into the turn's whole (C′), recognised as its 0/1 when it is one of QL's wholes; and records the Logos Return with the readings and wholes this turn used (C). The turn ends when it is returned; say nothing more after it.`,
     promptGuidelines: ["logos_return closes every turn: answer in words first, then return the turn with logos_return. A turn that is not returned is not finished."],
     parameters: returnParameters,
     async execute(_id, args, signal, _update, ctx) {
       const turn = thisTurn(ctx);
-      const ground = `${body}-session:${ctx.sessionManager.getSessionId()}`;
-      const source = `${ground}#${turn.asked?.id ?? ctx.sessionManager.getLeafId() ?? "root"}`;
+      const session = `${body}-session:${ctx.sessionManager.getSessionId()}`;
+      const source = `${session}#${turn.asked?.id ?? ctx.sessionManager.getLeafId() ?? "root"}`;
+      const ground = grounded()?.ref(ctx);
       const taken = lastComposition(ctx)?.composition ?? {};
       let name = `turn${turn.number}`;
       for (let k = 2; Object.hasOwn(taken, name); k += 1) name = `turn${turn.number}-${k}`;
-      const whole = await compose([{ op: "whole", name, members: args.parts.map(({ thought, t }) => ({ thought, t })) }], ctx, signal);
+      if (args.parts.some(({ t }) => t === args.met_at)) {
+        throw new Error(`T${args.met_at} is where what the person brought stands; give your parts the other levels`);
+      }
+      const brought = wordsOf(turn.asked).trim();
+      const person = brought ? [{ said: { words: brought, ref: source }, t: args.met_at }] : [];
+      const whole = await compose([{ op: "whole", name, members: [...person, ...args.parts.map(({ thought, t }) => ({ thought, t }))] }], ctx, signal);
       const grain = whole.results[0]?.result?.body?.grain;
       let composed = whole;
       let recognition = grain === "other" ? "not one of QL's wholes (grain other)" : `${grain}, left open`;
@@ -458,12 +502,12 @@ function registerReturn(pi: ExtensionAPI, agent: Agent, compose: Compose, tLevel
         }
       }
       const held = composed.named[name];
-      const members = held.members.map((m) => `T${m.t} ${m.label}: “${excerpt(m.subject)}”`).join("; ");
+      const members = held.members.map((m) => `T${m.t} ${m.label}: ${m.by ? "the person, " : ""}“${excerpt(m.subject)}”`).join("; ");
       const cPrime = `Whole ${name}: ${recognition}. ${members}.`;
       const used = instruments(turn.entries);
       const request = { schema: "ql.epi-logos-agent-invocation/v1", position: agent.position, operation: "logos.return",
         input: { inquiry_ref: source, T: args.met, C: used.words, T_prime: args.returned, C_prime: cPrime,
-          source_refs: [source], evidence_refs: [...used.refs, `anchor:${held.current}`],
+          source_refs: ground ? [source, ground] : [source], evidence_refs: [...used.refs, `anchor:${held.current}`],
           practice_ref: null, fresh_participant_ref: null } };
       const receipt = await nativeReceipt("invoke", request, ctx.cwd, signal);
       return {
@@ -500,7 +544,7 @@ const operator = (ref: string) => String(ref).replace(/^ql:shape:[0-9.]+:/, "").
 function giving(step: ComposeStep, { op, result }: any, named: Record<string, Named>): string {
   const whole = named[step.name];
   const member = (m: Named["members"][number]) => `T${m.t} ${m.label}: ${m.reading
-    ? `reading ${m.reading}${m.subject ? ` (“${excerpt(m.subject)}”)` : ""}` : `“${excerpt(m.subject)}”`}`;
+    ? `reading ${m.reading}${m.subject ? ` (“${excerpt(m.subject)}”)` : ""}` : `${m.by ? "the person, " : ""}“${excerpt(m.subject)}”`}`;
   if (op === "whole") {
     const grain = result.body?.grain;
     const lines = [`Whole ${step.name}: ${grain === "other" ? "not one of QL's wholes (grain other); its recognisable parts can be made wholes of their own" : grain}.`,
@@ -557,13 +601,20 @@ export default function (pi: ExtensionAPI, body: "pi" | "prime" = "pi", agent?: 
     },
   });
   // Composition is offered once the body's Night placement is: whichever extension loads second sets it going.
+  // The ground may be offered before or after; the composer asks for it at each call.
   if (agent?.operations?.includes("vak.compose") && typeof agent.position === "string" && agent.name) {
     let offered = false;
+    let ground: Ground | undefined;
+    pi.events?.on(GROUND, (offer: any) => {
+      if (ground || typeof offer?.ref !== "function" || typeof offer.thought !== "function" || typeof offer.keep !== "function") return;
+      ground = offer;
+    });
     pi.events?.on(PLACE, (offer: any) => {
       if (offered || typeof offer?.place !== "function" || !Array.isArray(offer.levels)) return;
       offered = true;
-      registerComposition(pi, agent, offer, body);
+      registerComposition(pi, agent, offer, body, () => ground);
     });
     pi.events?.emit(PLACE_ASKED, undefined);
+    pi.events?.emit(GROUND_ASKED, undefined);
   }
 }
