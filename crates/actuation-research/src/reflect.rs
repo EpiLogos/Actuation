@@ -74,6 +74,20 @@ fn lens(id: &str) -> Option<&'static Value> {
     lenses().iter().find(|l| l["id"] == id)
 }
 
+/// The day position whose responsibility a lens refracts: the register's
+/// L-links give each lens to exactly one position.
+fn refracts(id: &str) -> Value {
+    register()["p_links"]
+        .as_object()
+        .into_iter()
+        .flatten()
+        .find(|(_, link)| link.as_array().is_some_and(|l| l.iter().any(|x| x == id)))
+        .map_or(
+            Value::Null,
+            |(p, _)| json!({"at": p, "office": register()["positions"][p]}),
+        )
+}
+
 fn str_of<'a>(v: &'a Value, key: &str) -> &'a str {
     v[key].as_str().unwrap_or_default()
 }
@@ -347,7 +361,7 @@ fn profile(l: &Value, at: Option<&str>, answers: &Value) -> Value {
         .collect();
     json!({
         "lens": l["id"], "ref": l["ref"], "name": l["name"], "ground": l["ground"],
-        "slots": slots, "holds": holds,
+        "refracts": refracts(str_of(l, "id")), "slots": slots, "holds": holds,
     })
 }
 
@@ -423,60 +437,100 @@ fn weight_text(w: &Value) -> String {
         .map_or_else(|| "unread".to_owned(), |w| format!("{w:.2}"))
 }
 
-/// One lens's profile as a line the reader takes in at once: every sub-slot
-/// with its weight, then the ones that hold.
-fn profile_line(p: &Value) -> String {
-    let slots: Vec<&Value> = p["slots"].as_array().into_iter().flatten().collect();
-    let all: Vec<String> = slots
+/// One lens's profile as the reader sees through it: whose responsibility the
+/// lens refracts, then all six sub-slots with what each means, the ones that
+/// hold first, strongest first.
+fn profile_block(p: &Value) -> String {
+    let mut slots: Vec<&Value> = p["slots"].as_array().into_iter().flatten().collect();
+    slots.sort_by(|a, b| {
+        let w = |v: &Value| v["weight"].as_f64().unwrap_or(-1.0);
+        w(b).total_cmp(&w(a))
+    });
+    let weight = |s: &&Value| s["weight"].as_f64();
+    let holding: Vec<&Value> = slots
         .iter()
-        .map(|s| {
-            format!(
-                "{} {} {}",
-                str_of(s, "slot"),
-                str_of(s, "label"),
-                weight_text(&s["weight"])
-            )
-        })
+        .copied()
+        .filter(|s| weight(s).is_some_and(|w| w > HOLDS))
         .collect();
-    let holding: Vec<&str> = slots
+    let rest: Vec<&Value> = slots
         .iter()
-        .filter(|s| s["weight"].as_f64().is_some_and(|w| w > HOLDS))
-        .map(|s| str_of(s, "label"))
+        .copied()
+        .filter(|s| weight(s).is_some_and(|w| w <= HOLDS))
         .collect();
-    format!(
-        "{} {} — {} — holds: {}",
+    let unread: Vec<&Value> = slots
+        .iter()
+        .copied()
+        .filter(|s| weight(s).is_none())
+        .collect();
+    let list = |group: &[&Value]| -> String {
+        group
+            .iter()
+            .map(|s| {
+                let w = s["weight"]
+                    .as_f64()
+                    .map_or_else(String::new, |w| format!(" {w:.2}"));
+                format!(
+                    "{} {}{w}: {}",
+                    str_of(s, "slot"),
+                    str_of(s, "label"),
+                    str_of(s, "meaning")
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(" · ")
+    };
+    let mut out = vec![format!(
+        "{} {} ({}), refracting {}, {}",
         str_of(p, "lens"),
         str_of(p, "name"),
-        all.join(" · "),
-        if holding.is_empty() {
-            "none above one half".to_owned()
-        } else {
-            holding.join(", ")
-        }
+        str_of(p, "ground"),
+        str_of(&p["refracts"], "at"),
+        str_of(&p["refracts"], "office")
+    )];
+    if !holding.is_empty() {
+        out.push(format!("  holds — {}", list(&holding)));
+    }
+    if !rest.is_empty() {
+        out.push(format!("  below one half — {}", list(&rest)));
+    }
+    if !unread.is_empty() {
+        out.push(format!("  unread — {}", list(&unread)));
+    }
+    out.join("\n")
+}
+
+/// One lens weighed as a whole frame, with the position it refracts.
+fn frame_text(f: &Value, weight: &Value) -> String {
+    let lens = str_of(f, "lens");
+    format!(
+        "{lens} {} (refracting {}) {}",
+        str_of(f, "name"),
+        str_of(&refracts(lens), "at"),
+        weight_text(weight)
     )
 }
 
 /// The reading as the model reads it: the profiles in plain lines, every
 /// weight shown. The receipt keeps the same reading as data.
 pub fn giving(mode: &str, reading: &Value) -> String {
-    let lines = |v: &Value| -> Vec<String> {
+    let blocks = |v: &Value| -> Vec<String> {
         v.as_array()
             .into_iter()
             .flatten()
-            .map(profile_line)
+            .map(profile_block)
             .collect()
     };
     match mode {
         "full_text" => format!(
-            "The subject read through the twelve lenses, each across its six sub-slots; a sub-slot holds above 0.50, and several can hold at once.\n{}",
-            lines(&reading["lenses"]).join("\n")
+            "The subject read through the twelve lenses. Each lens refracts one position's responsibility and is read across its six sub-slots; a sub-slot holds above 0.50, and several can hold at once.\n{}",
+            blocks(&reading["lenses"]).join("\n")
         ),
         "right_frame" => {
             let ranking: Vec<String> = reading["ranking"]
                 .as_array()
                 .into_iter()
                 .flatten()
-                .map(|r| format!("{} {} {}", str_of(r, "lens"), str_of(r, "name"), weight_text(&r["mass"])))
+                .map(|r| frame_text(r, &r["mass"]))
                 .collect();
             format!(
                 "The right frame now: {}. The ranking: {}.",
@@ -489,7 +543,7 @@ pub fn giving(mode: &str, reading: &Value) -> String {
                 .as_array()
                 .into_iter()
                 .flatten()
-                .map(|f| format!("{} {} {}", str_of(f, "lens"), str_of(f, "name"), weight_text(&f["weight"])))
+                .map(|f| frame_text(f, &f["weight"]))
                 .collect();
             format!(
                 "The twelve lenses, each weighed on its own as a frame in play (in play above 0.50): {}.",
@@ -502,9 +556,7 @@ pub fn giving(mode: &str, reading: &Value) -> String {
                 str_of(reading, "shape")
             )];
             for p in reading["positions"].as_array().into_iter().flatten() {
-                for line in lines(&p["lenses"]) {
-                    out.push(format!("At {} — {line}", str_of(p, "at")));
-                }
+                out.extend(blocks(&p["lenses"]));
             }
             out.join("\n")
         }
@@ -904,10 +956,31 @@ mod tests {
                 .all(|s| s["weight"].is_null()),
             "an unanswered lens stays unread, never filled"
         );
+        assert_eq!(
+            t["refracts"],
+            json!({"at": "P1", "office": "material, evidence and givens"})
+        );
         let giving = r["giving"].as_str().unwrap();
-        assert!(giving.contains("L4.5' Insight 0.81"), "{giving}");
-        assert!(giving.contains("holds: Questions, Insight"), "{giving}");
-        assert!(giving.contains("L0.0 Why (./?) unread"), "{giving}");
+        assert!(
+            giving.contains("L4' Scientific (Kuhn / knowledge work, Earth), refracting P1, material, evidence and givens"),
+            "each lens says whose responsibility it reads: {giving}"
+        );
+        assert!(
+            giving.contains("holds — L4.5' Insight 0.81: synthesis crystallization · L4.0' Questions 0.62: inquiry initiation\n"),
+            "what holds carries its meaning, strongest first: {giving}"
+        );
+        assert!(
+            giving.contains("below one half — L4.3' Patterns 0.50: structure recognition\n"),
+            "the rest of the lens stays in the giving: {giving}"
+        );
+        assert!(
+            giving.contains("L1-2 Efficient Cause 0.20: agency, force, transformation"),
+            "{giving}"
+        );
+        assert!(
+            giving.contains("  unread — L0.0 Why (./?): presuppositional frame · "),
+            "an unanswered sub-slot is unread, not below one half: {giving}"
+        );
     }
 
     #[test]
@@ -925,8 +998,14 @@ mod tests {
         assert_eq!(positions[1]["link"], json!(["L4", "L1'"]));
         assert_eq!(r["covers"], json!(COVERAGE_BECOMING));
         let giving = r["giving"].as_str().unwrap();
-        assert!(giving.contains("At P1 — L4' "), "{giving}");
-        assert!(giving.contains("At P4 — L1' "), "{giving}");
+        assert!(
+            giving.contains("L4' Scientific (Kuhn / knowledge work, Earth), refracting P1, material, evidence and givens\n  holds — L4.1' Traces 0.70: evidence collection"),
+            "{giving}"
+        );
+        assert!(
+            giving.contains("L1' Phenomenal (Jung's psychic functions, Water), refracting P4, "),
+            "{giving}"
+        );
     }
 
     #[test]
@@ -943,6 +1022,13 @@ mod tests {
         assert_eq!(order, ["L1'", "L0", "L3"]);
         assert_eq!(r["reading"]["in_play"], json!(["L1'", "L0"]));
         assert!(frames[11]["weight"].is_null());
+        let giving = r["giving"].as_str().unwrap();
+        assert!(
+            giving.contains(
+                "L1' Phenomenal (refracting P4) 0.80 · L0 Quaternal (refracting P0) 0.60"
+            ),
+            "{giving}"
+        );
     }
 
     #[test]
