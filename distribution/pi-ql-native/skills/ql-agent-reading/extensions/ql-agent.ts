@@ -196,18 +196,24 @@ function heldReadings(ctx: any): Held[] {
   for (const message of toolResults(ctx)) {
     const night = message.details?.night_reading;
     if (night?.schema !== NIGHT_READING) continue;
-    const reading = night.reading ?? {};
-    const profiles = [...(reading.lenses ?? []), ...(reading.positions ?? []).flatMap((p: any) => p.lenses ?? [])];
-    const l4 = profiles.find((p: any) => p.lens === "L4'");
-    const t = new Map<number, string>();
-    for (const ref of l4?.holds ?? []) {
-      const slot = l4.slots.find((s: any) => s.ref === ref);
-      const level = /^L4\.([0-5])'$/.exec(slot?.slot ?? "");
-      if (level) t.set(Number(level[1]), slot.label);
-    }
-    held.push({ number: message.details.reading_number ?? held.length + 1, id: message.toolCallId, subject: asked.get(message.toolCallId) ?? "", t });
+    held.push({ number: message.details.reading_number ?? held.length + 1, id: message.toolCallId, subject: asked.get(message.toolCallId) ?? "", t: standing(night) });
   }
   return held;
+}
+
+// Where a read thought can stand in a whole: the L4′ sub-slots its reading
+// holds (L4.n′ is Tn), by label.
+function standing(night: any): Map<number, string> {
+  const reading = night.reading ?? {};
+  const profiles = [...(reading.lenses ?? []), ...(reading.positions ?? []).flatMap((p: any) => p.lenses ?? [])];
+  const l4 = profiles.find((p: any) => p.lens === "L4'");
+  const t = new Map<number, string>();
+  for (const ref of l4?.holds ?? []) {
+    const slot = l4.slots.find((s: any) => s.ref === ref);
+    const level = /^L4\.([0-5])'$/.exec(slot?.slot ?? "");
+    if (level) t.set(Number(level[1]), slot.label);
+  }
+  return t;
 }
 
 const excerpt = (text: string) => (text.length > 90 ? `${text.slice(0, 87)}…` : text);
@@ -217,8 +223,8 @@ function registerComposition(pi: ExtensionAPI, agent: Agent) {
   const caller = `agent/${String(agent.name).toLowerCase()}`;
   pi.registerTool({
     name: COMPOSE, label: "Compose read thoughts into wholes",
-    description: "Carry the conversation as QL wholes built from your readings. A whole gathers thoughts you have read, each at a T level its reading holds (the L4′ sub-slots: L4.n′ is Tn), and QL names its grain: two, 123, 450, 1234, 4+1, the sixfold. Say which member is set against which, and the kernel reads the pair. Recognise a closed whole to carry it as one 0/1 that keeps its basis; reopen it when the talk returns to it; read it for its frame pitch and intervals. Readings are numbered in the order you took them.",
-    promptGuidelines: ["vak_compose is how what you read is carried: a reading's L4′ holds are where that thought can stand in a whole, and a recognised whole travels as its 0/1 and reopens to its exact basis."],
+    description: "Whether thoughts you have read hold together, and as what whole. The members are your readings, each at a T level it holds (each reading says where its thought can stand); QL names the whole they make — two, 123, 450, 1234, 4+1, the sixfold — or says they make none, and reads each pair you set against each other. Recognise a whole to carry it as one 0/1 that keeps its basis; reopen it when the talk returns to it; read it for its frame pitch and intervals.",
+    promptGuidelines: ["vak_compose answers whether thoughts you have read hold together and how each pair stands; compose when that would change what you say. A recognised whole travels as its 0/1 and reopens to its exact basis."],
     parameters: composeParameters,
     async execute(_id, args, signal, _update, ctx) {
       const readings = heldReadings(ctx);
@@ -294,6 +300,16 @@ function registerComposition(pi: ExtensionAPI, agent: Agent) {
         details: { ...receipt.details, request, replayed: prior.length, composition: named },
       };
     },
+  });
+  // A reading says where its thought can stand in a whole, so a whole can be
+  // made from it without decoding the L4′ block.
+  pi.on("tool_result", (event: any) => {
+    const night = event.details?.night_reading;
+    if (event.isError || night?.schema !== NIGHT_READING) return;
+    const t = standing(night);
+    const number = event.details.reading_number;
+    const line = t.size ? `In a whole, reading ${number} can stand at ${levels(t)}.` : `Reading ${number} holds no T level, so it cannot stand in a whole.`;
+    return { content: [...event.content, { type: "text" as const, text: line }] };
   });
 }
 
