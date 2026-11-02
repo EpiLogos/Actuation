@@ -79,8 +79,8 @@
    "bytes": 1057
   },
   "skills/ql-agent-reading/extensions/ql-agent.ts": {
-   "sha256": "b1267bf47c7aefa6fc1da32f7e34fba30afa0e90b2636729488e93221d55ca44",
-   "bytes": 36580
+   "sha256": "a1f4e7dbbd33badd4d84fed6e63e87cec4b0cb10abb17c18aa02279e1fb1746f",
+   "bytes": 36721
   },
   "skills/ql-agent-reading/extensions/ql-event-context.ts": {
    "sha256": "1522b74650158f88206319a11c776ca1d50fc7cc02f603095e5dacf202f68e57",

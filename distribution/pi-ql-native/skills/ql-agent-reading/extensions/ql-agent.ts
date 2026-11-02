@@ -468,7 +468,8 @@ function registerReturn(pi: ExtensionAPI, agent: Agent, compose: Compose, tLevel
       const receipt = await nativeReceipt("invoke", request, ctx.cwd, signal);
       return {
         content: [{ type: "text" as const, text: `Returned turn ${turn.number}. C′ — ${cPrime} C — ${used.words}` }],
-        details: { ...composed.details, logos_return: receipt.details.native_receipt.result, return_request: request },
+        // The recognition followed the turn's whole, so what was replayed is what came before that whole.
+        details: { ...composed.details, replayed: whole.details.replayed, logos_return: receipt.details.native_receipt.result, return_request: request },
         terminate: true,
       };
     },
