@@ -191,7 +191,7 @@ type ComposeStep = {
   against?: { thought: number; against: number; why: string }[];
 };
 type Held = { number: number; id: string; subject: string; t: Map<number, string> };
-type Named = { whole: string; current: string; recognised: boolean; members: { t: number; label: string; reading?: number; subject: string; by?: "person" }[]; evidence: string[] };
+type Named = { whole: string; current: string; recognised: boolean; members: { t: number; label: string; reading?: number; subject: string; by?: "person" }[]; evidence: string[]; outside?: string[] };
 
 const composeParameters = Type.Object({
   steps: Type.Array(Type.Object({
@@ -317,6 +317,8 @@ function composer(agent: Agent, offer: Placement, body: string, grounded: () => 
           const night = await place(words);
           const at = standing(night) ?? new Map<number, string>();
           const whose = said ? `what the person brought (“${excerpt(words)}”)` : `“${excerpt(words)}”`;
+          // The person's words are not refused for holding no level: they stay outside the whole, the turn's remainder.
+          if (!at.size && said) return { outside: words };
           if (!at.size) throw new Error(`${whose} holds no T level, so it cannot stand in a whole`);
           if (!at.has(t)) throw new Error(`${whose} does not hold T${t}; it can stand at ${levels(at)}`);
           placements.push({ thought: words, reading: night.reading });
@@ -327,7 +329,11 @@ function composer(agent: Agent, offer: Placement, body: string, grounded: () => 
         }));
         const refused = settled.filter((r): r is PromiseRejectedResult => r.status === "rejected");
         if (refused.length) throw new Error(refused.map((r) => String(r.reason?.message ?? r.reason)).join("; "));
-        const placed = settled.map((r) => (r as PromiseFulfilledResult<{ t: number; label: string; reading?: number; subject: string; ref: string; by?: "person" }>).value);
+        type Placed = { t: number; label: string; reading?: number; subject: string; ref: string; by?: "person" };
+        const given = settled.map((r) => (r as PromiseFulfilledResult<Placed | { outside: string }>).value);
+        const outside = given.flatMap((m) => ("outside" in m ? [m.outside] : []));
+        const placed = given.filter((m): m is Placed => !("outside" in m));
+        if (!placed.length) throw new Error(`whole ${step.name} has no member that holds a T level`);
         const seen = new Set<string>();
         for (const m of placed) {
           if (seen.has(m.ref)) throw new Error(`${m.reading ? `reading ${m.reading}` : `“${excerpt(m.subject)}”`} is already in ${step.name}: a thought stands at one T level in a whole`);
@@ -348,7 +354,8 @@ function composer(agent: Agent, offer: Placement, body: string, grounded: () => 
           subjectRef: `${ground}#${step.name}`, useRef, wholeRef: `anchor:${useRef}`,
         });
         named[step.name] = { whole: useRef, current: useRef, recognised: false, evidence,
-          members: placed.map(({ t, label, reading, subject, by }) => ({ t, label, reading, subject, by })) };
+          members: placed.map(({ t, label, reading, subject, by }) => ({ t, label, reading, subject, by })),
+          ...(outside.length ? { outside } : {}) };
         continue;
       }
       if (!whole) throw new Error(`there is no whole named ${step.name}; the wholes so far are ${Object.keys(named).join(", ") || "none"}`);
@@ -473,7 +480,7 @@ const wordsOf = (entry: any): string => {
 function registerReturn(pi: ExtensionAPI, agent: Agent, compose: Compose, tLevels: string, body: string, grounded: () => Ground | undefined) {
   pi.registerTool({
     name: RETURN, label: "Return the turn",
-    description: `Return the turn: every turn closes here, once you have answered in words. Give what the person brought as you met it (T) and the T level their words stand at, what you return (T′), and your answer's parts in words, each at the T level it stands at, one per level and none at the person's — ${tLevels}. QL places the person's own words and each part through L4′, refusing a level one does not hold and saying where it can stand; composes them into the turn's whole (C′), recognised as its 0/1 when it is one of QL's wholes; and records the Logos Return with the readings and wholes this turn used (C). The turn ends when it is returned; say nothing more after it.`,
+    description: `Return the turn: every turn closes here, once you have answered in words. Give what the person brought as you met it (T) and the T level their words stand at, what you return (T′), and your answer's parts in words, each at the T level it stands at, one per level and none at the person's — ${tLevels}. QL places the person's own words and each part through L4′, refusing a level one does not hold and saying where it can stand (the person's words, if they hold no level at all, stay outside the whole); composes them into the turn's whole (C′), recognised as its 0/1 when it is one of QL's wholes; and records the Logos Return with the readings and wholes this turn used (C). The turn ends when it is returned; say nothing more after it.`,
     promptGuidelines: ["logos_return closes every turn: answer in words first, then return the turn with logos_return. A turn that is not returned is not finished."],
     parameters: returnParameters,
     async execute(_id, args, signal, _update, ctx) {
@@ -503,7 +510,8 @@ function registerReturn(pi: ExtensionAPI, agent: Agent, compose: Compose, tLevel
       }
       const held = composed.named[name];
       const members = held.members.map((m) => `T${m.t} ${m.label}: ${m.by ? "the person, " : ""}“${excerpt(m.subject)}”`).join("; ");
-      const cPrime = `Whole ${name}: ${recognition}. ${members}.`;
+      const aside = held.outside?.length ? ` What the person brought stands outside it: “${excerpt(held.outside[0])}” holds no T level.` : "";
+      const cPrime = `Whole ${name}: ${recognition}. ${members}.${aside}`;
       const used = instruments(turn.entries);
       const request = { schema: "ql.epi-logos-agent-invocation/v1", position: agent.position, operation: "logos.return",
         input: { inquiry_ref: source, T: args.met, C: used.words, T_prime: args.returned, C_prime: cPrime,
