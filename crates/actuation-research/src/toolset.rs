@@ -130,17 +130,6 @@ pub const NIGHT_TOOLS: [(&str, &str); 6] = [
     ),
 ];
 
-/// Lens coverage per Night reading, from the register's lens sets: a
-/// full_text reading covers all twelve; each square covers its own four.
-const NIGHT_COVERAGE_FULL: [&str; 12] = [
-    "L0", "L0'", "L1", "L1'", "L2", "L2'", "L3", "L3'", "L4", "L4'", "L5", "L5'",
-];
-const NIGHT_COVERAGE_BEING: [&str; 4] = ["L0", "L0'", "L5", "L5'"];
-const NIGHT_COVERAGE_BECOMING: [&str; 4] = ["L1", "L1'", "L4", "L4'"];
-const NIGHT_COVERAGE_KNOWING: [&str; 4] = ["L2", "L2'", "L3", "L3'"];
-/// A frame is selected only after adequate coverage: half the registry.
-const NIGHT_COVERAGE_REQUIRED: usize = 6;
-
 /// The full P+P′ supply: the Day six plus the Night six (`ql-twelve`).
 pub fn night_capability_supply() -> Value {
     Value::Array(
@@ -437,27 +426,10 @@ pub async fn run_toolset(
                     .and_then(Value::as_str)
                     .unwrap_or_default();
                 let own = args.get("own_disclosure").and_then(Value::as_str);
-                let instrument_mode = match name.as_str() {
-                    "reflect_full_text" => "full_text",
-                    "reflect_right_frame" => "right_frame",
-                    "reflect_being" => "being",
-                    "reflect_becoming" => "becoming",
-                    "reflect_knowing" => "knowing",
-                    "reflect_resonant_frames" => "resonant",
-                    _ => "unknown",
-                };
-                // The frame selector is gated on coverage: a single lens is
-                // specified for analysis only after the lenses have been
-                // adequately read — selection without coverage is the
-                // name-without-machinery failure the register warns of.
-                if instrument_mode == "right_frame"
-                    && night_coverage.len() < NIGHT_COVERAGE_REQUIRED
+                let instrument_mode = crate::reflect::mode_of(&name).unwrap_or("unknown");
+                // The frame selector is gated on coverage (reflect::refusal).
+                if let Some(notice) = crate::reflect::refusal(instrument_mode, night_coverage.len())
                 {
-                    let notice = format!(
-                        "reflect_right_frame requires adequate coverage first: only {} of {} lenses have been read this work. Take a reflect_full_text reading, or square readings covering the registry, before selecting a frame.",
-                        night_coverage.len(),
-                        NIGHT_COVERAGE_FULL.len()
-                    );
                     history.push(json!({"role": "capability", "name": name,
                         "result": {"ok": false, "error": notice}}));
                     record(
@@ -478,14 +450,7 @@ pub async fn run_toolset(
                 match reading {
                     Ok(reading) => {
                         night_calls += 1;
-                        let covered: &[&'static str] = match instrument_mode {
-                            "full_text" => &NIGHT_COVERAGE_FULL,
-                            "being" => &NIGHT_COVERAGE_BEING,
-                            "becoming" => &NIGHT_COVERAGE_BECOMING,
-                            "knowing" => &NIGHT_COVERAGE_KNOWING,
-                            _ => &[],
-                        };
-                        for lens in covered {
+                        for lens in crate::reflect::covers(instrument_mode) {
                             if !night_coverage.contains(lens) {
                                 night_coverage.push(lens);
                             }
@@ -728,18 +693,18 @@ pub async fn run_toolset(
     }
 }
 
-/// Run the reflect instrument (QL_REFLECT_BIN) for one Night tool call. The
-/// instrument is a process, like the owner instrument: request JSON on
-/// stdin, one JSON reading on stdout, fail-closed.
+/// Serve one Night tool call: natively (reflect::read_mode, the elected
+/// decision provider) unless QL_REFLECT_BIN names a retained instrument —
+/// the recorded series-1 runs used the jev reflect script, which stays
+/// reproducible this way. The instrument is a process, like the owner
+/// instrument: request JSON on stdin, one JSON reading on stdout, fail-closed.
 fn run_reflect(mode: &str, subject: &str, own_disclosure: Option<&str>) -> Result<Value> {
-    let program = std::env::var("QL_REFLECT_BIN")
+    let Some(program) = std::env::var("QL_REFLECT_BIN")
         .ok()
         .filter(|p| !p.is_empty())
-        .ok_or_else(|| {
-            Error::new(
-                "the reflect tools require QL_REFLECT_BIN (path to the jev reflect instrument)",
-            )
-        })?;
+    else {
+        return crate::reflect::read_mode(mode, subject, own_disclosure);
+    };
     let scratch =
         tempfile::tempdir().map_err(|e| Error::new(format!("reflect scratch unavailable: {e}")))?;
     // The instrument reads one JSON request on stdin.

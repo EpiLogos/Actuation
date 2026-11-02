@@ -32,6 +32,8 @@ pub const OPERATIONS: &[&str] = &[
     "task.freeze",
     "owner.invoke",
     "faculty.invoke",
+    "reflect.tools",
+    "reflect.read",
     "epi-agent.body",
     "epi-agent.run",
     "prime.return",
@@ -132,6 +134,8 @@ pub fn invoke(v: &Value) -> Result<Value> {
             v["trace_ref"].as_str(),
             v["declared_locus_ref"].as_str(),
         ),
+        "reflect.tools" => Ok(crate::reflect::tools()),
+        "reflect.read" => crate::reflect::read(v),
         "epi-agent.body" => {
             let owner = owner(&v["owner"])?;
             epi_agent::body(&owner)

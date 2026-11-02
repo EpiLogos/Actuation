@@ -27,6 +27,8 @@ const OWNER_REQUIRED: [&str; 5] = [
     "provenance.json",
     "package.json",
 ];
+/// The Night reflect tools: Actuation's own extension and its pinned supply.
+const NIGHT_REQUIRED: [&str; 2] = ["extensions/ql-night.ts", "night-tools.json"];
 
 #[derive(Debug, Clone)]
 pub struct EpiProviderArgs {
@@ -214,27 +216,52 @@ pub fn verify_binding(installation: &Path) -> Result<()> {
             return Err(refuse(&format!("{key} is not an absolute path")));
         }
     }
-    let owner = &binding["owner_extension"];
-    let root = owner["root"]
+    verify_closure(
+        &binding["owner_extension"],
+        "owner",
+        &OWNER_REQUIRED,
+        "extensions/ql-agent.ts",
+        &refuse,
+    )?;
+    verify_closure(
+        &binding["night_extension"],
+        "Night",
+        &NIGHT_REQUIRED,
+        "extensions/ql-night.ts",
+        &refuse,
+    )
+}
+
+/// One extension's installed closure: an absolute root, every member inside
+/// it at its recorded SHA-256 within the size bounds, the required members
+/// present, and the entry module the verified member it names.
+fn verify_closure(
+    extension: &Value,
+    which: &str,
+    required: &[&str],
+    entry: &str,
+    refuse: &dyn Fn(&str) -> Error,
+) -> Result<()> {
+    let root = extension["root"]
         .as_str()
         .filter(|p| Path::new(p).is_absolute())
-        .ok_or_else(|| refuse("owner extension root is not an absolute path"))?;
-    let root =
-        std::fs::canonicalize(root).map_err(|_| refuse("owner extension root is missing"))?;
-    let module = owner["module"]
+        .ok_or_else(|| refuse(&format!("{which} extension root is not an absolute path")))?;
+    let root = std::fs::canonicalize(root)
+        .map_err(|_| refuse(&format!("{which} extension root is missing")))?;
+    let module = extension["module"]
         .as_str()
-        .ok_or_else(|| refuse("owner extension has no module"))?;
+        .ok_or_else(|| refuse(&format!("{which} extension has no module")))?;
     let digest_ok = |d: &Value| {
         d.as_str()
             .is_some_and(|d| d.len() == 64 && d.bytes().all(|b| b.is_ascii_hexdigit()))
     };
-    let sources = owner["source_files"]
+    let sources = extension["source_files"]
         .as_object()
         .filter(|m| !m.is_empty() && m.len() <= 64)
-        .ok_or_else(|| refuse("owner source closure is absent or unbounded"))?;
-    for required in OWNER_REQUIRED {
-        if !sources.contains_key(required) {
-            return Err(refuse(&format!("owner source closure lacks {required}")));
+        .ok_or_else(|| refuse(&format!("{which} source closure is absent or unbounded")))?;
+    for required in required {
+        if !sources.contains_key(*required) {
+            return Err(refuse(&format!("{which} source closure lacks {required}")));
         }
     }
     let mut total = 0u64;
@@ -247,10 +274,10 @@ pub fn verify_binding(installation: &Path) -> Result<()> {
                 .any(|c| matches!(c, Component::ParentDir))
             || !digest_ok(expected)
         {
-            return Err(refuse(&format!("owner source member {name} is invalid")));
+            return Err(refuse(&format!("{which} source member {name} is invalid")));
         }
         let path = std::fs::canonicalize(root.join(relative))
-            .map_err(|_| refuse(&format!("owner source member {name} is missing")))?;
+            .map_err(|_| refuse(&format!("{which} source member {name} is missing")))?;
         let meta =
             std::fs::metadata(&path).map_err(|_| refuse(&format!("{name} is unreadable")))?;
         total += meta.len();
@@ -260,7 +287,7 @@ pub fn verify_binding(installation: &Path) -> Result<()> {
             || total > 2_097_152
         {
             return Err(refuse(&format!(
-                "owner source member {name} is outside its bounds"
+                "{which} source member {name} is outside its bounds"
             )));
         }
         if expected.as_str() != Some(sha256_hex(&path)?.as_str()) {
@@ -269,14 +296,12 @@ pub fn verify_binding(installation: &Path) -> Result<()> {
             )));
         }
     }
-    let module =
-        std::fs::canonicalize(module).map_err(|_| refuse("owner entry module is missing"))?;
-    if module != root.join("extensions/ql-agent.ts")
-        || owner["sha256"] != sources["extensions/ql-agent.ts"]
-    {
-        return Err(refuse(
-            "owner entry is not extensions/ql-agent.ts of the verified closure",
-        ));
+    let module = std::fs::canonicalize(module)
+        .map_err(|_| refuse(&format!("{which} entry module is missing")))?;
+    if module != root.join(entry) || extension["sha256"] != sources[entry] {
+        return Err(refuse(&format!(
+            "{which} entry is not {entry} of the verified closure"
+        )));
     }
     Ok(())
 }
@@ -592,6 +617,15 @@ mod tests {
             std::fs::write(&path, &body).unwrap();
             sources.insert(name.into(), Value::String(digest(body.as_bytes())));
         }
+        let night_root = dir.join("night");
+        let mut night = serde_json::Map::new();
+        for name in NIGHT_REQUIRED {
+            let path = night_root.join(name);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            let body = format!("member {name}");
+            std::fs::write(&path, &body).unwrap();
+            night.insert(name.into(), Value::String(digest(body.as_bytes())));
+        }
         let tools = dir.join("ql-agent");
         std::fs::create_dir_all(&tools).unwrap();
         let mut files = serde_json::Map::new();
@@ -606,6 +640,10 @@ mod tests {
             "owner_extension": {
                 "root": root, "module": root.join("extensions/ql-agent.ts"),
                 "sha256": sources["extensions/ql-agent.ts"], "source_files": sources
+            },
+            "night_extension": {
+                "root": night_root, "module": night_root.join("extensions/ql-night.ts"),
+                "sha256": night["extensions/ql-night.ts"], "source_files": night
             },
             "ql_agent": {
                 "dir": tools, "engine": "/usr/bin/true", "revision": REVISION, "files": files
@@ -747,6 +785,18 @@ mod tests {
             v["owner_extension"]["source_files"]["../outside"] = "a".repeat(64).into();
         })
         .contains("invalid"));
+        // A body without its Night tools does not start.
+        assert!(mutate(&|v| {
+            v.as_object_mut().unwrap().remove("night_extension");
+        })
+        .contains("Night extension root"));
+        assert!(mutate(&|v| {
+            v["night_extension"]["source_files"]
+                .as_object_mut()
+                .unwrap()
+                .remove("night-tools.json");
+        })
+        .contains("Night source closure lacks night-tools.json"));
     }
 
     #[test]
