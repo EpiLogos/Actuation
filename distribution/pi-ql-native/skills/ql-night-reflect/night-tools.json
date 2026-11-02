@@ -1,0 +1,133 @@
+{
+ "schema": "actuation.night-tools/v1",
+ "operation": "reflect.read",
+ "coverage_required": 6,
+ "tools": [
+  {
+   "name": "reflect_full_text",
+   "label": "Reflect the whole text",
+   "description": "The Night reading of a presented whole: how the whole text stands across all twelve lenses at their six articulations — the complete giving returned in full. Pass your own reading of the text as your disclosure; the instrument decides alongside it. Args: {\"subject\": text, \"own_disclosure\": optional string}.",
+   "parameters": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "subject"
+    ],
+    "properties": {
+     "subject": {
+      "type": "string",
+      "minLength": 1
+     },
+     "own_disclosure": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  {
+   "name": "reflect_right_frame",
+   "label": "Reflect the right frame",
+   "description": "The one lens most useful for reading this subject now — the frame that, taken up, does the most work. Returns the selected lens in its full giving with the complete distribution. Your candidate frame may ride the call as disclosure. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+   "parameters": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "subject"
+    ],
+    "properties": {
+     "subject": {
+      "type": "string",
+      "minLength": 1
+     },
+     "own_disclosure": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  {
+   "name": "reflect_being",
+   "label": "Reflect through Square A",
+   "description": "The subject read through Square A (its titles: Being, Becoming, Knowing) — three paired crossings of the base alignment, each read through all twelve lenses, returned in full. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+   "parameters": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "subject"
+    ],
+    "properties": {
+     "subject": {
+      "type": "string",
+      "minLength": 1
+     },
+     "own_disclosure": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  {
+   "name": "reflect_becoming",
+   "label": "Reflect through Square B",
+   "description": "The subject read through Square B (its titles: Articulation, Encounter, Becoming) — three paired crossings of the offset alignment, each read through all twelve lenses, returned in full. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+   "parameters": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "subject"
+    ],
+    "properties": {
+     "subject": {
+      "type": "string",
+      "minLength": 1
+     },
+     "own_disclosure": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  {
+   "name": "reflect_knowing",
+   "label": "Reflect through Square C",
+   "description": "The subject read through Square C (its titles: Text/Texture, and two held open) — three paired crossings of the mirror alignment, each read through all twelve lenses, returned in full. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+   "parameters": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "subject"
+    ],
+    "properties": {
+     "subject": {
+      "type": "string",
+      "minLength": 1
+     },
+     "own_disclosure": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  {
+   "name": "reflect_resonant_frames",
+   "label": "Reflect the resonant frames",
+   "description": "The ranked relation among frames for this subject — the full ordering of which frames resonate and how strongly, to name the ones worth taking deeper. Args: {\"subject\": string, \"own_disclosure\": optional string}.",
+   "parameters": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "subject"
+    ],
+    "properties": {
+     "subject": {
+      "type": "string",
+      "minLength": 1
+     },
+     "own_disclosure": {
+      "type": "string"
+     }
+    }
+   }
+  }
+ ]
+}
