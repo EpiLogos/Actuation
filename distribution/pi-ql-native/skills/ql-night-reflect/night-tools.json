@@ -153,5 +153,47 @@
     "The Night reflect tools read any thought — the person's words, your own answer, a summary — through the MEF lenses. Take a reading when seeing what a thought carries would change what you say; the reading is yours to think and answer through."
    ]
   }
- ]
+ ],
+ "place": {
+  "mode": "place",
+  "lens": "L4'",
+  "levels": [
+   {
+    "t": 0,
+    "slot": "L4.0'",
+    "label": "Questions",
+    "meaning": "inquiry initiation"
+   },
+   {
+    "t": 1,
+    "slot": "L4.1'",
+    "label": "Traces",
+    "meaning": "evidence collection"
+   },
+   {
+    "t": 2,
+    "slot": "L4.2'",
+    "label": "Challenges",
+    "meaning": "problem identification"
+   },
+   {
+    "t": 3,
+    "slot": "L4.3'",
+    "label": "Patterns",
+    "meaning": "structure recognition"
+   },
+   {
+    "t": 4,
+    "slot": "L4.4'",
+    "label": "Discovery",
+    "meaning": "source exploration"
+   },
+   {
+    "t": 5,
+    "slot": "L4.5'",
+    "label": "Insight",
+    "meaning": "synthesis crystallization"
+   }
+  ]
+ }
 }

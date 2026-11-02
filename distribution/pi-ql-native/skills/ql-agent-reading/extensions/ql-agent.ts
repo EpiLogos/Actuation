@@ -142,32 +142,43 @@ async function nativeReceipt(operation: Operation, request: unknown, cwd: string
 
 // Composition. A body whose QL constitution holds `vak.compose` has it as a
 // tool of its own, named for the operation the constitution names. A member
-// of a whole is a thought the body has read, standing at a T level that
-// reading holds: the T levels are the L4′ sub-slots, and the reading's own
-// holds are the only coordinates admitted. The kernel evaluates each request
+// of a whole is a thought standing at a T level its reading holds: given in
+// words, it is placed in the call by the body's Night placement (L4′ alone);
+// given as a reading the body took, that reading's holds stand. The T levels
+// are the L4′ sub-slots, and a reading's holds are the only coordinates
+// admitted. The tool is offered once the Night placement is, with the levels
+// it reads, so this extension carries no T table. The kernel evaluates each request
 // in memory, so the session's earlier composition is replayed before the new
 // steps; grain, recognition, relation and frame are all the kernel's.
 const COMPOSE = "vak_compose";
 const NIGHT_READING = "actuation.night-reading/v1";
+// The Night extension's placement offer on the session's event bus.
+const PLACE = "actuation.night/place";
+const PLACE_ASKED = "actuation.night/place-asked";
+type Placement = {
+  levels: { t: number; label: string; meaning: string }[];
+  place: (subject: string, cwd: string, signal?: AbortSignal) => Promise<any>;
+};
 const FRAME = { basis: "chromatic", face: "direct", id: "CF2", lens: "L4'", positions: "local" };
 type Agent = { name?: string; position?: string; operations?: string[] };
 type ComposeStep = {
   op: "whole" | "recognise" | "reopen" | "read"; name: string; route?: string;
-  members?: { reading: number; t: number }[];
+  members?: { reading?: number; thought?: string; t: number }[];
   against?: { thought: number; against: number; why: string }[];
 };
 type Held = { number: number; id: string; subject: string; t: Map<number, string> };
-type Named = { whole: string; current: string; recognised: boolean; members: { t: number; label: string; reading: number; subject: string }[]; evidence: string[] };
+type Named = { whole: string; current: string; recognised: boolean; members: { t: number; label: string; reading?: number; subject: string }[]; evidence: string[] };
 
 const composeParameters = Type.Object({
   steps: Type.Array(Type.Object({
     op: Type.Unsafe<ComposeStep["op"]>({ type: "string", enum: ["whole", "recognise", "reopen", "read"],
-      description: "whole: gather read thoughts into a whole. recognise: carry a closed whole as its 0/1. reopen: open a recognised whole to its exact basis. read: its frame pitch and intervals." }),
+      description: "whole: gather thoughts into a whole. recognise: carry a closed whole as its 0/1. reopen: open a recognised whole to its exact basis. read: its frame pitch and intervals." }),
     name: Type.String({ pattern: "^[A-Za-z0-9_-]{1,48}$", description: "The whole's name, given when it is made and used to recognise, reopen or read it." }),
     members: Type.Optional(Type.Array(Type.Object({
-      reading: Type.Integer({ minimum: 1, description: "Which reading the thought was read in, by its number." }),
-      t: Type.Integer({ minimum: 0, maximum: 5, description: "The T level it stands at: an L4′ sub-slot that reading holds (L4.n′ is Tn)." }),
-    }, { additionalProperties: false }), { minItems: 1, maxItems: 6, description: "For a whole: each thought once, each T level once." })),
+      thought: Type.Optional(Type.String({ minLength: 1, maxLength: 600, description: "The thought in words; QL reads where it can stand." })),
+      reading: Type.Optional(Type.Integer({ minimum: 1, description: "Or a thought you have read, by its reading's number." })),
+      t: Type.Integer({ minimum: 0, maximum: 5, description: "The T level you see it standing at." }),
+    }, { additionalProperties: false }), { minItems: 1, maxItems: 6, description: "For a whole: each thought once, in words or as a reading, each T level once." })),
     against: Type.Optional(Type.Array(Type.Object({
       thought: Type.Integer({ minimum: 0, maximum: 5, description: "The T level of the thought that is set against another." }),
       against: Type.Integer({ minimum: 0, maximum: 5, description: "The T level of the thought it is set against." }),
@@ -220,15 +231,29 @@ function standing(night: any): Map<number, string> | undefined {
 const excerpt = (text: string) => (text.length > 90 ? `${text.slice(0, 87)}…` : text);
 const levels = (t: Map<number, string>) => (t.size ? [...t].sort(([a], [b]) => a - b).map(([n, label]) => `T${n} ${label}`).join(", ") : "no T level (it did not hold at L4′)");
 
-function registerComposition(pi: ExtensionAPI, agent: Agent) {
+function registerComposition(pi: ExtensionAPI, agent: Agent, offer: Placement) {
   const caller = `agent/${String(agent.name).toLowerCase()}`;
+  const tLevels = offer.levels.map((l) => `T${l.t} ${l.label} (${l.meaning})`).join(", ");
+  // One placement per thought per session: the same words read again give the same profile.
+  const placings = new Map<string, Promise<any>>();
   pi.registerTool({
-    name: COMPOSE, label: "Compose read thoughts into wholes",
-    description: "Whether thoughts you have read hold together, and as what whole. The members are your readings, each at a T level it holds (each reading says where its thought can stand); QL names the whole they make — two, 123, 450, 1234, 4+1, the sixfold — or says they make none, and reads each pair you set against each other. Recognise a whole to carry it as one 0/1 that keeps its basis; reopen it when the talk returns to it; read it for its frame pitch and intervals.",
-    promptGuidelines: ["vak_compose answers whether thoughts you have read hold together and how each pair stands; compose when that would change what you say. A recognised whole travels as its 0/1 and reopens to its exact basis."],
+    name: COMPOSE, label: "Compose thoughts into wholes",
+    description: `Whether thoughts hold together, and as what whole. Give each thought in words at the T level you see it standing — ${tLevels} — and QL reads it through L4′, refusing a level it does not hold and saying where it can stand; a thought you have already read can be given by its reading's number instead. QL names the whole the members make — two, 123, 450, 1234, 4+1, the sixfold — or says they make none, and reads each pair you set against each other. Recognise a whole to carry it as one 0/1 that keeps its basis; reopen it when the talk returns to it; read it for its frame pitch and intervals.`,
+    promptGuidelines: ["vak_compose answers whether thoughts hold together and how each pair stands; compose when that would change what you say. A recognised whole travels as its 0/1 and reopens to its exact basis."],
     parameters: composeParameters,
     async execute(_id, args, signal, _update, ctx) {
       const readings = heldReadings(ctx);
+      const placements: { thought: string; reading: unknown }[] = [];
+      const place = (words: string) => {
+        const key = `${ctx.sessionManager.getSessionId()}\n${words}`;
+        let placing = placings.get(key);
+        if (!placing) {
+          placing = offer.place(words, ctx.cwd, signal);
+          placings.set(key, placing);
+          placing.catch(() => placings.delete(key));
+        }
+        return placing;
+      };
       const earlier = toolResults(ctx).filter((m: any) => m.toolName === COMPOSE && m.details?.request).at(-1)?.details;
       const prior: unknown[] = earlier?.request?.input?.steps ?? [];
       const named: Record<string, Named> = structuredClone(earlier?.composition ?? {});
@@ -242,16 +267,34 @@ function registerComposition(pi: ExtensionAPI, agent: Agent) {
         if (step.op === "whole") {
           if (whole) throw new Error(`there is already a whole named ${step.name}; recognise, reopen or read it, or name the new one otherwise`);
           const members = step.members ?? [];
-          if (!members.length) throw new Error(`whole ${step.name} needs its members: each a reading by number and a T level it holds`);
-          const seen = new Set<number>();
-          const placed = members.map(({ reading, t }) => {
-            const held = readings.find((r) => r.number === reading);
-            if (!held) throw new Error(`there is no reading ${reading}; the readings so far are ${readings.map((r) => r.number).join(", ") || "none"}`);
-            if (!held.t.has(t)) throw new Error(`reading ${reading} does not hold T${t}; it holds ${levels(held.t)}`);
-            if (seen.has(reading)) throw new Error(`reading ${reading} is already in ${step.name}: a thought stands at one T level in a whole`);
-            seen.add(reading);
-            return { t, label: held.t.get(t)!, reading, subject: held.subject, ref: `reading:${held.id}` };
-          });
+          if (!members.length) throw new Error(`whole ${step.name} needs its members: each a thought in words or a reading by number, at a T level`);
+          // Every member is placed before any refusal, so one answer names every misplaced thought.
+          const settled = await Promise.allSettled(members.map(async ({ reading, thought, t }, i) => {
+            if ((thought === undefined) === (reading === undefined)) {
+              throw new Error(`member ${i + 1} of ${step.name}: give the thought in words or a reading's number, one of the two`);
+            }
+            if (reading !== undefined) {
+              const held = readings.find((r) => r.number === reading);
+              if (!held) throw new Error(`there is no reading ${reading}; the readings so far are ${readings.map((r) => r.number).join(", ") || "none"}`);
+              if (!held.t.has(t)) throw new Error(`reading ${reading} does not hold T${t}; it holds ${levels(held.t)}`);
+              return { t, label: held.t.get(t)!, reading, subject: held.subject, ref: `reading:${held.id}` };
+            }
+            const words = thought!.trim();
+            const night = await place(words);
+            const at = standing(night) ?? new Map<number, string>();
+            if (!at.size) throw new Error(`“${excerpt(words)}” holds no T level, so it cannot stand in a whole`);
+            if (!at.has(t)) throw new Error(`“${excerpt(words)}” does not hold T${t}; it can stand at ${levels(at)}`);
+            placements.push({ thought: words, reading: night.reading });
+            return { t, label: at.get(t)!, subject: words, ref: `thought:${createHash("sha256").update(words).digest("hex").slice(0, 16)}` };
+          }));
+          const refused = settled.filter((r): r is PromiseRejectedResult => r.status === "rejected");
+          if (refused.length) throw new Error(refused.map((r) => String(r.reason?.message ?? r.reason)).join("; "));
+          const placed = settled.map((r) => (r as PromiseFulfilledResult<{ t: number; label: string; reading?: number; subject: string; ref: string }>).value);
+          const seen = new Set<string>();
+          for (const m of placed) {
+            if (seen.has(m.ref)) throw new Error(`${m.reading ? `reading ${m.reading}` : `“${excerpt(m.subject)}”`} is already in ${step.name}: a thought stands at one T level in a whole`);
+            seen.add(m.ref);
+          }
           const at = new Set(placed.map((m) => m.t));
           for (const pair of step.against ?? []) {
             if (!at.has(pair.thought) || !at.has(pair.against)) throw new Error(`in ${step.name}, T${pair.thought} set against T${pair.against} names a level no member stands at`);
@@ -298,7 +341,7 @@ function registerComposition(pi: ExtensionAPI, agent: Agent) {
       const results = receipt.details.native_receipt.result.results.slice(prior.length);
       return {
         content: [{ type: "text" as const, text: results.map((r: any, i: number) => giving(args.steps[i], r, named)).join("\n") }],
-        details: { ...receipt.details, request, replayed: prior.length, composition: named },
+        details: { ...receipt.details, request, replayed: prior.length, composition: named, placements },
       };
     },
   });
@@ -318,7 +361,8 @@ function registerComposition(pi: ExtensionAPI, agent: Agent) {
 // What the kernel returned for one step, as the model reads it.
 function giving(step: ComposeStep, { op, result }: any, named: Record<string, Named>): string {
   const whole = named[step.name];
-  const member = (m: Named["members"][number]) => `T${m.t} ${m.label}: reading ${m.reading}${m.subject ? ` (“${excerpt(m.subject)}”)` : ""}`;
+  const member = (m: Named["members"][number]) => `T${m.t} ${m.label}: ${m.reading
+    ? `reading ${m.reading}${m.subject ? ` (“${excerpt(m.subject)}”)` : ""}` : `“${excerpt(m.subject)}”`}`;
   const operator = (ref: string) => String(ref).replace(/^ql:shape:[0-9.]+:/, "").replace(/^compression:/, "").replace(/^recognition:/, "the reading of ");
   if (op === "whole") {
     const grain = result.body?.grain;
@@ -375,5 +419,14 @@ export default function (pi: ExtensionAPI, body: "pi" | "prime" = "pi", agent?: 
       return nativeReceipt("invoke", request, ctx.cwd, signal);
     },
   });
-  if (agent?.operations?.includes("vak.compose") && typeof agent.position === "string" && agent.name) registerComposition(pi, agent);
+  // Composition is offered once the body's Night placement is: whichever extension loads second sets it going.
+  if (agent?.operations?.includes("vak.compose") && typeof agent.position === "string" && agent.name) {
+    let offered = false;
+    pi.events?.on(PLACE, (offer: any) => {
+      if (offered || typeof offer?.place !== "function" || !Array.isArray(offer.levels)) return;
+      offered = true;
+      registerComposition(pi, agent, offer);
+    });
+    pi.events?.emit(PLACE_ASKED, undefined);
+  }
 }
