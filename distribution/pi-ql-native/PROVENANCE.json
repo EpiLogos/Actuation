@@ -67,8 +67,8 @@
    "bytes": 448
   },
   "skills/ql-agent-reading/README.md": {
-   "sha256": "f8c8f1cd4628c3cc4c50582d31064c9b3fbaa47f56ecebd8b756a4d1b6a0e2a5",
-   "bytes": 3309
+   "sha256": "e9243a7472b4f22b21d9c71ca6a51de7021a36cfa41513cf1e921727aef9e0ec",
+   "bytes": 3565
   },
   "skills/ql-agent-reading/SKILL.md": {
    "sha256": "8746e1586935a7931305d22a08a67070b0d2f02de77ad18ac624149ac613d2d6",
@@ -79,8 +79,8 @@
    "bytes": 1057
   },
   "skills/ql-agent-reading/extensions/ql-agent.ts": {
-   "sha256": "3e33f6cf93386da48953c29310cbcbd15e9ebbf37f840f4a08a84ddc8b7e6ba7",
-   "bytes": 10036
+   "sha256": "5edbefc35478d6ffe5b4e84901363e2f2374d53d9ecbf9fb1ae4178b184f2b34",
+   "bytes": 23339
   },
   "skills/ql-agent-reading/extensions/ql-event-context.ts": {
    "sha256": "1522b74650158f88206319a11c776ca1d50fc7cc02f603095e5dacf202f68e57",
