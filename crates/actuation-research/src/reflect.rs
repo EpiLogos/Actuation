@@ -27,6 +27,8 @@ pub const COVERAGE_FULL: [&str; 12] = [
 pub const COVERAGE_BEING: [&str; 4] = ["L0", "L0'", "L5", "L5'"];
 pub const COVERAGE_BECOMING: [&str; 4] = ["L1", "L1'", "L4", "L4'"];
 pub const COVERAGE_KNOWING: [&str; 4] = ["L2", "L2'", "L3", "L3'"];
+/// A placement reads L4′ alone: the T levels are its sub-slots.
+pub const COVERAGE_PLACE: [&str; 1] = ["L4'"];
 /// A frame is selected only after adequate coverage: half the registry.
 pub const COVERAGE_REQUIRED: usize = 6;
 
@@ -45,13 +47,14 @@ pub const PROMPT_GUIDELINES: [&str; 2] = [
     "The Night reflect tools read any thought — the person's words, your own answer, a summary — through the MEF lenses. Take a reading when seeing what a thought carries would change what you say; the reading is yours to think and answer through.",
 ];
 
-const MODES: [&str; 6] = [
+const MODES: [&str; 7] = [
     "full_text",
     "right_frame",
     "being",
     "becoming",
     "knowing",
     "resonant",
+    "place",
 ];
 
 /// The carried register: QL's canonical MEF lens register with QL's refs.
@@ -119,6 +122,7 @@ pub fn covers(mode: &str) -> &'static [&'static str] {
         "being" => &COVERAGE_BEING,
         "becoming" => &COVERAGE_BECOMING,
         "knowing" => &COVERAGE_KNOWING,
+        "place" => &COVERAGE_PLACE,
         _ => &[],
     }
 }
@@ -166,7 +170,21 @@ pub fn tools() -> Value {
             "name": name, "label": label(name), "description": description,
             "parameters": parameters, "prompt_guidelines": PROMPT_GUIDELINES,
         })).collect::<Vec<_>>(),
+        "place": place_supply(),
     })
+}
+
+/// What a body's composition needs to place a thought: the placement mode
+/// and the T levels it reads, from the register (L4.n′ is Tn).
+fn place_supply() -> Value {
+    let levels: Vec<Value> = lens("L4'")
+        .map(sublenses)
+        .unwrap_or_default()
+        .iter()
+        .enumerate()
+        .map(|(t, s)| json!({"t": t, "slot": s["slot"], "label": s["label"], "meaning": s["meaning"]}))
+        .collect();
+    json!({"mode": "place", "lens": "L4'", "levels": levels})
 }
 
 fn slot_line(s: &Value) -> String {
@@ -324,6 +342,23 @@ pub fn questions(mode: &str, with_disclosure: bool) -> Result<(String, Map<Strin
             }
             "every lens weighed on its own as a frame in play, ranked".to_owned()
         }
+        // Where a thought can stand in a whole: L4′ across its six sub-slots,
+        // the T levels (L4.n′ is Tn). No tool of the body's own; a body's
+        // composition places its members through it.
+        "place" => {
+            let l = lens("L4'").ok_or_else(|| Error::new("the carried register has no L4'"))?;
+            for s in sublenses(l) {
+                questions.insert(
+                    slot_key(l, None, s),
+                    slot_question(
+                        l,
+                        s,
+                        "Read the subject as one thought among those a whole gathers",
+                    ),
+                );
+            }
+            "the thought placed through L4′ alone, each T level weighed on its own".to_owned()
+        }
         "being" | "becoming" | "knowing" => {
             let key = square_key(mode);
             for (p, link) in square_links(key) {
@@ -371,6 +406,10 @@ pub fn shape_reading(mode: &str, shape: String, answers: &Value) -> Value {
         "full_text" => json!({
             "shape": shape,
             "lenses": lenses().iter().map(|l| profile(l, None, answers)).collect::<Vec<_>>(),
+        }),
+        "place" => json!({
+            "shape": shape,
+            "lenses": lens("L4'").map(|l| profile(l, None, answers)).into_iter().collect::<Vec<_>>(),
         }),
         "right_frame" => {
             let answer = &answers["right_frame"];
@@ -523,6 +562,10 @@ pub fn giving(mode: &str, reading: &Value) -> String {
     match mode {
         "full_text" => format!(
             "The subject read through the twelve lenses. Each lens refracts one position's responsibility and is read across its six sub-slots; a sub-slot holds above 0.50, and several can hold at once.\n{}",
+            blocks(&reading["lenses"]).join("\n")
+        ),
+        "place" => format!(
+            "The thought read through L4′ for where it can stand in a whole; a sub-slot holds above 0.50, and several can hold at once.\n{}",
             blocks(&reading["lenses"]).join("\n")
         ),
         "right_frame" => {
@@ -855,6 +898,19 @@ mod tests {
             right["right_frame"]["criteria"].as_object().unwrap().len(),
             12
         );
+        let (_, place) = questions("place", false).unwrap();
+        assert_eq!(
+            place.keys().map(String::as_str).collect::<Vec<_>>(),
+            [
+                "L4'|L4.0'",
+                "L4'|L4.1'",
+                "L4'|L4.2'",
+                "L4'|L4.3'",
+                "L4'|L4.4'",
+                "L4'|L4.5'"
+            ],
+            "a placement reads L4′ alone, every T level"
+        );
         assert!(questions("tarot", false).is_err());
     }
 
@@ -884,6 +940,12 @@ mod tests {
             assert!(mode_of(tool["name"].as_str().unwrap()).is_some());
             assert_eq!(tool["parameters"]["required"], json!(["subject"]));
         }
+        // Placement is offered to the body's composition, not as a tool.
+        assert_eq!(supply["place"]["mode"], "place");
+        assert_eq!(
+            supply["place"]["levels"][1],
+            json!({"t": 1, "slot": "L4.1'", "label": "Traces", "meaning": "evidence collection"})
+        );
     }
 
     #[test]
@@ -980,6 +1042,36 @@ mod tests {
         assert!(
             giving.contains("  unread — L0.0 Why (./?): presuppositional frame · "),
             "an unanswered sub-slot is unread, not below one half: {giving}"
+        );
+    }
+
+    #[test]
+    fn a_placement_is_the_l4_prime_profile_alone() {
+        let (_dir, decide) = fake_decide(
+            json!({"L4'|L4.1'": {"noul": 0.7}, "L4'|L4.3'": {"noul": 0.6}, "L4'|L4.4'": {"noul": 0.3}}),
+        );
+        let refused = read(&json!({"mode": "place", "subject": " "})).unwrap_err();
+        assert!(
+            !refused.to_string().contains("no reflect reading"),
+            "reflect.read takes the mode: {refused}"
+        );
+        let r = read_with(&decide, "place", "the bets a person accepts", None, None).unwrap();
+        assert_eq!(r["covers"], json!(["L4'"]));
+        let lenses = r["reading"]["lenses"].as_array().unwrap();
+        assert_eq!(lenses.len(), 1);
+        assert_eq!(
+            lenses[0]["holds"],
+            json!(["mef:sublens:L4'.1@1", "mef:sublens:L4'.3@1"])
+        );
+        let giving = r["giving"].as_str().unwrap();
+        assert!(
+            giving.starts_with("The thought read through L4′ for where it can stand in a whole"),
+            "{giving}"
+        );
+        assert!(giving.contains("holds — L4.1' Traces 0.70: evidence collection · L4.3' Patterns 0.60: structure recognition\n"), "{giving}");
+        assert!(
+            mode_of("reflect_place").is_none(),
+            "no tool of the body's own"
         );
     }
 

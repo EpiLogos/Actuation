@@ -74,7 +74,23 @@ const readingsSoFar = (ctx: any) => ctx.sessionManager.getBranch().filter((entry
   entry.type === "message" && entry.message?.role === "toolResult" && !entry.message.isError
   && entry.message.details?.night_reading?.schema === "actuation.night-reading/v1").length;
 
+// A body's composition places a thought through L4′ (reflect.read, mode
+// place: the T levels). The placement is offered on the session's event bus
+// with the levels it reads, so the composing extension needs neither this
+// binary nor the register; whichever loads second sets the offer going.
+const PLACE = "actuation.night/place";
+const PLACE_ASKED = "actuation.night/place-asked";
+
 export default function (pi: ExtensionAPI) {
+  if (supply.place?.mode === "place" && Array.isArray(supply.place.levels)) {
+    const offer = () => pi.events?.emit(PLACE, {
+      levels: supply.place.levels,
+      place: (subject: string, cwd: string, signal?: AbortSignal) =>
+        reflect({ operation: supply.operation, mode: supply.place.mode, subject }, cwd, signal),
+    });
+    pi.events?.on(PLACE_ASKED, offer);
+    offer();
+  }
   // Registration launches nothing; a reading runs only when the model calls.
   const covered = new Set<string>();
   let numbered = 0;
