@@ -196,17 +196,18 @@ function heldReadings(ctx: any): Held[] {
   for (const message of toolResults(ctx)) {
     const night = message.details?.night_reading;
     if (night?.schema !== NIGHT_READING) continue;
-    held.push({ number: message.details.reading_number ?? held.length + 1, id: message.toolCallId, subject: asked.get(message.toolCallId) ?? "", t: standing(night) });
+    held.push({ number: message.details.reading_number ?? held.length + 1, id: message.toolCallId, subject: asked.get(message.toolCallId) ?? "", t: standing(night) ?? new Map() });
   }
   return held;
 }
 
 // Where a read thought can stand in a whole: the L4′ sub-slots its reading
-// holds (L4.n′ is Tn), by label.
-function standing(night: any): Map<number, string> {
+// holds (L4.n′ is Tn), by label; none when the reading did not read L4′.
+function standing(night: any): Map<number, string> | undefined {
   const reading = night.reading ?? {};
   const profiles = [...(reading.lenses ?? []), ...(reading.positions ?? []).flatMap((p: any) => p.lenses ?? [])];
   const l4 = profiles.find((p: any) => p.lens === "L4'");
+  if (!l4) return undefined;
   const t = new Map<number, string>();
   for (const ref of l4?.holds ?? []) {
     const slot = l4.slots.find((s: any) => s.ref === ref);
@@ -308,7 +309,8 @@ function registerComposition(pi: ExtensionAPI, agent: Agent) {
     if (event.isError || night?.schema !== NIGHT_READING) return;
     const t = standing(night);
     const number = event.details.reading_number;
-    const line = t.size ? `In a whole, reading ${number} can stand at ${levels(t)}.` : `Reading ${number} holds no T level, so it cannot stand in a whole.`;
+    const line = !t ? `Reading ${number} did not read L4′, so it gives its thought no place in a whole.`
+      : t.size ? `In a whole, reading ${number} can stand at ${levels(t)}.` : `Reading ${number} holds no T level, so it cannot stand in a whole.`;
     return { content: [...event.content, { type: "text" as const, text: line }] };
   });
 }
