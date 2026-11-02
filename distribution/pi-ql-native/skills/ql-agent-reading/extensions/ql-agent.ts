@@ -278,6 +278,9 @@ function composer(agent: Agent, offer: Placement, body: string): Compose {
         if (whole) throw new Error(`there is already a whole named ${step.name}; recognise, reopen or read it, or name the new one otherwise`);
         const members = step.members ?? [];
         if (!members.length) throw new Error(`whole ${step.name} needs its members: each a thought in words or a reading by number, at a T level`);
+        // A whole holds one thought per T level: a level given twice is refused before anything is read.
+        const twice = [...new Set(members.map((m) => m.t).filter((t, i, all) => all.indexOf(t) !== i))];
+        if (twice.length) throw new Error(`whole ${step.name} gives ${twice.map((t) => `T${t}`).join(" and ")} to more than one thought: a whole holds one thought per T level, so keep the one that stands there`);
         // Every member is placed before any refusal, so one answer names every misplaced thought.
         const settled = await Promise.allSettled(members.map(async ({ reading, thought, t }, i) => {
           if ((thought === undefined) === (reading === undefined)) {
@@ -432,7 +435,7 @@ function instruments(entries: any[]): { refs: string[]; words: string } {
 function registerReturn(pi: ExtensionAPI, agent: Agent, compose: Compose, tLevels: string, body: string) {
   pi.registerTool({
     name: RETURN, label: "Return the turn",
-    description: `Return the turn: every turn closes here, once you have answered in words. Give what the person brought as you met it (T), what you return (T′), and your answer's parts in words, each at the T level it stands at — ${tLevels}. QL places each part through L4′, refusing a level it does not hold and saying where it can stand; composes the parts into your answer's whole (C′), recognised as its 0/1 when it is one of QL's wholes; and records the Logos Return with the readings and wholes this turn used (C). The turn ends when it is returned; say nothing more after it.`,
+    description: `Return the turn: every turn closes here, once you have answered in words. Give what the person brought as you met it (T), what you return (T′), and your answer's parts in words, each at the T level it stands at, one part per level — ${tLevels}. QL places each part through L4′, refusing a level it does not hold and saying where it can stand; composes the parts into your answer's whole (C′), recognised as its 0/1 when it is one of QL's wholes; and records the Logos Return with the readings and wholes this turn used (C). The turn ends when it is returned; say nothing more after it.`,
     promptGuidelines: ["logos_return closes every turn: answer in words first, then return the turn with logos_return. A turn that is not returned is not finished."],
     parameters: returnParameters,
     async execute(_id, args, signal, _update, ctx) {
