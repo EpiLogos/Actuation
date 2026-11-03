@@ -50,6 +50,10 @@ pub struct EpiProviderArgs {
     pub central_ctrl_bin: Option<PathBuf>,
     pub central_root: Option<PathBuf>,
     pub central_project: Option<String>,
+    /// The body's own native-action-authority grant: an owner-only token file.
+    /// Its location is given to the body, which reads it at the one Central call
+    /// that needs it; the material never enters the launch.
+    pub central_token_file: Option<PathBuf>,
     pub child_message_dir: Option<PathBuf>,
 }
 
@@ -81,6 +85,22 @@ fn file(path: PathBuf, label: &str) -> Result<PathBuf> {
         return Err(Error::new(format!("{label} must be a regular file")));
     }
     Ok(canonical)
+}
+
+fn owner_only(path: PathBuf, label: &str) -> Result<PathBuf> {
+    use std::os::unix::fs::PermissionsExt;
+    let path = file(path, label)?;
+    let metadata =
+        std::fs::metadata(&path).map_err(|_| Error::new(format!("{label} is unavailable")))?;
+    if metadata.permissions().mode() & 0o077 != 0 {
+        return Err(Error::new(format!(
+            "{label} is refused: others can read it (mode 0600 or tighter)"
+        )));
+    }
+    if metadata.len() > 4096 {
+        return Err(Error::new(format!("{label} holds no token")));
+    }
+    Ok(path)
 }
 
 fn directory(path: PathBuf, label: &str) -> Result<PathBuf> {
@@ -166,6 +186,10 @@ impl EpiProviderArgs {
                 .map(|path| directory(path, "Central root"))
                 .transpose()?,
             central_project: optional(args, "--central-project"),
+            central_token_file: optional(args, "--central-token-file")
+                .map(PathBuf::from)
+                .map(|path| owner_only(path, "Central token file"))
+                .transpose()?,
             child_message_dir: optional(args, "--child-message-dir")
                 .map(PathBuf::from)
                 .map(|path| directory(path, "child message directory"))
@@ -496,6 +520,9 @@ pub fn pi_command_spec(
     if let Some(project) = &args.central_project {
         env.push(("CENTRAL_PROJECT".into(), project.clone()));
     }
+    if let Some(token_file) = &args.central_token_file {
+        env.push(("CENTRAL_NATIVE_TOKEN_FILE".into(), text(token_file)));
+    }
     if let Some(agent_session) = &args.agent_session {
         env.push(("ACTUATION_RESEARCH_TRACE_REF".into(), agent_session.clone()));
         env.push(("ACTUATION_RESEARCH_LOCUS_REF".into(), agent_session.clone()));
@@ -511,6 +538,11 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
     if args.central_ctrl_bin.is_some() != args.central_root.is_some() {
         return Err(Error::new(
             "--central-ctrl-bin and --central-root must be supplied together or both omitted",
+        ));
+    }
+    if args.central_token_file.is_some() && args.central_ctrl_bin.is_none() {
+        return Err(Error::new(
+            "--central-token-file needs --central-ctrl-bin and --central-root: a grant acts in a Central",
         ));
     }
     if let Some(project) = &args.central_project {
@@ -531,6 +563,9 @@ pub fn run(args: EpiProviderArgs) -> Result<i32> {
     let ql_agent = verify_ql_agent(&args.installation, &args.ql_bin, &args.ql_revision)?;
     let (argv, env) = pi_command_spec(&args, &prompt, &ql_agent);
     let mut command = Command::new(&args.pi_bin);
+    // A human's native-action authority is not the body's: the body acts only
+    // under its own grant (--central-token-file).
+    command.env_remove("CENTRAL_NATIVE_TOKEN");
     command
         .args(&argv)
         .envs(env)
@@ -549,7 +584,7 @@ pub fn usage() -> &'static str {
 --extension <abs> --installation <abs> \
 --research-bin <abs> --faculty-config <abs> \
 [--ql-root <abs>] [--aikit-bin <abs>] [--agent-session <ref>] \
-[--central-ctrl-bin <abs> --central-root <abs> [--central-project <key>]] \
+[--central-ctrl-bin <abs> --central-root <abs> [--central-project <key>] [--central-token-file <abs>]] \
 [--child-message-dir <abs>] [--provider <native> --model <id>]"
 }
 
@@ -922,5 +957,70 @@ mod tests {
             .unwrap_err()
             .to_string()
             .contains("no pi of its own"));
+    }
+
+    #[test]
+    fn the_body_holds_its_own_grant_as_an_owner_only_token_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let installation = binding_dir(dir.path());
+        let token = dir.path().join("native-token-epii");
+        std::fs::write(&token, "the-bodys-own-token").unwrap();
+        std::fs::set_permissions(&token, std::fs::Permissions::from_mode(0o600)).unwrap();
+        let with_token = |central: bool| {
+            let mut args = launch_args(dir.path(), Path::new("/usr/bin/true"), &installation);
+            if central {
+                args.extend([
+                    "--central-ctrl-bin".into(),
+                    "/usr/bin/true".into(),
+                    "--central-root".into(),
+                    dir.path().display().to_string(),
+                ]);
+            }
+            args.extend(["--central-token-file".into(), token.display().to_string()]);
+            args
+        };
+        // The location travels to the body, never the material.
+        let args = EpiProviderArgs::parse(&with_token(true)).unwrap();
+        let (_, env) = pi_command_spec(&args, Path::new("/prompt.md"), Path::new("/tools"));
+        assert!(env.iter().any(|(k, v)| k == "CENTRAL_NATIVE_TOKEN_FILE"
+            && v == &token.canonicalize().unwrap().to_string_lossy()));
+        assert!(!env
+            .iter()
+            .any(|(k, v)| k == "CENTRAL_NATIVE_TOKEN" || v.contains("the-bodys-own-token")));
+        // A token file others can read is refused before pi starts.
+        std::fs::set_permissions(&token, std::fs::Permissions::from_mode(0o640)).unwrap();
+        let error = EpiProviderArgs::parse(&with_token(true))
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains("others can read"), "{error}");
+        // A grant without the Central it acts in is refused.
+        std::fs::set_permissions(&token, std::fs::Permissions::from_mode(0o600)).unwrap();
+        let error = run(EpiProviderArgs::parse(&with_token(false)).unwrap())
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains("--central-token-file needs"), "{error}");
+    }
+
+    #[test]
+    fn a_human_token_in_the_launchers_environment_never_reaches_pi() {
+        let dir = tempfile::tempdir().unwrap();
+        let installation = binding_dir(dir.path());
+        let seen = dir.path().join("SEEN");
+        let pi = dir.path().join("pi");
+        std::fs::write(
+            &pi,
+            format!(
+                "#!/bin/sh\nprintf '%s' \"${{CENTRAL_NATIVE_TOKEN-withheld}}\" > \"{}\"\n",
+                seen.display()
+            ),
+        )
+        .unwrap();
+        std::fs::set_permissions(&pi, std::fs::Permissions::from_mode(0o755)).unwrap();
+        std::env::set_var("CENTRAL_NATIVE_TOKEN", "a-humans-token");
+        let status =
+            run(EpiProviderArgs::parse(&launch_args(dir.path(), &pi, &installation)).unwrap());
+        std::env::remove_var("CENTRAL_NATIVE_TOKEN");
+        assert_eq!(status.unwrap(), 0);
+        assert_eq!(std::fs::read_to_string(&seen).unwrap(), "withheld");
     }
 }
