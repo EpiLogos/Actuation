@@ -10,7 +10,11 @@ use std::{fs, os::unix::fs::PermissionsExt, path::Path};
 /// A scripted agent body speaking agent-jsonl: it reads back what it was
 /// given and acts in its World, which is its cwd. At effort "high" it gets the
 /// answer at once; at any other level it needs a second turn. With
-/// ECHO_LEVEL=0 it is a body that ignores the level it was given. A Skillset
+/// ECHO_LEVEL=0 it is a body that ignores the level it was given. Asked to
+/// answer the task's success conditions once its run has ended, it answers
+/// from answer.txt with that file as its evidence; with ANSWER=bare it names
+/// no evidence, with ANSWER=test the task's test, and with ANSWER=meddle it
+/// changes its World while answering. A Skillset
 /// level is spoken as AIKit's take body speaks it (`<set>` or
 /// `<set>+<member>`): it reports what it applied, the set and the proposed
 /// revision in effect, and refuses in its own words a member with no proposed
@@ -51,6 +55,18 @@ while IFS= read -r line; do
           ;;
       esac
       printf '{"type":"response","id":"%s","command":"preflight","success":true,"data":{"ready":true,"provider":"fixture","model":"%s","agent":"agent:session/s-795","level":%s,"applied":%s,"now":{"takes":%s}}}\n' "$id" "$model" "$echoed" "$applied" "$takes"
+      ;;
+    *'"type":"turn"'*'Answer each success condition'*)
+      said=$(cat answer.txt 2>/dev/null)
+      case "$ANSWER" in
+        bare) body='{"conditions":[{"condition":1,"answer":"met"}]}' ;;
+        test) body='{"conditions":[{"condition":1,"answer":"met","evidence":["test"]}]}' ;;
+        meddle) printf '7\n' > answer.txt; body='{"conditions":[{"condition":1,"answer":"met","evidence":["answer.txt"]}]}' ;;
+        *) if [ "$said" = "42" ]; then a=met; else a='not met'; fi
+           body="{\"conditions\":[{\"condition\":1,\"answer\":\"$a\",\"evidence\":[\"answer.txt\"],\"why\":\"answer.txt says $said\"}]}" ;;
+      esac
+      out=$(printf '%s' "$body" | sed 's/"/\\"/g')
+      printf '{"type":"response","id":"%s","command":"turn","success":true,"data":{"status":"completed","output":"%s","usage":{"total_tokens":1}}}\n' "$id" "$out"
       ;;
     *'"type":"turn"'*)
       turns=$((turns+1))
@@ -306,6 +322,71 @@ fn stop_when_decides_where_each_take_ends() {
     assert_eq!(time["model_calls"], 1);
     assert_eq!(time["stop"]["met"], true);
     assert_eq!(time["stop"]["reason"], "its time cap of 1 ms");
+}
+
+/// Each take answers each of the task's success conditions as met, not met
+/// or open, with its evidence (O-I manual §19.7: "each take answers each one
+/// as Met, Not met or Open, with its evidence"; §19.1: "A condition answered
+/// met or not met always carries its evidence. Open is an honest answer").
+/// The take is asked once its run has ended, and Actuation holds each answer
+/// to the evidence it names: a file the take kept, or the task's own test.
+#[test]
+fn each_take_answers_each_success_condition_and_is_held_to_its_evidence() {
+    use actuation_research::evidence::stable_digest;
+    let bin = tempfile::tempdir().unwrap();
+    let agent = script(bin.path(), "agent.sh", AGENT);
+    let run = |answer: &str, level: &str, stop: &str| {
+        let root = tempfile::tempdir().unwrap();
+        let manifest = invoke(&comparison(
+            root.path(),
+            &format!("takes:s-795:answers-{answer}-{level}"),
+            agent_body(&agent, json!({"PATH": "/usr/bin:/bin", "ANSWER": answer})),
+            json!({"variable": "effort", "levels": [level], "stop": {"when": stop}}),
+        ))
+        .expect("the comparison runs");
+        takes(&manifest)[0].clone()
+    };
+    // Met, with the file that shows it, as the take kept it.
+    let met = run("file", "high", "pass");
+    assert_eq!(
+        met["answers"],
+        json!([{"condition": "answer.txt says 42", "answer": "met",
+            "evidence": [{"file": "answer.txt", "digest": stable_digest(&json!("42\n"))}],
+            "why": "answer.txt says 42"}]),
+        "{}",
+        met["answers"]
+    );
+    // The take's own record carries the same answers, and the body was asked
+    // after its run: the turn it answered in is not one of the run's.
+    assert_eq!(met["record"]["result"]["answers"], met["answers"]);
+    assert_eq!(met["model_calls"], 1);
+    // Not met, with its evidence.
+    let short = run("file", "low", "done");
+    assert_eq!(short["answers"][0]["answer"], "not met");
+    assert_eq!(short["answers"][0]["evidence"][0]["file"], "answer.txt");
+    // An answer that names no evidence is held open, and says why.
+    let bare = run("bare", "high", "pass");
+    assert_eq!(bare["answers"][0]["answer"], "open");
+    assert_eq!(bare["answers"][0]["evidence"], json!([]));
+    let why = bare["answers"][0]["why"].as_str().unwrap();
+    assert!(why.contains("named no evidence"), "{why}");
+    // The task's test as evidence: the condition takes the test's answer.
+    let tested = run("test", "low", "done");
+    assert_eq!(tested["answers"][0]["answer"], "not met");
+    assert_eq!(
+        tested["answers"][0]["evidence"][0]["test"]["answer"],
+        "not met"
+    );
+    let why = tested["answers"][0]["why"].as_str().unwrap();
+    assert!(why.contains("the task's own test"), "{why}");
+    // A take that changes its World while it answers is held open, and its
+    // run's outcome stands as it was before it was asked.
+    let meddled = run("meddle", "high", "pass");
+    assert_eq!(meddled["answers"][0]["answer"], "open");
+    let why = meddled["answers"][0]["why"].as_str().unwrap();
+    assert!(why.contains("changed its World while answering"), "{why}");
+    assert_eq!(meddled["final_workspace"]["answer.txt"], "42\n");
+    assert_eq!(meddled["verification"]["objective_checks_pass"], true);
 }
 
 #[test]
@@ -654,6 +735,12 @@ fn test_pass_ends_a_model_bodys_run_before_its_next_turn() {
     assert_eq!(stopped["stop"]["at_turn"], 2);
     assert_eq!(stopped["verification"]["objective_checks_pass"], true);
     assert_eq!(stopped["verification"]["protocol"], "provided-task-test");
+    // A model body is not asked the task's conditions: each stands open, and
+    // says why.
+    assert_eq!(stopped["answers"][0]["condition"], "answer.txt says 42");
+    assert_eq!(stopped["answers"][0]["answer"], "open");
+    let why = stopped["answers"][0]["why"].as_str().unwrap();
+    assert!(why.contains("only an agent body answers"), "{why}");
 }
 
 #[test]

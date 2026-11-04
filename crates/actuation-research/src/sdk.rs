@@ -380,6 +380,27 @@ impl ModelBody for NativeSdkBody {
         }
         result
     }
+    /// An acting agent answers the task's success conditions in one more turn
+    /// of its own, after its run (iteration 0: no turn of the run).
+    fn answer(&mut self, prompt: &str) -> Option<Result<Value>> {
+        if self.protocol != AGENT_PROTOCOL
+            || !self.acting
+            || self.client.is_none()
+            || self.finished.is_some()
+        {
+            return None;
+        }
+        Some(
+            self.exchange(json!({"type":"turn","turn":{"iteration":0,"prompt":prompt}}))
+                .and_then(|data| match data["status"].as_str() {
+                    Some("completed") => Ok(json!({"output":data["output"],"usage":data["usage"]})),
+                    other => Err(Error::new(format!(
+                        "its answering turn ended {}, not completed",
+                        other.unwrap_or("unknown")
+                    ))),
+                }),
+        )
+    }
     fn finish(&mut self, inspection: &Value) -> Value {
         if let Some(done) = &self.finished {
             return done.clone();

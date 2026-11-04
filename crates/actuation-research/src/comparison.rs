@@ -568,7 +568,7 @@ where
                 "trace_ref":trial_ref,"status":r["status"],"error":r["error"],
                 "prompt":candidate["prompt"],"success_conditions":candidate["successConditions"],
                 "starting_workspace":r["workspace"]["before"],"final_workspace":r["workspace"]["after"],
-                "verification":r["verification"],"outcome":r["execution"],
+                "verification":r["verification"],"outcome":r["execution"],"answers":r["answers"],
                 "model":model,"fixture_provider":common["body"]["fixture_provider"],
                 "provider_mode":if common["body"]["fixture_provider"]==true{"fixture"}else{"supplied-body"},
                 "host":{"id":source["host_id"],"revision":source["host_revision"]},
