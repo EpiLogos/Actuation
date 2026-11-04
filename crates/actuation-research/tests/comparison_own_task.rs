@@ -11,8 +11,11 @@ use std::{fs, os::unix::fs::PermissionsExt, path::Path};
 /// given and acts in its World, which is its cwd. At effort "high" it gets the
 /// answer at once; at any other level it needs a second turn. With
 /// ECHO_LEVEL=0 it is a body that ignores the level it was given. A Skillset
-/// level is reported as what it applied, the set and the revision in effect.
-/// Its NOW is reported as the takes it was told it runs beside.
+/// level is spoken as AIKit's take body speaks it (`<set>` or
+/// `<set>+<member>`): it reports what it applied, the set and the proposed
+/// revision in effect, and refuses in its own words a member with no proposed
+/// revision standing. Its NOW is reported as the takes it was told it runs
+/// beside.
 const AGENT: &str = r#"#!/bin/sh
 n=0
 turns=0
@@ -36,9 +39,15 @@ while IFS= read -r line; do
         *'"skillset"'*)
           value=$(printf '%s' "$level" | sed -n 's/.*"value":"\([^"]*\)".*/\1/p')
           set=${value%%+*}
-          revision=null
-          [ "$set" != "$value" ] && revision="\"${value#*+}\""
-          applied="{\"skillset\":{\"set\":\"$set\",\"revision\":$revision}}"
+          applied="{\"model\":\"$model\",\"set\":\"$set\",\"harness\":\"fixture\",\"root\":\".pi/skills\"}"
+          if [ "$set" != "$value" ]; then
+            member=${value#*+}
+            if [ "$member" != "skill/practice/alpha" ]; then
+              printf '{"type":"response","id":"%s","command":"preflight","success":false,"data":{"error":"A Skillset take carries a member'"'"'s proposed revision, and no proposed revision of %s stands"}}\n' "$id" "$member"
+              continue
+            fi
+            applied="{\"model\":\"$model\",\"set\":\"$set\",\"harness\":\"fixture\",\"root\":\".pi/skills\",\"proposed\":{\"member\":\"$member\",\"revision\":\"r-proposed\",\"in_use\":\"r-in-use\"}}"
+          fi
           ;;
       esac
       printf '{"type":"response","id":"%s","command":"preflight","success":true,"data":{"ready":true,"provider":"fixture","model":"%s","agent":"agent:session/s-795","level":%s,"applied":%s,"now":{"takes":%s}}}\n' "$id" "$model" "$echoed" "$applied" "$takes"
@@ -367,13 +376,22 @@ fn each_take_is_told_the_takes_it_runs_beside_and_its_record_carries_the_now_its
     assert_eq!(held["valid"], true, "{held}");
 }
 
+/// A Skillset level as AIKit's take body speaks it (O-I manual §19.1: "a level
+/// is a set of skills, or that set with one proposed revision of a skill in
+/// it"; §19.7 Refining a skill): `docs`, and `docs+<member>` with the member's
+/// proposed revision in effect for that take only. The body applies it and
+/// reads it back; each take's return shows the revision it worked under.
 #[test]
 fn a_skillset_level_is_the_bodys_to_apply_and_each_take_shows_the_revision_it_worked_under() {
     let bin = tempfile::tempdir().unwrap();
     let agent = script(bin.path(), "agent.sh", AGENT);
     let root = tempfile::tempdir().unwrap();
-    // A set of skills, and that set with one proposed revision of a skill in it.
-    let levels = ["set:careful", "set:careful+revision:clarify-1"];
+    // REPLACED (O-I 795, round 12): the levels were "set:careful" and
+    // "set:careful+revision:clarify-1", and applied was {"skillset": {set,
+    // revision}}: a grammar no body speaks. They are now AIKit's own: the
+    // Refining page's Test writes `<set>+<member>` beside `<set>`, and AIKit's
+    // take body answers applied as {model, set, harness, root, proposed?}.
+    let levels = ["docs+skill/practice/alpha", "docs"];
     let manifest = invoke(&comparison(
         root.path(),
         "takes:s-795:skillset",
@@ -384,12 +402,12 @@ fn a_skillset_level_is_the_bodys_to_apply_and_each_take_shows_the_revision_it_wo
     assert_eq!(manifest["variable"], "skillset");
     let records = takes(&manifest);
     assert_eq!(records.len(), 2);
-    for (take, (level, revision)) in records.iter().zip([
-        ("set:careful", Value::Null),
+    for (take, (level, proposed)) in records.iter().zip([
         (
-            "set:careful+revision:clarify-1",
-            json!("revision:clarify-1"),
+            "docs+skill/practice/alpha",
+            json!({"member": "skill/practice/alpha", "revision": "r-proposed", "in_use": "r-in-use"}),
         ),
+        ("docs", Value::Null),
     ]) {
         assert_eq!(take["status"], "completed", "{level}: {}", take["error"]);
         assert_eq!(take["variable"], "skillset");
@@ -399,11 +417,11 @@ fn a_skillset_level_is_the_bodys_to_apply_and_each_take_shows_the_revision_it_wo
         assert_eq!(basis["level"], given, "carried to the body");
         assert_eq!(basis["preflight"]["level"], given, "read back from it");
         // The take's own return says which revision it worked under, as the body applied it.
-        assert_eq!(
-            take["applied"],
-            json!({"skillset": {"set": "set:careful", "revision": revision}}),
-            "{level}"
-        );
+        assert_eq!(take["applied"]["set"], "docs", "{level}");
+        assert_eq!(take["applied"]["root"], ".pi/skills", "{level}");
+        assert_eq!(take["applied"]["proposed"], proposed, "{level}");
+        // Each take is told the take it runs beside, so the proposal keeps its test beside its family.
+        assert_eq!(take["now"]["takes"].as_array().map(Vec::len), Some(2), "{take}");
         let receipt: Value = serde_json::from_slice(
             &fs::read(root.path().join(take["receipt_path"].as_str().unwrap())).unwrap(),
         )
@@ -414,13 +432,39 @@ fn a_skillset_level_is_the_bodys_to_apply_and_each_take_shows_the_revision_it_wo
     let held = &manifest["held_constants"];
     assert_eq!(held["valid"], true, "{held}");
 
+    // A member with no proposed revision standing (discarded since the list was
+    // read, say) is refused by the body in its own words, and the take says them.
+    let root = tempfile::tempdir().unwrap();
+    let refused = invoke(&comparison(
+        root.path(),
+        "takes:s-795:skillset-refused",
+        agent_body(&agent, path_only()),
+        json!({"variable": "skillset", "levels": ["docs+skill/practice/beta", "docs"], "stop": {"when": "done"}}),
+    ))
+    .unwrap();
+    let take = &takes(&refused)[0];
+    assert_eq!(take["status"], "failed");
+    let said = take["record"]["result"]["execution"]["report"]["error"]
+        .as_str()
+        .unwrap_or_default();
+    assert!(
+        said.contains("no proposed revision of skill/practice/beta stands"),
+        "{take}"
+    );
+    assert_eq!(take["final_workspace"]["answer.txt"], "0\n");
+    assert_eq!(
+        takes(&refused)[1]["status"],
+        "completed",
+        "the take beside it still runs"
+    );
+
     // A body that does not read its skillset back makes no take of it.
     let root = tempfile::tempdir().unwrap();
     let deaf = invoke(&comparison(
         root.path(),
         "takes:s-795:skillset-deaf",
         agent_body(&agent, json!({"PATH": "/usr/bin:/bin", "ECHO_LEVEL": "0"})),
-        json!({"variable": "skillset", "levels": ["set:careful"], "stop": {"when": "done"}}),
+        json!({"variable": "skillset", "levels": ["docs"], "stop": {"when": "done"}}),
     ))
     .unwrap();
     let take = &takes(&deaf)[0];
