@@ -112,13 +112,15 @@ impl<T: ModelBody + ?Sized> ModelBody for Box<T> {
 /// The Launch panel, Repeat's Variable). `condition` is Actuation's own: how
 /// the run's loop recurs. Every other variable is a setting of the supplied
 /// body, carried to it as its configuration's `level` and confirmed by it.
+/// Tool calls is Scope's answer to the harness's request to use a tool; it
+/// took the place of the Agent's retired Autonomy (§19.1 Envelopes, §19.12).
 pub const VARIABLES: &[&str] = &[
     "condition",
     "model",
     "effort",
     "skillset",
     "budget",
-    "autonomy",
+    "tool_calls",
 ];
 
 /// The condition that ends each run (O-I manual §19.1, Repeat's Stop when).
