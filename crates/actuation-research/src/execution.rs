@@ -95,6 +95,13 @@ pub trait ModelBody: Send {
     fn finish(&mut self, _inspection: &Value) -> Value {
         json!({"status":"not-applicable","session_evidence":null})
     }
+    /// Ask the body, once its run has ended, to answer the task's success
+    /// conditions (O-I manual §19.7: "each take answers each one as Met, Not
+    /// met or Open, with its evidence"): its words, `{output, usage}`. None
+    /// where the body is not one that is asked: only an acting agent is.
+    fn answer(&mut self, _prompt: &str) -> Option<Result<Value>> {
+        None
+    }
 }
 impl<T: ModelBody + ?Sized> ModelBody for Box<T> {
     fn complete(&mut self, request: &Value) -> Result<Value> {
@@ -105,6 +112,9 @@ impl<T: ModelBody + ?Sized> ModelBody for Box<T> {
     }
     fn finish(&mut self, inspection: &Value) -> Value {
         (**self).finish(inspection)
+    }
+    fn answer(&mut self, prompt: &str) -> Option<Result<Value>> {
+        (**self).answer(prompt)
     }
 }
 
@@ -339,6 +349,9 @@ impl<B: ModelBody> ModelBody for RepairingBody<B> {
     }
     fn finish(&mut self, inspection: &Value) -> Value {
         self.inner.finish(inspection)
+    }
+    fn answer(&mut self, prompt: &str) -> Option<Result<Value>> {
+        self.inner.answer(prompt)
     }
 }
 
@@ -837,6 +850,132 @@ pub fn run_task<B: ModelBody>(
     )
 }
 
+/// The words a take is asked in once its run has ended, to answer the task's
+/// success conditions (O-I manual §19.7: "each take answers each one as Met,
+/// Not met or Open, with its evidence"; §19.1: "A condition answered met or
+/// not met always carries its evidence. Open is an honest answer").
+pub const ANSWERING: &str = "The task has ended. Change nothing now: answer only. Answer each success condition below as met, not met, or open when you cannot tell. Met or not met names its evidence: the relative paths of files in your working directory that show it, or \"test\" for the task's own test. Return exactly one JSON object and nothing else: {\"conditions\":[{\"condition\":1,\"answer\":\"met\",\"evidence\":[\"path\"],\"why\":\"one line\"}]}";
+const NOT_ASKED: &str =
+    "Open: this body is not asked the task's success conditions; only an agent body answers them";
+const ANSWERS: &[&str] = &["met", "not met", "open"];
+
+fn answering_prompt(conditions: &[String]) -> String {
+    let mut text = format!("{ANSWERING}\n\nSuccess conditions:");
+    for (n, condition) in conditions.iter().enumerate() {
+        text.push_str(&format!("\n{}. {condition}", n + 1));
+    }
+    text
+}
+
+fn all_open(conditions: &[String], why: &str) -> Value {
+    json!(conditions
+        .iter()
+        .map(|c| json!({"condition":c,"answer":"open","evidence":[],"why":why}))
+        .collect::<Vec<_>>())
+}
+
+/// What a take answered to each condition, held to its evidence: a file the
+/// run left in its World (by its digest there), or the task's own test, whose
+/// answer the condition then takes. Met or not met with no evidence kept is
+/// held open; so is every answer of a take that changed its World while it
+/// answered.
+fn answers_of(
+    conditions: &[String],
+    said: Option<&Result<Value>>,
+    after: &Value,
+    verification: &Value,
+    moved: bool,
+) -> Value {
+    let said = match said {
+        None => return all_open(conditions, NOT_ASKED),
+        Some(Err(e)) => {
+            return all_open(conditions, &format!("Open: the take did not answer: {e}"))
+        }
+        Some(Ok(said)) => said,
+    };
+    if moved {
+        return all_open(conditions, "Open: the take changed its World while answering, so its answers are not read against the World its run left");
+    }
+    let output = said["output"].as_str().unwrap_or_default();
+    let object = output
+        .find('{')
+        .zip(output.rfind('}'))
+        .filter(|(start, end)| end > start)
+        .and_then(|(start, end)| serde_json::from_str::<Value>(&output[start..=end]).ok());
+    let Some(answered) = object.as_ref().and_then(|o| o["conditions"].as_array()) else {
+        return all_open(
+            conditions,
+            "Open: the take did not answer in the form it was asked",
+        );
+    };
+    let tested = verification["objective_check"] == "test";
+    let mut out = Vec::with_capacity(conditions.len());
+    for (n, condition) in conditions.iter().enumerate() {
+        let Some(given) = answered
+            .iter()
+            .find(|a| a["condition"].as_u64() == Some(n as u64 + 1))
+        else {
+            out.push(json!({"condition":condition,"answer":"open","evidence":[],
+                "why":"Open: the take did not answer this condition"}));
+            continue;
+        };
+        let words = given["why"]
+            .as_str()
+            .filter(|w| !w.trim().is_empty())
+            .map(|w| w.chars().take(1024).collect::<String>());
+        let Some(answer) = given["answer"].as_str().filter(|a| ANSWERS.contains(a)) else {
+            out.push(json!({"condition":condition,"answer":"open","evidence":[],
+                "why":"Open: the take answered it with neither met, not met nor open"}));
+            continue;
+        };
+        let mut evidence = Vec::new();
+        let mut test_answer = None;
+        for item in given["evidence"].as_array().into_iter().flatten().take(16) {
+            let Some(item) = item.as_str() else { continue };
+            if item == "test" {
+                if tested {
+                    let answer = verification["answer"].clone();
+                    test_answer = answer.as_str().map(str::to_owned);
+                    evidence.push(json!({"test":{"answer":answer,
+                        "code":verification["observations"]["test"]["code"]}}));
+                }
+            } else if let Some(text) = after.get(item).filter(|t| t.is_string()) {
+                evidence.push(json!({"file":item,"digest":crate::evidence::stable_digest(text)}));
+            }
+        }
+        let (answer, why) = if answer == "open" {
+            (
+                "open".to_owned(),
+                words.or(Some("Open: the take could not tell".into())),
+            )
+        } else if let Some(test) = test_answer {
+            let why = if test != answer {
+                Some(format!(
+                    "Held to the task's own test, which answered {test}"
+                ))
+            } else {
+                words.or(Some(format!("The task's own test answered {test}")))
+            };
+            (test, why)
+        } else if evidence.is_empty() {
+            (
+                "open".to_owned(),
+                Some(format!(
+                    "Open: the take answered {answer} but named no evidence it kept"
+                )),
+            )
+        } else {
+            (answer.to_owned(), words)
+        };
+        let mut reading = json!({"condition":condition,"answer":answer,"evidence":evidence});
+        if let Some(why) = why {
+            reading["why"] = json!(why);
+        }
+        out.push(reading);
+    }
+    json!(out)
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn run_task_with_control<B: ModelBody>(
     task: &tasks::Task,
@@ -995,8 +1134,35 @@ pub fn run_task_with_control<B: ModelBody>(
             json!({"status":"failed","error":e.to_string(),"objective_checks_pass":false}),
         ),
     };
+    // Once its run has ended and its outcome is read, the take answers the
+    // task's success conditions; its run's outcome stands as it was before.
+    let conditions: Vec<String> = candidate["successConditions"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .map(str::to_owned)
+        .collect();
+    let said = if conditions.is_empty() || after.is_null() {
+        None
+    } else {
+        host.body.answer(&answering_prompt(&conditions))
+    };
+    let moved =
+        matches!(said, Some(Ok(_))) && host.world.snapshot().map_or(true, |now| now != after);
+    let answers = if conditions.is_empty() {
+        json!([])
+    } else if after.is_null() {
+        all_open(
+            &conditions,
+            "Open: the take's World could not be read, so it was not asked",
+        )
+    } else {
+        answers_of(&conditions, said.as_ref(), &after, &verification, moved)
+    };
     let mut inspection = crate::inspection::project(&checked.events, trace.as_ref(), mode.name());
     inspection["verification"] = verification.clone();
+    inspection["answers"] = answers.clone();
     inspection["execution_status"] = execution["report"]["status"].clone();
     inspection["after_state_digest"] = if after.is_null() {
         Value::Null
@@ -1030,7 +1196,10 @@ pub fn run_task_with_control<B: ModelBody>(
         "capability_calls":host.capability_calls,"elapsed_ms":started.elapsed().as_millis(),
         "budget":{"limits":limits,"max_calls":host.max_calls},
         "evidence_standing":"D-unless-separately-exercised-and-attested","provider_evidence":"not-assessed",
-        "human_acceptance":false,"factory_ancestry":"not-supplied"});
+        "human_acceptance":false,"factory_ancestry":"not-supplied","answers":answers});
+    if let (Some(m), Some(Ok(said))) = (record.as_object_mut(), said) {
+        m.insert("answering".into(), said);
+    }
     if let (Some(m), Some(d)) = (record.as_object_mut(), disclosure) {
         m.insert("control".into(), d);
     }
