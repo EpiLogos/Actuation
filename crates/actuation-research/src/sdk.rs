@@ -206,7 +206,15 @@ impl NativeSdkBody {
                 .finish_after_error(Error::new("SDK reply requires exact operation correlation")));
         }
         if reply["success"] != true {
-            return Err(Error::new("SDK refused operation; response retained"));
+            // A body that refuses says why (a Skillset level whose proposed
+            // revision no longer stands, say): the run carries its words.
+            return Err(Error::new(match reply["data"]["error"].as_str() {
+                Some(words) => format!(
+                    "SDK refused {}: {words}; response retained",
+                    expected.as_str().unwrap_or("operation")
+                ),
+                None => "SDK refused operation; response retained".to_owned(),
+            }));
         }
         if !reply["data"].is_object() {
             return Err(Error::new("SDK data requires an object"));
