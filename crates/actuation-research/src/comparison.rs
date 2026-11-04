@@ -498,6 +498,10 @@ where
                 .collect::<Vec<_>>()
         })
         .unwrap_or_default();
+    // The Repeat's family: every take's ref, in the order they run. An agent body is
+    // told it, so the NOW it keeps for its take names the takes it was run beside
+    // (O-I manual §19.1: "so a take's close is read against its siblings' closes").
+    let family: Vec<String> = (0..count).map(|n| format!("{trace}:trial:{n}")).collect();
     let mut records = vec![];
     for repetition in 0..repetitions {
         for level in &plan.levels {
@@ -519,6 +523,11 @@ where
                 if plan.variable == "model" {
                     configuration["model"] = json!(level);
                 }
+            }
+            if input["body"]["protocol"] == json!(crate::sdk::AGENT_PROTOCOL)
+                && input["body"]["configuration"].is_object()
+            {
+                input["body"]["configuration"]["takes"] = json!(family);
             }
             if !stop_value.is_null() {
                 input["stop"] = stop_value.clone();
@@ -583,6 +592,14 @@ where
             take.insert("variable".into(), json!(plan.variable));
             take.insert("level".into(), json!(level));
             take.insert("agent".into(), configuration["agent"].clone());
+            // What the body applied for its level, as it read it back at preflight: a
+            // Skillset take shows the set and the revision it worked under.
+            take.insert(
+                "applied".into(),
+                r["model_body"]["preflight"]["applied"].clone(),
+            );
+            // The NOW the body keeps for this take, as it reported it at preflight.
+            take.insert("now".into(), r["model_body"]["preflight"]["now"].clone());
             take.insert("stop".into(), r["stop"].clone());
             take.insert(
                 "body_configuration_digest".into(),
@@ -618,6 +635,11 @@ impl Plan {
     fn read(request: &Value, common: &Value) -> Result<Self> {
         let variable = match request.get("variable") {
             None | Some(Value::Null) => "condition",
+            Some(v) if v.as_str() == Some("autonomy") => {
+                return Err(Error::new(
+                    "a comparison no longer varies autonomy. Autonomy is retired: Tool calls (tool_calls) took its place (O-I manual §19.1)",
+                ))
+            }
             Some(v) => v
                 .as_str()
                 .and_then(|v| VARIABLES.iter().copied().find(|known| *known == v))

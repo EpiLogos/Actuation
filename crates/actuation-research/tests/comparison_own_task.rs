@@ -10,12 +10,15 @@ use std::{fs, os::unix::fs::PermissionsExt, path::Path};
 /// A scripted agent body speaking agent-jsonl: it reads back what it was
 /// given and acts in its World, which is its cwd. At effort "high" it gets the
 /// answer at once; at any other level it needs a second turn. With
-/// ECHO_LEVEL=0 it is a body that ignores the level it was given.
+/// ECHO_LEVEL=0 it is a body that ignores the level it was given. A Skillset
+/// level is reported as what it applied, the set and the revision in effect.
+/// Its NOW is reported as the takes it was told it runs beside.
 const AGENT: &str = r#"#!/bin/sh
 n=0
 turns=0
 level=null
 model=
+takes=null
 while IFS= read -r line; do
   n=$((n+1))
   id="actuation-prime-$n"
@@ -24,9 +27,21 @@ while IFS= read -r line; do
       got=$(printf '%s' "$line" | sed -n 's/.*"level":\({[^}]*}\).*/\1/p')
       [ -n "$got" ] && level=$got
       model=$(printf '%s' "$line" | sed -n 's/.*"model":"\([^"]*\)".*/\1/p')
+      told=$(printf '%s' "$line" | sed -n 's/.*"takes":\(\[[^]]*\]\).*/\1/p')
+      [ -n "$told" ] && takes=$told
       echoed=$level
       [ "$ECHO_LEVEL" = "0" ] && echoed=null
-      printf '{"type":"response","id":"%s","command":"preflight","success":true,"data":{"ready":true,"provider":"fixture","model":"%s","agent":"agent:session/s-795","level":%s}}\n' "$id" "$model" "$echoed"
+      applied='{}'
+      case "$level" in
+        *'"skillset"'*)
+          value=$(printf '%s' "$level" | sed -n 's/.*"value":"\([^"]*\)".*/\1/p')
+          set=${value%%+*}
+          revision=null
+          [ "$set" != "$value" ] && revision="\"${value#*+}\""
+          applied="{\"skillset\":{\"set\":\"$set\",\"revision\":$revision}}"
+          ;;
+      esac
+      printf '{"type":"response","id":"%s","command":"preflight","success":true,"data":{"ready":true,"provider":"fixture","model":"%s","agent":"agent:session/s-795","level":%s,"applied":%s,"now":{"takes":%s}}}\n' "$id" "$model" "$echoed" "$applied" "$takes"
       ;;
     *'"type":"turn"'*)
       turns=$((turns+1))
@@ -314,6 +329,113 @@ fn a_model_variable_reaches_the_body_and_only_the_model_varies() {
 }
 
 #[test]
+fn each_take_is_told_the_takes_it_runs_beside_and_its_record_carries_the_now_its_body_keeps() {
+    // O-I manual §19.1: "Each take keeps its own NOW, and that NOW names the takes it was run
+    // beside, so a take's close is read against its siblings' closes." The comparison names the
+    // takes; the body keeps the NOW; the take's record carries what the body reported of it.
+    let bin = tempfile::tempdir().unwrap();
+    let agent = script(bin.path(), "agent.sh", AGENT);
+    let root = tempfile::tempdir().unwrap();
+    let manifest = invoke(&comparison(
+        root.path(),
+        "takes:s-795:family",
+        agent_body(&agent, path_only()),
+        json!({"variable": "effort", "levels": ["low", "high"], "repetitions": 2, "stop": {"when": "done"}}),
+    ))
+    .expect("the comparison runs");
+    let records = takes(&manifest);
+    assert_eq!(records.len(), 4);
+    let family: Vec<Value> = (0..4)
+        .map(|n| json!(format!("takes:s-795:family:trial:{n}")))
+        .collect();
+    for take in records {
+        assert_eq!(take["status"], "completed", "{}", take["error"]);
+        assert_eq!(
+            take["now"],
+            json!({"takes": family}),
+            "every take is told the same Repeat family, itself among it"
+        );
+        assert!(family.contains(&take["trace_ref"]));
+        let receipt: Value = serde_json::from_slice(
+            &fs::read(root.path().join(take["receipt_path"].as_str().unwrap())).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(receipt["now"], take["now"], "the receipt keeps it");
+    }
+    // The family is held, like the rest of the body's configuration: only the effort varied.
+    let held = &manifest["held_constants"];
+    assert_eq!(held["valid"], true, "{held}");
+}
+
+#[test]
+fn a_skillset_level_is_the_bodys_to_apply_and_each_take_shows_the_revision_it_worked_under() {
+    let bin = tempfile::tempdir().unwrap();
+    let agent = script(bin.path(), "agent.sh", AGENT);
+    let root = tempfile::tempdir().unwrap();
+    // A set of skills, and that set with one proposed revision of a skill in it.
+    let levels = ["set:careful", "set:careful+revision:clarify-1"];
+    let manifest = invoke(&comparison(
+        root.path(),
+        "takes:s-795:skillset",
+        agent_body(&agent, path_only()),
+        json!({"variable": "skillset", "levels": levels, "stop": {"when": "done"}}),
+    ))
+    .expect("the comparison runs");
+    assert_eq!(manifest["variable"], "skillset");
+    let records = takes(&manifest);
+    assert_eq!(records.len(), 2);
+    for (take, (level, revision)) in records.iter().zip([
+        ("set:careful", Value::Null),
+        (
+            "set:careful+revision:clarify-1",
+            json!("revision:clarify-1"),
+        ),
+    ]) {
+        assert_eq!(take["status"], "completed", "{level}: {}", take["error"]);
+        assert_eq!(take["variable"], "skillset");
+        assert_eq!(take["level"], level);
+        let given = json!({"variable": "skillset", "value": level});
+        let basis = &take["record"]["result"]["model_body"];
+        assert_eq!(basis["level"], given, "carried to the body");
+        assert_eq!(basis["preflight"]["level"], given, "read back from it");
+        // The take's own return says which revision it worked under, as the body applied it.
+        assert_eq!(
+            take["applied"],
+            json!({"skillset": {"set": "set:careful", "revision": revision}}),
+            "{level}"
+        );
+        let receipt: Value = serde_json::from_slice(
+            &fs::read(root.path().join(take["receipt_path"].as_str().unwrap())).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(receipt["applied"], take["applied"]);
+    }
+    // Only the skillset varied: the takes held everything else.
+    let held = &manifest["held_constants"];
+    assert_eq!(held["valid"], true, "{held}");
+
+    // A body that does not read its skillset back makes no take of it.
+    let root = tempfile::tempdir().unwrap();
+    let deaf = invoke(&comparison(
+        root.path(),
+        "takes:s-795:skillset-deaf",
+        agent_body(&agent, json!({"PATH": "/usr/bin:/bin", "ECHO_LEVEL": "0"})),
+        json!({"variable": "skillset", "levels": ["set:careful"], "stop": {"when": "done"}}),
+    ))
+    .unwrap();
+    let take = &takes(&deaf)[0];
+    assert_eq!(take["status"], "failed");
+    assert!(
+        take["record"]["result"]["execution"]["report"]["error"]
+            .as_str()
+            .unwrap_or_default()
+            .contains("did not read back the level"),
+        "{take}"
+    );
+    assert_eq!(take["final_workspace"]["answer.txt"], "0\n");
+}
+
+#[test]
 fn a_body_that_does_not_read_back_its_level_makes_no_take_of_it() {
     let bin = tempfile::tempdir().unwrap();
     let agent = script(bin.path(), "agent.sh", AGENT);
@@ -322,7 +444,7 @@ fn a_body_that_does_not_read_back_its_level_makes_no_take_of_it() {
         root.path(),
         "takes:s-795:deaf",
         agent_body(&agent, json!({"PATH": "/usr/bin:/bin", "ECHO_LEVEL": "0"})),
-        json!({"variable": "autonomy", "levels": ["review"], "stop": {"when": "done"}}),
+        json!({"variable": "tool_calls", "levels": ["session"], "stop": {"when": "done"}}),
     ))
     .unwrap();
     let take = &takes(&manifest)[0];
@@ -351,6 +473,12 @@ fn plans_a_comparison_cannot_run_are_refused_before_any_take() {
             agent_body(&agent, path_only()),
             json!({"variable": "temperature", "levels": ["0.1"]}),
             "comparison variable is one of",
+        ),
+        (
+            "the retired autonomy",
+            agent_body(&agent, path_only()),
+            json!({"variable": "autonomy", "levels": ["auto"]}),
+            "Autonomy is retired: Tool calls (tool_calls) took its place",
         ),
         (
             "no levels",
@@ -495,7 +623,7 @@ fn the_research_application_discloses_what_a_comparison_can_vary() {
             "effort",
             "skillset",
             "budget",
-            "autonomy"
+            "tool_calls"
         ])
     );
     assert_eq!(
