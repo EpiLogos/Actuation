@@ -29,6 +29,8 @@ fn actual_capabilities_preserve_the_frozen_surface_and_add_only_nara_serve_the_l
         .position(|command| command == "authority.revoke")
         .unwrap();
     commands.insert(revoke + 1, json!("authority.list"));
+    // The World's standing grant, after the listing (O-I #1003).
+    commands.insert(revoke + 2, json!("authority.grant-world"));
     // A session's streams, after the close of one.
     let close = commands
         .iter()

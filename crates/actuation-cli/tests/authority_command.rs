@@ -399,6 +399,265 @@ fn the_real_binary_reads_the_record_after_now() {
     );
 }
 
+/// A child of the World rooted at `control:root`, as a chat mint composes
+/// one: its own world, the root agency determining it, and the bounds it asks.
+fn world_child_resolution(source: &str, requester: &str, world: &str, bounds: &[&str]) -> Value {
+    json!({
+        "schema": "actuation.local-authority/v1",
+        "resolution_ref": format!("resolution:chat@{world}"),
+        "request_ref": format!("actualisation-request:chat@{world}"),
+        "requester_ref": requester,
+        "authority_source_ref": source,
+        "determination_ref": format!("determination:chat@{world}"),
+        "differentiated_binding": {
+            "schema": "actuation.agency/v1",
+            "binding_ref": format!("binding:chat@{world}"),
+            "agent_ref": "agent:chat",
+            "agency_ref": format!("agency:chat@{world}"),
+            "world_ref": world,
+            "scope_ref": world,
+            "determining_agency_ref": "agency:world-root@control:root",
+            "bounds_refs": bounds,
+            "authority_refs": ["authority:world@control:root"],
+            "return_relation_ref": format!("return-relation:chat@{world}"),
+            "continuity_ref": "continuity:agent:chat"
+        },
+        "agent_identity": {"standing": "existing", "evidence_refs": ["evidence:chat"]},
+        "requested_bounds_refs": bounds,
+        "delegated_autonomy": {
+            "allowed_action_refs": ["action/aikit/encounter-send"],
+            "denied_action_refs": [],
+            "may_determine_within_bounds": false
+        },
+        "return_policy": {
+            "mode": "required",
+            "return_relation_ref": format!("return-relation:chat@{world}")
+        },
+        "provenance": {"source_refs": ["test:grant-world"], "context_refs": []}
+    })
+}
+
+fn grant_world(store: &std::path::Path, holder: &str, worlds: &[&str], now: &str) -> Value {
+    let mut argv = vec![
+        "authority",
+        "grant-world",
+        "--holder",
+        holder,
+        "--store",
+        "{STORE}",
+        "--now",
+        now,
+    ];
+    for world in worlds {
+        argv.extend(["--world", world]);
+    }
+    run(store, &argv, "")
+}
+
+fn resolve_child(store: &std::path::Path, source: &str, world: &str, bounds: &[&str]) -> Value {
+    run(
+        store,
+        &[
+            "authority",
+            "resolve",
+            "--store",
+            "{STORE}",
+            "--now",
+            "1726300100",
+            "-",
+        ],
+        &world_child_resolution(source, "human:owner", world, bounds).to_string(),
+    )
+}
+
+/// The World's standing grant, issued in one owner operation: every named
+/// world resolves (the root and a project alike) and the admitted request
+/// actualises unchanged; a world it does not name is refused.
+#[test]
+fn a_world_grant_admits_each_named_world_and_refuses_an_unnamed_one() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = dir.path().join("authority");
+    let granted = grant_world(
+        &store,
+        "human:owner",
+        &["control:root", "project:Example"],
+        "1726300000",
+    );
+    assert_eq!(granted["issued"], json!(true));
+    assert_eq!(granted["root_world_ref"], json!("control:root"));
+    assert_eq!(
+        granted["allowed_world_refs"],
+        json!(["control:root", "project:Example"])
+    );
+    assert_eq!(granted["superseded"], json!([]));
+    let source = granted["authority_source_ref"].as_str().unwrap().to_owned();
+    let record = &granted["record"];
+    assert_eq!(record["holder"], json!("human:owner"));
+    assert_eq!(record["issued_by"], json!("human:owner"));
+    assert_eq!(
+        record["governing_binding"]["world_ref"],
+        json!("control:root")
+    );
+    assert_eq!(
+        record["metagency_grant"]["operations"],
+        json!(["determine-agency", "actualise-agency"])
+    );
+    assert_eq!(
+        record["metagency_grant"]["bounds_refs"],
+        json!(["bound:control:root", "bound:project:Example"])
+    );
+
+    for (world, bounds) in [
+        (
+            "control:root",
+            vec!["bound:control:root", "bound:project:Example"],
+        ),
+        ("project:Example", vec!["bound:project:Example"]),
+    ] {
+        let resolved = resolve_child(&store, &source, world, &bounds);
+        assert_eq!(
+            resolved["standing"],
+            json!("admitted"),
+            "{world}: {resolved}"
+        );
+        let request = resolved["actualisation_request"].clone();
+        let actualised = run(&store, &["agency", "actualise", "-"], &request.to_string());
+        assert_eq!(actualised["status"], json!("actualised"), "{actualised}");
+        assert_eq!(
+            actualised["differentiated_binding"]["world_ref"],
+            json!(world)
+        );
+    }
+
+    let elsewhere = resolve_child(&store, &source, "project:Other", &["bound:project:Example"]);
+    assert_eq!(elsewhere["standing"], json!("refused"));
+    assert_eq!(
+        elsewhere["refusal"]["code"],
+        json!("authority.world_not_scoped")
+    );
+    // Only the holder resolves it.
+    let intruder = run(
+        &store,
+        &[
+            "authority",
+            "resolve",
+            "--store",
+            "{STORE}",
+            "--now",
+            "1726300100",
+            "-",
+        ],
+        &world_child_resolution(
+            &source,
+            "human:intruder",
+            "project:Example",
+            &["bound:project:Example"],
+        )
+        .to_string(),
+    );
+    assert_eq!(intruder["refusal"]["code"], json!("authority.wrong_holder"));
+}
+
+/// A renewal re-founds the World's authority under a fresh source and
+/// revokes the holder's earlier grant for the same root, so exactly one live
+/// grant names the World. Another root, or another holder, is not touched.
+#[test]
+fn a_second_world_grant_leaves_exactly_one_live() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = dir.path().join("authority");
+    let other_root = grant_world(&store, "human:owner", &["control:elsewhere"], "1726300000");
+    let other_holder = grant_world(&store, "human:guest", &["control:root"], "1726300000");
+    let first = grant_world(&store, "human:owner", &["control:root"], "1726300000");
+    // The same instant, the same root: the store's refusal of a reused source
+    // is met with a fresh ref, never a rewrite.
+    let second = grant_world(
+        &store,
+        "human:owner",
+        &["control:root", "project:Example"],
+        "1726300000",
+    );
+    let first_ref = first["authority_source_ref"].as_str().unwrap();
+    let second_ref = second["authority_source_ref"].as_str().unwrap();
+    assert_ne!(first_ref, second_ref);
+    assert_eq!(second["superseded"], json!([first_ref]));
+
+    let listed = run(&store, &["authority", "list", "--store", "{STORE}"], "");
+    assert_eq!(listed["invalid"], json!([]));
+    let authorities = listed["authorities"].as_array().unwrap();
+    assert_eq!(authorities.len(), 4);
+    let live_for_owner_root: Vec<&str> = authorities
+        .iter()
+        .filter(|listed| {
+            listed.get("revoked").is_none()
+                && listed["record"]["holder"] == json!("human:owner")
+                && listed["record"]["governing_binding"]["world_ref"] == json!("control:root")
+        })
+        .map(|listed| listed["authority_source_ref"].as_str().unwrap())
+        .collect();
+    assert_eq!(live_for_owner_root, [second_ref]);
+    let superseded = authorities
+        .iter()
+        .find(|listed| listed["authority_source_ref"] == json!(first_ref))
+        .unwrap();
+    assert_eq!(
+        superseded["revoked"]["reason"],
+        json!(format!("superseded by {second_ref}"))
+    );
+    for untouched in [&other_root, &other_holder] {
+        let listed = authorities
+            .iter()
+            .find(|listed| listed["authority_source_ref"] == untouched["authority_source_ref"])
+            .unwrap();
+        assert!(listed.get("revoked").is_none(), "{listed}");
+    }
+
+    // The superseded grant no longer resolves; its successor does.
+    let stale = resolve_child(&store, first_ref, "control:root", &["bound:control:root"]);
+    assert_eq!(stale["refusal"]["code"], json!("authority.revoked"));
+    let current = resolve_child(
+        &store,
+        second_ref,
+        "project:Example",
+        &["bound:project:Example"],
+    );
+    assert_eq!(current["standing"], json!("admitted"), "{current}");
+}
+
+/// A grant names its holder and at least one world, and nothing else.
+#[test]
+fn a_world_grant_without_holder_or_world_is_refused_before_any_effect() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = dir.path().join("authority");
+    for (argv, words) in [
+        (
+            vec!["authority", "grant-world", "--world", "control:root"],
+            "requires --holder",
+        ),
+        (
+            vec!["authority", "grant-world", "--holder", "human:owner"],
+            "requires --world",
+        ),
+        (
+            vec![
+                "authority",
+                "grant-world",
+                "--holder",
+                "human:owner",
+                "--world",
+                "control:root",
+                "control:other",
+            ],
+            "control:other is not one of its arguments",
+        ),
+    ] {
+        let mut argv: Vec<String> = argv.into_iter().map(str::to_owned).collect();
+        argv.extend(["--store".into(), store.display().to_string()]);
+        let refused = execute(&argv, "").expect_err("refused");
+        assert!(refused.to_string().contains(words), "{refused}");
+    }
+    assert!(!store.exists(), "a refused grant writes nothing");
+}
+
 #[test]
 fn actualise_refusal_names_the_malformed_record() {
     // The shape a session plausibly invents when nothing discloses the

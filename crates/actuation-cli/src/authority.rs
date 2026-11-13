@@ -422,6 +422,210 @@ pub fn authority_issue(command: &Command) -> Result<Output, actuation_core::Erro
     )
 }
 
+/// The refs a World's standing grant names for its root `world`: the root
+/// agency, its binding and agent, the authority it holds and the Return it
+/// answers to. They are the same for every grant naming that root, so a
+/// renewal re-founds the authority without renaming the agency it governs.
+struct WorldRootRefs {
+    binding: String,
+    agent: String,
+    agency: String,
+    authority: String,
+    return_relation: String,
+    grant: String,
+}
+
+fn world_root_refs(root: &WorldRef) -> WorldRootRefs {
+    WorldRootRefs {
+        binding: format!("binding:world-root@{root}"),
+        agent: format!("agent:world-root@{root}"),
+        agency: format!("agency:world-root@{root}"),
+        authority: format!("authority:world@{root}"),
+        return_relation: format!("return-relation:world-root@{root}"),
+        grant: format!("grant:world-root@{root}"),
+    }
+}
+
+/// Compose the World's standing governing record: a governing binding for
+/// the root agency of `worlds[0]` (the World's root), a metagency grant that
+/// may determine and actualise agencies, one bound per named world, and the
+/// named worlds as the record's scope. `holder` both holds and issues it.
+pub fn compose_world_grant(
+    authority_source_ref: &str,
+    holder: &ExternalRef,
+    worlds: &[WorldRef],
+    issued_at_unix_seconds: u64,
+) -> Result<GoverningAuthorityRecord, actuation_core::Error> {
+    let root = worlds.first().ok_or_else(|| {
+        actuation_core::Error::new(
+            "a World grant names at least one world with --world; the first is the World's root",
+        )
+    })?;
+    let refs = world_root_refs(root);
+    let bounds: Vec<String> = worlds
+        .iter()
+        .map(|world| format!("bound:{world}"))
+        .collect();
+    let record = json!({
+        "schema": LOCAL_AUTHORITY_VERSION,
+        "authority_source_ref": authority_source_ref,
+        "holder": holder,
+        "issued_by": holder,
+        "governing_binding": {
+            "schema": "actuation.agency/v1",
+            "binding_ref": refs.binding,
+            "agent_ref": refs.agent,
+            "agency_ref": refs.agency,
+            "world_ref": root,
+            "scope_ref": root,
+            "bounds_refs": bounds,
+            "authority_refs": [refs.authority],
+            "return_relation_ref": refs.return_relation,
+        },
+        "metagency_grant": {
+            "schema": "actuation.agency/v1",
+            "grant_ref": refs.grant,
+            "agency_ref": refs.agency,
+            "world_binding_ref": refs.binding,
+            "authority_ref": refs.authority,
+            "bounds_refs": bounds,
+            "operations": ["determine-agency", "actualise-agency"],
+        },
+        "allowed_world_refs": worlds,
+        "issued_at_unix_seconds": issued_at_unix_seconds,
+        "provenance": [format!("actuation authority grant-world: the World rooted at {root}")],
+    });
+    serde_json::from_value(record).map_err(|e| {
+        actuation_core::Error::new(format!("the World grant could not be composed: {e}"))
+    })
+}
+
+/// A fresh source ref for a World grant: the store refuses a reused ref, and
+/// a renewal is a new source, never a rewrite of the one it supersedes.
+fn fresh_world_source_ref(
+    store: &AuthorityStore,
+    root: &WorldRef,
+    at: u64,
+) -> Result<String, actuation_core::Error> {
+    for attempt in 0..1000u32 {
+        let candidate = match attempt {
+            0 => format!("authority-source:world-grant@{root}:{at}"),
+            n => format!("authority-source:world-grant@{root}:{at}.{n}"),
+        };
+        if store.read(&candidate)?.is_none() {
+            return Ok(candidate);
+        }
+    }
+    Err(actuation_core::Error::new(format!(
+        "no fresh authority source ref is free for the World rooted at {root} at {at}"
+    )))
+}
+
+/// `actuation authority grant-world`: compose and issue the World's standing
+/// grant in one owner operation, then revoke the holder's earlier live grants
+/// for the same root world, so exactly one live grant names the World.
+pub fn authority_grant_world(command: &Command) -> Result<Output, actuation_core::Error> {
+    let mut args = command.args.clone();
+    let store_flag = flag_value(&mut args, "--store")?;
+    let now = flag_value(&mut args, "--now")?;
+    let holder = flag_value(&mut args, "--holder")?.ok_or_else(|| {
+        actuation_core::Error::new("authority grant-world requires --holder <ref>")
+    })?;
+    let mut worlds: Vec<WorldRef> = Vec::new();
+    while let Some(world) = flag_value(&mut args, "--world")? {
+        let world = WorldRef::new(world)?;
+        if !worlds.contains(&world) {
+            worlds.push(world);
+        }
+    }
+    if let Some(extra) = args.first() {
+        return Err(actuation_core::Error::new(format!(
+            "authority grant-world takes --holder, --world, --store and --now; {extra} is not one of its arguments"
+        )));
+    }
+    let holder = ExternalRef::new(holder)?;
+    let store = store_from_flag(store_flag)?;
+    let at = now_unix_seconds(now.as_deref())?;
+    let root = worlds.first().cloned().ok_or_else(|| {
+        actuation_core::Error::new(
+            "authority grant-world requires --world <world_ref>; the first is the World's root",
+        )
+    })?;
+    let source_ref = fresh_world_source_ref(&store, &root, at)?;
+    let record = compose_world_grant(&source_ref, &holder, &worlds, at)?;
+    let value = serde_json::to_value(&record)
+        .map_err(|e| actuation_core::Error::new(format!("record could not be encoded: {e}")))?;
+    let state = store.issue(&source_ref, at, value.clone())?;
+    // Renewal: the holder's earlier grants for this root that still stand
+    // are revoked, after the new one stands, so the World is never ungranted.
+    let mut superseded = Vec::new();
+    for listed in store.list()?.authorities {
+        if listed.authority_source_ref == source_ref || listed.state.revoked.is_some() {
+            continue;
+        }
+        let Ok(earlier) =
+            serde_json::from_value::<GoverningAuthorityRecord>(listed.state.record.clone())
+        else {
+            continue;
+        };
+        let expired = earlier
+            .expires_at_unix_seconds
+            .is_some_and(|expires| expires <= at);
+        if expired
+            || earlier.holder != holder
+            || earlier.governing_binding.fields().world_ref != root
+        {
+            continue;
+        }
+        store.revoke(
+            &listed.authority_source_ref,
+            at,
+            format!("superseded by {source_ref}"),
+        )?;
+        superseded.push(listed.authority_source_ref);
+    }
+    output(
+        json!({
+            "schema": LOCAL_AUTHORITY_VERSION,
+            "issued": true,
+            "authority_source_ref": source_ref,
+            "holder": holder,
+            "root_world_ref": root,
+            "allowed_world_refs": worlds,
+            "issued_at_unix_seconds": state.issued_at_unix_seconds,
+            "superseded": superseded,
+            "record": value,
+        }),
+        command.json,
+        render_world_grant,
+    )
+}
+
+fn render_world_grant(value: &Value) -> String {
+    let worlds = value["allowed_world_refs"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .collect::<Vec<_>>()
+        .join(", ");
+    let mut text = format!(
+        "issued the World's grant {} (holder {}) over {worlds}",
+        value["authority_source_ref"].as_str().unwrap_or("?"),
+        value["holder"].as_str().unwrap_or("?"),
+    );
+    let superseded = value["superseded"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .collect::<Vec<_>>();
+    if !superseded.is_empty() {
+        text.push_str(&format!("; it supersedes {}", superseded.join(", ")));
+    }
+    text
+}
+
 pub fn authority_resolve(command: &Command) -> Result<Output, actuation_core::Error> {
     let mut args = command.args.clone();
     let store_flag = flag_value(&mut args, "--store")?;

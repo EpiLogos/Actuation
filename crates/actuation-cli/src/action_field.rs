@@ -26,6 +26,7 @@ const ACTIONS: &[(&str, &str)] = &[
     ("authority.revoke", "locally-mutating"),
     ("authority.resolve", "read-only"),
     ("authority.list", "read-only"),
+    ("authority.grant-world", "locally-mutating"),
     ("stream.list", "read-only"),
     ("stream.replay", "read-only"),
     ("usage.list", "read-only"),
@@ -40,10 +41,12 @@ const ACTIONS: &[(&str, &str)] = &[
 #[derive(Debug, Clone, PartialEq)]
 enum Part {
     /// `--flag <value>` (with its choices when the usage names them) or a
-    /// bare `--flag`, which is a boolean.
+    /// bare `--flag`, which is a boolean. `--flag <value>...` is repeated:
+    /// its input is a list, one flag per value.
     Flag {
         flag: String,
         valued: bool,
+        repeated: bool,
         choices: Vec<String>,
     },
     Positional,
@@ -116,6 +119,7 @@ fn usage_inputs(entry: &CommandDescriptor) -> Vec<Input> {
                         part: Part::Flag {
                             flag: word.clone(),
                             valued: value.is_some(),
+                            repeated: value.is_some_and(|value| value.ends_with("...")),
                             choices,
                         },
                         required,
@@ -159,9 +163,17 @@ fn descriptor(name: &str, mutation_class: &str) -> Value {
                 Part::Flag {
                     flag,
                     valued,
+                    repeated,
                     choices,
                 } => {
-                    row["type"] = json!(if valued { "string" } else { "boolean" });
+                    row["type"] = json!(match (valued, repeated) {
+                        (true, true) => "array",
+                        (true, false) => "string",
+                        (false, _) => "boolean",
+                    });
+                    if repeated {
+                        row["items"] = json!({"type": "string"});
+                    }
                     row["flag"] = json!(flag);
                     if !choices.is_empty() {
                         row["choices"] = json!(choices);
@@ -248,6 +260,34 @@ fn route_argv(id: &str, input: &Value) -> Result<(Vec<String>, String), String> 
                 Value::Bool(false) => {}
                 _ => return Err(format!("{id}'s input `{}` is true or false", input.name)),
             },
+            Part::Flag {
+                flag,
+                repeated: true,
+                ..
+            } => {
+                let values = value
+                    .as_array()
+                    .filter(|values| !values.is_empty())
+                    .ok_or_else(|| {
+                        format!(
+                            "{id}'s input `{}` is a list of one or more values",
+                            input.name
+                        )
+                    })?;
+                for item in values {
+                    let text = match item {
+                        Value::String(text) => text.clone(),
+                        Value::Number(number) => number.to_string(),
+                        _ => {
+                            return Err(format!(
+                                "{id}'s input `{}` is a list of values",
+                                input.name
+                            ))
+                        }
+                    };
+                    flags.extend([flag.clone(), text]);
+                }
+            }
             Part::Flag { flag, choices, .. } => {
                 let text = text()?;
                 if !choices.is_empty() && !choices.contains(&text) {
@@ -384,6 +424,21 @@ mod tests {
             .find(|action| action["id"] == "actuation.harness.capability")
             .unwrap();
         assert_eq!(input(capability, "slug")["required"], false);
+        let grant = actions
+            .iter()
+            .find(|action| action["id"] == "actuation.authority.grant-world")
+            .unwrap();
+        assert_eq!(grant["mutation_class"], "locally-mutating");
+        assert_eq!(
+            input(grant, "holder"),
+            &json!({"name": "holder", "required": true, "type": "string", "flag": "--holder"})
+        );
+        assert_eq!(
+            input(grant, "world"),
+            &json!({"name": "world", "required": true, "type": "array",
+                    "items": {"type": "string"}, "flag": "--world"})
+        );
+        assert_eq!(input(grant, "store")["required"], false);
     }
 
     #[test]
@@ -417,6 +472,28 @@ mod tests {
         .unwrap();
         assert_eq!(argv, ["authority", "issue", "--store", "/s", "-", "--json"]);
         assert_eq!(stdin, r#"{"authority_source_ref":"a"}"#);
+        // A repeated flag's input is a list: one flag per value, in order.
+        let (argv, _) = route_argv(
+            "actuation.authority.grant-world",
+            &json!({"holder": "human:owner", "world": ["control:root", "project:Example"], "store": "/s"}),
+        )
+        .unwrap();
+        assert_eq!(
+            argv,
+            [
+                "authority",
+                "grant-world",
+                "--holder",
+                "human:owner",
+                "--world",
+                "control:root",
+                "--world",
+                "project:Example",
+                "--store",
+                "/s",
+                "--json"
+            ]
+        );
         for (id, input, words) in [
             (
                 "actuation.occupancy.read",
@@ -444,6 +521,26 @@ mod tests {
                 "is one JSON object",
             ),
             ("actuation.occupancy.list", json!([]), "one JSON object"),
+            (
+                "actuation.authority.grant-world",
+                json!({"holder": "human:owner", "world": []}),
+                "is a list of one or more values",
+            ),
+            (
+                "actuation.authority.grant-world",
+                json!({"holder": "human:owner", "world": "control:root"}),
+                "is a list of one or more values",
+            ),
+            (
+                "actuation.authority.grant-world",
+                json!({"holder": "human:owner", "world": [{"ref": "control:root"}]}),
+                "is a list of values",
+            ),
+            (
+                "actuation.authority.grant-world",
+                json!({"world": ["control:root"]}),
+                "needs its input `holder`",
+            ),
             (
                 "actuation.stream.open",
                 json!({}),
@@ -487,6 +584,43 @@ mod tests {
         run_action(
             "actuation.occupancy.release",
             json!({"position": "position:action-field", "generation": generation, "reason": "done", "store": store}),
+        );
+        let _ = std::fs::remove_dir_all(&store);
+    }
+
+    #[test]
+    fn the_worlds_grant_is_issued_through_the_field() {
+        let store = std::env::temp_dir().join(format!(
+            "actuation-action-field-grant-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&store);
+        let store_text = store.to_string_lossy().into_owned();
+        let ran = run(&Command {
+            args: vec!["actuation.authority.grant-world".into(), "-".into()],
+            json: true,
+            stdin: json!({"holder": "human:owner", "world": ["control:root", "project:Example"],
+                          "store": store_text, "now": 1726300000})
+            .to_string(),
+        })
+        .unwrap_or_else(|error| panic!("grant-world refused: {error}"));
+        assert_eq!(ran.code, 0, "{}", ran.stderr);
+        let granted: Value = serde_json::from_str(&ran.stdout).unwrap();
+        assert_eq!(granted["issued"], true);
+        assert_eq!(
+            granted["allowed_world_refs"],
+            json!(["control:root", "project:Example"])
+        );
+        let listed = run(&Command {
+            args: vec!["actuation.authority.list".into(), "-".into()],
+            json: true,
+            stdin: json!({"store": store_text}).to_string(),
+        })
+        .unwrap();
+        let listed: Value = serde_json::from_str(&listed.stdout).unwrap();
+        assert_eq!(
+            listed["authorities"][0]["authority_source_ref"],
+            granted["authority_source_ref"]
         );
         let _ = std::fs::remove_dir_all(&store);
     }
