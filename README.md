@@ -125,6 +125,8 @@ actuation config plan [--json] [--setting <setting_ref>] [--scope <compact>] [--
 actuation config apply [--json] [--plan-file <path|->] [--changeset <id>]
 actuation config reset [--json] [--setting <setting_ref>] [--scope <compact>] [--changeset <id>]
 actuation verify [--json]
+actuation actions [--json]
+actuation action run <id> <json|->
 ```
 
 `nara serve` owns a bounded JSON-lines pipe. Each newline-terminated request
