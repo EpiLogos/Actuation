@@ -4,7 +4,7 @@
 //! the capabilities listing and dispatch are all derived from the table, so a
 //! command cannot exist in one representation and be missing from another.
 use crate::surface::{cli_surface, ACTUATION_CLI_VERSION};
-use crate::{authority, commands, nara_session, occupancy};
+use crate::{action_field, authority, commands, nara_session, occupancy};
 use actuation_core::Error;
 use serde_json::{json, Value};
 use std::io::Read;
@@ -116,6 +116,8 @@ static COMMANDS: &[CommandDescriptor] = &[
     command!("config.apply", &["config", "apply"], "actuation config apply [--json] [--plan-file <path|->] [--changeset <id>]", "Apply an owner settings plan", false, commands::config_apply),
     command!("config.reset", &["config", "reset"], "actuation config reset [--json] [--setting <setting_ref>] [--scope <compact>] [--changeset <id>]", "Reset settings through the owner transport", false, commands::config_reset),
     command!("verify", &["verify"], "actuation verify [--json]", "Everyday diagnostic: verify the served surface and read models", false, commands::verify),
+    command!("actions", &["actions"], "actuation actions [--json]", "The Action field oi act holds: each Action with the inputs its usage line takes", false, action_field::actions),
+    command!("action.run", &["action", "run"], "actuation action run <id> <json|->", "Run one Action of the field through its own command", true, action_field::run),
 ];
 
 pub fn match_route(args: &[String]) -> Option<(&'static CommandDescriptor, Vec<String>)> {
@@ -206,6 +208,10 @@ pub fn command_needs_stdin(argv: &[String]) -> bool {
     let Some((entry, rest)) = match_route(&args) else {
         return false;
     };
+    // An Action's input is its second word: `actuation action run <id> -`.
+    if entry.name == "action.run" {
+        return rest.get(1).map(String::as_str) == Some("-");
+    }
     if entry.input {
         let value_flags = ["--store", "--out", "--now"];
         let mut positional = Vec::new();

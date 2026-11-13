@@ -47,6 +47,9 @@ fn actual_capabilities_preserve_the_frozen_surface_and_add_only_nara_serve_the_l
         .position(|command| command == "usage.read")
         .unwrap();
     commands.insert(usage + 1, json!("usage.list"));
+    // The Action field oi act holds, and the run of one of its Actions, last (O-I #1002).
+    commands.push(json!("actions"));
+    commands.push(json!("action.run"));
     actual["revision"] = json!("$REVISION");
     assert_eq!(
         actual, expected,
